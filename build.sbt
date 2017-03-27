@@ -8,7 +8,8 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala, SwaggerPlugin, D
 
 libraryDependencies ++= Seq(
   "com.typesafe.slick" %% "slick" % "3.2.0",
-  "org.postgresql" % "postgresql" % "42.0.0"
+  "org.postgresql" % "postgresql" % "42.0.0",
+  filters
 ) ++ Seq(
   "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0" % Test,
   "org.scalacheck" %% "scalacheck" % "1.13.4" % Test,
