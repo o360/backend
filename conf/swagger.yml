@@ -7,11 +7,13 @@
     - application/json
   produces:
     - application/json
-  host: "sop-ci.z1.netpoint-dc.com:9000/api/v1.0"
+  host: "sop-ci.z1.netpoint-dc.com:9000"
+  basePath: "/api/v1.0"
+  schemes:
+    - "http"
   securityDefinitions:
     api_key:
       type: apiKey
       name: Authorization
       description: JWT
       in: header
-

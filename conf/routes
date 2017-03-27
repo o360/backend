@@ -2,5 +2,7 @@
 
 ###
 # summary: Swagger definition
+# tags:
+#   - Misc
 ###
 GET        /swagger.json        controllers.Assets.at(path="/public", file="swagger.json")
