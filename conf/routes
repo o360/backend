@@ -1,0 +1,6 @@
+# Routes
+
+###
+# summary: Swagger definition
+###
+GET        /swagger.json        controllers.Assets.at(path="/public", file="swagger.json")
