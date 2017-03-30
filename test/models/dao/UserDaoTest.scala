@@ -1,6 +1,6 @@
 package models.dao
 
-import models.dao.fixture.{UserFixture, UserLoginFixture}
+import utils.fixture.{UserFixture, UserLoginFixture}
 import utils.generator.UserGenerator
 import org.scalacheck.Gen
 import models.user.{User => UserModel}

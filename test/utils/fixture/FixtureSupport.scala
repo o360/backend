@@ -1,4 +1,4 @@
-package models.dao.fixture
+package utils.fixture
 
 import com.ninja_squad.dbsetup.DbSetup
 import com.ninja_squad.dbsetup.destination.Destination
@@ -28,6 +28,5 @@ trait FixtureSupport {
     fixtureOperations.foreach { operation =>
       val dbSetup = new DbSetup(destination, operation)
       dbSetup.launch()
-    }
     }
 }

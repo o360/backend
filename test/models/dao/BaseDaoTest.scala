@@ -2,7 +2,7 @@ package models.dao
 
 import com.ninja_squad.dbsetup.destination.DriverManagerDestination
 import com.typesafe.config.ConfigFactory
-import models.dao.fixture.FixtureSupport
+import utils.fixture.FixtureSupport
 import org.flywaydb.core.Flyway
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.prop.GeneratorDrivenPropertyChecks

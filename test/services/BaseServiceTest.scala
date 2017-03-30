@@ -1,6 +1,6 @@
 package services
 
-import models.dao.fixture.FixtureSupport
+import utils.fixture.FixtureSupport
 import org.scalatest.OneInstancePerTest
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.prop.GeneratorDrivenPropertyChecks

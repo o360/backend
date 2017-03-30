@@ -1,4 +1,4 @@
-package models.dao.fixture
+package utils.fixture
 
 import com.ninja_squad.dbsetup.Operations.insertInto
 
