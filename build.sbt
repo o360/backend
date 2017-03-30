@@ -34,6 +34,7 @@ flywayOutOfOrder := true
 fork in Test := true
 javaOptions in Test += "-Dconfig.file=conf/test.conf"
 parallelExecution in Test := false
+coverageExcludedPackages := "<empty>;router\\..*;"
 
 dockerExposedPorts := Seq(9000)
 packageName in Docker := "bw-assessment/api"
