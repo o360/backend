@@ -17,6 +17,8 @@
       name: X-Auth-Token
       description: JWT
       in: header
+  security:
+    - apiKey: []
   responses:
     'BadRequest':
       description: Bad Request
