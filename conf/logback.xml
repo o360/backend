@@ -13,9 +13,12 @@
     </appender>
 
     <logger name="play" level="INFO" />
-    <logger name="application" level="DEBUG" />
+    <logger name="application" level="INFO" />
+    <logger name="slick.jdbc" level="INFO"/>
+    <logger name="org.flywaydb.core" level="ERROR"/>
+    <logger name="sop" level="INFO"/>
 
-    <root level="WARN">
+    <root level="INFO">
         <appender-ref ref="ASYNCSTDOUT" />
     </root>
 

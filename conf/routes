@@ -1,11 +1,49 @@
-# Routes
+### NoDocs ###
+GET        /swagger.json        controllers.Assets.at(path="/public", file="swagger.json")
 
 ###
-# summary: Swagger definition
+# summary: Returns logged in user
 # tags:
-#   - Misc
+#   - Account
+# security:
+#   apiKey: []
 # responses:
 #   200:
 #       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.user.UserResponse'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   500:
+#       $ref: '#/responses/InternalServerError'
 ###
-GET        /swagger.json        controllers.Assets.at(path="/public", file="swagger.json")
+GET         /auth                          controllers.Authentication.me
+
+
+###
+# summary: Authenticate user by OAuth code
+# tags:
+#   - Account
+# parameters:
+#   - name: body
+#     schema:
+#       type: object
+#       properties:
+#           code:
+#               type: string
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               token:
+#                   type: string
+#   400:
+#       $ref: '#/responses/BadRequest'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST        /auth/:provider                controllers.Authentication.auth(provider: String)

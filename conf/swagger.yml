@@ -12,8 +12,29 @@
   schemes:
     - "http"
   securityDefinitions:
-    api_key:
+    apiKey:
       type: apiKey
-      name: Authorization
+      name: X-Auth-Token
       description: JWT
       in: header
+  responses:
+    'BadRequest':
+      description: Bad Request
+      schema:
+        $ref: '#/definitions/controllers.api.ErrorResponse'
+    'Unauthorized':
+      description: Unauthorized
+      schema:
+        $ref: '#/definitions/controllers.api.ErrorResponse'
+    'Forbidden':
+      description: Forbidden
+      schema:
+        $ref: '#/definitions/controllers.api.ErrorResponse'
+    'NotFound':
+      description: Not Found
+      schema:
+        $ref: '#/definitions/controllers.api.ErrorResponse'
+    'InternalServerError':
+      description: Internal Server Error
+      schema:
+        $ref: '#/definitions/controllers.api.ErrorResponse'

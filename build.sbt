@@ -7,16 +7,23 @@ scalaVersion := "2.11.8"
 lazy val root = (project in file(".")).enablePlugins(PlayScala, SwaggerPlugin, DockerPlugin)
 
 libraryDependencies ++= Seq(
-  "com.typesafe.slick" %% "slick" % "3.2.0",
+  "com.typesafe.play" %% "play-slick" % "2.0.2",
   "org.postgresql" % "postgresql" % "42.0.0",
+  "com.mohiva" %% "play-silhouette" % "4.0.0",
+  "com.mohiva" %% "play-silhouette-persistence" % "4.0.0",
+  "org.scala-lang.modules" %% "scala-async" % "0.9.6",
   filters
-) ++ Seq(
-  "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0" % Test,
-  "org.scalacheck" %% "scalacheck" % "1.13.4" % Test,
-  "com.h2database" % "h2" % "1.4.194" % Test,
-  "org.flywaydb" % "flyway-core" % "4.1.2" % Test,
-  "org.mockito" % "mockito-core" % "2.7.19" % Test
 )
+
+libraryDependencies ++= Seq(
+  "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0",
+  "org.scalacheck" %% "scalacheck" % "1.13.4",
+  "com.h2database" % "h2" % "1.4.194",
+  "org.flywaydb" % "flyway-core" % "4.1.2",
+  "org.mockito" % "mockito-core" % "2.7.19",
+  "com.ninja-squad" % "DbSetup" % "2.1.0",
+  "com.mohiva" % "play-silhouette-testkit_2.11" % "4.0.0"
+).map(_ % Test)
 
 flywayLocations := Seq("migrations")
 flywayUrl := sys.env.getOrElse("DATABASE_URL", "")
@@ -26,6 +33,7 @@ flywayOutOfOrder := true
 
 fork in Test := true
 javaOptions in Test += "-Dconfig.file=conf/test.conf"
+parallelExecution in Test := false
 
 dockerExposedPorts := Seq(9000)
 packageName in Docker := "bw-assessment/api"
