@@ -18,7 +18,7 @@ object ErrorHelper {
   def getResult(error: ApplicationError): Result = {
     val statusCode = error match {
       case _: AuthenticationError => Unauthorized
-      case _: NotFoundError => NotFound
+      case _: BadRequestError => BadRequest
     }
     val errorResponse = ErrorResponse(
       code = error.getCode,

@@ -2,13 +2,13 @@ package models.dao
 
 import com.ninja_squad.dbsetup.destination.DriverManagerDestination
 import com.typesafe.config.ConfigFactory
-import utils.fixture.FixtureSupport
 import org.flywaydb.core.Flyway
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import utils.AsyncHelper
+import testutils.AsyncHelper
+import testutils.fixture.FixtureSupport
 
 import scala.reflect.ClassTag
 

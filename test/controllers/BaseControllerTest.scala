@@ -6,7 +6,7 @@ import org.scalatest.mockito.MockitoSugar
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import utils.AsyncHelper
+import testutils.AsyncHelper
 
 
 /**

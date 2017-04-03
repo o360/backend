@@ -11,7 +11,7 @@ import play.api.libs.json.Json
 case class ErrorResponse(
   code: String,
   message: String
-)
+) extends BaseResponse
 
 object ErrorResponse {
   implicit val writes = Json.writes[ErrorResponse]

@@ -1,5 +1,6 @@
 package controllers.api.user
 
+import controllers.api.BaseResponse
 import models.user.User
 import play.api.libs.json.Json
 
@@ -17,7 +18,7 @@ case class UserResponse(
   email: Option[String],
   role: String,
   status: String
-)
+) extends BaseResponse
 
 object UserResponse {
   implicit val writes = Json.writes[UserResponse]

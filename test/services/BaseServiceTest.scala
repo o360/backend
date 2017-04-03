@@ -1,11 +1,11 @@
 package services
 
-import utils.fixture.FixtureSupport
 import org.scalatest.OneInstancePerTest
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatestplus.play.PlaySpec
-import utils.AsyncHelper
+import testutils.AsyncHelper
+import testutils.fixture.FixtureSupport
 
 /**
   * Base trait for service tests.

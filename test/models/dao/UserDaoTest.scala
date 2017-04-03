@@ -1,9 +1,9 @@
 package models.dao
 
-import utils.fixture.{UserFixture, UserLoginFixture}
-import utils.generator.UserGenerator
 import org.scalacheck.Gen
 import models.user.{User => UserModel}
+import testutils.fixture.{UserFixture, UserLoginFixture}
+import testutils.generator.UserGenerator
 
 class UserDaoTest extends BaseDaoTest with UserFixture with UserLoginFixture with UserGenerator {
 
@@ -13,7 +13,9 @@ class UserDaoTest extends BaseDaoTest with UserFixture with UserLoginFixture wit
     "return users by specific criteria" in {
       forAll(Gen.option(Gen.choose(-1L, 5L))) { (id: Option[Long]) =>
         val users = wait(dao.get(id))
-        users must contain theSameElementsAs Users.filter(u => id.forall(_ == u.id))
+        val expectedUsers = Users.filter(u => id.forall(_ == u.id))
+        users.total mustBe expectedUsers.length
+        users.data must contain theSameElementsAs expectedUsers
       }
     }
   }

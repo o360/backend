@@ -1,4 +1,4 @@
-package utils.generator
+package testutils.generator
 
 import models.user.{Role, Status, User}
 import org.scalacheck.{Arbitrary, Gen}

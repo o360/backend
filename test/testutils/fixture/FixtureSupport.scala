@@ -1,4 +1,4 @@
-package utils.fixture
+package testutils.fixture
 
 import com.ninja_squad.dbsetup.DbSetup
 import com.ninja_squad.dbsetup.destination.Destination
