@@ -2,9 +2,11 @@ package models.dao
 
 import javax.inject.Inject
 
-import models.user.{Status => StatusModel, Role => RoleModel, User => UserModel}
+import models.ListWithTotal
+import models.user.{Role => RoleModel, Status => StatusModel, User => UserModel}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.driver.JdbcProfile
+import utils.listmeta.ListMeta
 
 import scala.concurrent.Future
 import scala.async.Async.{async, await}
@@ -23,9 +25,7 @@ trait UserLoginComponent {
   class UserLoginTable(tag: Tag) extends Table[DbUserLogin](tag, "user_login") {
 
     def userId = column[Long]("user_id")
-
     def providerId = column[String]("provider_id")
-
     def providerKey = column[String]("provider_key")
 
     def * = (userId, providerId, providerKey) <> ((DbUserLogin.apply _).tupled, DbUserLogin.unapply)
@@ -65,13 +65,9 @@ trait UserComponent {
   class UserTable(tag: Tag) extends Table[UserModel](tag, "account") {
 
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
-
     def name = column[Option[String]]("name")
-
     def email = column[Option[String]]("email")
-
     def role = column[RoleModel]("role")
-
     def status = column[StatusModel]("status")
 
     def * = (id, name, email, role, status) <> ((UserModel.apply _).tupled, UserModel.unapply)
@@ -96,8 +92,9 @@ class User @Inject()(
     * Returns user by ID.
     */
   def findById(id: Long): Future[Option[UserModel]] = async {
-    await(get(id = Some(id))).headOption
+    await(get(id = Some(id))).data.headOption
   }
+
 
   /**
     * Returns list of users, filtered by given criteria.
@@ -106,13 +103,22 @@ class User @Inject()(
     */
   def get(
     id: Option[Long]
-  ): Future[Seq[UserModel]] = db.run {
+  )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[UserModel]] = {
     Users
       .applyFilter { x =>
-        Seq (
+        Seq(
           id.map(x.id === _)
         )
-      }.result
+      }
+      .toListResult {
+        user => {
+          case 'id => user.id
+          case 'name => user.name
+          case 'email => user.email
+          case 'role => user.role
+          case 'status => user.status
+        }
+      }
   }
 
   /**

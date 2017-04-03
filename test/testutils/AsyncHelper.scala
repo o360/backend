@@ -1,5 +1,4 @@
-package utils
-
+package testutils
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}

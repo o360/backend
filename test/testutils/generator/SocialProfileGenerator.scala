@@ -1,4 +1,4 @@
-package utils.generator
+package testutils.generator
 
 import com.mohiva.play.silhouette.api.LoginInfo
 import com.mohiva.play.silhouette.impl.providers.CommonSocialProfile

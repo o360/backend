@@ -1,9 +1,19 @@
 package models.dao
 
+import models.ListWithTotal
 import play.api.db.slick.HasDatabaseConfigProvider
+import slick.ast.Ordering
 import slick.driver.JdbcProfile
+import slick.lifted.ColumnOrdered
+import utils.listmeta.ListMeta
+import utils.listmeta.pagination.Pagination
+import utils.listmeta.pagination.Pagination.{WithPages, WithoutPages}
+import utils.listmeta.sorting.{Direction, SortField, Sorting}
 
+import scala.async.Async._
+import scala.concurrent.Future
 import scala.language.higherKinds
+import scala.concurrent.ExecutionContext.Implicits.global
 
 
 /**
@@ -17,7 +27,7 @@ trait DaoHelper {
   /**
     * Extensions for slick query.
     */
-  implicit class QueryExtensions[E, U, C[_]](query: Query[E, U, C]) {
+  implicit class QueryExtensions[E, U](query: Query[E, U, Seq]) {
     /**
       * Filter query by given list of criteria.
       *
@@ -28,15 +38,83 @@ trait DaoHelper {
     def applyFilter(
       f: E => Seq[Option[Rep[Boolean]]],
       allIfNoCriteria: Boolean = true
-    ): Query[E, U, C] = {
-      query.filter { row =>
-        val predicates = f(row).collect { case Some(p) => p }
-        if (predicates.nonEmpty)
-          predicates.reduceLeft(_ && _)
-        else if (allIfNoCriteria)
-          true: Rep[Boolean]
-        else
-          false: Rep[Boolean]
+    ): Query[E, U, Seq] = {
+      query.filter {
+        f(_)
+          .collect {
+            case Some(p) => p
+          }
+          .reduceLeftOption(_ && _)
+          .getOrElse(allIfNoCriteria: Rep[Boolean])
+      }
+    }
+
+    /**
+      * Applies pagination to query.
+      *
+      * @param pagination pagination model
+      * @return slick query
+      */
+    def paginate(pagination: Pagination): Query[E, U, Seq] = pagination match {
+      case p@WithPages(size, _) =>
+        query
+          .drop(p.offset)
+          .take(size)
+      case WithoutPages =>
+        query
+    }
+
+    /**
+      * Sorts query by given sorting.
+      *
+      * @param mapping mapping between field names and slick columns
+      */
+    def applySorting(sorting: Sorting)(mapping: E => PartialFunction[Symbol, Rep[_]]): Query[E, U, Seq] = {
+      def getSortedQuery(fields: Seq[SortField]): Query[E, U, Seq] = fields match {
+        case Seq() => query
+        case SortField(field, direction) +: tail =>
+          getSortedQuery(tail).sortBy { x =>
+            val pff = mapping(x)
+            ColumnOrdered(
+              column = mapping(x)(field),
+              ord = direction match {
+                case Direction.Asc => Ordering().copy(direction = Ordering.Asc, nulls = Ordering.NullsFirst)
+                case Direction.Desc => Ordering().copy(direction = Ordering.Desc, nulls = Ordering.NullsLast)
+              }
+            )
+          }
+      }
+
+      getSortedQuery(sorting.fields)
+    }
+
+    /**
+      * Returns list query result with total count.
+      *
+      * @param sortMapping mapping between field names and slick columns
+      * @param meta        list meta
+      * @return future of list result
+      */
+    def toListResult(
+      sortMapping: E => PartialFunction[Symbol, Rep[_]]
+    )(implicit meta: ListMeta): Future[ListWithTotal[U]] = async {
+      val paginatedQuery = query
+        .applySorting(meta.sorting)(sortMapping)
+        .paginate(meta.pagination)
+
+      val elements = await(db.run(paginatedQuery.result))
+      val resultSize = elements.length
+
+      meta.pagination match {
+        case Pagination.WithoutPages =>
+          ListWithTotal(resultSize, elements)
+        case p@Pagination.WithPages(size, number) =>
+          if (resultSize < size && resultSize > 0)
+            ListWithTotal(p.offset + resultSize, elements)
+          else {
+            val total = await(db.run(query.length.result))
+            ListWithTotal(total, elements)
+          }
       }
     }
   }

@@ -13,7 +13,7 @@ import play.api.test.Helpers._
 import play.api.test._
 import services.{User => UserService}
 import silhouette.DefaultEnv
-import utils.generator.UserGenerator
+import testutils.generator.UserGenerator
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

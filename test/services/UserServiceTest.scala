@@ -2,12 +2,12 @@ package services
 
 import com.mohiva.play.silhouette.api.LoginInfo
 import com.mohiva.play.silhouette.impl.providers.CommonSocialProfile
-import utils.fixture.UserFixture
 import models.dao.{User => UserDAO}
 import models.user.{Role, Status, User => UserModel}
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
-import utils.generator.{SocialProfileGenerator, UserGenerator}
+import testutils.fixture.UserFixture
+import testutils.generator.{SocialProfileGenerator, UserGenerator}
 
 /**
   * Test for user service.
