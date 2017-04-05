@@ -28,7 +28,7 @@ class Authentication @Inject()(
     * Returns logged in user.
     */
   def me = silhouette.SecuredAction { request =>
-    result(UserResponse(request.identity))
+    toResult(UserResponse(request.identity))
   }
 
   /**
@@ -42,7 +42,7 @@ class Authentication @Inject()(
       socialProviderRegistry.get[SocialProvider](provider) match {
         case Some(p: SocialProvider with CommonSocialProfileBuilder) =>
           await(p.authenticate) match {
-            case Left(_) => result(AuthenticationError.General)
+            case Left(_) => toResult(AuthenticationError.General)
             case Right(authInfo) =>
               val profile = await(p.retrieveProfile(authInfo))
               await(userService.createIfNotExist(profile))
@@ -50,10 +50,10 @@ class Authentication @Inject()(
               val token = await(silhouette.env.authenticatorService.init(authenticator))
               Ok(Json.obj("token" -> token))
           }
-        case _ => result(AuthenticationError.ProviderNotSupported(provider))
+        case _ => toResult(AuthenticationError.ProviderNotSupported(provider))
       }
     }.recover {
-      case _: SilhouetteException => result(AuthenticationError.General)
+      case _: SilhouetteException => toResult(AuthenticationError.General)
     }
   }
 }

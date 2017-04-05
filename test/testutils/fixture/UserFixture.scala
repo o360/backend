@@ -1,7 +1,7 @@
 package testutils.fixture
 
 import com.ninja_squad.dbsetup.Operations._
-import models.user.{Role, Status, User => UserModel}
+import models.user.{User => UserModel}
 
 /**
   * User's model fixture.
@@ -9,8 +9,8 @@ import models.user.{Role, Status, User => UserModel}
 trait UserFixture extends FixtureHelper {
   self: FixtureSupport =>
   val Users = Seq(
-    UserModel(1, Some("adminname"), Some("admin@email.com"), Role.Admin, Status.Approved),
-    UserModel(2, Some("username"), Some("user@email.com"), Role.User, Status.Approved)
+    UserModel(1, Some("adminname"), Some("admin@email.com"), UserModel.Role.Admin, UserModel.Status.Approved),
+    UserModel(2, Some("username"), Some("user@email.com"), UserModel.Role.User, UserModel.Status.Approved)
   )
 
   addFixtureOperation {

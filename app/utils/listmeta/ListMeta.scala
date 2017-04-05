@@ -16,7 +16,7 @@ object ListMeta {
   /**
     * Default list meta. Disabled sorting and pagination.
     */
-  def default: ListMeta = this(
+  def default: ListMeta = ListMeta(
     Pagination.WithoutPages,
     Sorting(Nil)
   )

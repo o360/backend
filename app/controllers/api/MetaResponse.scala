@@ -28,7 +28,7 @@ object MetaResponse {
       case WithoutPages => (total, 1)
       case WithPages(s, n) => (s, n)
     }
-    this (
+    MetaResponse(
       total,
       size,
       number

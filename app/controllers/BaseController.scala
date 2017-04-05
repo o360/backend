@@ -17,7 +17,7 @@ trait BaseController extends Controller {
     * @param value  value to return
     * @param writes writes to convert value to JSON
     */
-  def result[T <: BaseResponse](value: T)(implicit writes: Writes[T]): Result = {
+  def toResult[T <: BaseResponse](value: T)(implicit writes: Writes[T]): Result = {
     Ok(Json.toJson(value))
   }
 
@@ -26,7 +26,7 @@ trait BaseController extends Controller {
     *
     * @param error error to return
     */
-  def result[E <: ApplicationError](error: E): Result = {
+  def toResult[E <: ApplicationError](error: E): Result = {
     ErrorHelper.getResult(error)
   }
 
@@ -36,10 +36,10 @@ trait BaseController extends Controller {
     * @param res    either result or error
     * @param writes writes to convert result to JSON
     */
-  def result[E <: ApplicationError, T <: BaseResponse](res: Either[E, T])(implicit writes: Writes[T]): Result = {
+  def toResult[E <: ApplicationError, T <: BaseResponse](res: Either[E, T])(implicit writes: Writes[T]): Result = {
     res match {
-      case Left(error) => result(error)
-      case Right(data) => result(data)
+      case Left(error) => toResult(error)
+      case Right(data) => toResult(data)
     }
   }
 }

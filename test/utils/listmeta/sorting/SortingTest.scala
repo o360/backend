@@ -15,8 +15,8 @@ class SortingTest extends PlaySpec with GeneratorDrivenPropertyChecks with Symbo
       val availableFields = Set('one, 'two, 'three, 'four)
       forAll(Gen.someOf(availableFields)) { (fields: Seq[Symbol]) =>
         val queryString = if (fields.nonEmpty) Map("sort" -> fields.map(_.name).mkString(",")) else Map[String, String]()
-        val sorting = Sorting.create(queryString)(AvailableSortingFields(availableFields))
-        sorting mustBe Right(Sorting(fields.map(SortField(_, Direction.Asc))))
+        val sorting = SortingRequestParser.parse(queryString)(Sorting.AvailableFields(availableFields))
+        sorting mustBe Right(Sorting(fields.map(Sorting.Field(_, Sorting.Direction.Asc))))
       }
     }
 
@@ -24,13 +24,13 @@ class SortingTest extends PlaySpec with GeneratorDrivenPropertyChecks with Symbo
       val availableFields = Set('one, 'two, 'three, 'four)
       forAll(Gen.someOf(availableFields)) { (fields: Seq[Symbol]) =>
         val queryString = if (fields.nonEmpty) Map("sort" -> fields.map("-" + _.name).mkString(",")) else Map[String, String]()
-        val sorting = Sorting.create(queryString)(AvailableSortingFields(availableFields))
-        sorting mustBe Right(Sorting(fields.map(SortField(_, Direction.Desc))))
+        val sorting = SortingRequestParser.parse(queryString)(Sorting.AvailableFields(availableFields))
+        sorting mustBe Right(Sorting(fields.map(Sorting.Field(_, Sorting.Direction.Desc))))
       }
     }
 
     "return error if sort is empty" in {
-      val sorting = Sorting.create(Map("sort" -> ""))(AvailableSortingFields('one))
+      val sorting = SortingRequestParser.parse(Map("sort" -> ""))(Sorting.AvailableFields('one))
 
       sorting mustBe 'isLeft
     }
@@ -38,7 +38,7 @@ class SortingTest extends PlaySpec with GeneratorDrivenPropertyChecks with Symbo
     "return error if sorting is unparseable" in {
       forAll { (sort: String) =>
         whenever(!sort.matches("""-?\w+(,-?\w+)*""")) {
-          val sorting = Sorting.create(Map("sort" -> sort))(AvailableSortingFields('one))
+          val sorting = SortingRequestParser.parse(Map("sort" -> sort))(Sorting.AvailableFields('one))
 
           sorting mustBe 'isLeft
         }
@@ -50,7 +50,7 @@ class SortingTest extends PlaySpec with GeneratorDrivenPropertyChecks with Symbo
       forAll { (fields: Seq[Symbol]) =>
         whenever(fields.exists(!availableFields.contains(_))) {
           val queryString = Map("sort" -> fields.map(_.name).mkString(","))
-          val sorting = Sorting.create(queryString)(AvailableSortingFields(availableFields))
+          val sorting = SortingRequestParser.parse(queryString)(Sorting.AvailableFields(availableFields))
           sorting mustBe 'isLeft
         }
       }

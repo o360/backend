@@ -29,7 +29,7 @@ object UserResponse {
     * @param user user
     * @return user response
     */
-  def apply(user: User): UserResponse = this(
+  def apply(user: User): UserResponse = UserResponse(
     user.id,
     user.name,
     user.email,

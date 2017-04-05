@@ -5,8 +5,8 @@ import play.api.mvc._
 import silhouette.DefaultEnv
 import utils.errors.{ApplicationError, ErrorHelper}
 import utils.listmeta.ListMeta
-import utils.listmeta.pagination.Pagination
-import utils.listmeta.sorting.{AvailableSortingFields, Sorting}
+import utils.listmeta.pagination.{Pagination, PaginationRequestParser}
+import utils.listmeta.sorting.{Sorting, SortingRequestParser}
 
 import scala.async.Async._
 import scala.concurrent.Future
@@ -22,7 +22,7 @@ trait ListActions {
   /**
     * Extends secured action with list meta info.
     */
-  def ListAction(implicit sortingFields: AvailableSortingFields = AvailableSortingFields.default) =
+  def ListAction(implicit sortingFields: Sorting.AvailableFields = Sorting.AvailableFields.default) =
     new ActionRefiner[DefaultSecuredRequest, ListRequest] {
       override protected def refine[A](request: DefaultSecuredRequest[A]): Future[Either[Result, ListRequest[A]]] = async {
         getListMeta(request.queryString) match {
@@ -35,7 +35,7 @@ trait ListActions {
   /**
     * Extends default action with list meta info.
     */
-  def UnsecuredListAction(implicit sortingFields: AvailableSortingFields = AvailableSortingFields.default) =
+  def UnsecuredListAction(implicit sortingFields: Sorting.AvailableFields = Sorting.AvailableFields.default) =
     new ActionRefiner[Request, UnsecuredListRequest] {
       override protected def refine[A](request: Request[A]): Future[Either[Result, UnsecuredListRequest[A]]] = async {
         getListMeta(request.queryString) match {
@@ -53,12 +53,12 @@ trait ListActions {
     * @return either list meta or error
     */
   private def getListMeta(playQueryString: Map[String, Seq[String]])
-    (implicit sortingFields: AvailableSortingFields): Either[ApplicationError, ListMeta] = {
+    (implicit sortingFields: Sorting.AvailableFields): Either[ApplicationError, ListMeta] = {
     val queryString = playQueryString.map { case (k, v) => k -> v.mkString }
 
     for {
-      pagination <- Pagination.create(queryString).right
-      sorting <- Sorting.create(queryString).right
+      pagination <- PaginationRequestParser.parse(queryString).right
+      sorting <- SortingRequestParser.parse(queryString).right
     } yield ListMeta(pagination, sorting)
   }
 
