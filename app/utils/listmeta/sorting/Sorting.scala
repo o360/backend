@@ -1,44 +1,57 @@
 package utils.listmeta.sorting
 
-import utils.errors.{ApplicationError, BadRequestError}
-
 /**
   * Sorting model.
   *
   * @param fields sort by fields.
   */
-case class Sorting(fields: Seq[SortField])
+case class Sorting(fields: Seq[Sorting.Field])
 
 object Sorting {
 
-  private val sortQueryParamName = "sort"
-  private val sortPattern = """-?\w+(,-?\w+)*"""
+  /**
+    * Sort by field.
+    *
+    * @param name      field name
+    * @param direction sorting direction
+    */
+  case class Field(name: Symbol, direction: Direction)
 
   /**
-    * Creates sorting by query string params.
-    *
-    * @param queryString query string map
-    * @param sorting     available sorting fields
-    * @return either error or sorting
+    * Sorting direction.
     */
-  def create(queryString: Map[String, String])(implicit sorting: AvailableSortingFields): Either[ApplicationError, Sorting] = {
-    queryString.get(sortQueryParamName) match {
-      case Some(sort) if sort.matches(sortPattern) =>
-        val fields = sort.split(",").map { sortPart =>
-          if (sortPart.startsWith("-"))
-            SortField(Symbol(sortPart.drop(1)), Direction.Desc)
-          else
-            SortField(Symbol(sortPart), Direction.Asc)
-        }
-        val unsupportedFields = fields.map(_.name).filter(!sorting.fields.contains(_))
-        if (unsupportedFields.isEmpty)
-          Right(this (fields.distinct))
-        else
-          Left(BadRequestError.Sorting.UnsupportedField(unsupportedFields.mkString(", "), sorting.fields.mkString(", ")))
-      case Some(_) =>
-        Left(BadRequestError.Sorting.General)
-      case None =>
-        Right(Sorting(Nil))
-    }
+  sealed trait Direction
+  object Direction {
+
+    /**
+      * Ascending direction.
+      */
+    case object Asc extends Direction
+
+
+    /**
+      * Descending direction.
+      */
+    case object Desc extends Direction
+
+  }
+
+
+  /**
+    * List of fields available for sorting.
+    */
+  case class AvailableFields(fields: Set[Symbol])
+  object AvailableFields {
+    /**
+      * Creates available sorting fields.
+      *
+      * @param fields fields list
+      */
+    def apply(fields: Symbol*): AvailableFields = AvailableFields(fields.toSet)
+
+    /**
+      * Default sorting fields.
+      */
+    def default: AvailableFields = AvailableFields()
   }
 }

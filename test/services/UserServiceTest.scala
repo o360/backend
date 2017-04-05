@@ -3,7 +3,7 @@ package services
 import com.mohiva.play.silhouette.api.LoginInfo
 import com.mohiva.play.silhouette.impl.providers.CommonSocialProfile
 import models.dao.{User => UserDAO}
-import models.user.{Role, Status, User => UserModel}
+import models.user.{User => UserModel}
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
 import testutils.fixture.UserFixture
@@ -69,8 +69,8 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
           0,
           profile.fullName,
           profile.email,
-          Role.User,
-          Status.New
+          UserModel.Role.User,
+          UserModel.Status.New
         )
         verify(userDaoMock, times(1)).create(user, profile.loginInfo.providerID, profile.loginInfo.providerKey)
         verifyNoMoreInteractions(userDaoMock)

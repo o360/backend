@@ -6,7 +6,7 @@ import com.mohiva.play.silhouette.api.LoginInfo
 import com.mohiva.play.silhouette.api.services.IdentityService
 import com.mohiva.play.silhouette.impl.providers.CommonSocialProfile
 import models.dao.{User => UserDao}
-import models.user.{Role, Status, User => UserModel}
+import models.user.{User => UserModel}
 
 import scala.concurrent.Future
 import scala.async.Async.{async, await}
@@ -38,11 +38,10 @@ class User @Inject()(
           0,
           socialProfile.fullName,
           socialProfile.email,
-          Role.User,
-          Status.New
+          UserModel.Role.User,
+          UserModel.Status.New
         )
         await(userDao.create(newUser, loginInfo.providerID, loginInfo.providerKey))
     }
   }
-
 }

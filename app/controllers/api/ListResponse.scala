@@ -44,6 +44,6 @@ object ListResponse {
   def apply[A, B, E](
     list: Either[E, ListWithTotal[A]]
   )(model2response: A => B)(implicit meta: ListMeta): Either[E, ListResponse[B]] = {
-    list.right.map(this (_)(model2response))
+    list.right.map(ListResponse(_)(model2response))
   }
 }

@@ -3,7 +3,7 @@ package models.dao
 import javax.inject.Inject
 
 import models.ListWithTotal
-import models.user.{Role => RoleModel, Status => StatusModel, User => UserModel}
+import models.user.{User => UserModel}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.driver.JdbcProfile
 import utils.listmeta.ListMeta
@@ -42,23 +42,23 @@ trait UserComponent {
 
   import driver.api._
 
-  implicit lazy val roleColumnType = MappedColumnType.base[RoleModel, Byte](
+  implicit lazy val roleColumnType = MappedColumnType.base[UserModel.Role, Byte](
     {
-      case RoleModel.User => 0
-      case RoleModel.Admin => 1
+      case UserModel.Role.User => 0
+      case UserModel.Role.Admin => 1
     }, {
-      case 0 => RoleModel.User
-      case 1 => RoleModel.Admin
+      case 0 => UserModel.Role.User
+      case 1 => UserModel.Role.Admin
     }
   )
 
-  implicit lazy val statusColumnType = MappedColumnType.base[StatusModel, Byte](
+  implicit lazy val statusColumnType = MappedColumnType.base[UserModel.Status, Byte](
     {
-      case StatusModel.New => 0
-      case StatusModel.Approved => 1
+      case UserModel.Status.New => 0
+      case UserModel.Status.Approved => 1
     }, {
-      case 0 => StatusModel.New
-      case 1 => StatusModel.Approved
+      case 0 => UserModel.Status.New
+      case 1 => UserModel.Status.Approved
     }
   )
 
@@ -67,8 +67,8 @@ trait UserComponent {
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def name = column[Option[String]]("name")
     def email = column[Option[String]]("email")
-    def role = column[RoleModel]("role")
-    def status = column[StatusModel]("status")
+    def role = column[UserModel.Role]("role")
+    def status = column[UserModel.Status]("status")
 
     def * = (id, name, email, role, status) <> ((UserModel.apply _).tupled, UserModel.unapply)
   }
@@ -104,21 +104,23 @@ class User @Inject()(
   def get(
     id: Option[Long]
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[UserModel]] = {
-    Users
+
+    val query = Users
       .applyFilter { x =>
         Seq(
           id.map(x.id === _)
         )
       }
-      .toListResult {
-        user => {
-          case 'id => user.id
-          case 'name => user.name
-          case 'email => user.email
-          case 'role => user.role
-          case 'status => user.status
-        }
+
+    runListQuery(query) {
+      user => {
+        case 'id => user.id
+        case 'name => user.name
+        case 'email => user.email
+        case 'role => user.role
+        case 'status => user.status
       }
+    }
   }
 
   /**
