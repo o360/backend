@@ -1,9 +1,13 @@
 package controllers
 
-import controllers.api.BaseResponse
+import com.mohiva.play.silhouette.api.actions.SecuredRequest
+import controllers.api.{BaseResponse, NoContentResponse}
+import models.user.{User => UserModel}
 import play.api.libs.json.{Json, Writes}
 import play.api.mvc._
+import silhouette.DefaultEnv
 import utils.errors.{ApplicationError, ErrorHelper}
+import utils.listmeta.actions.ListRequest
 
 
 /**
@@ -42,4 +46,30 @@ trait BaseController extends Controller {
       case Right(data) => toResult(data)
     }
   }
+
+  /**
+    * Converts given value to either error or no content result.
+    *
+    * @param res either no content or error
+    */
+  def toResult[E <: ApplicationError](res: Either[E, NoContentResponse.type]): Result = res match {
+    case Left(error) => toResult(error)
+    case Right(_) => NoContent
+  }
+
+  /**
+    * Extracts user from secured request.
+    *
+    * @param request secured request
+    * @return user
+    */
+  implicit def request2user(implicit request: SecuredRequest[DefaultEnv, _]): UserModel = request.identity
+
+  /**
+    * Extracts user from secured list request.
+    *
+    * @param request secured list request
+    * @return user
+    */
+  implicit def listRequest2user(implicit request: ListRequest[_]): UserModel = request.inner.identity
 }

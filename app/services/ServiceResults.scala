@@ -15,6 +15,8 @@ trait ServiceResults[A] {
 
   type ListResult = Future[Either[ApplicationError, ListWithTotal[A]]]
 
+  type NoResult = Future[Either[ApplicationError, Unit]]
+
   /**
     * Converts single object to success result.
     */
@@ -29,5 +31,10 @@ trait ServiceResults[A] {
     * Converts error to error result.
     */
   implicit def error2error[R](error: ApplicationError): Either[ApplicationError, R] = Left(error)
+
+  /**
+    * Use in methods where no result required.
+    */
+  def noResult: Either[ApplicationError, Unit] = Right(())
 
 }

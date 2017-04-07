@@ -16,7 +16,8 @@
     <logger name="application" level="INFO" />
     <logger name="slick.jdbc" level="INFO"/>
     <logger name="org.flywaydb.core" level="ERROR"/>
-    <logger name="sop" level="INFO"/>
+    <logger name="sop" level="DEBUG"/>
+    <logger name="com.mohiva" level="INFO" />
 
     <root level="INFO">
         <appender-ref ref="ASYNCSTDOUT" />

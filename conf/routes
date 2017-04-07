@@ -1,5 +1,5 @@
 ### NoDocs ###
-GET        /swagger.json        controllers.Assets.at(path="/public", file="swagger.json")
+GET           /swagger.json          controllers.Assets.at(path="/public", file="swagger.json")
 
 ###
 # summary: Returns logged in user
@@ -9,13 +9,13 @@ GET        /swagger.json        controllers.Assets.at(path="/public", file="swag
 #   200:
 #       description: Success
 #       schema:
-#           $ref: '#/definitions/controllers.api.user.UserResponse'
+#           $ref: '#/definitions/controllers.api.user.UserFormat'
 #   401:
 #       $ref: '#/responses/Unauthorized'
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET         /auth                          controllers.Authentication.me
+GET           /auth                  controllers.Authentication.me
 
 
 ###
@@ -45,4 +45,113 @@ GET         /auth                          controllers.Authentication.me
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-POST        /auth/:provider                controllers.Authentication.auth(provider: String)
+POST          /auth/:provider        controllers.Authentication.auth(provider: String)
+
+###
+# summary: Returns user by ID
+# tags:
+#   - User
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.user.UserFormat'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET           /users/:id             controllers.User.get(id: Long)
+
+###
+# summary: Returns list of users
+# tags:
+#   - User
+# parameters:
+#   - in: query
+#     name: role
+#     schema:
+#     type: string
+#     enum:
+#       - "admin"
+#       - "user"
+#   - in: query
+#     name: status
+#     schema:
+#     type: string
+#     enum:
+#       - "new"
+#       - "approved"
+#   - name: sort
+#     in: query
+#     type: string
+#     pattern: '^-?\w+(,-?\w+)*$'
+#     description: 'Available fields: id, name, email, role, status. Format: field1,-field2,...'
+#   - $ref: '#/parameters/pageSize'
+#   - $ref: '#/parameters/pageNumber'
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.MetaResponse'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.user.UserFormat'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET           /users                 controllers.User.list(role: Option[controllers.api.user.RoleFormat], status: Option[controllers.api.user.StatusFormat])
+
+###
+# summary: Updates user
+# tags:
+#   - User
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.user.UserFormat'
+# responses:
+#   200:
+#       description: User updated
+#       schema:
+#           $ref: '#/definitions/controllers.api.user.UserFormat'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+PUT           /users/:id             controllers.User.update(id: Long)
+
+###
+# summary: Removes user by ID
+# tags:
+#   - User
+# responses:
+#   204:
+#       description: User deleted successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+DELETE        /users/:id             controllers.User.delete(id: Long)

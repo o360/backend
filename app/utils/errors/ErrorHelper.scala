@@ -20,6 +20,8 @@ object ErrorHelper extends Logger {
     val statusCode = error match {
       case _: AuthenticationError => Unauthorized
       case _: BadRequestError => BadRequest
+      case _: NotFoundError => NotFound
+      case _: AuthorizationError => Forbidden
     }
     val errorResponse = ErrorResponse(
       code = error.getCode,

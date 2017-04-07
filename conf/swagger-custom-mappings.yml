@@ -1,5 +1,13 @@
 ---
-  - type: java\.time\.LocalDateTime
+  - type: .*user\.RoleFormat
     specAsParameter:
       - type: string
-        format: datetime
+        enum:
+          - "admin"
+          - "user"
+  - type: .*user\.StatusFormat
+    specAsParameter:
+      - type: string
+        enum:
+          - "new"
+          - "approved"
