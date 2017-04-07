@@ -5,7 +5,7 @@ import javax.inject.Inject
 import com.mohiva.play.silhouette.api.Silhouette
 import com.mohiva.play.silhouette.api.exceptions.SilhouetteException
 import com.mohiva.play.silhouette.impl.providers.{CommonSocialProfileBuilder, SocialProvider, SocialProviderRegistry}
-import controllers.api.user.UserResponse
+import controllers.api.user.UserFormat
 import play.api.libs.json.Json
 import play.api.mvc.Action
 import services.{User => UserService}
@@ -28,7 +28,7 @@ class Authentication @Inject()(
     * Returns logged in user.
     */
   def me = silhouette.SecuredAction { request =>
-    toResult(UserResponse(request.identity))
+    toResult(UserFormat(request.identity))
   }
 
   /**

@@ -40,3 +40,14 @@
       description: Internal Server Error
       schema:
         $ref: '#/definitions/controllers.api.ErrorResponse'
+  parameters:
+    pageSize:
+      name: size
+      in: query
+      type: integer
+      description: Page size
+    pageNumber:
+      name: number
+      in: query
+      type: integer
+      description: Page number

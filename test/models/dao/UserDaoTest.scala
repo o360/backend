@@ -11,11 +11,20 @@ class UserDaoTest extends BaseDaoTest with UserFixture with UserLoginFixture wit
 
   "get" should {
     "return users by specific criteria" in {
-      forAll(Gen.option(Gen.choose(-1L, 5L))) { (id: Option[Long]) =>
-        val users = wait(dao.get(id))
-        val expectedUsers = Users.filter(u => id.forall(_ == u.id))
+      forAll(
+        Gen.option(Gen.choose(-1L, 5L)),
+        Gen.option(roleArbitrary.arbitrary),
+        Gen.option(statusArbitrary.arbitrary)) { (
+      id: Option[Long],
+      role: Option[UserModel.Role],
+      status: Option[UserModel.Status]
+      ) =>
+        val users = wait(dao.get(id, role, status))
+        val expectedUsers =
+          Users.filter(u => id.forall(_ == u.id) && role.forall(_ == u.role) && status.forall(_ == u.status))
         users.total mustBe expectedUsers.length
         users.data must contain theSameElementsAs expectedUsers
+        println(users)
       }
     }
   }
@@ -67,6 +76,33 @@ class UserDaoTest extends BaseDaoTest with UserFixture with UserLoginFixture wit
       wait(dao.create(user, provId, provKey))
       an[Throwable] must be thrownBy {
         wait(dao.create(user, provId, provKey))
+      }
+    }
+  }
+
+  "update" should {
+    "update user" in {
+      val newUserId = wait(dao.create(Users(0), "updatereallyunique", "key"))
+      forAll { (user: UserModel) =>
+        val userWithId = user.copy(id = newUserId)
+        val rowsAffected = wait(dao.update(userWithId))
+        val updatedUser = wait(dao.findById(newUserId))
+
+        rowsAffected mustBe 1
+        updatedUser mustBe Some(userWithId)
+      }
+    }
+  }
+
+  "delete" should {
+    "delete user" in {
+      forAll { (user: UserModel) =>
+        val newUserId = wait(dao.create(user, "deletereallyunique", "key"))
+        val rowsAffected = wait(dao.delete(newUserId))
+        val deletedUser = wait(dao.findById(newUserId))
+
+        rowsAffected mustBe 1
+        deletedUser mustBe empty
       }
     }
   }

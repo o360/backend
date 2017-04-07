@@ -102,13 +102,17 @@ class User @Inject()(
     * @param id user ID
     */
   def get(
-    id: Option[Long]
+    id: Option[Long] = None,
+    role: Option[UserModel.Role] = None,
+    status: Option[UserModel.Status] = None
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[UserModel]] = {
 
     val query = Users
       .applyFilter { x =>
         Seq(
-          id.map(x.id === _)
+          id.map(x.id === _),
+          role.map(x.role === _),
+          status.map(x.status === _)
         )
       }
 
@@ -155,4 +159,23 @@ class User @Inject()(
     userId
   }
 
+  /**
+    * Updates user.
+    *
+    * @param user user model
+    * @return number of rows affected.
+    */
+  def update(user: UserModel): Future[Int] = db.run {
+    Users.filter(_.id === user.id).update(user)
+  }
+
+  /**
+    * Deletes user.
+    *
+    * @param id user ID
+    * @return number of rows affected
+    */
+  def delete(id: Long): Future[Int] = db.run {
+    Users.filter(_.id === id).delete
+  }
 }

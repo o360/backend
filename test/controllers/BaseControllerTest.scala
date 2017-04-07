@@ -1,12 +1,18 @@
 package controllers
 
 import com.mohiva.play.silhouette.api.actions.{SecuredAction, UnsecuredAction, UserAwareAction}
-import com.mohiva.play.silhouette.api.{Env, Environment, SilhouetteProvider}
+import com.mohiva.play.silhouette.api.{Env, Environment, LoginInfo, SilhouetteProvider}
+import com.mohiva.play.silhouette.test._
+import models.user.{User => UserModel}
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.test.FakeRequest
+import silhouette.DefaultEnv
 import testutils.AsyncHelper
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 
 /**
@@ -34,4 +40,29 @@ trait BaseControllerTest
       app.injector.instanceOf[UserAwareAction]
     )
   }
+
+  /**
+    * Returns fake silhouette environment.
+    *
+    * @param user user to be logged in
+    */
+  def fakeEnvironment(user: UserModel): FakeEnvironment[DefaultEnv] =
+    FakeEnvironment[DefaultEnv](Seq(fakeLoginInfo -> user))
+
+
+  /**
+    * Adds authentication to request.
+    *
+    * @param request fake request
+    * @param env fake environment
+    * @return authenticated request
+    */
+  def authenticated[A](request: FakeRequest[A], env: FakeEnvironment[DefaultEnv]): FakeRequest[A] = {
+    request.withAuthenticator(fakeLoginInfo)(env)
+  }
+
+  /**
+    * Fake login info for silhouette.
+    */
+  private val fakeLoginInfo = LoginInfo("", "")
 }
