@@ -2,15 +2,15 @@ package controllers
 
 import com.mohiva.play.silhouette.api.Silhouette
 import com.mohiva.play.silhouette.test.FakeEnvironment
-import controllers.api.user.{RoleFormat, StatusFormat, UserFormat}
-import controllers.api.{ListResponse, MetaResponse}
+import controllers.api.Response
+import controllers.api.user.ApiUser
 import models.ListWithTotal
 import models.user.{User => UserModel}
 import org.mockito.Mockito._
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import services.{User => UserService}
+import services.UserService
 import silhouette.DefaultEnv
 import testutils.generator.UserGenerator
 import utils.errors.NotFoundError
@@ -24,13 +24,13 @@ class UserControllerTest extends BaseControllerTest with UserGenerator {
   private case class TestFixture(
     silhouette: Silhouette[DefaultEnv],
     userServiceMock: UserService,
-    controller: User
+    controller: UserController
   )
 
   private def getFixture(environment: FakeEnvironment[DefaultEnv]) = {
     val silhouette = getSilhouette(environment)
     val userServiceMock = mock[UserService]
-    val controller = new User(silhouette, userServiceMock)
+    val controller = new UserController(silhouette, userServiceMock)
     TestFixture(silhouette, userServiceMock, controller)
   }
 
@@ -44,7 +44,7 @@ class UserControllerTest extends BaseControllerTest with UserGenerator {
         when(fixture.userServiceMock.getById(id)(admin)).thenReturn(toFuture(Left(NotFoundError.User(id))))
         val request = authenticated(FakeRequest(), env)
 
-        val response = fixture.controller.get(id).apply(request)
+        val response = fixture.controller.getById(id).apply(request)
         status(response) mustBe NOT_FOUND
       }
     }
@@ -56,10 +56,10 @@ class UserControllerTest extends BaseControllerTest with UserGenerator {
         when(fixture.userServiceMock.getById(id)(admin)).thenReturn(toFuture(Right(user)))
         val request = authenticated(FakeRequest(), env)
 
-        val response = fixture.controller.get(id)(request)
+        val response = fixture.controller.getById(id)(request)
         status(response) mustBe OK
         val userJson = contentAsJson(response)
-        userJson mustBe Json.toJson(UserFormat(user))
+        userJson mustBe Json.toJson(ApiUser(user))
       }
     }
   }
@@ -79,12 +79,12 @@ class UserControllerTest extends BaseControllerTest with UserGenerator {
         val request = authenticated(FakeRequest(), env)
 
         val response = fixture.controller
-          .list(role.map(RoleFormat(_)), st.map(StatusFormat(_)))(request)
+          .getList(role.map(ApiUser.ApiRole(_)), st.map(ApiUser.ApiStatus(_)))(request)
 
         status(response) mustBe OK
         val usersJson = contentAsJson(response)
         val expectedJson = Json.toJson(
-          ListResponse(MetaResponse(total, ListMeta.default), users.map(UserFormat(_)))
+          Response.List(Response.Meta(total, ListMeta.default), users.map(ApiUser(_)))
         )
         usersJson mustBe expectedJson
       }
@@ -93,7 +93,7 @@ class UserControllerTest extends BaseControllerTest with UserGenerator {
       val env = fakeEnvironment(admin.copy(role = UserModel.Role.User))
       val fixture = getFixture(env)
       val request = authenticated(FakeRequest(), env)
-      val response = fixture.controller.list(None, None).apply(request)
+      val response = fixture.controller.getList(None, None).apply(request)
 
       status(response) mustBe FORBIDDEN
     }
@@ -109,14 +109,14 @@ class UserControllerTest extends BaseControllerTest with UserGenerator {
           .thenReturn(toFuture(Right(userWithId)))
         val request = authenticated(
           FakeRequest("POST", "/users")
-            .withBody[UserFormat](UserFormat(user))
+            .withBody[ApiUser](ApiUser(user))
             .withHeaders(CONTENT_TYPE -> "application/json"),
           env
         )
 
         val response = fixture.controller.update(id).apply(request)
         val responseJson = contentAsJson(response)
-        val expectedJson = Json.toJson(UserFormat(userWithId))
+        val expectedJson = Json.toJson(ApiUser(userWithId))
 
         status(response) mustBe OK
         responseJson mustBe expectedJson

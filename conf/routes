@@ -9,7 +9,7 @@ GET           /swagger.json          controllers.Assets.at(path="/public", file=
 #   200:
 #       description: Success
 #       schema:
-#           $ref: '#/definitions/controllers.api.user.UserFormat'
+#           $ref: '#/definitions/controllers.api.user.ApiUser'
 #   401:
 #       $ref: '#/responses/Unauthorized'
 #   500:
@@ -55,7 +55,7 @@ POST          /auth/:provider        controllers.Authentication.auth(provider: S
 #   200:
 #       description: Success
 #       schema:
-#           $ref: '#/definitions/controllers.api.user.UserFormat'
+#           $ref: '#/definitions/controllers.api.user.ApiUser'
 #   401:
 #       $ref: '#/responses/Unauthorized'
 #   403:
@@ -65,7 +65,7 @@ POST          /auth/:provider        controllers.Authentication.auth(provider: S
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /users/:id             controllers.User.get(id: Long)
+GET           /users/:id             controllers.UserController.getById(id: Long)
 
 ###
 # summary: Returns list of users
@@ -100,11 +100,11 @@ GET           /users/:id             controllers.User.get(id: Long)
 #           type: object
 #           properties:
 #               meta:
-#                   $ref: '#/definitions/controllers.api.MetaResponse'
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
 #               data:
 #                   type: array
 #                   items:
-#                       $ref: '#/definitions/controllers.api.user.UserFormat'
+#                       $ref: '#/definitions/controllers.api.user.ApiUser'
 #   401:
 #       $ref: '#/responses/Unauthorized'
 #   403:
@@ -112,7 +112,7 @@ GET           /users/:id             controllers.User.get(id: Long)
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /users                 controllers.User.list(role: Option[controllers.api.user.RoleFormat], status: Option[controllers.api.user.StatusFormat])
+GET           /users                 controllers.UserController.getList(role: Option[controllers.api.user.ApiUser.ApiRole], status: Option[controllers.api.user.ApiUser.ApiStatus])
 
 ###
 # summary: Updates user
@@ -121,12 +121,12 @@ GET           /users                 controllers.User.list(role: Option[controll
 # parameters:
 #   - name: body
 #     schema:
-#       $ref: '#/definitions/controllers.api.user.UserFormat'
+#       $ref: '#/definitions/controllers.api.user.ApiUser'
 # responses:
 #   200:
 #       description: User updated
 #       schema:
-#           $ref: '#/definitions/controllers.api.user.UserFormat'
+#           $ref: '#/definitions/controllers.api.user.ApiUser'
 #   401:
 #       $ref: '#/responses/Unauthorized'
 #   403:
@@ -136,7 +136,7 @@ GET           /users                 controllers.User.list(role: Option[controll
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-PUT           /users/:id             controllers.User.update(id: Long)
+PUT           /users/:id             controllers.UserController.update(id: Long)
 
 ###
 # summary: Removes user by ID
@@ -154,4 +154,4 @@ PUT           /users/:id             controllers.User.update(id: Long)
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-DELETE        /users/:id             controllers.User.delete(id: Long)
+DELETE        /users/:id             controllers.UserController.delete(id: Long)

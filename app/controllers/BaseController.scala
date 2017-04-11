@@ -1,7 +1,7 @@
 package controllers
 
 import com.mohiva.play.silhouette.api.actions.SecuredRequest
-import controllers.api.{BaseResponse, NoContentResponse}
+import controllers.api.Response
 import models.user.{User => UserModel}
 import play.api.libs.json.{Json, Writes}
 import play.api.mvc._
@@ -21,7 +21,7 @@ trait BaseController extends Controller {
     * @param value  value to return
     * @param writes writes to convert value to JSON
     */
-  def toResult[T <: BaseResponse](value: T)(implicit writes: Writes[T]): Result = {
+  def toResult[T <: Response](value: T)(implicit writes: Writes[T]): Result = {
     Ok(Json.toJson(value))
   }
 
@@ -40,7 +40,7 @@ trait BaseController extends Controller {
     * @param res    either result or error
     * @param writes writes to convert result to JSON
     */
-  def toResult[E <: ApplicationError, T <: BaseResponse](res: Either[E, T])(implicit writes: Writes[T]): Result = {
+  def toResult[E <: ApplicationError, T <: Response](res: Either[E, T])(implicit writes: Writes[T]): Result = {
     res match {
       case Left(error) => toResult(error)
       case Right(data) => toResult(data)
@@ -52,7 +52,7 @@ trait BaseController extends Controller {
     *
     * @param res either no content or error
     */
-  def toResult[E <: ApplicationError](res: Either[E, NoContentResponse.type]): Result = res match {
+  def toResult[E <: ApplicationError](res: Either[E, Response.NoContent.type]): Result = res match {
     case Left(error) => toResult(error)
     case Right(_) => NoContent
   }

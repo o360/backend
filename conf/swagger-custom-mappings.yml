@@ -1,11 +1,11 @@
 ---
-  - type: .*user\.RoleFormat
+  - type: .*user\.ApiUser\.ApiRole
     specAsParameter:
       - type: string
         enum:
           - "admin"
           - "user"
-  - type: .*user\.StatusFormat
+  - type: .*user\.ApiUser\.ApiStatus
     specAsParameter:
       - type: string
         enum:

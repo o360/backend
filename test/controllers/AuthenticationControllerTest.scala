@@ -4,18 +4,18 @@ import com.mohiva.play.silhouette.api.exceptions.SilhouetteException
 import com.mohiva.play.silhouette.api.{LoginInfo, Silhouette}
 import com.mohiva.play.silhouette.impl.providers.{SocialProvider, SocialProviderRegistry}
 import com.mohiva.play.silhouette.test._
-import controllers.api.user.UserFormat
+import controllers.api.user.ApiUser
 import models.user.{User => UserModel}
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test._
-import services.{User => UserService}
+import services.UserService
 import silhouette.DefaultEnv
 import testutils.generator.UserGenerator
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import play.api.libs.concurrent.Execution.Implicits._
 
 /**
   * Authentication controller test.
@@ -36,7 +36,7 @@ class AuthenticationControllerTest extends BaseControllerTest with UserGenerator
         val result = controller.me(request)
         status(result) mustBe OK
         val userJson = contentAsJson(result)
-        userJson mustBe Json.toJson(UserFormat(user))
+        userJson mustBe Json.toJson(ApiUser(user))
       }
     }
     "return unauthorized if user is not present" in {

@@ -6,7 +6,7 @@ import play.api.mvc.QueryStringBindable
 /**
   * Base format for enumerations.
   */
-trait BaseEnumFormat[A] extends BaseResponse {
+trait EnumFormat[A] extends Response {
   /**
     * Inner value.
     */
@@ -20,7 +20,7 @@ trait BaseEnumFormat[A] extends BaseResponse {
   * @tparam A inner enumeration type
   * @tparam B enumeration type
   */
-abstract class BaseEnumFormatHelper[A, B <: BaseEnumFormat[A]](val name: String) {
+abstract class EnumFormatHelper[A, B <: EnumFormat[A]](val name: String) {
 
   /**
     * Mapping between string representation and concrete enum values.

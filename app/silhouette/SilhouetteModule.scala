@@ -1,7 +1,7 @@
 package silhouette
 
-import services.{User => UserService}
 import com.google.inject.{AbstractModule, Provides, TypeLiteral}
+import services.UserService
 import com.mohiva.play.silhouette.api._
 import com.mohiva.play.silhouette.api.actions.SecuredErrorHandler
 import com.mohiva.play.silhouette.api.crypto.{Crypter, CrypterAuthenticatorEncoder}
@@ -15,7 +15,7 @@ import com.mohiva.play.silhouette.impl.util.SecureRandomIDGenerator
 import play.api.Configuration
 import play.api.libs.ws.WSClient
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import play.api.libs.concurrent.Execution.Implicits._
 
 /**
   * DI module for silhouette.
