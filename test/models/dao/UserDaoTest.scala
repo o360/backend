@@ -1,13 +1,13 @@
 package models.dao
 
-import org.scalacheck.Gen
 import models.user.{User => UserModel}
+import org.scalacheck.Gen
 import testutils.fixture.{UserFixture, UserLoginFixture}
 import testutils.generator.UserGenerator
 
 class UserDaoTest extends BaseDaoTest with UserFixture with UserLoginFixture with UserGenerator {
 
-  private val dao = inject[User]
+  private val dao = inject[UserDao]
 
   "get" should {
     "return users by specific criteria" in {
@@ -19,12 +19,11 @@ class UserDaoTest extends BaseDaoTest with UserFixture with UserLoginFixture wit
       role: Option[UserModel.Role],
       status: Option[UserModel.Status]
       ) =>
-        val users = wait(dao.get(id, role, status))
+        val users = wait(dao.getList(id, role, status))
         val expectedUsers =
           Users.filter(u => id.forall(_ == u.id) && role.forall(_ == u.role) && status.forall(_ == u.status))
         users.total mustBe expectedUsers.length
         users.data must contain theSameElementsAs expectedUsers
-        println(users)
       }
     }
   }
@@ -56,15 +55,15 @@ class UserDaoTest extends BaseDaoTest with UserFixture with UserLoginFixture wit
     "create user" in {
       forAll() { (u: UserModel, provId: String, provKey: String) =>
         whenever(wait(dao.findByProvider(provId, provKey)).isEmpty) {
-          val createdUserId = wait(dao.create(u, provId, provKey))
-          val userById = wait(dao.findById(createdUserId))
+          val createdUser = wait(dao.create(u, provId, provKey))
+          val userById = wait(dao.findById(createdUser.id))
           val userByProvider = wait(dao.findByProvider(provId, provKey))
 
           userById mustBe defined
-          userById.get mustBe u.copy(id = createdUserId)
+          userById.get mustBe createdUser
 
           userByProvider mustBe defined
-          userByProvider.get mustBe u.copy(id = createdUserId)
+          userByProvider.get mustBe createdUser
         }
       }
     }
@@ -82,13 +81,12 @@ class UserDaoTest extends BaseDaoTest with UserFixture with UserLoginFixture wit
 
   "update" should {
     "update user" in {
-      val newUserId = wait(dao.create(Users(0), "updatereallyunique", "key"))
+      val newUserId = wait(dao.create(Users(0), "updatereallyunique", "key")).id
       forAll { (user: UserModel) =>
         val userWithId = user.copy(id = newUserId)
-        val rowsAffected = wait(dao.update(userWithId))
+        wait(dao.update(userWithId))
         val updatedUser = wait(dao.findById(newUserId))
 
-        rowsAffected mustBe 1
         updatedUser mustBe Some(userWithId)
       }
     }
@@ -97,7 +95,7 @@ class UserDaoTest extends BaseDaoTest with UserFixture with UserLoginFixture wit
   "delete" should {
     "delete user" in {
       forAll { (user: UserModel) =>
-        val newUserId = wait(dao.create(user, "deletereallyunique", "key"))
+        val newUserId = wait(dao.create(user, "deletereallyunique", "key")).id
         val rowsAffected = wait(dao.delete(newUserId))
         val deletedUser = wait(dao.findById(newUserId))
 

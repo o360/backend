@@ -6,7 +6,7 @@ import utils.errors.AuthorizationError
 /**
   * Authorization rules for users.
   */
-object UserAuthorization {
+object UserSda {
 
   /**
     * Checks authorization for getting by ID.

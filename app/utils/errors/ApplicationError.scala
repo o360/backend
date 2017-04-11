@@ -7,11 +7,7 @@ package utils.errors
   * @param message    error message
   * @param logMessage log message
   */
-abstract class ApplicationError(
-  code: String,
-  message: String,
-  logMessage: Option[String] = None
-) {
+abstract class ApplicationError(code: String, message: String, logMessage: Option[String] = None) {
   /**
     * Returns error code.
     */

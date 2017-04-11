@@ -1,6 +1,6 @@
 package utils.errors
 
-import controllers.api.ErrorResponse
+import controllers.api.Response.Error
 import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.mvc.Results._
@@ -23,7 +23,7 @@ object ErrorHelper extends Logger {
       case _: NotFoundError => NotFound
       case _: AuthorizationError => Forbidden
     }
-    val errorResponse = ErrorResponse(
+    val errorResponse = Error(
       code = error.getCode,
       message = error.getMessage
     )

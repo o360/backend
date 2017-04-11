@@ -3,14 +3,14 @@ package models.dao
 import javax.inject.Inject
 
 import models.ListWithTotal
-import models.user.{User => UserModel}
+import models.user.User
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.driver.JdbcProfile
 import utils.listmeta.ListMeta
 
-import scala.concurrent.Future
 import scala.async.Async.{async, await}
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 /**
   * Component for 'user_login' table.
@@ -42,35 +42,35 @@ trait UserComponent {
 
   import driver.api._
 
-  implicit lazy val roleColumnType = MappedColumnType.base[UserModel.Role, Byte](
+  implicit lazy val roleColumnType = MappedColumnType.base[User.Role, Byte](
     {
-      case UserModel.Role.User => 0
-      case UserModel.Role.Admin => 1
+      case User.Role.User => 0
+      case User.Role.Admin => 1
     }, {
-      case 0 => UserModel.Role.User
-      case 1 => UserModel.Role.Admin
+      case 0 => User.Role.User
+      case 1 => User.Role.Admin
     }
   )
 
-  implicit lazy val statusColumnType = MappedColumnType.base[UserModel.Status, Byte](
+  implicit lazy val statusColumnType = MappedColumnType.base[User.Status, Byte](
     {
-      case UserModel.Status.New => 0
-      case UserModel.Status.Approved => 1
+      case User.Status.New => 0
+      case User.Status.Approved => 1
     }, {
-      case 0 => UserModel.Status.New
-      case 1 => UserModel.Status.Approved
+      case 0 => User.Status.New
+      case 1 => User.Status.Approved
     }
   )
 
-  class UserTable(tag: Tag) extends Table[UserModel](tag, "account") {
+  class UserTable(tag: Tag) extends Table[User](tag, "account") {
 
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def name = column[Option[String]]("name")
     def email = column[Option[String]]("email")
-    def role = column[UserModel.Role]("role")
-    def status = column[UserModel.Status]("status")
+    def role = column[User.Role]("role")
+    def status = column[User.Status]("status")
 
-    def * = (id, name, email, role, status) <> ((UserModel.apply _).tupled, UserModel.unapply)
+    def * = (id, name, email, role, status) <> ((User.apply _).tupled, User.unapply)
   }
 
   val Users = TableQuery[UserTable]
@@ -79,7 +79,7 @@ trait UserComponent {
 /**
   * DAO for User model.
   */
-class User @Inject()(
+class UserDao @Inject()(
   protected val dbConfigProvider: DatabaseConfigProvider
 ) extends HasDatabaseConfigProvider[JdbcProfile]
   with UserComponent
@@ -91,8 +91,8 @@ class User @Inject()(
   /**
     * Returns user by ID.
     */
-  def findById(id: Long): Future[Option[UserModel]] = async {
-    await(get(id = Some(id))).data.headOption
+  def findById(id: Long): Future[Option[User]] = async {
+    await(getList(id = Some(id))).data.headOption
   }
 
 
@@ -101,11 +101,11 @@ class User @Inject()(
     *
     * @param id user ID
     */
-  def get(
+  def getList(
     id: Option[Long] = None,
-    role: Option[UserModel.Role] = None,
-    status: Option[UserModel.Status] = None
-  )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[UserModel]] = {
+    role: Option[User.Role] = None,
+    status: Option[User.Status] = None
+  )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[User]] = {
 
     val query = Users
       .applyFilter { x =>
@@ -133,7 +133,7 @@ class User @Inject()(
     * @param providerId  provider ID
     * @param providerKey provider key
     */
-  def findByProvider(providerId: String, providerKey: String): Future[Option[UserModel]] = db.run {
+  def findByProvider(providerId: String, providerKey: String): Future[Option[User]] = db.run {
     Users
       .join(UserLogins).on(_.id === _.userId)
       .filter { case (user, userLogin) =>
@@ -153,10 +153,10 @@ class User @Inject()(
     * @param providerId  provider ID
     * @param providerKey provider key
     */
-  def create(user: UserModel, providerId: String, providerKey: String): Future[Long] = async {
+  def create(user: User, providerId: String, providerKey: String): Future[User] = async {
     val userId = await(db.run(Users.returning(Users.map(_.id)) += user))
     await(db.run(UserLogins += DbUserLogin(userId, providerId, providerKey)))
-    userId
+    user.copy(id = userId)
   }
 
   /**
@@ -165,8 +165,9 @@ class User @Inject()(
     * @param user user model
     * @return number of rows affected.
     */
-  def update(user: UserModel): Future[Int] = db.run {
-    Users.filter(_.id === user.id).update(user)
+  def update(user: User): Future[User] = async {
+    await(db.run(Users.filter(_.id === user.id).update(user)))
+    user
   }
 
   /**

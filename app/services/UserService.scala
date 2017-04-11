@@ -5,21 +5,21 @@ import javax.inject.{Inject, Singleton}
 import com.mohiva.play.silhouette.api.LoginInfo
 import com.mohiva.play.silhouette.api.services.IdentityService
 import com.mohiva.play.silhouette.impl.providers.CommonSocialProfile
-import models.dao.{User => UserDao}
+import models.dao.UserDao
 import models.user.{User => UserModel}
-import services.authorization.UserAuthorization
+import services.authorization.UserSda
 import utils.errors.NotFoundError
 import utils.listmeta.ListMeta
 
-import scala.concurrent.Future
 import scala.async.Async.{async, await}
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 /**
   * User service.
   */
 @Singleton
-class User @Inject()(
+class UserService @Inject()(
   protected val userDao: UserDao
 ) extends IdentityService[UserModel]
   with ServiceResults[UserModel] {
@@ -57,7 +57,7 @@ class User @Inject()(
     * @return
     */
   def getById(id: Long)(implicit account: UserModel): SingleResult = async {
-    UserAuthorization.canGetById(id) match {
+    UserSda.canGetById(id) match {
       case Some(error) => error
       case None =>
         await(userDao.findById(id)) match {
@@ -79,7 +79,7 @@ class User @Inject()(
     role: Option[UserModel.Role],
     status: Option[UserModel.Status]
   )(implicit account: UserModel, meta: ListMeta): ListResult = async {
-    val users = await(userDao.get(
+    val users = await(userDao.getList(
       role = role,
       status = status
     ))
@@ -99,7 +99,7 @@ class User @Inject()(
     await(getById(draft.id)) match {
       case Left(error) => error
       case Right(original) =>
-        UserAuthorization.canUpdate(original, draft) match {
+        UserSda.canUpdate(original, draft) match {
           case Some(error) => error
           case None =>
             await(userDao.update(draft))
@@ -119,7 +119,7 @@ class User @Inject()(
       case Left(error) => error
       case Right(original) =>
         await(userDao.delete(id))
-        noResult
+        unitResult
     }
   }
 }

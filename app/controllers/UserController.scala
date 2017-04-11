@@ -3,10 +3,10 @@ package controllers
 import javax.inject.{Inject, Singleton}
 
 import com.mohiva.play.silhouette.api.Silhouette
-import controllers.api.user.{RoleFormat, StatusFormat, UserFormat}
-import controllers.api.{ListResponse, NoContentResponse}
-import controllers.authorization.WithRole
-import services.{User => UserService}
+import controllers.api.Response
+import controllers.api.user.ApiUser
+import controllers.authorization.AllowedRole
+import services.UserService
 import silhouette.DefaultEnv
 import utils.listmeta.actions.ListActions
 import utils.listmeta.sorting.Sorting
@@ -18,7 +18,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
   * User controller.
   */
 @Singleton
-class User @Inject()(
+class UserController @Inject()(
   protected val silhouette: Silhouette[DefaultEnv],
   protected val userService: UserService
 ) extends BaseController
@@ -29,12 +29,12 @@ class User @Inject()(
   /**
     * Returns user by ID.
     */
-  def get(id: Long) = silhouette.SecuredAction.async { implicit request =>
+  def getById(id: Long) = silhouette.SecuredAction.async { implicit request =>
     async {
       toResult {
         for {
           user <- await(userService.getById(id)).right
-        } yield UserFormat(user)
+        } yield ApiUser(user)
       }
     }
   }
@@ -42,18 +42,18 @@ class User @Inject()(
   /**
     * Returns list of users filtered by given filters.
     */
-  def list(
-    role: Option[RoleFormat],
-    status: Option[StatusFormat]
-  ) = (silhouette.SecuredAction(WithRole.admin) andThen ListAction).async { implicit request =>
+  def getList(
+    role: Option[ApiUser.ApiRole],
+    status: Option[ApiUser.ApiStatus]
+  ) = (silhouette.SecuredAction(AllowedRole.admin) andThen ListAction).async { implicit request =>
     async {
       toResult {
         val users = await(userService.list(
           role.map(_.value),
           status.map(_.value))
         )
-        ListResponse(users) {
-          UserFormat(_)
+        Response.List(users) {
+          ApiUser(_)
         }
       }
     }
@@ -62,13 +62,13 @@ class User @Inject()(
   /**
     * Updates user.
     */
-  def update(id: Long) = silhouette.SecuredAction.async(parse.json[UserFormat]) { implicit request =>
+  def update(id: Long) = silhouette.SecuredAction.async(parse.json[ApiUser]) { implicit request =>
     async {
       toResult {
         val draft = request.body.copy(id = id)
         for {
-          updatedUser <- await(userService.update(draft.toUser)).right
-        } yield UserFormat(updatedUser)
+          updatedUser <- await(userService.update(draft.toModel)).right
+        } yield ApiUser(updatedUser)
       }
     }
   }
@@ -76,12 +76,12 @@ class User @Inject()(
   /**
     * Deletes user.
     */
-  def delete(id: Long) = silhouette.SecuredAction(WithRole.admin).async { implicit request =>
+  def delete(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
     async {
       toResult {
         for {
           _ <- await(userService.delete(id)).right
-        } yield NoContentResponse
+        } yield Response.NoContent
       }
     }
   }

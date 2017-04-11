@@ -35,6 +35,6 @@ trait ServiceResults[A] {
   /**
     * Use in methods where no result required.
     */
-  def noResult: Either[ApplicationError, Unit] = Right(())
+  def unitResult: Either[ApplicationError, Unit] = Right(())
 
 }

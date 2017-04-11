@@ -3,7 +3,7 @@ package services
 import com.mohiva.play.silhouette.api.LoginInfo
 import com.mohiva.play.silhouette.impl.providers.CommonSocialProfile
 import models.ListWithTotal
-import models.dao.{User => UserDAO}
+import models.dao.{UserDao => UserDAO}
 import models.user.{User => UserModel}
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
@@ -21,14 +21,13 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
 
   private val admin = UserModel(1, None, None, UserModel.Role.Admin, UserModel.Status.Approved)
 
-  private case class TestFixture(userDaoMock: UserDAO, service: User)
+  private case class TestFixture(userDaoMock: UserDAO, service: UserService)
 
   private def getFixture = {
     val daoMock = mock[UserDAO]
-    val service = new User(daoMock)
+    val service = new UserService(daoMock)
     TestFixture(daoMock, service)
   }
-
 
   "retrieve" should {
     "return user by provider info" in {
@@ -51,7 +50,7 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
         val fixture = getFixture
         when(fixture.userDaoMock.findByProvider(profile.loginInfo.providerID, profile.loginInfo.providerKey))
           .thenReturn(toFuture(user))
-        when(fixture.userDaoMock.create(any[UserModel], any[String], any[String])).thenReturn(toFuture(1L))
+        when(fixture.userDaoMock.create(any[UserModel], any[String], any[String])).thenReturn(toFuture(Users(0)))
 
         wait(fixture.service.createIfNotExist(profile))
 
@@ -82,7 +81,7 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
             any[UserModel],
             eqTo(profile.loginInfo.providerID),
             eqTo(profile.loginInfo.providerKey)))
-          .thenReturn(toFuture(1L))
+          .thenReturn(toFuture(Users(0)))
 
         wait(fixture.service.createIfNotExist(profile))
         verify(fixture.userDaoMock, times(1)).findByProvider(profile.loginInfo.providerID, profile.loginInfo.providerKey)
@@ -151,7 +150,7 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
       total: Int
       ) =>
         val fixture = getFixture
-        when(fixture.userDaoMock.get(
+        when(fixture.userDaoMock.getList(
           id = any[Option[Long]],
           role = eqTo(role),
           status = eqTo(status)
@@ -162,7 +161,7 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
         result mustBe 'isRight
         result.right.get mustBe ListWithTotal(total, users)
 
-        verify(fixture.userDaoMock, times(1)).get(
+        verify(fixture.userDaoMock, times(1)).getList(
           id = any[Option[Long]],
           role = eqTo(role),
           status = eqTo(status)
@@ -212,7 +211,7 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
           status = UserModel.Status.Approved
         )
         when(fixture.userDaoMock.findById(user.id)).thenReturn(Future.successful(Some(user)))
-        when(fixture.userDaoMock.update(updatedUser)).thenReturn(toFuture(1))
+        when(fixture.userDaoMock.update(updatedUser)).thenReturn(toFuture(Users(0)))
 
         val result = wait(fixture.service.update(updatedUser)(admin))
 

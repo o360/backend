@@ -5,12 +5,12 @@ import play.api.mvc._
 import silhouette.DefaultEnv
 import utils.errors.{ApplicationError, ErrorHelper}
 import utils.listmeta.ListMeta
-import utils.listmeta.pagination.{Pagination, PaginationRequestParser}
+import utils.listmeta.pagination.PaginationRequestParser
 import utils.listmeta.sorting.{Sorting, SortingRequestParser}
 
 import scala.async.Async._
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.language.implicitConversions
 
 /**
