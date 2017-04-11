@@ -25,11 +25,6 @@ libraryDependencies ++= Seq(
   "com.mohiva" % "play-silhouette-testkit_2.11" % "4.0.0"
 ).map(_ % Test)
 
-routesImport ++= Seq(
-  "controllers.api.user.ApiUser.ApiRole._",
-  "controllers.api.user.ApiUser.ApiRole._"
-)
-
 flywayLocations := Seq("migrations")
 flywayUrl := sys.env.getOrElse("DATABASE_URL", "")
 flywayUser := sys.env.getOrElse("DATABASE_USER", "")

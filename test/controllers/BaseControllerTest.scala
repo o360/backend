@@ -12,7 +12,7 @@ import play.api.test.FakeRequest
 import silhouette.DefaultEnv
 import testutils.AsyncHelper
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import play.api.libs.concurrent.Execution.Implicits._
 
 
 /**

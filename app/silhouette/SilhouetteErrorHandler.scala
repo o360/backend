@@ -5,7 +5,7 @@ import play.api.mvc.{RequestHeader, Result}
 import utils.errors.{AuthenticationError, AuthorizationError, ErrorHelper}
 
 import scala.async.Async._
-import scala.concurrent.ExecutionContext.Implicits.global
+import play.api.libs.concurrent.Execution.Implicits._
 import scala.concurrent.Future
 
 /**

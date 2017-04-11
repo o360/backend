@@ -15,7 +15,7 @@ import services.UserService
 import silhouette.DefaultEnv
 import testutils.generator.UserGenerator
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import play.api.libs.concurrent.Execution.Implicits._
 
 /**
   * Authentication controller test.

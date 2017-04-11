@@ -11,7 +11,7 @@ import utils.listmeta.pagination.Pagination.{WithPages, WithoutPages}
 import utils.listmeta.sorting.Sorting
 
 import scala.async.Async._
-import scala.concurrent.ExecutionContext.Implicits.global
+import play.api.libs.concurrent.Execution.Implicits._
 import scala.concurrent.Future
 import scala.language.higherKinds
 

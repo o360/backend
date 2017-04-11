@@ -13,7 +13,7 @@ import silhouette.DefaultEnv
 import utils.errors.AuthenticationError
 
 import scala.async.Async.{async, await}
-import scala.concurrent.ExecutionContext.Implicits.global
+import play.api.libs.concurrent.Execution.Implicits._
 
 /**
   * Authentication controller.

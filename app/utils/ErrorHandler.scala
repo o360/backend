@@ -9,7 +9,7 @@ import play.api.mvc.Results._
 import play.api.mvc._
 
 import scala.async.Async._
-import scala.concurrent.ExecutionContext.Implicits.global
+import play.api.libs.concurrent.Execution.Implicits._
 import scala.concurrent.Future
 
 /**

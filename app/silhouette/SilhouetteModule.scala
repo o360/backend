@@ -15,7 +15,7 @@ import com.mohiva.play.silhouette.impl.util.SecureRandomIDGenerator
 import play.api.Configuration
 import play.api.libs.ws.WSClient
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import play.api.libs.concurrent.Execution.Implicits._
 
 /**
   * DI module for silhouette.

@@ -9,7 +9,7 @@ import slick.driver.JdbcProfile
 import utils.listmeta.ListMeta
 
 import scala.async.Async.{async, await}
-import scala.concurrent.ExecutionContext.Implicits.global
+import play.api.libs.concurrent.Execution.Implicits._
 import scala.concurrent.Future
 
 /**

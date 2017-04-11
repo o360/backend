@@ -12,7 +12,7 @@ import utils.listmeta.actions.ListActions
 import utils.listmeta.sorting.Sorting
 
 import scala.async.Async._
-import scala.concurrent.ExecutionContext.Implicits.global
+import play.api.libs.concurrent.Execution.Implicits._
 
 /**
   * User controller.
