@@ -7,12 +7,12 @@ import com.mohiva.play.silhouette.api.services.IdentityService
 import com.mohiva.play.silhouette.impl.providers.CommonSocialProfile
 import models.dao.UserDao
 import models.user.{User => UserModel}
+import play.api.libs.concurrent.Execution.Implicits._
 import services.authorization.UserSda
 import utils.errors.NotFoundError
 import utils.listmeta.ListMeta
 
 import scala.async.Async.{async, await}
-import play.api.libs.concurrent.Execution.Implicits._
 import scala.concurrent.Future
 
 /**
@@ -114,7 +114,7 @@ class UserService @Inject()(
     * @param id user id
     * @param account logged in user
     */
-  def delete(id: Long)(implicit account: UserModel): NoResult = async {
+  def delete(id: Long)(implicit account: UserModel): UnitResult = async {
     await(getById(id)) match {
       case Left(error) => error
       case Right(original) =>

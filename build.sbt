@@ -12,6 +12,7 @@ libraryDependencies ++= Seq(
   "com.mohiva" %% "play-silhouette" % "4.0.0",
   "com.mohiva" %% "play-silhouette-persistence" % "4.0.0",
   "org.scala-lang.modules" %% "scala-async" % "0.9.6",
+  "org.davidbild" % "tristate-core_2.11" % "0.2.0",
   filters
 )
 
@@ -24,6 +25,8 @@ libraryDependencies ++= Seq(
   "com.ninja-squad" % "DbSetup" % "2.1.0",
   "com.mohiva" % "play-silhouette-testkit_2.11" % "4.0.0"
 ).map(_ % Test)
+
+routesImport ++= Seq("controllers.api.TristateQueryBinder._")
 
 flywayLocations := Seq("migrations")
 flywayUrl := sys.env.getOrElse("DATABASE_URL", "")

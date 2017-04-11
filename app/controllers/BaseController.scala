@@ -9,7 +9,6 @@ import silhouette.DefaultEnv
 import utils.errors.{ApplicationError, ErrorHelper}
 import utils.listmeta.actions.ListRequest
 
-
 /**
   * Base class for controllers.
   */
@@ -19,10 +18,11 @@ trait BaseController extends Controller {
     * Converts given value to JSON and returns Ok result.
     *
     * @param value  value to return
+    * @param status response status
     * @param writes writes to convert value to JSON
     */
-  def toResult[T <: Response](value: T)(implicit writes: Writes[T]): Result = {
-    Ok(Json.toJson(value))
+  def toResult[T <: Response](value: T, status: Status = Ok)(implicit writes: Writes[T]): Result = {
+    status(Json.toJson(value))
   }
 
   /**
@@ -37,24 +37,16 @@ trait BaseController extends Controller {
   /**
     * Converts given value to either error or successful result.
     *
+    * @param status response status
     * @param res    either result or error
     * @param writes writes to convert result to JSON
     */
-  def toResult[E <: ApplicationError, T <: Response](res: Either[E, T])(implicit writes: Writes[T]): Result = {
+  def toResult[E <: ApplicationError, T <: Response](status: Status)
+    (res: Either[E, T])(implicit writes: Writes[T]): Result = {
     res match {
       case Left(error) => toResult(error)
-      case Right(data) => toResult(data)
+      case Right(data) => toResult(data, status)
     }
-  }
-
-  /**
-    * Converts given value to either error or no content result.
-    *
-    * @param res either no content or error
-    */
-  def toResult[E <: ApplicationError](res: Either[E, Response.NoContent.type]): Result = res match {
-    case Left(error) => toResult(error)
-    case Right(_) => NoContent
   }
 
   /**
