@@ -6,13 +6,13 @@ import com.mohiva.play.silhouette.api.Silhouette
 import controllers.api.Response
 import controllers.api.user.ApiUser
 import controllers.authorization.AllowedRole
+import play.api.libs.concurrent.Execution.Implicits._
 import services.UserService
 import silhouette.DefaultEnv
 import utils.listmeta.actions.ListActions
 import utils.listmeta.sorting.Sorting
 
 import scala.async.Async._
-import play.api.libs.concurrent.Execution.Implicits._
 
 /**
   * User controller.
@@ -31,7 +31,7 @@ class UserController @Inject()(
     */
   def getById(id: Long) = silhouette.SecuredAction.async { implicit request =>
     async {
-      toResult {
+      toResult(Ok) {
         for {
           user <- await(userService.getById(id)).right
         } yield ApiUser(user)
@@ -47,7 +47,7 @@ class UserController @Inject()(
     status: Option[ApiUser.ApiStatus]
   ) = (silhouette.SecuredAction(AllowedRole.admin) andThen ListAction).async { implicit request =>
     async {
-      toResult {
+      toResult(Ok) {
         val users = await(userService.list(
           role.map(_.value),
           status.map(_.value))
@@ -64,7 +64,7 @@ class UserController @Inject()(
     */
   def update(id: Long) = silhouette.SecuredAction.async(parse.json[ApiUser]) { implicit request =>
     async {
-      toResult {
+      toResult(Ok) {
         val draft = request.body.copy(id = id)
         for {
           updatedUser <- await(userService.update(draft.toModel)).right
@@ -78,10 +78,9 @@ class UserController @Inject()(
     */
   def delete(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
     async {
-      toResult {
-        for {
-          _ <- await(userService.delete(id)).right
-        } yield Response.NoContent
+      await(userService.delete(id)) match {
+        case Left(error) => toResult(error)
+        case Right(_) => NoContent
       }
     }
   }

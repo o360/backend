@@ -155,3 +155,132 @@ PUT           /users/:id             controllers.UserController.update(id: Long)
 #       $ref: '#/responses/InternalServerError'
 ###
 DELETE        /users/:id             controllers.UserController.delete(id: Long)
+
+###
+# summary: Returns group by ID
+# tags:
+#   - Group
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.group.ApiGroup'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET           /groups/:id             controllers.GroupController.getById(id: Long)
+
+###
+# summary: Returns list of groups
+# tags:
+#   - Group
+# parameters:
+#   - in: query
+#     name: parentId
+#     schema:
+#     type: integer
+#     description: 'parent ID or "null"'
+#     required: false
+#   - name: sort
+#     in: query
+#     type: string
+#     pattern: '^-?\w+(,-?\w+)*$'
+#     description: 'Available fields: id, name. Format: field1,-field2,...'
+#   - $ref: '#/parameters/pageSize'
+#   - $ref: '#/parameters/pageNumber'
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.group.ApiGroup'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET           /groups                 controllers.GroupController.getList(parentId: org.davidbild.tristate.Tristate[Long])
+
+###
+# summary: Creates group
+# tags:
+#   - Group
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.group.ApiPartialGroup'
+# responses:
+#   201:
+#       description: Group created
+#       schema:
+#           $ref: '#/definitions/controllers.api.group.ApiGroup'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST          /groups                 controllers.GroupController.create
+
+###
+# summary: Updates group
+# tags:
+#   - Group
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.group.ApiPartialGroup'
+# responses:
+#   200:
+#       description: Group updated
+#       schema:
+#           $ref: '#/definitions/controllers.api.group.ApiGroup'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+PUT           /groups/:id             controllers.GroupController.update(id: Long)
+
+###
+# summary: Removes group by ID
+# tags:
+#   - Group
+# responses:
+#   204:
+#       description: Group deleted successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+DELETE        /groups/:id             controllers.GroupController.delete(id: Long)

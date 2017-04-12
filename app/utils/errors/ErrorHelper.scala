@@ -22,6 +22,7 @@ object ErrorHelper extends Logger {
       case _: BadRequestError => BadRequest
       case _: NotFoundError => NotFound
       case _: AuthorizationError => Forbidden
+      case _: ConflictError => Conflict
     }
     val errorResponse = Error(
       code = error.getCode,

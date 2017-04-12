@@ -13,11 +13,6 @@ trait Response
 object Response {
 
   /**
-    * Response without content and with 204 code.
-    */
-  case object NoContent
-
-  /**
     * Error response model.
     *
     * @param code    error code

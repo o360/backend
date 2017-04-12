@@ -15,7 +15,7 @@ trait ServiceResults[A] {
 
   type ListResult = Future[Either[ApplicationError, ListWithTotal[A]]]
 
-  type NoResult = Future[Either[ApplicationError, Unit]]
+  type UnitResult = Future[Either[ApplicationError, Unit]]
 
   /**
     * Converts single object to success result.
