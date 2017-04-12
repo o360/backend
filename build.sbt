@@ -12,7 +12,7 @@ libraryDependencies ++= Seq(
   "com.mohiva" %% "play-silhouette" % "4.0.0",
   "com.mohiva" %% "play-silhouette-persistence" % "4.0.0",
   "org.scala-lang.modules" %% "scala-async" % "0.9.6",
-  "org.davidbild" % "tristate-core_2.11" % "0.2.0",
+  "org.davidbild" % "tristate-play_2.11" % "0.2.0",
   filters
 )
 

@@ -32,9 +32,7 @@ class GroupController @Inject()(
   def getById(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
     async {
       toResult(Ok) {
-        for {
-          group <- await(groupService.getById(id)).right
-        } yield ApiGroup(group)
+        await(groupService.getById(id)).right.map(ApiGroup(_))
       }
     }
   }
@@ -63,7 +61,7 @@ class GroupController @Inject()(
   def create = silhouette.SecuredAction(AllowedRole.admin).async(parse.json[ApiPartialGroup]) { implicit request =>
     async {
       toResult(Created) {
-        val group = request.body.toGroup(0)
+        val group = request.body.toModel(0)
         for {
           created <- await(groupService.create(group)).right
         } yield ApiGroup(created)
@@ -77,7 +75,7 @@ class GroupController @Inject()(
   def update(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async(parse.json[ApiPartialGroup]) { implicit request =>
     async {
       toResult(Ok) {
-        val draft = request.body.toGroup(id)
+        val draft = request.body.toModel(id)
         for {
           updated <- await(groupService.update(draft)).right
         } yield ApiGroup(updated)

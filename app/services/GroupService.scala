@@ -66,14 +66,24 @@ class GroupService @Inject()(
     * @param draft group draft
     */
   def update(draft: GroupModel)(implicit account: User): SingleResult = async {
+
+    def doUpdate(): Future[Option[ApplicationError]] = async {
+      await(checkParentId(draft)) match {
+        case Some(error) => Some(error)
+        case None =>
+          await(groupDao.update(draft))
+          None
+      }
+    }
+
     await(getById(draft.id)) match {
       case Left(error) => error
-      case Right(_) =>
-        await(checkParentId(draft)) match {
-          case Some(error) => error
-          case None =>
-            await(groupDao.update(draft))
-            draft
+      case _ =>
+        val maybeError = await(doUpdate())
+        if(maybeError.nonEmpty){
+          maybeError.get
+        } else {
+          draft
         }
     }
   }
@@ -106,24 +116,34 @@ class GroupService @Inject()(
     */
   private def checkParentId(group: GroupModel)(implicit account: User): Future[Option[ApplicationError]] = async {
     val groupIsNew = group.id == 0
+
+    def isSelfReference(parentId: Long) = !groupIsNew && parentId == group.id
+
+    def isCircularReference(parentId: Long) = async {
+      val childrenIds = await(groupDao.findChildrenIds(group.id))
+      childrenIds.contains(parentId)
+    }
+
+    def doParentIdCheck(parentId: Long) = async {
+      await(getById(parentId)) match {
+        case Left(error) => Some(error)
+        case _ if groupIsNew => None
+        case _ =>
+          if (await(isCircularReference(parentId))) {
+            Some(ConflictError.Group.CircularReference(group.id, parentId))
+          } else {
+            None
+          }
+      }
+    }
+
     group.parentId match {
       case None => None
-      case Some(parentId) if !groupIsNew && parentId == group.id =>
-        Some(ConflictError.Group.ParentId(parentId))
       case Some(parentId) =>
-        await(getById(parentId)) match {
-          case Left(error) => Some(error)
-          case _ =>
-            if (groupIsNew) {
-              None
-            } else {
-              val childrenIds = await(groupDao.findChildrenIds(group.id))
-              if (childrenIds.contains(parentId)) {
-                Some(ConflictError.Group.CircularReference(group.id, parentId))
-              } else {
-                None
-              }
-            }
+        if (isSelfReference(parentId)) {
+          Some(ConflictError.Group.ParentId(group.parentId.get))
+        } else {
+          await(doParentIdCheck(parentId))
         }
     }
   }

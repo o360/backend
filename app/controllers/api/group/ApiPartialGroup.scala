@@ -10,7 +10,7 @@ case class ApiPartialGroup(
   parentId: Option[Long],
   name: String
 ) {
-  def toGroup(id: Long) = Group(
+  def toModel(id: Long) = Group(
     id,
     parentId,
     name
