@@ -2,7 +2,7 @@ package services
 
 import javax.inject.{Inject, Singleton}
 
-import models.dao.GroupDao
+import models.dao.{GroupDao, UserGroupDao}
 import models.group.{Group => GroupModel}
 import models.user.User
 import org.davidbild.tristate.Tristate
@@ -18,7 +18,8 @@ import scala.concurrent.Future
   */
 @Singleton
 class GroupService @Inject()(
-  protected val groupDao: GroupDao
+  protected val groupDao: GroupDao,
+  protected val userGroupDao: UserGroupDao
 ) extends ServiceResults[GroupModel] {
 
   /**
@@ -35,13 +36,16 @@ class GroupService @Inject()(
     * Returns groups list filtered by given criteria.
     *
     * @param parentId parent ID
+    * @param userId   only groups of user
     */
   def list(
-    parentId: Tristate[Long]
+    parentId: Tristate[Long],
+    userId: Option[Long]
   )(implicit account: User, meta: ListMeta): ListResult = async {
     val groups = await(groupDao.getList(
       id = None,
-      parentId = parentId
+      parentId = parentId,
+      userId = userId
     ))
     groups
   }
@@ -80,7 +84,7 @@ class GroupService @Inject()(
       case Left(error) => error
       case _ =>
         val maybeError = await(doUpdate())
-        if(maybeError.nonEmpty){
+        if (maybeError.nonEmpty) {
           maybeError.get
         } else {
           draft
@@ -100,6 +104,8 @@ class GroupService @Inject()(
         val children = await(groupDao.findChildrenIds(id))
         if (children.nonEmpty) {
           ConflictError.Group.ChildrenExists(id, children)
+        } else if (await(userGroupDao.exists(groupId = Some(id)))) {
+          ConflictError.Group.UserExists(id)
         } else {
           val _ = await(groupDao.delete(id))
           unitResult

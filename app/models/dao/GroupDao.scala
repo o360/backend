@@ -38,6 +38,7 @@ class GroupDao @Inject()(
   protected val dbConfigProvider: DatabaseConfigProvider
 ) extends HasDatabaseConfigProvider[JdbcProfile]
   with GroupComponent
+  with UserGroupComponent
   with DaoHelper {
 
   import driver.api._
@@ -58,10 +59,12 @@ class GroupDao @Inject()(
     *
     * @param id       group ID
     * @param parentId group parent ID
+    * @param userId   only groups of the user
     */
   def getList(
     id: Option[Long] = None,
-    parentId: Tristate[Long] = Tristate.Unspecified
+    parentId: Tristate[Long] = Tristate.Unspecified,
+    userId: Option[Long] = None
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Group]] = {
     val query = Groups
       .applyFilter { x =>
@@ -71,7 +74,8 @@ class GroupDao @Inject()(
             case Tristate.Present(pid) => Some(x.parentId.fold(false: Rep[Boolean])(_ === pid))
             case Tristate.Absent => Some(x.parentId.isEmpty)
             case Tristate.Unspecified => None
-          }
+          },
+          userId.map(uid => x.id in UserGroups.filter(_.userId === uid).map(_.groupId))
         )
       }
 

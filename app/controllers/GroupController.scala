@@ -41,12 +41,13 @@ class GroupController @Inject()(
     * Returns filtered groups list.
     */
   def getList(
-    parentId: Tristate[Long]
+    parentId: Tristate[Long],
+    userId: Option[Long]
   ) = (silhouette.SecuredAction(AllowedRole.admin) andThen ListAction).async { implicit request =>
     async {
       toResult(Ok) {
         val groups = await(
-          groupService.list(parentId)
+          groupService.list(parentId, userId)
         )
         Response.List(groups) {
           ApiGroup(_)

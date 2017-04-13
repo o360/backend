@@ -18,5 +18,12 @@ object ConflictError {
 
     case class ChildrenExists(id: Long, ids: Seq[Long])
       extends ConflictError("CONFLICT-GROUP-3", s"Can't delete group id:$id. Exists children with ids:[${ids.mkString(", ")}]")
+
+    case class UserExists(id: Long)
+      extends ConflictError("CONFLICT-GROUP-4", s"Can't delete group id:$id. There are users in group")
+  }
+  object User {
+    case class GroupExists(id: Long)
+      extends ConflictError("CONFLICT-USER-1", s"Can't delete user id:$id. Group with this user exists")
   }
 }

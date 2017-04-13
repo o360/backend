@@ -4,6 +4,7 @@ import javax.inject.Inject
 
 import models.ListWithTotal
 import models.user.User
+import org.davidbild.tristate.Tristate
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.driver.JdbcProfile
 import utils.listmeta.ListMeta
@@ -84,6 +85,7 @@ class UserDao @Inject()(
 ) extends HasDatabaseConfigProvider[JdbcProfile]
   with UserComponent
   with UserLoginComponent
+  with UserGroupComponent
   with DaoHelper {
 
   import driver.api._
@@ -100,11 +102,15 @@ class UserDao @Inject()(
     * Returns list of users, filtered by given criteria.
     *
     * @param id user ID
+    * @param role user role
+    * @param status user status
+    * @param groupId only users of the group
     */
   def getList(
     id: Option[Long] = None,
     role: Option[User.Role] = None,
-    status: Option[User.Status] = None
+    status: Option[User.Status] = None,
+    groupId: Tristate[Long] = Tristate.Unspecified
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[User]] = {
 
     val query = Users
@@ -112,7 +118,12 @@ class UserDao @Inject()(
         Seq(
           id.map(x.id === _),
           role.map(x.role === _),
-          status.map(x.status === _)
+          status.map(x.status === _),
+          groupId match {
+            case Tristate.Unspecified => None
+            case Tristate.Absent => Some(!(x.id in UserGroups.map(_.userId)))
+            case Tristate.Present(gid) => Some(x.id in UserGroups.filter(_.groupId === gid).map(_.userId))
+          }
         )
       }
 

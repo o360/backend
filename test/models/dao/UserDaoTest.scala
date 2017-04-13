@@ -1,11 +1,18 @@
 package models.dao
 
 import models.user.{User => UserModel}
+import org.davidbild.tristate.Tristate
 import org.scalacheck.Gen
-import testutils.fixture.{UserFixture, UserLoginFixture}
-import testutils.generator.UserGenerator
+import testutils.fixture.{UserFixture, UserGroupFixture, UserLoginFixture}
+import testutils.generator.{TristateGenerator, UserGenerator}
 
-class UserDaoTest extends BaseDaoTest with UserFixture with UserLoginFixture with UserGenerator {
+class UserDaoTest
+  extends BaseDaoTest
+    with UserFixture
+    with UserLoginFixture
+    with UserGroupFixture
+    with UserGenerator
+    with TristateGenerator {
 
   private val dao = inject[UserDao]
 
@@ -23,6 +30,19 @@ class UserDaoTest extends BaseDaoTest with UserFixture with UserLoginFixture wit
         val expectedUsers =
           Users.filter(u => id.forall(_ == u.id) && role.forall(_ == u.role) && status.forall(_ == u.status))
         users.total mustBe expectedUsers.length
+        users.data must contain theSameElementsAs expectedUsers
+      }
+    }
+
+    "return users filtered by group" in {
+      forAll { (groupId: Tristate[Long]) =>
+        val users = wait(dao.getList(groupId = groupId))
+        val expectedUsers = Users.filter(u => groupId match {
+          case Tristate.Unspecified => true
+          case Tristate.Absent => !UserGroups.map(_._1).contains(u.id)
+          case Tristate.Present(gid) => UserGroups.filter(_._2 == gid).map(_._1).contains(u.id)
+        })
+
         users.data must contain theSameElementsAs expectedUsers
       }
     }
