@@ -6,20 +6,21 @@ import controllers.api.Response
 import controllers.api.user.ApiUser
 import models.ListWithTotal
 import models.user.{User => UserModel}
+import org.davidbild.tristate.Tristate
 import org.mockito.Mockito._
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import services.UserService
 import silhouette.DefaultEnv
-import testutils.generator.UserGenerator
+import testutils.generator.{TristateGenerator, UserGenerator}
 import utils.errors.NotFoundError
 import utils.listmeta.ListMeta
 
 /**
   * Test for user controller.
   */
-class UserControllerTest extends BaseControllerTest with UserGenerator {
+class UserControllerTest extends BaseControllerTest with UserGenerator with TristateGenerator {
 
   private case class TestFixture(
     silhouette: Silhouette[DefaultEnv],
@@ -69,17 +70,18 @@ class UserControllerTest extends BaseControllerTest with UserGenerator {
       forAll { (
       role: Option[UserModel.Role],
       st: Option[UserModel.Status],
+      groupId: Tristate[Long],
       total: Int,
       users: Seq[UserModel]
       ) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.userServiceMock.list(role, st)(admin, ListMeta.default))
+        when(fixture.userServiceMock.list(role, st, groupId)(admin, ListMeta.default))
           .thenReturn(toFuture(Right(ListWithTotal(total, users))))
         val request = authenticated(FakeRequest(), env)
 
         val response = fixture.controller
-          .getList(role.map(ApiUser.ApiRole(_)), st.map(ApiUser.ApiStatus(_)))(request)
+          .getList(role.map(ApiUser.ApiRole(_)), st.map(ApiUser.ApiStatus(_)), groupId)(request)
 
         status(response) mustBe OK
         val usersJson = contentAsJson(response)
@@ -93,7 +95,7 @@ class UserControllerTest extends BaseControllerTest with UserGenerator {
       val env = fakeEnvironment(admin.copy(role = UserModel.Role.User))
       val fixture = getFixture(env)
       val request = authenticated(FakeRequest(), env)
-      val response = fixture.controller.getList(None, None).apply(request)
+      val response = fixture.controller.getList(None, None, Tristate.Unspecified).apply(request)
 
       status(response) mustBe FORBIDDEN
     }

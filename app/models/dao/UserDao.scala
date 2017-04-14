@@ -4,6 +4,7 @@ import javax.inject.Inject
 
 import models.ListWithTotal
 import models.user.User
+import org.davidbild.tristate.Tristate
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.driver.JdbcProfile
 import utils.listmeta.ListMeta
@@ -84,6 +85,7 @@ class UserDao @Inject()(
 ) extends HasDatabaseConfigProvider[JdbcProfile]
   with UserComponent
   with UserLoginComponent
+  with UserGroupComponent
   with DaoHelper {
 
   import driver.api._
@@ -92,27 +94,36 @@ class UserDao @Inject()(
     * Returns user by ID.
     */
   def findById(id: Long): Future[Option[User]] = async {
-    await(getList(id = Some(id))).data.headOption
+    await(getList(optId = Some(id))).data.headOption
   }
 
 
   /**
     * Returns list of users, filtered by given criteria.
     *
-    * @param id user ID
+    * @param optId      user ID
+    * @param optRole    user role
+    * @param optStatus  user status
+    * @param optGroupId only users of the group
     */
   def getList(
-    id: Option[Long] = None,
-    role: Option[User.Role] = None,
-    status: Option[User.Status] = None
+    optId: Option[Long] = None,
+    optRole: Option[User.Role] = None,
+    optStatus: Option[User.Status] = None,
+    optGroupId: Tristate[Long] = Tristate.Unspecified
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[User]] = {
 
     val query = Users
       .applyFilter { x =>
         Seq(
-          id.map(x.id === _),
-          role.map(x.role === _),
-          status.map(x.status === _)
+          optId.map(x.id === _),
+          optRole.map(x.role === _),
+          optStatus.map(x.status === _),
+          optGroupId match {
+            case Tristate.Unspecified => None
+            case Tristate.Absent => Some(!(x.id in UserGroups.map(_.userId)))
+            case Tristate.Present(groupId) => Some(x.id in UserGroups.filter(_.groupId === groupId).map(_.userId))
+          }
         )
       }
 

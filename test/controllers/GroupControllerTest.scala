@@ -70,16 +70,17 @@ class GroupControllerTest extends BaseControllerTest with GroupGenerator with Tr
     "return groups list from service" in {
       forAll { (
       parentId: Tristate[Long],
+      userId: Option[Long],
       total: Int,
       groups: Seq[Group]
       ) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.groupServiceMock.list(parentId)(admin, ListMeta.default))
+        when(fixture.groupServiceMock.list(parentId, userId)(admin, ListMeta.default))
           .thenReturn(toFuture(Right(ListWithTotal(total, groups))))
         val request = authenticated(FakeRequest(), env)
 
-        val response = fixture.controller.getList(parentId)(request)
+        val response = fixture.controller.getList(parentId, userId)(request)
 
         status(response) mustBe OK
         val groupsJson = contentAsJson(response)
@@ -93,7 +94,7 @@ class GroupControllerTest extends BaseControllerTest with GroupGenerator with Tr
       val env = fakeEnvironment(admin.copy(role = User.Role.User))
       val fixture = getFixture(env)
       val request = authenticated(FakeRequest(), env)
-      val response = fixture.controller.getList(Tristate.Unspecified).apply(request)
+      val response = fixture.controller.getList(Tristate.Unspecified, None).apply(request)
 
       status(response) mustBe FORBIDDEN
     }

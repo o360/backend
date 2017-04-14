@@ -3,13 +3,14 @@ package services
 import com.mohiva.play.silhouette.api.LoginInfo
 import com.mohiva.play.silhouette.impl.providers.CommonSocialProfile
 import models.ListWithTotal
-import models.dao.{UserDao => UserDAO}
+import models.dao.{UserGroupDao, UserDao => UserDAO}
 import models.user.{User => UserModel}
+import org.davidbild.tristate.Tristate
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
 import testutils.fixture.UserFixture
-import testutils.generator.{SocialProfileGenerator, UserGenerator}
-import utils.errors.{AuthorizationError, NotFoundError}
+import testutils.generator.{SocialProfileGenerator, TristateGenerator, UserGenerator}
+import utils.errors.{AuthorizationError, ConflictError, NotFoundError}
 import utils.listmeta.ListMeta
 
 import scala.concurrent.Future
@@ -17,16 +18,20 @@ import scala.concurrent.Future
 /**
   * Test for user service.
   */
-class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProfileGenerator with UserFixture {
+class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProfileGenerator with UserFixture with TristateGenerator {
 
   private val admin = UserModel(1, None, None, UserModel.Role.Admin, UserModel.Status.Approved)
 
-  private case class TestFixture(userDaoMock: UserDAO, service: UserService)
+  private case class TestFixture(
+    userDaoMock: UserDAO,
+    userGroupDaoMock: UserGroupDao,
+    service: UserService)
 
   private def getFixture = {
     val daoMock = mock[UserDAO]
-    val service = new UserService(daoMock)
-    TestFixture(daoMock, service)
+    val userGroupDaoMock = mock[UserGroupDao]
+    val service = new UserService(daoMock, userGroupDaoMock)
+    TestFixture(daoMock, userGroupDaoMock, service)
   }
 
   "retrieve" should {
@@ -146,25 +151,28 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
       forAll { (
       role: Option[UserModel.Role],
       status: Option[UserModel.Status],
+      groupId: Tristate[Long],
       users: Seq[UserModel],
       total: Int
       ) =>
         val fixture = getFixture
         when(fixture.userDaoMock.getList(
-          id = any[Option[Long]],
-          role = eqTo(role),
-          status = eqTo(status)
+          optId = any[Option[Long]],
+          optRole = eqTo(role),
+          optStatus = eqTo(status),
+          optGroupId = eqTo(groupId)
         )(eqTo(ListMeta.default)))
           .thenReturn(toFuture(ListWithTotal(total, users)))
-        val result = wait(fixture.service.list(role, status)(admin, ListMeta.default))
+        val result = wait(fixture.service.list(role, status, groupId)(admin, ListMeta.default))
 
         result mustBe 'isRight
         result.right.get mustBe ListWithTotal(total, users)
 
         verify(fixture.userDaoMock, times(1)).getList(
-          id = any[Option[Long]],
-          role = eqTo(role),
-          status = eqTo(status)
+          optId = any[Option[Long]],
+          optRole = eqTo(role),
+          optStatus = eqTo(status),
+          optGroupId = eqTo(groupId)
         )(eqTo(ListMeta.default))
       }
     }
@@ -239,10 +247,24 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
         verifyNoMoreInteractions(fixture.userDaoMock)
       }
     }
+    "return conflict if user is any group" in {
+      forAll { (user: UserModel, id: Long) =>
+        val fixture = getFixture
+        when(fixture.userDaoMock.findById(id)).thenReturn(toFuture(Some(user.copy(id = id))))
+        when(fixture.userGroupDaoMock.exists(groupId = any[Option[Long]], userId = eqTo(Some(id))))
+          .thenReturn(toFuture(true))
+        val result = wait(fixture.service.delete(id)(admin))
+
+        result mustBe 'left
+        result.left.get mustBe a[ConflictError]
+      }
+    }
+
     "delete user from db" in {
       forAll { (user: UserModel, id: Long) =>
         val fixture = getFixture
         when(fixture.userDaoMock.findById(id)).thenReturn(toFuture(Some(user.copy(id = id))))
+        when(fixture.userGroupDaoMock.exists(groupId = any[Option[Long]], userId = eqTo(Some(id)))).thenReturn(toFuture(false))
         when(fixture.userDaoMock.delete(id)).thenReturn(toFuture(1))
         val result = wait(fixture.service.delete(id)(admin))
 

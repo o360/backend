@@ -1,7 +1,7 @@
 package services
 
 import models.ListWithTotal
-import models.dao.GroupDao
+import models.dao.{GroupDao, UserGroupDao}
 import models.group.Group
 import models.user.User
 import org.davidbild.tristate.Tristate
@@ -19,12 +19,16 @@ class GroupServiceTest extends BaseServiceTest with GroupGenerator with GroupFix
 
   private val admin = User(1, None, None, User.Role.Admin, User.Status.Approved)
 
-  private case class TestFixture(groupDaoMock: GroupDao, service: GroupService)
+  private case class TestFixture(
+    groupDaoMock: GroupDao,
+    userGroupDaoMock: UserGroupDao,
+    service: GroupService)
 
   private def getFixture = {
     val daoMock = mock[GroupDao]
-    val service = new GroupService(daoMock)
-    TestFixture(daoMock, service)
+    val userGroupDaoMock = mock[UserGroupDao]
+    val service = new GroupService(daoMock, userGroupDaoMock)
+    TestFixture(daoMock, userGroupDaoMock, service)
   }
 
   "getById" should {
@@ -62,23 +66,26 @@ class GroupServiceTest extends BaseServiceTest with GroupGenerator with GroupFix
     "return list of groups from db" in {
       forAll { (
       parentId: Tristate[Long],
+      userId: Option[Long],
       groups: Seq[Group],
       total: Int
       ) =>
         val fixture = getFixture
         when(fixture.groupDaoMock.getList(
-          id = any[Option[Long]],
-          parentId = eqTo(parentId)
+          optId = any[Option[Long]],
+          optParentId = eqTo(parentId),
+          optUserId = eqTo(userId)
         )(eqTo(ListMeta.default)))
           .thenReturn(toFuture(ListWithTotal(total, groups)))
-        val result = wait(fixture.service.list(parentId)(admin, ListMeta.default))
+        val result = wait(fixture.service.list(parentId, userId)(admin, ListMeta.default))
 
         result mustBe 'right
         result.right.get mustBe ListWithTotal(total, groups)
 
         verify(fixture.groupDaoMock, times(1)).getList(
-          id = any[Option[Long]],
-          parentId = eqTo(parentId)
+          optId = any[Option[Long]],
+          optParentId = eqTo(parentId),
+          optUserId = eqTo(userId)
         )(eqTo(ListMeta.default))
       }
     }
@@ -209,12 +216,26 @@ class GroupServiceTest extends BaseServiceTest with GroupGenerator with GroupFix
       result.left.get mustBe a[ConflictError]
     }
 
+    "return conflict if users in group exists" in {
+      val fixture = getFixture
+      val group = Groups(2)
+      when(fixture.groupDaoMock.findById(group.id)).thenReturn(toFuture(Some(group)))
+      when(fixture.groupDaoMock.findChildrenIds(group.id)).thenReturn(toFuture(Nil))
+      when(fixture.userGroupDaoMock.exists(groupId = eqTo(Some(group.id)), userId = any[Option[Long]]))
+        .thenReturn(toFuture(true))
+      val result = wait(fixture.service.delete(group.id)(admin))
+
+      result mustBe 'left
+      result.left.get mustBe a[ConflictError]
+    }
+
     "delete group from db" in {
       val fixture = getFixture
       val group = Groups(2)
       when(fixture.groupDaoMock.findById(group.id)).thenReturn(toFuture(Some(group)))
       when(fixture.groupDaoMock.findChildrenIds(group.id)).thenReturn(toFuture(Nil))
       when(fixture.groupDaoMock.delete(group.id)).thenReturn(toFuture(1))
+      when(fixture.userGroupDaoMock.exists(groupId = eqTo(Some(group.id)), userId = any[Option[Long]])).thenReturn(toFuture(false))
       val result = wait(fixture.service.delete(group.id)(admin))
 
       result mustBe 'right

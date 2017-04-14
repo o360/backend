@@ -1,5 +1,5 @@
 ### NoDocs ###
-GET           /swagger.json          controllers.Assets.at(path="/public", file="swagger.json")
+GET           /swagger.json                         controllers.Assets.at(path="/public", file="swagger.json")
 
 ###
 # summary: Returns logged in user
@@ -15,7 +15,7 @@ GET           /swagger.json          controllers.Assets.at(path="/public", file=
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /auth                  controllers.Authentication.me
+GET           /auth                                 controllers.Authentication.me
 
 
 ###
@@ -45,7 +45,7 @@ GET           /auth                  controllers.Authentication.me
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-POST          /auth/:provider        controllers.Authentication.auth(provider: String)
+POST          /auth/:provider                       controllers.Authentication.auth(provider: String)
 
 ###
 # summary: Returns user by ID
@@ -65,7 +65,7 @@ POST          /auth/:provider        controllers.Authentication.auth(provider: S
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /users/:id             controllers.UserController.getById(id: Long)
+GET           /users/:id                            controllers.UserController.getById(id: Long)
 
 ###
 # summary: Returns list of users
@@ -86,6 +86,12 @@ GET           /users/:id             controllers.UserController.getById(id: Long
 #     enum:
 #       - "new"
 #       - "approved"
+#   - in: query
+#     name: groupId
+#     schema:
+#     type: integer
+#     description: 'group ID or "null"'
+#     required: false
 #   - name: sort
 #     in: query
 #     type: string
@@ -112,7 +118,7 @@ GET           /users/:id             controllers.UserController.getById(id: Long
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /users                 controllers.UserController.getList(role: Option[controllers.api.user.ApiUser.ApiRole], status: Option[controllers.api.user.ApiUser.ApiStatus])
+GET           /users                                controllers.UserController.getList(role: Option[controllers.api.user.ApiUser.ApiRole], status: Option[controllers.api.user.ApiUser.ApiStatus], groupId: org.davidbild.tristate.Tristate[Long])
 
 ###
 # summary: Updates user
@@ -136,7 +142,7 @@ GET           /users                 controllers.UserController.getList(role: Op
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-PUT           /users/:id             controllers.UserController.update(id: Long)
+PUT           /users/:id                            controllers.UserController.update(id: Long)
 
 ###
 # summary: Removes user by ID
@@ -154,7 +160,7 @@ PUT           /users/:id             controllers.UserController.update(id: Long)
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-DELETE        /users/:id             controllers.UserController.delete(id: Long)
+DELETE        /users/:id                            controllers.UserController.delete(id: Long)
 
 ###
 # summary: Returns group by ID
@@ -174,7 +180,7 @@ DELETE        /users/:id             controllers.UserController.delete(id: Long)
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /groups/:id             controllers.GroupController.getById(id: Long)
+GET           /groups/:id                           controllers.GroupController.getById(id: Long)
 
 ###
 # summary: Returns list of groups
@@ -185,7 +191,7 @@ GET           /groups/:id             controllers.GroupController.getById(id: Lo
 #     name: parentId
 #     schema:
 #     type: integer
-#     description: 'parent ID or "null"'
+#     description: 'group parent ID or "null"'
 #     required: false
 #   - name: sort
 #     in: query
@@ -213,7 +219,7 @@ GET           /groups/:id             controllers.GroupController.getById(id: Lo
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /groups                 controllers.GroupController.getList(parentId: org.davidbild.tristate.Tristate[Long])
+GET           /groups                               controllers.GroupController.getList(parentId: org.davidbild.tristate.Tristate[Long], userId: Option[Long])
 
 ###
 # summary: Creates group
@@ -237,7 +243,7 @@ GET           /groups                 controllers.GroupController.getList(parent
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-POST          /groups                 controllers.GroupController.create
+POST          /groups                               controllers.GroupController.create
 
 ###
 # summary: Updates group
@@ -263,7 +269,7 @@ POST          /groups                 controllers.GroupController.create
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-PUT           /groups/:id             controllers.GroupController.update(id: Long)
+PUT           /groups/:id                           controllers.GroupController.update(id: Long)
 
 ###
 # summary: Removes group by ID
@@ -283,4 +289,40 @@ PUT           /groups/:id             controllers.GroupController.update(id: Lon
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-DELETE        /groups/:id             controllers.GroupController.delete(id: Long)
+DELETE        /groups/:id                           controllers.GroupController.delete(id: Long)
+
+###
+# summary: Adds user to group
+# tags:
+#   - Group
+# responses:
+#   204:
+#       description: User added to group successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST          /groups/:groupId/users/:userId        controllers.UserGroupController.add(groupId: Long, userId: Long)
+
+###
+# summary: Remove user from group
+# tags:
+#   - Group
+# responses:
+#   204:
+#       description: User removed from group successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+DELETE        /groups/:groupId/users/:userId        controllers.UserGroupController.remove(groupId: Long, userId: Long)

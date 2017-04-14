@@ -6,6 +6,7 @@ import com.mohiva.play.silhouette.api.Silhouette
 import controllers.api.Response
 import controllers.api.user.ApiUser
 import controllers.authorization.AllowedRole
+import org.davidbild.tristate.Tristate
 import play.api.libs.concurrent.Execution.Implicits._
 import services.UserService
 import silhouette.DefaultEnv
@@ -44,14 +45,16 @@ class UserController @Inject()(
     */
   def getList(
     role: Option[ApiUser.ApiRole],
-    status: Option[ApiUser.ApiStatus]
+    status: Option[ApiUser.ApiStatus],
+    groupId: Tristate[Long]
   ) = (silhouette.SecuredAction(AllowedRole.admin) andThen ListAction).async { implicit request =>
     async {
       toResult(Ok) {
         val users = await(userService.list(
           role.map(_.value),
-          status.map(_.value))
-        )
+          status.map(_.value),
+          groupId
+        ))
         Response.List(users) {
           ApiUser(_)
         }

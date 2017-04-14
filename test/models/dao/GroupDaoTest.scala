@@ -3,13 +3,18 @@ package models.dao
 import models.group.{Group => GroupModel}
 import org.davidbild.tristate.Tristate
 import org.scalacheck.Gen
-import testutils.fixture.GroupFixture
+import testutils.fixture.{GroupFixture, UserGroupFixture}
 import testutils.generator.{GroupGenerator, TristateGenerator}
 
 /**
   * Test for group DAO.
   */
-class GroupDaoTest extends BaseDaoTest with GroupFixture with GroupGenerator with TristateGenerator {
+class GroupDaoTest
+  extends BaseDaoTest
+    with GroupFixture
+    with GroupGenerator
+    with TristateGenerator
+    with UserGroupFixture {
 
   private val dao = inject[GroupDao]
 
@@ -27,6 +32,18 @@ class GroupDaoTest extends BaseDaoTest with GroupFixture with GroupGenerator wit
           Groups.filter(u => id.forall(_ == u.id) & parentId.cata(u.parentId.contains(_), u.parentId.isEmpty, true))
 
         groups.total mustBe expectedGroups.length
+        groups.data must contain theSameElementsAs expectedGroups
+      }
+    }
+
+    "return groups filtered by user" in {
+      forAll { (userId: Option[Long]) =>
+        val groups = wait(dao.getList(optUserId = userId))
+        val expectedGroups = Groups.filter(g => userId match {
+          case None => true
+          case Some(uid) => UserGroups.filter(_._1 == uid).map(_._2).contains(g.id)
+        })
+
         groups.data must contain theSameElementsAs expectedGroups
       }
     }
