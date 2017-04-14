@@ -43,9 +43,9 @@ class GroupService @Inject()(
     userId: Option[Long]
   )(implicit account: User, meta: ListMeta): ListResult = async {
     val groups = await(groupDao.getList(
-      id = None,
-      parentId = parentId,
-      userId = userId
+      optId = None,
+      optParentId = parentId,
+      optUserId = userId
     ))
     groups
   }

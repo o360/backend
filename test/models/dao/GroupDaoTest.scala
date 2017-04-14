@@ -38,7 +38,7 @@ class GroupDaoTest
 
     "return groups filtered by user" in {
       forAll { (userId: Option[Long]) =>
-        val groups = wait(dao.getList(userId = userId))
+        val groups = wait(dao.getList(optUserId = userId))
         val expectedGroups = Groups.filter(g => userId match {
           case None => true
           case Some(uid) => UserGroups.filter(_._1 == uid).map(_._2).contains(g.id)

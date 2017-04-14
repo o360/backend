@@ -84,10 +84,10 @@ class UserService @Inject()(
     groupId: Tristate[Long]
   )(implicit account: UserModel, meta: ListMeta): ListResult = async {
     val users = await(userDao.getList(
-      id = None,
-      role = role,
-      status = status,
-      groupId = groupId
+      optId = None,
+      optRole = role,
+      optStatus = status,
+      optGroupId = groupId
     ))
     users
   }

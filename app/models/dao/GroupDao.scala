@@ -57,25 +57,25 @@ class GroupDao @Inject()(
   /**
     * Returns list of groups filtered by given criteria.
     *
-    * @param id       group ID
-    * @param parentId group parent ID
-    * @param userId   only groups of the user
+    * @param optId       group ID
+    * @param optParentId group parent ID
+    * @param optUserId   only groups of the user
     */
   def getList(
-    id: Option[Long] = None,
-    parentId: Tristate[Long] = Tristate.Unspecified,
-    userId: Option[Long] = None
+    optId: Option[Long] = None,
+    optParentId: Tristate[Long] = Tristate.Unspecified,
+    optUserId: Option[Long] = None
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Group]] = {
     val query = Groups
       .applyFilter { x =>
         Seq(
-          id.map(x.id === _),
-          parentId match {
-            case Tristate.Present(pid) => Some(x.parentId.fold(false: Rep[Boolean])(_ === pid))
+          optId.map(x.id === _),
+          optParentId match {
+            case Tristate.Present(parentId) => Some(x.parentId.fold(false: Rep[Boolean])(_ === parentId))
             case Tristate.Absent => Some(x.parentId.isEmpty)
             case Tristate.Unspecified => None
           },
-          userId.map(uid => x.id in UserGroups.filter(_.userId === uid).map(_.groupId))
+          optUserId.map(userId => x.id in UserGroups.filter(_.userId === userId).map(_.groupId))
         )
       }
 
@@ -94,7 +94,7 @@ class GroupDao @Inject()(
     * @return either some group or none
     */
   def findById(id: Long): Future[Option[Group]] = async {
-    await(getList(id = Some(id))).data.headOption
+    await(getList(optId = Some(id))).data.headOption
   }
 
   /**

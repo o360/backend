@@ -72,9 +72,9 @@ class GroupServiceTest extends BaseServiceTest with GroupGenerator with GroupFix
       ) =>
         val fixture = getFixture
         when(fixture.groupDaoMock.getList(
-          id = any[Option[Long]],
-          parentId = eqTo(parentId),
-          userId = eqTo(userId)
+          optId = any[Option[Long]],
+          optParentId = eqTo(parentId),
+          optUserId = eqTo(userId)
         )(eqTo(ListMeta.default)))
           .thenReturn(toFuture(ListWithTotal(total, groups)))
         val result = wait(fixture.service.list(parentId, userId)(admin, ListMeta.default))
@@ -83,9 +83,9 @@ class GroupServiceTest extends BaseServiceTest with GroupGenerator with GroupFix
         result.right.get mustBe ListWithTotal(total, groups)
 
         verify(fixture.groupDaoMock, times(1)).getList(
-          id = any[Option[Long]],
-          parentId = eqTo(parentId),
-          userId = eqTo(userId)
+          optId = any[Option[Long]],
+          optParentId = eqTo(parentId),
+          optUserId = eqTo(userId)
         )(eqTo(ListMeta.default))
       }
     }

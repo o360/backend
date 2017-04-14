@@ -157,10 +157,10 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
       ) =>
         val fixture = getFixture
         when(fixture.userDaoMock.getList(
-          id = any[Option[Long]],
-          role = eqTo(role),
-          status = eqTo(status),
-          groupId = eqTo(groupId)
+          optId = any[Option[Long]],
+          optRole = eqTo(role),
+          optStatus = eqTo(status),
+          optGroupId = eqTo(groupId)
         )(eqTo(ListMeta.default)))
           .thenReturn(toFuture(ListWithTotal(total, users)))
         val result = wait(fixture.service.list(role, status, groupId)(admin, ListMeta.default))
@@ -169,10 +169,10 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
         result.right.get mustBe ListWithTotal(total, users)
 
         verify(fixture.userDaoMock, times(1)).getList(
-          id = any[Option[Long]],
-          role = eqTo(role),
-          status = eqTo(status),
-          groupId = eqTo(groupId)
+          optId = any[Option[Long]],
+          optRole = eqTo(role),
+          optStatus = eqTo(status),
+          optGroupId = eqTo(groupId)
         )(eqTo(ListMeta.default))
       }
     }
