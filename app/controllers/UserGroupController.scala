@@ -4,9 +4,9 @@ import javax.inject.{Inject, Singleton}
 
 import com.mohiva.play.silhouette.api.Silhouette
 import controllers.authorization.AllowedRole
-import play.api.libs.concurrent.Execution.Implicits._
 import services.UserGroupService
 import silhouette.DefaultEnv
+import utils.implicits.FutureLifting._
 
 /**
   * User group controller.
@@ -24,10 +24,10 @@ class UserGroupController @Inject()(
     * @param userId  user ID
     */
   def add(groupId: Long, userId: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
-    userGroupService.add(groupId, userId).map {
-      case Left(error) => toResult(error)
-      case Right(_) => NoContent
-    }
+    userGroupService.add(groupId, userId).fold(
+      error => toResult(error),
+      _ => NoContent
+    )
   }
 
   /**
@@ -37,9 +37,9 @@ class UserGroupController @Inject()(
     * @param userId  user ID
     */
   def remove(groupId: Long, userId: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
-    userGroupService.remove(groupId, userId).map {
-      case Left(error) => toResult(error)
-      case Right(_) => NoContent
-    }
+    userGroupService.remove(groupId, userId).fold(
+      error => toResult(error),
+      _ => NoContent
+    )
   }
 }

@@ -2,19 +2,18 @@ package models.dao
 
 import models.ListWithTotal
 import play.api.db.slick.HasDatabaseConfigProvider
+import play.api.libs.concurrent.Execution.Implicits._
 import slick.ast.Ordering
 import slick.driver.JdbcProfile
 import slick.lifted.ColumnOrdered
+import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
 import utils.listmeta.pagination.Pagination
 import utils.listmeta.pagination.Pagination.{WithPages, WithoutPages}
 import utils.listmeta.sorting.Sorting
 
-import scala.async.Async._
-import play.api.libs.concurrent.Execution.Implicits._
 import scala.concurrent.Future
 import scala.language.higherKinds
-
 
 /**
   * Trait with helper methods for DAO's.
@@ -98,24 +97,25 @@ trait DaoHelper {
     */
   def runListQuery[E, U](query: Query[E, U, Seq])
     (sortMapping: E => PartialFunction[Symbol, Rep[_]])
-    (implicit meta: ListMeta): Future[ListWithTotal[U]] = async {
+    (implicit meta: ListMeta): Future[ListWithTotal[U]] = {
     val paginatedQuery = query
       .applySorting(meta.sorting)(sortMapping)
       .applyPagination(meta.pagination)
 
-    val elements = await(db.run(paginatedQuery.result))
-    val resultSize = elements.length
+    db.run(paginatedQuery.result).flatMap { elements =>
+      val resultSize = elements.length
 
-    meta.pagination match {
-      case Pagination.WithoutPages =>
-        ListWithTotal(resultSize, elements)
-      case p@Pagination.WithPages(size, number) =>
-        if (resultSize < size && resultSize > 0)
-          ListWithTotal(p.offset + resultSize, elements)
-        else {
-          val total = await(db.run(query.length.result))
-          ListWithTotal(total, elements)
-        }
+      meta.pagination match {
+        case Pagination.WithoutPages =>
+          ListWithTotal(resultSize, elements).toFuture
+        case p@Pagination.WithPages(size, number) =>
+          if (resultSize < size && resultSize > 0)
+            ListWithTotal(p.offset + resultSize, elements).toFuture
+          else {
+            db.run(query.length.result).map(ListWithTotal(_, elements))
+          }
+      }
+
     }
   }
 

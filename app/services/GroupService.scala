@@ -7,11 +7,9 @@ import models.group.{Group => GroupModel}
 import models.user.User
 import org.davidbild.tristate.Tristate
 import play.api.libs.concurrent.Execution.Implicits._
-import utils.errors.{ApplicationError, ConflictError, NotFoundError}
+import utils.errors.{ConflictError, NotFoundError}
+import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
-
-import scala.async.Async._
-import scala.concurrent.Future
 
 /**
   * Group service.
@@ -25,11 +23,11 @@ class GroupService @Inject()(
   /**
     * Returns group by ID
     */
-  def getById(id: Long)(implicit account: User): SingleResult = async {
-    await(groupDao.findById(id)) match {
-      case Some(g) => g
-      case None => NotFoundError.Group(id)
-    }
+  def getById(id: Long)(implicit account: User): SingleResult = {
+    groupDao.findById(id)
+      .liftRight {
+        NotFoundError.Group(id)
+      }
   }
 
   /**
@@ -41,13 +39,12 @@ class GroupService @Inject()(
   def list(
     parentId: Tristate[Long],
     userId: Option[Long]
-  )(implicit account: User, meta: ListMeta): ListResult = async {
-    val groups = await(groupDao.getList(
+  )(implicit account: User, meta: ListMeta): ListResult = {
+    groupDao.getList(
       optId = None,
       optParentId = parentId,
       optUserId = userId
-    ))
-    groups
+    ).lift
   }
 
   /**
@@ -55,13 +52,11 @@ class GroupService @Inject()(
     *
     * @param group group model
     */
-  def create(group: GroupModel)(implicit account: User): SingleResult = async {
-    await(checkParentId(group)) match {
-      case Some(error) => error
-      case None =>
-        val created = await(groupDao.create(group))
-        created
-    }
+  def create(group: GroupModel)(implicit account: User): SingleResult = {
+    for {
+      _ <- checkParentId(group)
+      created <- groupDao.create(group).lift
+    } yield created
   }
 
   /**
@@ -69,27 +64,13 @@ class GroupService @Inject()(
     *
     * @param draft group draft
     */
-  def update(draft: GroupModel)(implicit account: User): SingleResult = async {
+  def update(draft: GroupModel)(implicit account: User): SingleResult = {
+    for {
+      _ <- getById(draft.id)
+      _ <- checkParentId(draft)
 
-    def doUpdate(): Future[Option[ApplicationError]] = async {
-      await(checkParentId(draft)) match {
-        case Some(error) => Some(error)
-        case None =>
-          await(groupDao.update(draft))
-          None
-      }
-    }
-
-    await(getById(draft.id)) match {
-      case Left(error) => error
-      case _ =>
-        val maybeError = await(doUpdate())
-        if (maybeError.nonEmpty) {
-          maybeError.get
-        } else {
-          draft
-        }
-    }
+      updated <- groupDao.update(draft).lift
+    } yield updated
   }
 
   /**
@@ -97,20 +78,21 @@ class GroupService @Inject()(
     *
     * @param id group ID
     */
-  def delete(id: Long)(implicit account: User): UnitResult = async {
-    await(getById(id)) match {
-      case Left(error) => error
-      case Right(_) =>
-        val children = await(groupDao.findChildrenIds(id))
-        if (children.nonEmpty) {
-          ConflictError.Group.ChildrenExists(id, children)
-        } else if (await(userGroupDao.exists(groupId = Some(id)))) {
-          ConflictError.Group.UserExists(id)
-        } else {
-          val _ = await(groupDao.delete(id))
-          unitResult
-        }
-    }
+  def delete(id: Long)(implicit account: User): UnitResult = {
+    for {
+      _ <- getById(id)
+
+      children <- groupDao.findChildrenIds(id).lift
+      _ <- ensure(children.isEmpty) {
+        ConflictError.Group.ChildrenExists(id, children)
+      }
+
+      _ <- ensure(!userGroupDao.exists(groupId = Some(id))) {
+        ConflictError.Group.UserExists(id)
+      }
+
+      _ <- groupDao.delete(id).lift
+    } yield ()
   }
 
   /**
@@ -118,39 +100,29 @@ class GroupService @Inject()(
     * Possible errors: missed parent, self-reference, circular reference.
     *
     * @param group group model
-    * @return either some error or none
+    * @return either error or unit
     */
-  private def checkParentId(group: GroupModel)(implicit account: User): Future[Option[ApplicationError]] = async {
+  private def checkParentId(group: GroupModel)(implicit account: User): UnitResult = {
     val groupIsNew = group.id == 0
 
-    def isSelfReference(parentId: Long) = !groupIsNew && parentId == group.id
-
-    def isCircularReference(parentId: Long) = async {
-      val childrenIds = await(groupDao.findChildrenIds(group.id))
-      childrenIds.contains(parentId)
-    }
-
-    def doParentIdCheck(parentId: Long) = async {
-      await(getById(parentId)) match {
-        case Left(error) => Some(error)
-        case _ if groupIsNew => None
-        case _ =>
-          if (await(isCircularReference(parentId))) {
-            Some(ConflictError.Group.CircularReference(group.id, parentId))
-          } else {
-            None
-          }
-      }
-    }
-
     group.parentId match {
-      case None => None
+      case None => ().lift
       case Some(parentId) =>
-        if (isSelfReference(parentId)) {
-          Some(ConflictError.Group.ParentId(group.parentId.get))
-        } else {
-          await(doParentIdCheck(parentId))
-        }
+        for {
+          _ <- ensure(groupIsNew || parentId != group.id) {
+            ConflictError.Group.ParentId(group.id)
+          }
+
+          _ <- getById(parentId)
+
+          isCircularReference <- {
+            !groupIsNew.toFuture && groupDao.findChildrenIds(group.id).map(_.contains(parentId))
+          }.lift
+
+          _ <- ensure(!isCircularReference) {
+            ConflictError.Group.CircularReference(group.id, parentId)
+          }
+        } yield ()
     }
   }
 }

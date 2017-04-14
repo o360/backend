@@ -10,7 +10,6 @@ import play.api.libs.concurrent.Execution.Implicits._
 import slick.driver.JdbcProfile
 import utils.listmeta.ListMeta
 
-import scala.async.Async._
 import scala.concurrent.Future
 
 trait GroupComponent {
@@ -49,9 +48,8 @@ class GroupDao @Inject()(
     * @param group group model
     * @return group model with ID
     */
-  def create(group: Group): Future[Group] = async {
-    val id = await(db.run(Groups.returning(Groups.map(_.id)) += group))
-    group.copy(id = id)
+  def create(group: Group): Future[Group] = {
+    db.run(Groups.returning(Groups.map(_.id)) += group).map(id => group.copy(id = id))
   }
 
   /**
@@ -93,8 +91,8 @@ class GroupDao @Inject()(
     * @param id group ID
     * @return either some group or none
     */
-  def findById(id: Long): Future[Option[Group]] = async {
-    await(getList(optId = Some(id))).data.headOption
+  def findById(id: Long): Future[Option[Group]] = {
+    getList(optId = Some(id)).map(_.data.headOption)
   }
 
   /**
@@ -103,9 +101,8 @@ class GroupDao @Inject()(
     * @param group group model
     * @return updated group
     */
-  def update(group: Group): Future[Group] = async {
-    await(db.run(Groups.filter(_.id === group.id).update(group)))
-    group
+  def update(group: Group): Future[Group] = {
+    db.run(Groups.filter(_.id === group.id).update(group)).map(_ => group)
   }
 
   /**

@@ -5,36 +5,26 @@ import utils.errors.ApplicationError
 
 import scala.concurrent.Future
 import scala.language.implicitConversions
+import scalaz.EitherT
 
 /**
   * Service methods results.
   */
 trait ServiceResults[A] {
 
-  type SingleResult = Future[Either[ApplicationError, A]]
-
-  type ListResult = Future[Either[ApplicationError, ListWithTotal[A]]]
-
-  type UnitResult = Future[Either[ApplicationError, Unit]]
+  /**
+    * Future of either error or result.
+    */
+  type SingleResult = EitherT[Future, ApplicationError, A]
 
   /**
-    * Converts single object to success result.
+    * Future of either error or result list.
     */
-  implicit def model2success(model: A): Either[ApplicationError, A] = Right(model)
+  type ListResult = EitherT[Future, ApplicationError, ListWithTotal[A]]
 
   /**
-    * Converts list of objects to success list result.
+    * Future of either error or unit.
     */
-  implicit def list2success(list: ListWithTotal[A]): Either[ApplicationError, ListWithTotal[A]] = Right(list)
-
-  /**
-    * Converts error to error result.
-    */
-  implicit def error2error[R](error: ApplicationError): Either[ApplicationError, R] = Left(error)
-
-  /**
-    * Use in methods where no result required.
-    */
-  def unitResult: Either[ApplicationError, Unit] = Right(())
+  type UnitResult = EitherT[Future, ApplicationError, Unit]
 
 }

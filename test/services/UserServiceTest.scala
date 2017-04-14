@@ -109,10 +109,10 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
       forAll { (loggedInUser: UserModel, id: Long) =>
         val fixture = getFixture
         whenever(loggedInUser.id != id && loggedInUser.role != UserModel.Role.Admin) {
-          val result = wait(fixture.service.getById(id)(loggedInUser))
+          val result = wait(fixture.service.getById(id)(loggedInUser).run)
 
           result mustBe 'isLeft
-          result.left.get mustBe an[AuthorizationError]
+          result.swap.toOption.get mustBe an[AuthorizationError]
         }
       }
     }
@@ -121,10 +121,10 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
       forAll { (id: Long) =>
         val fixture = getFixture
         when(fixture.userDaoMock.findById(id)).thenReturn(toFuture(None))
-        val result = wait(fixture.service.getById(id)(admin))
+        val result = wait(fixture.service.getById(id)(admin).run)
 
         result mustBe 'isLeft
-        result.left.get mustBe a[NotFoundError]
+        result.swap.toOption.get mustBe a[NotFoundError]
 
         verify(fixture.userDaoMock, times(1)).findById(id)
         verifyNoMoreInteractions(fixture.userDaoMock)
@@ -135,10 +135,10 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
       forAll { (user: UserModel, id: Long) =>
         val fixture = getFixture
         when(fixture.userDaoMock.findById(id)).thenReturn(toFuture(Some(user)))
-        val result = wait(fixture.service.getById(id)(admin))
+        val result = wait(fixture.service.getById(id)(admin).run)
 
         result mustBe 'isRight
-        result.right.get mustBe user
+        result.toOption.get mustBe user
 
         verify(fixture.userDaoMock, times(1)).findById(id)
         verifyNoMoreInteractions(fixture.userDaoMock)
@@ -163,10 +163,10 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
           optGroupId = eqTo(groupId)
         )(eqTo(ListMeta.default)))
           .thenReturn(toFuture(ListWithTotal(total, users)))
-        val result = wait(fixture.service.list(role, status, groupId)(admin, ListMeta.default))
+        val result = wait(fixture.service.list(role, status, groupId)(admin, ListMeta.default).run)
 
         result mustBe 'isRight
-        result.right.get mustBe ListWithTotal(total, users)
+        result.toOption.get mustBe ListWithTotal(total, users)
 
         verify(fixture.userDaoMock, times(1)).getList(
           optId = any[Option[Long]],
@@ -183,10 +183,10 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
       forAll { (user: UserModel) =>
         val fixture = getFixture
         when(fixture.userDaoMock.findById(user.id)).thenReturn(toFuture(None))
-        val result = wait(fixture.service.update(user)(admin))
+        val result = wait(fixture.service.update(user)(admin).run)
 
         result mustBe 'isLeft
-        result.left.get mustBe a[NotFoundError]
+        result.swap.toOption.get mustBe a[NotFoundError]
 
         verify(fixture.userDaoMock, times(1)).findById(user.id)
         verifyNoMoreInteractions(fixture.userDaoMock)
@@ -198,10 +198,10 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
         val fixture = getFixture
         whenever(loggedInUser.role != UserModel.Role.Admin) {
           when(fixture.userDaoMock.findById(loggedInUser.id)).thenReturn(toFuture(Some(loggedInUser)))
-          val result = wait(fixture.service.update(loggedInUser.copy(role = UserModel.Role.Admin))(loggedInUser))
+          val result = wait(fixture.service.update(loggedInUser.copy(role = UserModel.Role.Admin))(loggedInUser).run)
 
           result mustBe 'isLeft
-          result.left.get mustBe an[AuthorizationError]
+          result.swap.toOption.get mustBe an[AuthorizationError]
 
           verify(fixture.userDaoMock, times(1)).findById(loggedInUser.id)
           verifyNoMoreInteractions(fixture.userDaoMock)
@@ -219,12 +219,12 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
           status = UserModel.Status.Approved
         )
         when(fixture.userDaoMock.findById(user.id)).thenReturn(Future.successful(Some(user)))
-        when(fixture.userDaoMock.update(updatedUser)).thenReturn(toFuture(Users(0)))
+        when(fixture.userDaoMock.update(updatedUser)).thenReturn(toFuture(updatedUser))
 
-        val result = wait(fixture.service.update(updatedUser)(admin))
+        val result = wait(fixture.service.update(updatedUser)(admin).run)
 
         result mustBe 'isRight
-        result.right.get mustBe updatedUser
+        result.toOption.get mustBe updatedUser
 
         verify(fixture.userDaoMock, times(1)).findById(user.id)
         verify(fixture.userDaoMock, times(1)).update(updatedUser)
@@ -238,10 +238,10 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
       forAll { (id: Long) =>
         val fixture = getFixture
         when(fixture.userDaoMock.findById(id)).thenReturn(toFuture(None))
-        val result = wait(fixture.service.delete(id)(admin))
+        val result = wait(fixture.service.delete(id)(admin).run)
 
         result mustBe 'isLeft
-        result.left.get mustBe a[NotFoundError]
+        result.swap.toOption.get mustBe a[NotFoundError]
 
         verify(fixture.userDaoMock, times(1)).findById(id)
         verifyNoMoreInteractions(fixture.userDaoMock)
@@ -253,10 +253,10 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
         when(fixture.userDaoMock.findById(id)).thenReturn(toFuture(Some(user.copy(id = id))))
         when(fixture.userGroupDaoMock.exists(groupId = any[Option[Long]], userId = eqTo(Some(id))))
           .thenReturn(toFuture(true))
-        val result = wait(fixture.service.delete(id)(admin))
+        val result = wait(fixture.service.delete(id)(admin).run)
 
         result mustBe 'left
-        result.left.get mustBe a[ConflictError]
+        result.swap.toOption.get mustBe a[ConflictError]
       }
     }
 
@@ -266,7 +266,7 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
         when(fixture.userDaoMock.findById(id)).thenReturn(toFuture(Some(user.copy(id = id))))
         when(fixture.userGroupDaoMock.exists(groupId = any[Option[Long]], userId = eqTo(Some(id)))).thenReturn(toFuture(false))
         when(fixture.userDaoMock.delete(id)).thenReturn(toFuture(1))
-        val result = wait(fixture.service.delete(id)(admin))
+        val result = wait(fixture.service.delete(id)(admin).run)
 
         result mustBe 'isRight
 

@@ -8,14 +8,13 @@ import controllers.api.user.ApiUser
 import models.user.{User => UserModel}
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
+import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test._
 import services.UserService
 import silhouette.DefaultEnv
 import testutils.generator.UserGenerator
-
-import play.api.libs.concurrent.Execution.Implicits._
 
 /**
   * Authentication controller test.
@@ -75,7 +74,9 @@ class AuthenticationControllerTest extends BaseControllerTest with UserGenerator
     }
 
     "return unauthorized if exception thrown by silhouette" in {
-      when(socialProviderRegistryMock.get[SocialProvider](any[String])(any())).thenThrow(classOf[SilhouetteException])
+      val socialProviderMock = mock[SocialProvider]
+      when(socialProviderMock.authenticate()(FakeRequest())).thenThrow(classOf[SilhouetteException])
+      when(socialProviderRegistryMock.get[SocialProvider](any[String])(any())).thenReturn(Some(socialProviderMock))
 
       val controller = new Authentication(silhouetteMock, socialProviderRegistryMock, userServiceMock)
 
