@@ -1,6 +1,7 @@
 package models.user
 
 import com.mohiva.play.silhouette.api.Identity
+import com.mohiva.play.silhouette.impl.providers.CommonSocialProfile
 
 /**
   * User model.
@@ -55,5 +56,11 @@ object User {
     case object Approved extends Status
   }
 
-
+  def fromSocialProfile(socialProfile: CommonSocialProfile): User = User(
+    0,
+    socialProfile.fullName,
+    socialProfile.email,
+    User.Role.User,
+    User.Status.New
+  )
 }

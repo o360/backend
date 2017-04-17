@@ -5,7 +5,7 @@ import com.mohiva.play.silhouette.test.FakeEnvironment
 import controllers.api.Response
 import controllers.api.user.ApiUser
 import models.ListWithTotal
-import models.user.{User => UserModel}
+import models.user.User
 import org.davidbild.tristate.Tristate
 import org.mockito.Mockito._
 import play.api.libs.json.Json
@@ -14,8 +14,10 @@ import play.api.test.Helpers._
 import services.UserService
 import silhouette.DefaultEnv
 import testutils.generator.{TristateGenerator, UserGenerator}
-import utils.errors.NotFoundError
+import utils.errors.{ApplicationError, NotFoundError}
 import utils.listmeta.ListMeta
+
+import scalaz.{-\/, EitherT, \/, \/-}
 
 /**
   * Test for user controller.
@@ -35,14 +37,15 @@ class UserControllerTest extends BaseControllerTest with UserGenerator with Tris
     TestFixture(silhouette, userServiceMock, controller)
   }
 
-  private val admin = UserModel(1, None, None, UserModel.Role.Admin, UserModel.Status.Approved)
+  private val admin = User(1, None, None, User.Role.Admin, User.Status.Approved)
 
   "GET /users/id" should {
     "return not found if user not found" in {
       forAll { (id: Long) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.userServiceMock.getById(id)(admin)).thenReturn(toFuture(Left(NotFoundError.User(id))))
+        when(fixture.userServiceMock.getById(id)(admin))
+          .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.User(id)): ApplicationError \/ User)))
         val request = authenticated(FakeRequest(), env)
 
         val response = fixture.controller.getById(id).apply(request)
@@ -51,10 +54,11 @@ class UserControllerTest extends BaseControllerTest with UserGenerator with Tris
     }
 
     "return json with user" in {
-      forAll { (id: Long, user: UserModel) =>
+      forAll { (id: Long, user: User) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.userServiceMock.getById(id)(admin)).thenReturn(toFuture(Right(user)))
+        when(fixture.userServiceMock.getById(id)(admin))
+          .thenReturn(EitherT.eitherT(toFuture(\/-(user): ApplicationError \/ User)))
         val request = authenticated(FakeRequest(), env)
 
         val response = fixture.controller.getById(id)(request)
@@ -68,16 +72,16 @@ class UserControllerTest extends BaseControllerTest with UserGenerator with Tris
   "GET /users" should {
     "return users list from service" in {
       forAll { (
-      role: Option[UserModel.Role],
-      st: Option[UserModel.Status],
+      role: Option[User.Role],
+      st: Option[User.Status],
       groupId: Tristate[Long],
       total: Int,
-      users: Seq[UserModel]
+      users: Seq[User]
       ) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
         when(fixture.userServiceMock.list(role, st, groupId)(admin, ListMeta.default))
-          .thenReturn(toFuture(Right(ListWithTotal(total, users))))
+          .thenReturn(EitherT.eitherT(toFuture(\/-(ListWithTotal(total, users)): ApplicationError \/ ListWithTotal[User])))
         val request = authenticated(FakeRequest(), env)
 
         val response = fixture.controller
@@ -92,7 +96,7 @@ class UserControllerTest extends BaseControllerTest with UserGenerator with Tris
       }
     }
     "return forbidden for non admin user" in {
-      val env = fakeEnvironment(admin.copy(role = UserModel.Role.User))
+      val env = fakeEnvironment(admin.copy(role = User.Role.User))
       val fixture = getFixture(env)
       val request = authenticated(FakeRequest(), env)
       val response = fixture.controller.getList(None, None, Tristate.Unspecified).apply(request)
@@ -103,12 +107,12 @@ class UserControllerTest extends BaseControllerTest with UserGenerator with Tris
 
   "PUT /users" should {
     "update users" in {
-      forAll { (id: Long, user: UserModel) =>
+      forAll { (id: Long, user: User) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
         val userWithId = user.copy(id = id)
         when(fixture.userServiceMock.update(userWithId)(admin))
-          .thenReturn(toFuture(Right(userWithId)))
+          .thenReturn(EitherT.eitherT(toFuture(\/-(userWithId): ApplicationError \/ User)))
         val request = authenticated(
           FakeRequest("POST", "/users")
             .withBody[ApiUser](ApiUser(user))
@@ -131,7 +135,8 @@ class UserControllerTest extends BaseControllerTest with UserGenerator with Tris
       forAll { (id: Long) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.userServiceMock.delete(id)(admin)).thenReturn(toFuture(Right(())))
+        when(fixture.userServiceMock.delete(id)(admin))
+          .thenReturn(EitherT.eitherT(toFuture(\/-(()): ApplicationError \/ Unit)))
         val request = authenticated(FakeRequest(), env)
 
         val response = fixture.controller.delete(id)(request)

@@ -9,7 +9,9 @@ import play.api.test.Helpers._
 import services.UserGroupService
 import silhouette.DefaultEnv
 import testutils.generator.TristateGenerator
-import utils.errors.NotFoundError
+import utils.errors.{ApplicationError, NotFoundError}
+
+import scalaz.{-\/, EitherT, \/, \/-}
 
 /**
   * Test for user-group controller.
@@ -37,7 +39,7 @@ class UserGroupControllerTest extends BaseControllerTest with TristateGenerator 
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
         when(fixture.userGroupServiceMock.add(groupId, userId)(admin))
-          .thenReturn(toFuture(Left(NotFoundError.Group(groupId))))
+          .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Group(groupId)): ApplicationError \/ Unit)))
 
         val request = authenticated(FakeRequest(), env)
         val response = fixture.controller.add(groupId, userId).apply(request)
@@ -50,7 +52,7 @@ class UserGroupControllerTest extends BaseControllerTest with TristateGenerator 
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
         when(fixture.userGroupServiceMock.add(groupId, userId)(admin))
-          .thenReturn(toFuture(Right(())))
+          .thenReturn(EitherT.eitherT(toFuture(\/-(()): ApplicationError \/ Unit)))
 
         val request = authenticated(FakeRequest(), env)
         val response = fixture.controller.add(groupId, userId).apply(request)
@@ -65,7 +67,7 @@ class UserGroupControllerTest extends BaseControllerTest with TristateGenerator 
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
         when(fixture.userGroupServiceMock.remove(groupId, userId)(admin))
-          .thenReturn(toFuture(Left(NotFoundError.Group(groupId))))
+          .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Group(groupId)): ApplicationError \/ Unit)))
 
         val request = authenticated(FakeRequest(), env)
         val response = fixture.controller.remove(groupId, userId).apply(request)
@@ -78,7 +80,7 @@ class UserGroupControllerTest extends BaseControllerTest with TristateGenerator 
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
         when(fixture.userGroupServiceMock.remove(groupId, userId)(admin))
-          .thenReturn(toFuture(Right(())))
+          .thenReturn(EitherT.eitherT(toFuture(\/-(()): ApplicationError \/ Unit)))
 
         val request = authenticated(FakeRequest(), env)
         val response = fixture.controller.remove(groupId, userId).apply(request)

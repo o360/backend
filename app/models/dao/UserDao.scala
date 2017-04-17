@@ -6,11 +6,10 @@ import models.ListWithTotal
 import models.user.User
 import org.davidbild.tristate.Tristate
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
+import play.api.libs.concurrent.Execution.Implicits._
 import slick.driver.JdbcProfile
 import utils.listmeta.ListMeta
 
-import scala.async.Async.{async, await}
-import play.api.libs.concurrent.Execution.Implicits._
 import scala.concurrent.Future
 
 /**
@@ -93,8 +92,8 @@ class UserDao @Inject()(
   /**
     * Returns user by ID.
     */
-  def findById(id: Long): Future[Option[User]] = async {
-    await(getList(optId = Some(id))).data.headOption
+  def findById(id: Long): Future[Option[User]] = {
+    getList(optId = Some(id)).map(_.data.headOption)
   }
 
 
@@ -164,10 +163,11 @@ class UserDao @Inject()(
     * @param providerId  provider ID
     * @param providerKey provider key
     */
-  def create(user: User, providerId: String, providerKey: String): Future[User] = async {
-    val userId = await(db.run(Users.returning(Users.map(_.id)) += user))
-    await(db.run(UserLogins += DbUserLogin(userId, providerId, providerKey)))
-    user.copy(id = userId)
+  def create(user: User, providerId: String, providerKey: String): Future[User] = {
+    for {
+      userId <- db.run(Users.returning(Users.map(_.id)) += user)
+      _ <- db.run(UserLogins += DbUserLogin(userId, providerId, providerKey))
+    } yield user.copy(id = userId)
   }
 
   /**
@@ -176,9 +176,8 @@ class UserDao @Inject()(
     * @param user user model
     * @return number of rows affected.
     */
-  def update(user: User): Future[User] = async {
-    await(db.run(Users.filter(_.id === user.id).update(user)))
-    user
+  def update(user: User): Future[User] = {
+    db.run(Users.filter(_.id === user.id).update(user)).map(_ => user)
   }
 
   /**

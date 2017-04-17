@@ -6,14 +6,13 @@ import com.mohiva.play.silhouette.api.Silhouette
 import com.mohiva.play.silhouette.api.exceptions.SilhouetteException
 import com.mohiva.play.silhouette.impl.providers.{CommonSocialProfileBuilder, SocialProvider, SocialProviderRegistry}
 import controllers.api.user.ApiUser
+import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json.Json
-import play.api.mvc.Action
+import play.api.mvc.{Action, Result}
 import services.UserService
 import silhouette.DefaultEnv
 import utils.errors.AuthenticationError
-
-import scala.async.Async.{async, await}
-import play.api.libs.concurrent.Execution.Implicits._
+import utils.implicits.FutureLifting._
 
 /**
   * Authentication controller.
@@ -38,22 +37,33 @@ class Authentication @Inject()(
     * @return JWT token
     */
   def auth(provider: String) = Action.async { implicit request =>
-    async {
-      socialProviderRegistry.get[SocialProvider](provider) match {
-        case Some(p: SocialProvider with CommonSocialProfileBuilder) =>
-          await(p.authenticate) match {
-            case Left(_) => toResult(AuthenticationError.General)
-            case Right(authInfo) =>
-              val profile = await(p.retrieveProfile(authInfo))
-              await(userService.createIfNotExist(profile))
-              val authenticator = await(silhouette.env.authenticatorService.create(profile.loginInfo))
-              val token = await(silhouette.env.authenticatorService.init(authenticator))
-              Ok(Json.obj("token" -> token))
-          }
-        case _ => toResult(AuthenticationError.ProviderNotSupported(provider))
-      }
-    }.recover {
-      case _: SilhouetteException => toResult(AuthenticationError.General)
+
+    def retrieveToken(
+      p: SocialProvider with CommonSocialProfileBuilder,
+      authResult: Either[Result, SocialProvider#A]
+    ) = authResult match {
+      case Left(_) => toResult(AuthenticationError.General).toFuture
+      case Right(authInfo) =>
+        for {
+          profile <- p.retrieveProfile(authInfo.asInstanceOf[p.A])
+          _ <- userService.createIfNotExist(profile)
+          authenticator <- silhouette.env.authenticatorService.create(profile.loginInfo)
+          token <- silhouette.env.authenticatorService.init(authenticator)
+        } yield Ok(Json.obj("token" -> token))
+    }
+
+    socialProviderRegistry.get[SocialProvider](provider) match {
+      case Some(p: SocialProvider with CommonSocialProfileBuilder) =>
+        val resultF = for {
+          authResult <- p.authenticate()
+          result <- retrieveToken(p, authResult)
+        } yield result
+
+        resultF.recover {
+          case _: SilhouetteException => toResult(AuthenticationError.General)
+        }
+
+      case _ => toResult(AuthenticationError.ProviderNotSupported(provider)).toFuture
     }
   }
 }

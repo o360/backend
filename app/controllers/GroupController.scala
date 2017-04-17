@@ -7,13 +7,11 @@ import controllers.api.Response
 import controllers.api.group.{ApiGroup, ApiPartialGroup}
 import controllers.authorization.AllowedRole
 import org.davidbild.tristate.Tristate
-import play.api.libs.concurrent.Execution.Implicits._
 import services.GroupService
 import silhouette.DefaultEnv
+import utils.implicits.FutureLifting._
 import utils.listmeta.actions.ListActions
 import utils.listmeta.sorting.Sorting
-
-import scala.async.Async._
 
 /**
   * Group controller.
@@ -30,10 +28,10 @@ class GroupController @Inject()(
     * Returns group by ID.
     */
   def getById(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
-    async {
-      toResult(Ok) {
-        await(groupService.getById(id)).right.map(ApiGroup(_))
-      }
+    toResult(Ok) {
+      groupService
+        .getById(id)
+        .map(ApiGroup(_))
     }
   }
 
@@ -44,15 +42,14 @@ class GroupController @Inject()(
     parentId: Tristate[Long],
     userId: Option[Long]
   ) = (silhouette.SecuredAction(AllowedRole.admin) andThen ListAction).async { implicit request =>
-    async {
-      toResult(Ok) {
-        val groups = await(
-          groupService.list(parentId, userId)
-        )
-        Response.List(groups) {
-          ApiGroup(_)
+    toResult(Ok) {
+      groupService
+        .list(parentId, userId)
+        .map {
+          groups => Response.List(groups) {
+            group => ApiGroup(group)
+          }
         }
-      }
     }
   }
 
@@ -60,13 +57,11 @@ class GroupController @Inject()(
     * Creates group and returns its model.
     */
   def create = silhouette.SecuredAction(AllowedRole.admin).async(parse.json[ApiPartialGroup]) { implicit request =>
-    async {
-      toResult(Created) {
-        val group = request.body.toModel(0)
-        for {
-          created <- await(groupService.create(group)).right
-        } yield ApiGroup(created)
-      }
+    toResult(Created) {
+      val group = request.body.toModel(0)
+      groupService
+        .create(group)
+        .map(ApiGroup(_))
     }
   }
 
@@ -74,13 +69,11 @@ class GroupController @Inject()(
     * Updates group and returns its model.
     */
   def update(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async(parse.json[ApiPartialGroup]) { implicit request =>
-    async {
-      toResult(Ok) {
-        val draft = request.body.toModel(id)
-        for {
-          updated <- await(groupService.update(draft)).right
-        } yield ApiGroup(updated)
-      }
+    toResult(Ok) {
+      val draft = request.body.toModel(id)
+      groupService
+        .update(draft)
+        .map(ApiGroup(_))
     }
   }
 
@@ -88,11 +81,9 @@ class GroupController @Inject()(
     * Removes group.
     */
   def delete(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
-    async {
-      await(groupService.delete(id)) match {
-        case Left(error) => toResult(error)
-        case Right(_) => NoContent
-      }
-    }
+    groupService.delete(id).fold(
+      error => toResult(error),
+      _ => NoContent
+    )
   }
 }

@@ -37,10 +37,10 @@ class GroupServiceTest extends BaseServiceTest with GroupGenerator with GroupFix
       forAll { (id: Long) =>
         val fixture = getFixture
         when(fixture.groupDaoMock.findById(id)).thenReturn(toFuture(None))
-        val result = wait(fixture.service.getById(id)(admin))
+        val result = wait(fixture.service.getById(id)(admin).run)
 
         result mustBe 'left
-        result.left.get mustBe a[NotFoundError]
+        result.swap.toOption.get mustBe a[NotFoundError]
 
         verify(fixture.groupDaoMock, times(1)).findById(id)
         verifyNoMoreInteractions(fixture.groupDaoMock)
@@ -51,10 +51,10 @@ class GroupServiceTest extends BaseServiceTest with GroupGenerator with GroupFix
       forAll { (group: Group, id: Long) =>
         val fixture = getFixture
         when(fixture.groupDaoMock.findById(id)).thenReturn(toFuture(Some(group)))
-        val result = wait(fixture.service.getById(id)(admin))
+        val result = wait(fixture.service.getById(id)(admin).run)
 
         result mustBe 'right
-        result.right.get mustBe group
+        result.toOption.get mustBe group
 
         verify(fixture.groupDaoMock, times(1)).findById(id)
         verifyNoMoreInteractions(fixture.groupDaoMock)
@@ -77,10 +77,10 @@ class GroupServiceTest extends BaseServiceTest with GroupGenerator with GroupFix
           optUserId = eqTo(userId)
         )(eqTo(ListMeta.default)))
           .thenReturn(toFuture(ListWithTotal(total, groups)))
-        val result = wait(fixture.service.list(parentId, userId)(admin, ListMeta.default))
+        val result = wait(fixture.service.list(parentId, userId)(admin, ListMeta.default).run)
 
         result mustBe 'right
-        result.right.get mustBe ListWithTotal(total, groups)
+        result.toOption.get mustBe ListWithTotal(total, groups)
 
         verify(fixture.groupDaoMock, times(1)).getList(
           optId = any[Option[Long]],
@@ -98,10 +98,10 @@ class GroupServiceTest extends BaseServiceTest with GroupGenerator with GroupFix
           val fixture = getFixture
           when(fixture.groupDaoMock.findById(group.id)).thenReturn(toFuture(Some(group)))
           when(fixture.groupDaoMock.findById(group.parentId.get)).thenReturn(toFuture(None))
-          val result = wait(fixture.service.create(group)(admin))
+          val result = wait(fixture.service.create(group)(admin).run)
 
           result mustBe 'left
-          result.left.get mustBe a[NotFoundError]
+          result.swap.toOption.get mustBe a[NotFoundError]
         }
       }
     }
@@ -111,10 +111,10 @@ class GroupServiceTest extends BaseServiceTest with GroupGenerator with GroupFix
       val group = Groups(2)
       when(fixture.groupDaoMock.findById(group.parentId.get)).thenReturn(toFuture(Some(group)))
       when(fixture.groupDaoMock.create(group.copy(id = 0))).thenReturn(toFuture(group))
-      val result = wait(fixture.service.create(group.copy(id = 0))(admin))
+      val result = wait(fixture.service.create(group.copy(id = 0))(admin).run)
 
       result mustBe 'right
-      result.right.get mustBe group
+      result.toOption.get mustBe group
     }
   }
 
@@ -123,10 +123,10 @@ class GroupServiceTest extends BaseServiceTest with GroupGenerator with GroupFix
       forAll { (group: Group) =>
         val fixture = getFixture
         when(fixture.groupDaoMock.findById(group.id)).thenReturn(toFuture(None))
-        val result = wait(fixture.service.update(group)(admin))
+        val result = wait(fixture.service.update(group)(admin).run)
 
         result mustBe 'left
-        result.left.get mustBe a[NotFoundError]
+        result.swap.toOption.get mustBe a[NotFoundError]
 
         verify(fixture.groupDaoMock, times(1)).findById(group.id)
         verifyNoMoreInteractions(fixture.groupDaoMock)
@@ -139,10 +139,10 @@ class GroupServiceTest extends BaseServiceTest with GroupGenerator with GroupFix
           val group = gr.copy(parentId = Some(gr.id))
           val fixture = getFixture
           when(fixture.groupDaoMock.findById(group.id)).thenReturn(toFuture(Some(group)))
-          val result = wait(fixture.service.update(group)(admin))
+          val result = wait(fixture.service.update(group)(admin).run)
 
           result mustBe 'left
-          result.left.get mustBe a[ConflictError]
+          result.swap.toOption.get mustBe a[ConflictError]
 
           verify(fixture.groupDaoMock, times(1)).findById(group.id)
           verifyNoMoreInteractions(fixture.groupDaoMock)
@@ -156,10 +156,10 @@ class GroupServiceTest extends BaseServiceTest with GroupGenerator with GroupFix
           val fixture = getFixture
           when(fixture.groupDaoMock.findById(group.id)).thenReturn(toFuture(Some(group)))
           when(fixture.groupDaoMock.findById(group.parentId.get)).thenReturn(toFuture(None))
-          val result = wait(fixture.service.update(group)(admin))
+          val result = wait(fixture.service.update(group)(admin).run)
 
           result mustBe 'left
-          result.left.get mustBe a[NotFoundError]
+          result.swap.toOption.get mustBe a[NotFoundError]
         }
       }
     }
@@ -170,10 +170,10 @@ class GroupServiceTest extends BaseServiceTest with GroupGenerator with GroupFix
       when(fixture.groupDaoMock.findById(group.id)).thenReturn(toFuture(Some(group)))
       when(fixture.groupDaoMock.findById(group.parentId.get)).thenReturn(toFuture(Some(group)))
       when(fixture.groupDaoMock.findChildrenIds(group.id)).thenReturn(toFuture(Seq(group.parentId.get)))
-      val result = wait(fixture.service.update(group)(admin))
+      val result = wait(fixture.service.update(group)(admin).run)
 
       result mustBe 'left
-      result.left.get mustBe a[ConflictError]
+      result.swap.toOption.get mustBe a[ConflictError]
     }
 
     "update group in db" in {
@@ -183,10 +183,10 @@ class GroupServiceTest extends BaseServiceTest with GroupGenerator with GroupFix
       when(fixture.groupDaoMock.findById(group.parentId.get)).thenReturn(toFuture(Some(group)))
       when(fixture.groupDaoMock.findChildrenIds(group.id)).thenReturn(toFuture(Nil))
       when(fixture.groupDaoMock.update(group)).thenReturn(toFuture(group))
-      val result = wait(fixture.service.update(group)(admin))
+      val result = wait(fixture.service.update(group)(admin).run)
 
       result mustBe 'right
-      result.right.get mustBe group
+      result.toOption.get mustBe group
     }
   }
 
@@ -195,10 +195,10 @@ class GroupServiceTest extends BaseServiceTest with GroupGenerator with GroupFix
       forAll { (id: Long) =>
         val fixture = getFixture
         when(fixture.groupDaoMock.findById(id)).thenReturn(toFuture(None))
-        val result = wait(fixture.service.delete(id)(admin))
+        val result = wait(fixture.service.delete(id)(admin).run)
 
         result mustBe 'left
-        result.left.get mustBe a[NotFoundError]
+        result.swap.toOption.get mustBe a[NotFoundError]
 
         verify(fixture.groupDaoMock, times(1)).findById(id)
         verifyNoMoreInteractions(fixture.groupDaoMock)
@@ -210,10 +210,10 @@ class GroupServiceTest extends BaseServiceTest with GroupGenerator with GroupFix
       val group = Groups(2)
       when(fixture.groupDaoMock.findById(group.id)).thenReturn(toFuture(Some(group)))
       when(fixture.groupDaoMock.findChildrenIds(group.id)).thenReturn(toFuture(Seq(1L, 2L, 3L, 4L)))
-      val result = wait(fixture.service.delete(group.id)(admin))
+      val result = wait(fixture.service.delete(group.id)(admin).run)
 
       result mustBe 'left
-      result.left.get mustBe a[ConflictError]
+      result.swap.toOption.get mustBe a[ConflictError]
     }
 
     "return conflict if users in group exists" in {
@@ -223,10 +223,10 @@ class GroupServiceTest extends BaseServiceTest with GroupGenerator with GroupFix
       when(fixture.groupDaoMock.findChildrenIds(group.id)).thenReturn(toFuture(Nil))
       when(fixture.userGroupDaoMock.exists(groupId = eqTo(Some(group.id)), userId = any[Option[Long]]))
         .thenReturn(toFuture(true))
-      val result = wait(fixture.service.delete(group.id)(admin))
+      val result = wait(fixture.service.delete(group.id)(admin).run)
 
       result mustBe 'left
-      result.left.get mustBe a[ConflictError]
+      result.swap.toOption.get mustBe a[ConflictError]
     }
 
     "delete group from db" in {
@@ -236,7 +236,7 @@ class GroupServiceTest extends BaseServiceTest with GroupGenerator with GroupFix
       when(fixture.groupDaoMock.findChildrenIds(group.id)).thenReturn(toFuture(Nil))
       when(fixture.groupDaoMock.delete(group.id)).thenReturn(toFuture(1))
       when(fixture.userGroupDaoMock.exists(groupId = eqTo(Some(group.id)), userId = any[Option[Long]])).thenReturn(toFuture(false))
-      val result = wait(fixture.service.delete(group.id)(admin))
+      val result = wait(fixture.service.delete(group.id)(admin).run)
 
       result mustBe 'right
     }

@@ -11,9 +11,10 @@ libraryDependencies ++= Seq(
   "org.postgresql" % "postgresql" % "42.0.0",
   "com.mohiva" %% "play-silhouette" % "4.0.0",
   "com.mohiva" %% "play-silhouette-persistence" % "4.0.0",
-  "org.scala-lang.modules" %% "scala-async" % "0.9.6",
-  "org.davidbild" % "tristate-play_2.11" % "0.2.0",
-  filters
+//  "org.scala-lang.modules" %% "scala-async" % "0.9.6",
+  "org.davidbild" %% "tristate-play" % "0.2.0",
+  "org.scalaz" %% "scalaz-core" % "7.2.10",
+    filters
 )
 
 libraryDependencies ++= Seq(
@@ -23,7 +24,7 @@ libraryDependencies ++= Seq(
   "org.flywaydb" % "flyway-core" % "4.1.2",
   "org.mockito" % "mockito-core" % "2.7.19",
   "com.ninja-squad" % "DbSetup" % "2.1.0",
-  "com.mohiva" % "play-silhouette-testkit_2.11" % "4.0.0"
+  "com.mohiva" %% "play-silhouette-testkit" % "4.0.0"
 ).map(_ % Test)
 
 routesImport ++= Seq("controllers.api.TristateQueryBinder._")

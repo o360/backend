@@ -1,0 +1,94 @@
+package utils.implicits
+
+import play.api.libs.concurrent.Execution.Implicits._
+import utils.errors.ApplicationError
+
+import scala.concurrent.Future
+import scalaz.Scalaz._
+import scalaz.{EitherT, Monad, OptionT, \/}
+
+/**
+  * Implicits for working with futures.
+  */
+object FutureLifting {
+
+  implicit val FutureMonad = new Monad[Future] {
+    def point[A](a: => A): Future[A] = Future(a)
+    def bind[A, B](fa: Future[A])(f: (A) => Future[B]): Future[B] = fa flatMap f
+  }
+
+  implicit class AnyDecorator[A](a: A) {
+    /**
+      * Converts value to future.
+      */
+    def toFuture: Future[A] = Future.successful(a)
+
+    /**
+      * Lifts value to the right.
+      */
+    def lift: EitherT[Future, ApplicationError, A] = {
+      EitherT.eitherT(a.right[ApplicationError].toFuture)
+    }
+  }
+
+  implicit class FutureOptionDecorator[A](fo: Future[Option[A]]) {
+    /**
+      * Lifts option value to the right. If option is empty, lifts error to the left.
+      *
+      * @param error error for empty option
+      */
+    def liftRight(error: => ApplicationError): EitherT[Future, ApplicationError, A] = {
+      OptionT.optionT(fo).toRight(error)
+    }
+  }
+
+  implicit class OptionErrorDecorator[E <: ApplicationError](o: Option[E]) {
+    /**
+      * Lifts option value to the left. If option is empty, lifts Unit to the right.
+      */
+    def liftLeft: EitherT[Future, ApplicationError, Unit] = {
+      EitherT.eitherT(Future.successful(\/.fromEither(o.toLeft(()))))
+    }
+  }
+
+  implicit class FutureDecorator[A](f: Future[A]) {
+    /**
+      * Lifts futures value to the right.
+      */
+    def lift: EitherT[Future, ApplicationError, A] = {
+      EitherT.eitherT(f.map(_.right[ApplicationError]))
+    }
+  }
+
+  implicit class FutureBooleanDecorator(val fb: Future[Boolean]) {
+
+    def &&(other: => Future[Boolean]): Future[Boolean] =
+      fb.flatMap(!_ ? false.toFuture | other)
+
+    def ||(other: => Future[Boolean]): Future[Boolean] =
+      fb.flatMap(_ ? true.toFuture | other)
+
+    def unary_! : Future[Boolean] = fb.map(!_)
+  }
+
+  /**
+    * If condition is false, lifts error to the left, otherwise lifts Unit to the right.
+    *
+    * @param conditionF future of condition
+    * @param error      error for negative condition
+    */
+  def ensure(conditionF: Future[Boolean])(error: => ApplicationError): EitherT[Future, ApplicationError, Unit] = {
+    EitherT.eitherT(conditionF.map(_ ? ().right[ApplicationError] | error.left[Unit]))
+  }
+
+  /**
+    * If condition is false, lifts error to the left, otherwise lifts Unit to the right.
+    *
+    * @param condition condition
+    * @param error     error for negative condition
+    */
+  def ensure(condition: Boolean)(error: => ApplicationError): EitherT[Future, ApplicationError, Unit] = {
+    EitherT.eitherT((condition ? ().right[ApplicationError] | error.left[Unit]).toFuture)
+  }
+}
+

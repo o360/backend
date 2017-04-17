@@ -7,13 +7,12 @@ import controllers.api.Response
 import controllers.api.user.ApiUser
 import controllers.authorization.AllowedRole
 import org.davidbild.tristate.Tristate
-import play.api.libs.concurrent.Execution.Implicits._
 import services.UserService
 import silhouette.DefaultEnv
+import utils.implicits.FutureLifting._
 import utils.listmeta.actions.ListActions
 import utils.listmeta.sorting.Sorting
 
-import scala.async.Async._
 
 /**
   * User controller.
@@ -31,12 +30,10 @@ class UserController @Inject()(
     * Returns user by ID.
     */
   def getById(id: Long) = silhouette.SecuredAction.async { implicit request =>
-    async {
-      toResult(Ok) {
-        for {
-          user <- await(userService.getById(id)).right
-        } yield ApiUser(user)
-      }
+    toResult(Ok) {
+      userService
+        .getById(id)
+        .map(ApiUser(_))
     }
   }
 
@@ -48,17 +45,14 @@ class UserController @Inject()(
     status: Option[ApiUser.ApiStatus],
     groupId: Tristate[Long]
   ) = (silhouette.SecuredAction(AllowedRole.admin) andThen ListAction).async { implicit request =>
-    async {
-      toResult(Ok) {
-        val users = await(userService.list(
-          role.map(_.value),
-          status.map(_.value),
-          groupId
-        ))
-        Response.List(users) {
-          ApiUser(_)
+    toResult(Ok) {
+      userService
+        .list(role.map(_.value), status.map(_.value), groupId)
+        .map {
+          users => Response.List(users) {
+            user => ApiUser(user)
+          }
         }
-      }
     }
   }
 
@@ -66,13 +60,11 @@ class UserController @Inject()(
     * Updates user.
     */
   def update(id: Long) = silhouette.SecuredAction.async(parse.json[ApiUser]) { implicit request =>
-    async {
-      toResult(Ok) {
-        val draft = request.body.copy(id = id)
-        for {
-          updatedUser <- await(userService.update(draft.toModel)).right
-        } yield ApiUser(updatedUser)
-      }
+    toResult(Ok) {
+      val draft = request.body.copy(id = id)
+      userService
+        .update(draft.toModel)
+        .map(ApiUser(_))
     }
   }
 
@@ -80,11 +72,9 @@ class UserController @Inject()(
     * Deletes user.
     */
   def delete(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
-    async {
-      await(userService.delete(id)) match {
-        case Left(error) => toResult(error)
-        case Right(_) => NoContent
-      }
-    }
+    userService.delete(id).fold(
+      error => toResult(error),
+      _ => NoContent
+    )
   }
 }

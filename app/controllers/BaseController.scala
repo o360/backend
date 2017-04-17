@@ -7,7 +7,11 @@ import play.api.libs.json.{Json, Writes}
 import play.api.mvc._
 import silhouette.DefaultEnv
 import utils.errors.{ApplicationError, ErrorHelper}
+import utils.implicits.FutureLifting._
 import utils.listmeta.actions.ListRequest
+
+import scala.concurrent.Future
+import scalaz.EitherT
 
 /**
   * Base class for controllers.
@@ -42,11 +46,11 @@ trait BaseController extends Controller {
     * @param writes writes to convert result to JSON
     */
   def toResult[E <: ApplicationError, T <: Response](status: Status)
-    (res: Either[E, T])(implicit writes: Writes[T]): Result = {
-    res match {
-      case Left(error) => toResult(error)
-      case Right(data) => toResult(data, status)
-    }
+    (res: EitherT[Future, E, T])(implicit writes: Writes[T]): Future[Result] = {
+    res.fold(
+      error => toResult(error),
+      data => toResult(data, status)
+    )
   }
 
   /**
