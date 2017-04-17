@@ -8,7 +8,7 @@ import com.mohiva.play.silhouette.impl.providers.{CommonSocialProfileBuilder, So
 import controllers.api.user.ApiUser
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json.Json
-import play.api.mvc.Action
+import play.api.mvc.{Action, Result}
 import services.UserService
 import silhouette.DefaultEnv
 import utils.errors.AuthenticationError
@@ -37,24 +37,31 @@ class Authentication @Inject()(
     * @return JWT token
     */
   def auth(provider: String) = Action.async { implicit request =>
+
+    def retrieveToken(
+      p: SocialProvider with CommonSocialProfileBuilder,
+      authResult: Either[Result, SocialProvider#A]
+    ) = authResult match {
+      case Left(_) => toResult(AuthenticationError.General).toFuture
+      case Right(authInfo) =>
+        for {
+          profile <- p.retrieveProfile(authInfo.asInstanceOf[p.A])
+          _ <- userService.createIfNotExist(profile)
+          authenticator <- silhouette.env.authenticatorService.create(profile.loginInfo)
+          token <- silhouette.env.authenticatorService.init(authenticator)
+        } yield Ok(Json.obj("token" -> token))
+    }
+
     socialProviderRegistry.get[SocialProvider](provider) match {
       case Some(p: SocialProvider with CommonSocialProfileBuilder) =>
-        (for {
+        val resultF = for {
           authResult <- p.authenticate()
-          result <- authResult match {
-            case Left(_) => toResult(AuthenticationError.General).toFuture
-            case Right(authInfo) =>
-              for {
-                profile <- p.retrieveProfile(authInfo)
-                _ <- userService.createIfNotExist(profile)
-                authenticator <- silhouette.env.authenticatorService.create(profile.loginInfo)
-                token <- silhouette.env.authenticatorService.init(authenticator)
-              } yield Ok(Json.obj("token" -> token))
-          }
-        } yield result)
-          .recover {
-            case _: SilhouetteException => toResult(AuthenticationError.General)
-          }
+          result <- retrieveToken(p, authResult)
+        } yield result
+
+        resultF.recover {
+          case _: SilhouetteException => toResult(AuthenticationError.General)
+        }
 
       case _ => toResult(AuthenticationError.ProviderNotSupported(provider)).toFuture
     }

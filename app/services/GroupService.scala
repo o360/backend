@@ -54,7 +54,7 @@ class GroupService @Inject()(
     */
   def create(group: GroupModel)(implicit account: User): SingleResult = {
     for {
-      _ <- checkParentId(group)
+      _ <- validateParentId(group)
       created <- groupDao.create(group).lift
     } yield created
   }
@@ -67,7 +67,7 @@ class GroupService @Inject()(
   def update(draft: GroupModel)(implicit account: User): SingleResult = {
     for {
       _ <- getById(draft.id)
-      _ <- checkParentId(draft)
+      _ <- validateParentId(draft)
 
       updated <- groupDao.update(draft).lift
     } yield updated
@@ -102,7 +102,7 @@ class GroupService @Inject()(
     * @param group group model
     * @return either error or unit
     */
-  private def checkParentId(group: GroupModel)(implicit account: User): UnitResult = {
+  private def validateParentId(group: GroupModel)(implicit account: User): UnitResult = {
     val groupIsNew = group.id == 0
 
     group.parentId match {

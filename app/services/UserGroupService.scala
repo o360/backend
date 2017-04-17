@@ -26,7 +26,7 @@ class UserGroupService @Inject()(
     * @param userId  user ID
     * @return none in case of success, some error otherwise
     */
-  private def checkUserGroup(groupId: Long, userId: Long)(implicit account: User): UnitResult = {
+  private def validateUserGroup(groupId: Long, userId: Long)(implicit account: User): UnitResult = {
     for {
       _ <- userService.getById(userId)
       _ <- groupService.getById(groupId)
@@ -41,7 +41,7 @@ class UserGroupService @Inject()(
     */
   def add(groupId: Long, userId: Long)(implicit account: User): UnitResult = {
     for {
-      _ <- checkUserGroup(groupId, userId)
+      _ <- validateUserGroup(groupId, userId)
 
       isAlreadyExists <- userGroupDao.exists(Some(groupId), Some(userId)).lift
       _ <- { isAlreadyExists ? ().toFuture | userGroupDao.add(groupId, userId) }.lift
@@ -56,7 +56,7 @@ class UserGroupService @Inject()(
     */
   def remove(groupId: Long, userId: Long)(implicit account: User): UnitResult = {
     for {
-      _ <- checkUserGroup(groupId, userId)
+      _ <- validateUserGroup(groupId, userId)
       _ <- userGroupDao.remove(groupId, userId).lift
     } yield ()
   }

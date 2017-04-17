@@ -37,7 +37,7 @@ class UserService @Inject()(
   def createIfNotExist(socialProfile: CommonSocialProfile): Future[Unit] = {
     val loginInfo = socialProfile.loginInfo
     retrieve(loginInfo).flatMap {
-      case Some(_) => Future.successful(())
+      case Some(_) => ().toFuture
       case None =>
         val newUser = UserModel.fromSocialProfile(socialProfile)
         userDao.create(newUser, loginInfo.providerID, loginInfo.providerKey).map(_ => ())
