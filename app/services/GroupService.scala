@@ -82,9 +82,9 @@ class GroupService @Inject()(
     for {
       _ <- getById(id)
 
-      children <- groupDao.findChildrenIds(id).lift
-      _ <- ensure(children.isEmpty) {
-        ConflictError.Group.ChildrenExists(id, children)
+      childList <- groupDao.findChildrenIds(id).lift
+      _ <- ensure(childList.isEmpty) {
+        ConflictError.Group.ChildrenExists(id, childList)
       }
 
       _ <- ensure(!userGroupDao.exists(groupId = Some(id))) {

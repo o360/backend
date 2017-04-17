@@ -31,7 +31,8 @@ class UserController @Inject()(
     */
   def getById(id: Long) = silhouette.SecuredAction.async { implicit request =>
     toResult(Ok) {
-      userService.getById(id)
+      userService
+        .getById(id)
         .map(ApiUser(_))
     }
   }
@@ -45,10 +46,11 @@ class UserController @Inject()(
     groupId: Tristate[Long]
   ) = (silhouette.SecuredAction(AllowedRole.admin) andThen ListAction).async { implicit request =>
     toResult(Ok) {
-      userService.list(role.map(_.value), status.map(_.value), groupId)
+      userService
+        .list(role.map(_.value), status.map(_.value), groupId)
         .map {
-          Response.List(_) {
-            ApiUser(_)
+          users => Response.List(users) {
+            user => ApiUser(user)
           }
         }
     }
@@ -60,7 +62,8 @@ class UserController @Inject()(
   def update(id: Long) = silhouette.SecuredAction.async(parse.json[ApiUser]) { implicit request =>
     toResult(Ok) {
       val draft = request.body.copy(id = id)
-      userService.update(draft.toModel)
+      userService
+        .update(draft.toModel)
         .map(ApiUser(_))
     }
   }

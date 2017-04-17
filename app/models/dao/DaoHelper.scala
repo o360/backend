@@ -108,15 +108,11 @@ trait DaoHelper {
       meta.pagination match {
         case Pagination.WithoutPages =>
           ListWithTotal(resultSize, elements).toFuture
+        case p@Pagination.WithPages(size, number) if resultSize < size && resultSize > 0 =>
+          ListWithTotal(p.offset + resultSize, elements).toFuture
         case p@Pagination.WithPages(size, number) =>
-          if (resultSize < size && resultSize > 0)
-            ListWithTotal(p.offset + resultSize, elements).toFuture
-          else {
-            db.run(query.length.result).map(ListWithTotal(_, elements))
-          }
+          db.run(query.length.result).map(ListWithTotal(_, elements))
       }
-
     }
   }
-
 }

@@ -39,18 +39,23 @@ class Authentication @Inject()(
   def auth(provider: String) = Action.async { implicit request =>
     socialProviderRegistry.get[SocialProvider](provider) match {
       case Some(p: SocialProvider with CommonSocialProfileBuilder) =>
-        p.authenticate().flatMap {
-          case Left(_) => toResult(AuthenticationError.General).toFuture
-          case Right(authInfo) =>
-            for {
-              profile <- p.retrieveProfile(authInfo)
-              _ <- userService.createIfNotExist(profile)
-              authenticator <- silhouette.env.authenticatorService.create(profile.loginInfo)
-              token <- silhouette.env.authenticatorService.init(authenticator)
-            } yield Ok(Json.obj("token" -> token))
-        }.recover {
-          case _: SilhouetteException => toResult(AuthenticationError.General)
-        }
+        (for {
+          authResult <- p.authenticate()
+          result <- authResult match {
+            case Left(_) => toResult(AuthenticationError.General).toFuture
+            case Right(authInfo) =>
+              for {
+                profile <- p.retrieveProfile(authInfo)
+                _ <- userService.createIfNotExist(profile)
+                authenticator <- silhouette.env.authenticatorService.create(profile.loginInfo)
+                token <- silhouette.env.authenticatorService.init(authenticator)
+              } yield Ok(Json.obj("token" -> token))
+          }
+        } yield result)
+          .recover {
+            case _: SilhouetteException => toResult(AuthenticationError.General)
+          }
+
       case _ => toResult(AuthenticationError.ProviderNotSupported(provider)).toFuture
     }
   }

@@ -39,13 +39,7 @@ class UserService @Inject()(
     retrieve(loginInfo).flatMap {
       case Some(_) => Future.successful(())
       case None =>
-        val newUser = UserModel(
-          0,
-          socialProfile.fullName,
-          socialProfile.email,
-          UserModel.Role.User,
-          UserModel.Status.New
-        )
+        val newUser = UserModel.fromSocialProfile(socialProfile)
         userDao.create(newUser, loginInfo.providerID, loginInfo.providerKey).map(_ => ())
     }
   }
