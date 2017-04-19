@@ -126,13 +126,14 @@ trait FormComponent {
 }
 
 /**
-  *
+  * Form DAO.
   */
 @Singleton
 class FormDao @Inject()(
   protected val dbConfigProvider: DatabaseConfigProvider
 ) extends HasDatabaseConfigProvider[JdbcProfile]
-  with FormComponent with DaoHelper {
+  with FormComponent
+  with DaoHelper {
 
   import driver.api._
 
