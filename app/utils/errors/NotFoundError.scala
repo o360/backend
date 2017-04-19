@@ -13,5 +13,5 @@ object NotFoundError {
 
   case class Group(id: Long) extends NotFoundError("NOTFOUND-GROUP", s"Can't find group with id:$id")
 
-  case class Form(id: Long) extends NotFoundError("NOTFOUND-Form", s"Can't find form with id:$id")
+  case class Form(id: Long) extends NotFoundError("NOTFOUND-FORM", s"Can't find form with id:$id")
 }
