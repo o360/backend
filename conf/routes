@@ -326,3 +326,126 @@ POST          /groups/:groupId/users/:userId        controllers.UserGroupControl
 #       $ref: '#/responses/InternalServerError'
 ###
 DELETE        /groups/:groupId/users/:userId        controllers.UserGroupController.remove(groupId: Long, userId: Long)
+
+###
+# summary: Returns form template with elements by ID
+# tags:
+#   - Form template
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.form.ApiForm'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET           /forms/:id                            controllers.FormController.getById(id: Long)
+
+###
+# summary: Returns list of form templates without elements
+# tags:
+#   - Form template
+# parameters:
+#   - name: sort
+#     in: query
+#     type: string
+#     pattern: '^-?\w+(,-?\w+)*$'
+#     description: 'Available fields: id, name. Format: field1,-field2,...'
+#   - $ref: '#/parameters/pageSize'
+#   - $ref: '#/parameters/pageNumber'
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.form.ApiForm'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET           /forms                                controllers.FormController.getList
+
+###
+# summary: Creates form template
+# tags:
+#   - Form template
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.form.ApiForm'
+# responses:
+#   201:
+#       description: Form created
+#       schema:
+#           $ref: '#/definitions/controllers.api.form.ApiForm'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST          /forms                                controllers.FormController.create
+
+###
+# summary: Updates form template
+# tags:
+#   - Form template
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.form.ApiForm'
+# responses:
+#   200:
+#       description: Form updated
+#       schema:
+#           $ref: '#/definitions/controllers.api.form.ApiForm'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+PUT           /forms/:id                            controllers.FormController.update(id: Long)
+
+###
+# summary: Removes form template by ID
+# tags:
+#   - Form template
+# responses:
+#   204:
+#       description: Form deleted successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+DELETE        /forms/:id                            controllers.FormController.delete(id: Long)

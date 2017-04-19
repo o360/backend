@@ -26,4 +26,12 @@ object ConflictError {
     case class GroupExists(id: Long)
       extends ConflictError("CONFLICT-USER-1", s"Can't delete user id:$id. Group with this user exists")
   }
+
+  object Form {
+    case class ElementValuesMissed(element: String)
+      extends ConflictError("CONFLICT-FORM-1", s"Missed values list in [$element]")
+
+    case class DefaultValueNotInValues(element: String)
+      extends ConflictError("CONFLICT-FORM-2", s"Default value not in values list in [$element]")
+  }
 }
