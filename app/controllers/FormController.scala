@@ -56,7 +56,7 @@ class FormController @Inject()(
     */
   def create = silhouette.SecuredAction(AllowedRole.admin).async(parse.json[ApiForm]) { implicit request =>
     toResult(Created) {
-      val form = request.body.toModel
+      val form = request.body.toModel()
       formService
         .create(form)
         .map(ApiForm(_))
@@ -68,7 +68,7 @@ class FormController @Inject()(
     */
   def update(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async(parse.json[ApiForm]) { implicit request =>
     toResult(Ok) {
-      val form = request.body.toModel.copy(id = id)
+      val form = request.body.toModel(Some(id))
       formService
         .update(form)
         .map(ApiForm(_))

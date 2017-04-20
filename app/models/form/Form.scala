@@ -16,10 +16,7 @@ case class Form(
   /**
     * Returns short form.
     */
-  def toShort = FormShort(
-    id,
-    name
-  )
+  def toShort = FormShort(id, name)
 }
 
 object Form {

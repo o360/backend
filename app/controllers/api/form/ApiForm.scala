@@ -17,8 +17,8 @@ case class ApiForm(
   elements: Option[Seq[ApiForm.Element]]
 ) extends Response {
 
-  def toModel = Form(
-    id.getOrElse(0),
+  def toModel(newId: Option[Long] = None) = Form(
+    newId.getOrElse(id.getOrElse(0)),
     name,
     elements.getOrElse(Nil).map(_.toModel)
   )

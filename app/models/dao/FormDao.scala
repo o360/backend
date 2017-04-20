@@ -158,7 +158,7 @@ class FormDao @Inject()(
     * @return created form model with ID
     */
   def create(form: FormShort): Future[FormShort] = {
-    db.run((Forms returning Forms.map(_.id) into ((item, id) => item.copy(id = id))) += form)
+    db.run(Forms.returning(Forms.map(_.id)).into((item, id) => item.copy(id = id)) += form)
   }
 
   /**
@@ -225,9 +225,7 @@ class FormDao @Inject()(
         elementIdF.flatMap { elementId: Long =>
           db.run(FormElementValues ++= values.map(_.copy(elementId = elementId)))
         }
-      } else {
-        elementIdF
-      }
+      } else elementIdF
     }
 
     Future.sequence(resultsF).map(_ => elements)
