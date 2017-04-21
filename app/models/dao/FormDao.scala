@@ -219,16 +219,16 @@ class FormDao @Inject()(
         (DbFormElement.fromModel(formId, element, index), values)
       }
 
-    val resultsF = dbModels.map { case (element, values) =>
-      val elementIdF = db.run(FormElements.returning(FormElements.map(_.id)) += element)
+    val results = dbModels.map { case (element, values) =>
+      val elementId = db.run(FormElements.returning(FormElements.map(_.id)) += element)
       if (values.nonEmpty) {
-        elementIdF.flatMap { elementId: Long =>
+        elementId.flatMap { elementId: Long =>
           db.run(FormElementValues ++= values.map(_.copy(elementId = elementId)))
         }
-      } else elementIdF
+      } else elementId
     }
 
-    Future.sequence(resultsF).map(_ => elements)
+    Future.sequence(results).map(_ => elements)
   }
 
   /**
