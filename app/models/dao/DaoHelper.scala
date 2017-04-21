@@ -115,4 +115,22 @@ trait DaoHelper {
       }
     }
   }
+
+  implicit class SequenceExtension[A](val sequence: Seq[A]) {
+
+    /**
+      * Performs group by preserving keys order.
+      *
+      * @param f key selector
+      * @tparam K key type
+      */
+    def groupByWithOrder[K](f: (A) => K): Seq[(K, Seq[A])] = {
+      sequence
+        .zipWithIndex
+        .groupBy(x => f(x._1))
+        .toSeq
+        .sortBy(_._2.head._2)
+        .map(x => x._1 -> x._2.map(_._1))
+    }
+  }
 }

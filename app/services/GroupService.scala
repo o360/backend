@@ -7,7 +7,7 @@ import models.group.{Group => GroupModel}
 import models.user.User
 import org.davidbild.tristate.Tristate
 import play.api.libs.concurrent.Execution.Implicits._
-import utils.errors.{ConflictError, NotFoundError}
+import utils.errors.{ConflictError, ExceptionHandler, NotFoundError}
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
 
@@ -91,7 +91,7 @@ class GroupService @Inject()(
         ConflictError.Group.UserExists(id)
       }
 
-      _ <- groupDao.delete(id).lift
+      _ <- groupDao.delete(id).lift(ExceptionHandler.sql)
     } yield ()
   }
 
