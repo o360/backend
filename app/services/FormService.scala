@@ -6,7 +6,7 @@ import models.ListWithTotal
 import models.dao.FormDao
 import models.form.{Form, FormShort}
 import models.user.User
-import utils.errors.{ApplicationError, ConflictError, NotFoundError}
+import utils.errors.{ApplicationError, ConflictError, ExceptionHandler, NotFoundError}
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
 
@@ -86,7 +86,7 @@ class FormService @Inject()(
   def delete(id: Long)(implicit account: User): UnitResult = {
     for {
       _ <- getById(id)
-      _ <- formDao.delete(id).lift
+      _ <- formDao.delete(id).lift(ExceptionHandler.sql)
     } yield ()
   }
 

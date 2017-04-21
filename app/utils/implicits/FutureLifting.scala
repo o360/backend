@@ -1,7 +1,7 @@
 package utils.implicits
 
 import play.api.libs.concurrent.Execution.Implicits._
-import utils.errors.ApplicationError
+import utils.errors.{ApplicationError, ExceptionHandler}
 
 import scala.concurrent.Future
 import scalaz.Scalaz._
@@ -57,6 +57,16 @@ object FutureLifting {
       */
     def lift: EitherT[Future, ApplicationError, A] = {
       EitherT.eitherT(f.map(_.right[ApplicationError]))
+    }
+
+    /**
+      * Lifts future value to the right.
+      * If future is failed, tries to recover it with pf
+      *
+      * @param pf exceptions mapping
+      */
+    def lift(pf: PartialFunction[Throwable, ApplicationError]): EitherT[Future, ApplicationError, A] = {
+      EitherT.eitherT(f.map(_.right[ApplicationError]).recover(pf.andThen(_.left)))
     }
   }
 

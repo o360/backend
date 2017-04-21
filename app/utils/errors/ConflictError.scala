@@ -5,10 +5,14 @@ package utils.errors
   */
 abstract class ConflictError(
   code: String,
-  message: String
-) extends ApplicationError(code, message)
+  message: String,
+  logMessage: Option[String] = None
+) extends ApplicationError(code, message, logMessage)
 
 object ConflictError {
+  case class General(logMessage: String)
+    extends ConflictError("CONFLICT-GENERAL", "Integrity violation", Some(logMessage))
+
   object Group {
     case class ParentId(id: Long)
       extends ConflictError("CONFLICT-GROUP-1", s"Group id:$id can't be parent to itself")
