@@ -11,6 +11,7 @@ case class ApiProject(
   id: Option[Long],
   name: String,
   description: Option[String],
+  groupAuditor: Long,
   relations: Seq[ApiProject.Relation]
 ) extends Response {
 
@@ -18,6 +19,7 @@ case class ApiProject(
     newId.getOrElse(id.getOrElse(0)),
     name,
     description,
+    groupAuditor,
     relations.map(_.toModel)
   )
 }
@@ -30,14 +32,12 @@ object ApiProject {
   case class Relation(
     groupFrom: Long,
     groupTo: Long,
-    groupAuditor: Long,
     form: Long
   ) {
 
     def toModel = Project.Relation(
       groupFrom,
       groupTo,
-      groupAuditor,
       form
     )
   }
@@ -46,7 +46,6 @@ object ApiProject {
     def apply(r: Project.Relation): Relation = Relation(
       r.groupFrom,
       r.groupTo,
-      r.groupAuditor,
       r.form
     )
   }
@@ -58,6 +57,7 @@ object ApiProject {
     Some(project.id),
     project.name,
     project.description,
+    project.groupAuditor,
     project.relations.map(Relation(_))
   )
 }
