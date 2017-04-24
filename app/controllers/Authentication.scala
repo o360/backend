@@ -10,7 +10,7 @@ import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Result}
 import services.UserService
-import silhouette.DefaultEnv
+import silhouette.{CustomSocialProfile, DefaultEnv}
 import utils.errors.AuthenticationError
 import utils.implicits.FutureLifting._
 
@@ -39,21 +39,21 @@ class Authentication @Inject()(
   def auth(provider: String) = Action.async { implicit request =>
 
     def retrieveToken(
-      p: SocialProvider with CommonSocialProfileBuilder,
+      p: SocialProvider,
       authResult: Either[Result, SocialProvider#A]
     ) = authResult match {
       case Left(_) => toResult(AuthenticationError.General).toFuture
       case Right(authInfo) =>
         for {
           profile <- p.retrieveProfile(authInfo.asInstanceOf[p.A])
-          _ <- userService.createIfNotExist(profile)
+          _ <- userService.createIfNotExist(profile.asInstanceOf[CustomSocialProfile])
           authenticator <- silhouette.env.authenticatorService.create(profile.loginInfo)
           token <- silhouette.env.authenticatorService.init(authenticator)
         } yield Ok(Json.obj("token" -> token))
     }
 
     socialProviderRegistry.get[SocialProvider](provider) match {
-      case Some(p: SocialProvider with CommonSocialProfileBuilder) =>
+      case Some(p: SocialProvider) =>
         val resultF = for {
           authResult <- p.authenticate()
           result <- retrieveToken(p, authResult)

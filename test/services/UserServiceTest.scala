@@ -1,13 +1,13 @@
 package services
 
 import com.mohiva.play.silhouette.api.LoginInfo
-import com.mohiva.play.silhouette.impl.providers.CommonSocialProfile
 import models.ListWithTotal
 import models.dao.{UserGroupDao, UserDao => UserDAO}
 import models.user.{User => UserModel}
 import org.davidbild.tristate.Tristate
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
+import silhouette.CustomSocialProfile
 import testutils.fixture.UserFixture
 import testutils.generator.{SocialProfileGenerator, TristateGenerator, UserGenerator}
 import utils.errors.{AuthorizationError, ConflictError, NotFoundError}
@@ -20,7 +20,7 @@ import scala.concurrent.Future
   */
 class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProfileGenerator with UserFixture with TristateGenerator {
 
-  private val admin = UserModel(1, None, None, UserModel.Role.Admin, UserModel.Status.Approved)
+  private val admin = UserFixture.admin
 
   private case class TestFixture(
     userDaoMock: UserDAO,
@@ -51,7 +51,7 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
 
   "createIfNotExist" should {
     "check user for existing every time" in {
-      forAll { (profile: CommonSocialProfile, user: Option[UserModel]) =>
+      forAll { (profile: CustomSocialProfile, user: Option[UserModel]) =>
         val fixture = getFixture
         when(fixture.userDaoMock.findByProvider(profile.loginInfo.providerID, profile.loginInfo.providerKey))
           .thenReturn(toFuture(user))
@@ -64,7 +64,7 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
     }
 
     "does nothing if user exists" in {
-      forAll { (profile: CommonSocialProfile) =>
+      forAll { (profile: CustomSocialProfile) =>
         val fixture = getFixture
         when(fixture.userDaoMock.findByProvider(profile.loginInfo.providerID, profile.loginInfo.providerKey))
           .thenReturn(toFuture(Some(Users.head)))
@@ -77,7 +77,7 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
     }
 
     "create user if not exist" in {
-      forAll { (profile: CommonSocialProfile, user: Option[UserModel]) =>
+      forAll { (profile: CustomSocialProfile, user: Option[UserModel]) =>
         val fixture = getFixture
         when(fixture.userDaoMock.findByProvider(profile.loginInfo.providerID, profile.loginInfo.providerKey))
           .thenReturn(toFuture(None))
@@ -95,6 +95,7 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
           0,
           profile.fullName,
           profile.email,
+          profile.gender,
           UserModel.Role.User,
           UserModel.Status.New
         )
@@ -215,6 +216,7 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
         val updatedUser = user.copy(
           name = Some("name"),
           email = Some("email"),
+          gender = Some(UserModel.Gender.Male),
           role = UserModel.Role.Admin,
           status = UserModel.Status.Approved
         )

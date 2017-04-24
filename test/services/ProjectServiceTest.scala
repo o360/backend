@@ -5,10 +5,9 @@ import java.sql.SQLException
 import models.ListWithTotal
 import models.dao.ProjectDao
 import models.project.Project
-import models.user.User
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
-import testutils.fixture.ProjectFixture
+import testutils.fixture.{ProjectFixture, UserFixture}
 import testutils.generator.ProjectGenerator
 import utils.errors.{ConflictError, NotFoundError}
 import utils.listmeta.ListMeta
@@ -20,7 +19,7 @@ import scala.concurrent.Future
   */
 class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with ProjectFixture {
 
-  private val admin = User(1, None, None, User.Role.Admin, User.Status.Approved)
+  private val admin = UserFixture.admin
 
   private case class TestFixture(
     projectDaoMock: ProjectDao,

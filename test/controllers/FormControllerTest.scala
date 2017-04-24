@@ -13,6 +13,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import services.FormService
 import silhouette.DefaultEnv
+import testutils.fixture.UserFixture
 import testutils.generator.FormGenerator
 import utils.errors.{ApplicationError, NotFoundError}
 import utils.listmeta.ListMeta
@@ -37,7 +38,7 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
     TestFixture(silhouette, formServiceMock, controller)
   }
 
-  private val admin = User(1, None, None, User.Role.Admin, User.Status.Approved)
+  private val admin = UserFixture.admin
 
   "GET /forms/id" should {
     "return not found if form not found" in {

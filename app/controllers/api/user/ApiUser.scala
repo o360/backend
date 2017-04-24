@@ -12,6 +12,7 @@ import play.api.libs.json._
   * @param id     DB ID
   * @param name   full name
   * @param email  email
+  * @param gender gender
   * @param role   role
   * @param status status
   */
@@ -19,6 +20,7 @@ case class ApiUser(
   id: Long,
   name: Option[String],
   email: Option[String],
+  gender: Option[ApiUser.ApiGender],
   role: ApiUser.ApiRole,
   status: ApiUser.ApiStatus
 ) extends Response {
@@ -27,6 +29,7 @@ case class ApiUser(
     id = id,
     name = name,
     email = email,
+    gender = gender.map(_.value),
     role = role.value,
     status = status.value
   )
@@ -53,6 +56,7 @@ object ApiUser {
     user.id,
     user.name,
     user.email,
+    user.gender.map(ApiGender(_)),
     ApiRole(user.role),
     ApiStatus(user.status)
   )
@@ -78,6 +82,18 @@ object ApiUser {
     override protected val mapping: Map[String, Status] = Map(
       "new" -> User.Status.New,
       "approved" -> User.Status.Approved
+    )
+  }
+
+  /**
+    * Format for user gender.
+    */
+  case class ApiGender(value: User.Gender) extends EnumFormat[User.Gender]
+  object ApiGender extends EnumFormatHelper[User.Gender, ApiGender]("gender") {
+
+    override protected def mapping: Map[String, User.Gender] = Map(
+      "male" -> User.Gender.Male,
+      "female" -> User.Gender.Female
     )
   }
 }

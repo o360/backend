@@ -11,6 +11,12 @@
         enum:
           - "new"
           - "approved"
+  - type: .*user\.ApiUser\.ApiGender
+    specAsParameter:
+      - type: string
+        enum:
+          - "male"
+          - "female"
   - type: .*.ApiForm\.ElementKind
     specAsParameter:
       - type: string

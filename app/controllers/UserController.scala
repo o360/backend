@@ -24,7 +24,7 @@ class UserController @Inject()(
 ) extends BaseController
   with ListActions {
 
-  implicit val sortingFields = Sorting.AvailableFields('id, 'name, 'email, 'role, 'status)
+  implicit val sortingFields = Sorting.AvailableFields('id, 'name, 'email, 'role, 'status, 'gender)
 
   /**
     * Returns user by ID.

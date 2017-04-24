@@ -55,3 +55,12 @@
       in: query
       type: integer
       description: Page number
+  definitions:
+    controllers.api.user.ApiUser:
+      properties:
+        gender:
+          $ref: ''
+          type: string
+          enum:
+            - male
+            - female
