@@ -26,13 +26,15 @@ trait ProjectComponent {
   case class DbProject(
     id: Long,
     name: String,
-    description: Option[String]
+    description: Option[String],
+    groupAuditorId: Long
   ) {
 
     def toModel(relations: Seq[Project.Relation]) = Project(
       id,
       name,
       description,
+      groupAuditorId,
       relations
     )
   }
@@ -42,8 +44,9 @@ trait ProjectComponent {
     def id = column[Long]("id", O.AutoInc, O.PrimaryKey)
     def name = column[String]("name")
     def description = column[Option[String]]("description")
+    def groupAuditorId = column[Long]("group_auditor_id")
 
-    def * = (id, name, description) <> ((DbProject.apply _).tupled, DbProject.unapply)
+    def * = (id, name, description, groupAuditorId) <> ((DbProject.apply _).tupled, DbProject.unapply)
   }
 
   val Projects = TableQuery[ProjectTable]
@@ -55,14 +58,12 @@ trait ProjectComponent {
     projectId: Long,
     groupFromId: Long,
     groupToId: Long,
-    groupAuditorId: Long,
     formId: Long
   ) {
 
     def toModel = Project.Relation(
       groupFromId,
       groupToId,
-      groupAuditorId,
       formId
     )
   }
@@ -72,7 +73,6 @@ trait ProjectComponent {
       projectId,
       r.groupFrom,
       r.groupTo,
-      r.groupAuditor,
       r.form
     )
   }
@@ -82,12 +82,10 @@ trait ProjectComponent {
     def projectId = column[Long]("project_id")
     def groupFromId = column[Long]("group_from_id")
     def groupToId = column[Long]("group_to_id")
-    def groupAuditorId = column[Long]("group_auditor_id")
     def formId = column[Long]("form_id")
 
 
-    def * = (projectId, groupFromId, groupToId, groupAuditorId, formId) <>
-      ((DbRelation.apply _).tupled, DbRelation.unapply)
+    def * = (projectId, groupFromId, groupToId, formId) <> ((DbRelation.apply _).tupled, DbRelation.unapply)
   }
 
   val Relations = TableQuery[RelationTable]
@@ -164,7 +162,8 @@ class ProjectDao @Inject()(
   def create(project: Project): Future[Project] = {
     db.run {
       (for {
-        projectId <- Projects.returning(Projects.map(_.id)) += DbProject(0, project.name, project.description)
+        projectId <- Projects.returning(Projects.map(_.id)) +=
+          DbProject(0, project.name, project.description, project.groupAuditor)
         _ <- DBIO.seq(Relations ++= project.relations.map(DbRelation.fromModel(_, projectId)))
       } yield projectId).transactionally
     }.map(id => project.copy(id = id))
@@ -179,7 +178,8 @@ class ProjectDao @Inject()(
   def update(project: Project): Future[Project] = {
     db.run {
       (for {
-        _ <- Projects.filter(_.id === project.id).update(DbProject(project.id, project.name, project.description))
+        _ <- Projects.filter(_.id === project.id)
+          .update(DbProject(project.id, project.name, project.description, project.groupAuditor))
         _ <- Relations.filter(_.projectId === project.id).delete
         _ <- DBIO.seq(Relations ++= project.relations.map(DbRelation.fromModel(_, project.id)))
       } yield ()).transactionally

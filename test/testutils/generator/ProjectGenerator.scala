@@ -12,16 +12,16 @@ trait ProjectGenerator {
     for {
       groupFrom <- Arbitrary.arbitrary[Long]
       groupTo <- Arbitrary.arbitrary[Long]
-      groupAuditor <- Arbitrary.arbitrary[Long]
       formId <- Arbitrary.arbitrary[Long]
-    } yield Project.Relation(groupFrom, groupTo, groupAuditor, formId)
+    } yield Project.Relation(groupFrom, groupTo, formId)
   }
 
   implicit val projectArb = Arbitrary {
     for {
       name <- Arbitrary.arbitrary[String]
       description <- Arbitrary.arbitrary[Option[String]]
+      groupAuditor <- Arbitrary.arbitrary[Long]
       relations <- Arbitrary.arbitrary[Seq[Project.Relation]]
-    } yield Project(0, name, description, relations)
+    } yield Project(0, name, description, groupAuditor, relations)
   }
 }
