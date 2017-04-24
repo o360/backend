@@ -13,6 +13,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import services.ProjectService
 import silhouette.DefaultEnv
+import testutils.fixture.UserFixture
 import testutils.generator.ProjectGenerator
 import utils.errors.{ApplicationError, NotFoundError}
 import utils.listmeta.ListMeta
@@ -37,7 +38,7 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
     TestFixture(silhouette, projectServiceMock, controller)
   }
 
-  private val admin = User(1, None, None, User.Role.Admin, User.Status.Approved)
+  private val admin = UserFixture.admin
 
   "GET /projects/id" should {
     "return not found if project not found" in {

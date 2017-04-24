@@ -2,12 +2,12 @@ package controllers
 
 import com.mohiva.play.silhouette.api.Silhouette
 import com.mohiva.play.silhouette.test.FakeEnvironment
-import models.user.User
 import org.mockito.Mockito._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import services.UserGroupService
 import silhouette.DefaultEnv
+import testutils.fixture.UserFixture
 import testutils.generator.TristateGenerator
 import utils.errors.{ApplicationError, NotFoundError}
 
@@ -31,7 +31,7 @@ class UserGroupControllerTest extends BaseControllerTest with TristateGenerator 
     TestFixture(silhouette, userGroupService, controller)
   }
 
-  private val admin = User(1, None, None, User.Role.Admin, User.Status.Approved)
+  private val admin = UserFixture.admin
 
   "POST /groups/id/users/id" should {
     "return error if error happend" in {

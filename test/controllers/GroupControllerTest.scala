@@ -14,6 +14,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import services.GroupService
 import silhouette.DefaultEnv
+import testutils.fixture.UserFixture
 import testutils.generator.{GroupGenerator, TristateGenerator}
 import utils.errors.{ApplicationError, NotFoundError}
 import utils.listmeta.ListMeta
@@ -38,7 +39,7 @@ class GroupControllerTest extends BaseControllerTest with GroupGenerator with Tr
     TestFixture(silhouette, groupServiceMock, controller)
   }
 
-  private val admin = User(1, None, None, User.Role.Admin, User.Status.Approved)
+  private val admin = UserFixture.admin
 
   "GET /groups/id" should {
     "return not found if group not found" in {

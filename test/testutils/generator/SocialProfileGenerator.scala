@@ -1,24 +1,23 @@
 package testutils.generator
 
 import com.mohiva.play.silhouette.api.LoginInfo
-import com.mohiva.play.silhouette.impl.providers.CommonSocialProfile
+import models.user.User
 import org.scalacheck.Arbitrary
+import silhouette.CustomSocialProfile
 
 /**
   * Social profile generator for scalacheck.
   */
-trait SocialProfileGenerator {
+trait SocialProfileGenerator extends UserGenerator {
 
   implicit val socialProfileArbitrary = Arbitrary {
     for {
       provId <- Arbitrary.arbitrary[String]
       provKey <- Arbitrary.arbitrary[String]
-      firstName <- Arbitrary.arbitrary[Option[String]]
-      lastName <- Arbitrary.arbitrary[Option[String]]
       fullName <- Arbitrary.arbitrary[Option[String]]
       email <- Arbitrary.arbitrary[Option[String]]
-      avatarUrl <- Arbitrary.arbitrary[Option[String]]
-    } yield CommonSocialProfile(LoginInfo(provId, provKey), firstName, lastName, fullName, email, avatarUrl)
+      gender <- Arbitrary.arbitrary[Option[User.Gender]]
+    } yield CustomSocialProfile(LoginInfo(provId, provKey), fullName, email, gender)
   }
 
 }

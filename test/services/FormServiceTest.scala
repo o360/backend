@@ -3,10 +3,9 @@ package services
 import models.ListWithTotal
 import models.dao.FormDao
 import models.form.{Form, FormShort}
-import models.user.User
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
-import testutils.fixture.FormFixture
+import testutils.fixture.{FormFixture, UserFixture}
 import testutils.generator.FormGenerator
 import utils.errors.{ConflictError, NotFoundError}
 import utils.listmeta.ListMeta
@@ -16,7 +15,7 @@ import utils.listmeta.ListMeta
   */
 class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixture {
 
-  private val admin = User(1, None, None, User.Role.Admin, User.Status.Approved)
+  private val admin = UserFixture.admin
 
   private case class TestFixture(
     formDaoMock: FormDao,

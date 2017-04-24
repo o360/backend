@@ -51,8 +51,9 @@ object UserSda {
     * @param account  logged in user
     */
   private def getValidationRules(original: User, draft: User)(implicit account: User) = Seq(
-    ValidationRule("name, email", original.name != draft.name || original.email != draft.email) {
-      draft.status == User.Status.New || draft.name.isDefined && draft.email.isDefined
+    ValidationRule("name, email, gender",
+      original.name != draft.name || original.email != draft.email || original.gender != draft.gender) {
+      draft.status == User.Status.New || draft.name.isDefined && draft.email.isDefined && draft.gender.isDefined
     },
     ValidationRule("role", original.role != draft.role) {
       account.role == User.Role.Admin && (
@@ -66,7 +67,7 @@ object UserSda {
       account.role == User.Role.Admin &&
         (draft.status match {
           case User.Status.New => draft.role != User.Role.Admin
-          case User.Status.Approved => draft.name.isDefined && draft.email.isDefined
+          case User.Status.Approved => draft.name.isDefined && draft.email.isDefined && draft.gender.isDefined
         })
     }
   )

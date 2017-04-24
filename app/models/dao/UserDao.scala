@@ -62,15 +62,26 @@ trait UserComponent {
     }
   )
 
+  implicit lazy val genderColumnType = MappedColumnType.base[User.Gender, Byte](
+    {
+      case User.Gender.Male => 0
+      case User.Gender.Female => 1
+    }, {
+      case 0 => User.Gender.Male
+      case 1 => User.Gender.Female
+    }
+  )
+
   class UserTable(tag: Tag) extends Table[User](tag, "account") {
 
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def name = column[Option[String]]("name")
     def email = column[Option[String]]("email")
+    def gender = column[Option[User.Gender]]("gender")
     def role = column[User.Role]("role")
     def status = column[User.Status]("status")
 
-    def * = (id, name, email, role, status) <> ((User.apply _).tupled, User.unapply)
+    def * = (id, name, email, gender, role, status) <> ((User.apply _).tupled, User.unapply)
   }
 
   val Users = TableQuery[UserTable]
@@ -133,6 +144,7 @@ class UserDao @Inject()(
         case 'email => user.email
         case 'role => user.role
         case 'status => user.status
+        case 'gender => user.gender
       }
     }
   }

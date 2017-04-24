@@ -3,11 +3,10 @@ package services
 import models.ListWithTotal
 import models.dao.{GroupDao, UserGroupDao}
 import models.group.Group
-import models.user.User
 import org.davidbild.tristate.Tristate
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
-import testutils.fixture.GroupFixture
+import testutils.fixture.{GroupFixture, UserFixture}
 import testutils.generator.{GroupGenerator, TristateGenerator}
 import utils.errors.{ConflictError, NotFoundError}
 import utils.listmeta.ListMeta
@@ -17,7 +16,7 @@ import utils.listmeta.ListMeta
   */
 class GroupServiceTest extends BaseServiceTest with GroupGenerator with GroupFixture with TristateGenerator {
 
-  private val admin = User(1, None, None, User.Role.Admin, User.Status.Approved)
+  private val admin = UserFixture.admin
 
   private case class TestFixture(
     groupDaoMock: GroupDao,
