@@ -17,7 +17,6 @@ GET           /swagger.json                         controllers.Assets.at(path="
 ###
 GET           /auth                                 controllers.Authentication.me
 
-
 ###
 # summary: Authenticate user by OAuth code
 # tags:
@@ -449,3 +448,124 @@ PUT           /forms/:id                            controllers.FormController.u
 #       $ref: '#/responses/InternalServerError'
 ###
 DELETE        /forms/:id                            controllers.FormController.delete(id: Long)
+
+###
+# summary: Returns project with relations by ID
+# tags:
+#   - Project
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.project.ApiProject'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET           /projects/:id                            controllers.ProjectController.getById(id: Long)
+
+###
+# summary: Returns list of projects
+# tags:
+#   - Project
+# parameters:
+#   - name: sort
+#     in: query
+#     type: string
+#     pattern: '^-?\w+(,-?\w+)*$'
+#     description: 'Available fields: id, name, description. Format: field1,-field2,...'
+#   - $ref: '#/parameters/pageSize'
+#   - $ref: '#/parameters/pageNumber'
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.project.ApiProject'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET           /projects                                controllers.ProjectController.getList
+
+###
+# summary: Creates project
+# tags:
+#   - Project
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.project.ApiPartialProject'
+# responses:
+#   201:
+#       description: Form created
+#       schema:
+#           $ref: '#/definitions/controllers.api.project.ApiProject'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST          /projects                                controllers.ProjectController.create
+
+###
+# summary: Updates project
+# tags:
+#   - Project
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.project.ApiPartialProject'
+# responses:
+#   200:
+#       description: Form updated
+#       schema:
+#           $ref: '#/definitions/controllers.api.project.ApiProject'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+PUT           /projects/:id                            controllers.ProjectController.update(id: Long)
+
+###
+# summary: Removes project
+# tags:
+#   - Project
+# responses:
+#   204:
+#       description: Form deleted successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+DELETE        /projects/:id                            controllers.ProjectController.delete(id: Long)
