@@ -3,7 +3,7 @@ package controllers
 import com.mohiva.play.silhouette.api.Silhouette
 import com.mohiva.play.silhouette.test.FakeEnvironment
 import controllers.api.Response
-import controllers.api.project.ApiProject
+import controllers.api.project.{ApiPartialProject, ApiProject}
 import models.ListWithTotal
 import models.project.Project
 import models.user.User
@@ -109,10 +109,10 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
         when(fixture.projectServiceMock.update(project)(admin))
           .thenReturn(EitherT.eitherT(toFuture(\/-(project): ApplicationError \/ Project)))
 
-        val partialProject = ApiProject(project)
+        val partialProject = ApiPartialProject(project)
         val request = authenticated(
           FakeRequest("PUT", "/projects")
-            .withBody[ApiProject](partialProject)
+            .withBody[ApiPartialProject](partialProject)
             .withHeaders(CONTENT_TYPE -> "application/json"),
           env
         )
@@ -135,10 +135,10 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
         when(fixture.projectServiceMock.create(project.copy(id = 0))(admin))
           .thenReturn(EitherT.eitherT(toFuture(\/-(project): ApplicationError \/ Project)))
 
-        val partialProject = ApiProject(project)
+        val partialProject = ApiPartialProject(project)
         val request = authenticated(
           FakeRequest("POST", "/projects")
-            .withBody[ApiProject](partialProject)
+            .withBody[ApiPartialProject](partialProject)
             .withHeaders(CONTENT_TYPE -> "application/json"),
           env
         )

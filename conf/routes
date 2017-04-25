@@ -509,7 +509,7 @@ GET           /projects                                controllers.ProjectContro
 # parameters:
 #   - name: body
 #     schema:
-#       $ref: '#/definitions/controllers.api.project.ApiProject'
+#       $ref: '#/definitions/controllers.api.project.ApiPartialProject'
 # responses:
 #   201:
 #       description: Form created
@@ -533,7 +533,7 @@ POST          /projects                                controllers.ProjectContro
 # parameters:
 #   - name: body
 #     schema:
-#       $ref: '#/definitions/controllers.api.project.ApiProject'
+#       $ref: '#/definitions/controllers.api.project.ApiPartialProject'
 # responses:
 #   200:
 #       description: Form updated
