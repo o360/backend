@@ -42,7 +42,7 @@ object ApiProject {
   }
 
   implicit val relationFormat = Json.format[Relation]
-  implicit val projectFormat = Json.format[ApiProject]
+  implicit val projectWrites = Json.writes[ApiProject]
 
   def apply(project: Project): ApiProject = ApiProject(
     project.id,
