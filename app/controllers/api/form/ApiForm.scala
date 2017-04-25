@@ -2,8 +2,9 @@ package controllers.api.form
 
 import controllers.api.{EnumFormat, EnumFormatHelper, Response}
 import models.form.{Form, FormShort}
-import play.api.libs.json.Json
-
+import play.api.libs.functional.syntax._
+import play.api.libs.json.Reads._
+import play.api.libs.json._
 /**
   * Api form model.
   *
@@ -41,9 +42,22 @@ object ApiForm {
     Nil
   )
 
-  implicit val elementValueFormat = Json.format[ElementValue]
-  implicit val elementFormat = Json.format[Element]
-  implicit val formFormat = Json.format[ApiForm]
+  private val elementValueReads: Reads[ElementValue] = (
+    (__ \ "value").read[String](maxLength[String](1024)) and
+      (__ \ "caption").read[String](maxLength[String](1024))
+    ) (ElementValue)
+  implicit val elementValueFormat = Format(elementValueReads, Json.writes[ElementValue])
+
+  private val elementReads: Reads[Element] = (
+    (__ \ "kind").read[ElementKind] and
+      (__ \ "caption").read[String](maxLength[String](1024)) and
+      (__ \ "defaultValue").readNullable[String](maxLength(1024)) and
+      (__ \ "required").read[Boolean] and
+      (__ \ "values").readNullable[Seq[ElementValue]]
+    ) (Element(_, _, _, _, _))
+  implicit val elementFormat = Format(elementReads, Json.writes[Element])
+
+  implicit val formWrites = Json.writes[ApiForm]
 
   /**
     * Form element api model.

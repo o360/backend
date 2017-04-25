@@ -1,8 +1,9 @@
 package controllers.api.project
 
-import controllers.api.Response
 import models.project.Project
-import play.api.libs.json.Json
+import play.api.libs.functional.syntax._
+import play.api.libs.json.Reads._
+import play.api.libs.json._
 
 /**
   * Project partial API model.
@@ -12,7 +13,7 @@ case class ApiPartialProject(
   description: Option[String],
   groupAuditor: Long,
   relations: Seq[ApiProject.Relation]
-) extends Response {
+) {
 
   def toModel(id: Long = 0) = Project(
     id,
@@ -25,7 +26,12 @@ case class ApiPartialProject(
 
 object ApiPartialProject {
 
-  implicit val projectFormat = Json.format[ApiPartialProject]
+  implicit val reads: Reads[ApiPartialProject] = (
+    (__ \ "name").read[String](maxLength[String](1024)) and
+      (__ \ "description").readNullable[String](maxLength[String](1024)) and
+      (__ \ "groupAuditor").read[Long] and
+      (__ \ "relations").read[Seq[ApiProject.Relation]]
+    ) (ApiPartialProject(_, _, _, _))
 
   def apply(project: Project): ApiPartialProject = ApiPartialProject(
     project.name,

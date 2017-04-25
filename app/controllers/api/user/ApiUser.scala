@@ -3,8 +3,9 @@ package controllers.api.user
 import controllers.api.{EnumFormat, EnumFormatHelper, Response}
 import models.user.User
 import models.user.User.Status
-import play.api.libs.json.Json
-
+import play.api.libs.functional.syntax._
+import play.api.libs.json.Reads._
+import play.api.libs.json._
 /**
   * User format model.
   *
@@ -32,7 +33,15 @@ case class ApiUser(
 }
 
 object ApiUser {
-  implicit val writes = Json.format[ApiUser]
+  private val reads: Reads[ApiUser] = (
+    (__ \ "id").read[Long] and
+      (__ \ "name").readNullable[String](maxLength[String](1024)) and
+      (__ \ "email").readNullable[String](maxLength[String](255)) and
+      (__ \ "role").read[ApiUser.ApiRole] and
+      (__ \ "status").read[ApiUser.ApiStatus]
+    ) (ApiUser(_, _, _, _, _))
+
+  implicit val format = Format(reads, Json.writes[ApiUser])
 
   /**
     * Converts user to user response.
