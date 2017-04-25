@@ -38,4 +38,9 @@ object ConflictError {
     case class DefaultValueNotInValues(element: String)
       extends ConflictError("CONFLICT-FORM-2", s"Default value not in values list in [$element]")
   }
+
+  object Project {
+    case class RelationGroupToMissed(relation: String)
+      extends ConflictError("CONFLICT-PROJECT-1", s"GroupTo missed in relation [$relation]")
+  }
 }

@@ -1,6 +1,6 @@
 package controllers.api.project
 
-import controllers.api.Response
+import controllers.api.{EnumFormat, EnumFormatHelper, Response}
 import models.project.Project
 import play.api.libs.json.Json
 
@@ -22,14 +22,16 @@ object ApiProject {
     */
   case class Relation(
     groupFrom: Long,
-    groupTo: Long,
-    form: Long
+    groupTo: Option[Long],
+    form: Long,
+    kind: RelationKind
   ) {
 
     def toModel = Project.Relation(
       groupFrom,
       groupTo,
-      form
+      form,
+      kind.value
     )
   }
 
@@ -37,7 +39,17 @@ object ApiProject {
     def apply(r: Project.Relation): Relation = Relation(
       r.groupFrom,
       r.groupTo,
-      r.form
+      r.form,
+      RelationKind(r.kind)
+    )
+  }
+
+  case class RelationKind(value: Project.RelationKind) extends EnumFormat[Project.RelationKind]
+  object RelationKind extends EnumFormatHelper[Project.RelationKind, RelationKind]("relation kind") {
+
+    override protected def mapping: Map[String, Project.RelationKind] = Map(
+      "classic" -> Project.RelationKind.Classic,
+      "survey" -> Project.RelationKind.Survey
     )
   }
 

@@ -16,8 +16,8 @@ trait ProjectFixture extends FixtureHelper with GroupFixture with FormFixture {
       Some("description"),
       3,
       Seq(
-        Project.Relation(1, 2, 1),
-        Project.Relation(2, 3, 2)
+        Project.Relation(1, Some(2), 1, Project.RelationKind.Classic),
+        Project.Relation(2, None, 2, Project.RelationKind.Survey)
       )
     ),
     Project(
@@ -37,9 +37,9 @@ trait ProjectFixture extends FixtureHelper with GroupFixture with FormFixture {
         .scalaValues(2, "second", null, 1)
         .build,
       insertInto("relation")
-        .columns("project_id", "group_from_id", "group_to_id", "form_id")
-        .scalaValues(1, 1, 2, 1)
-        .scalaValues(1, 2, 3, 2)
+        .columns("project_id", "group_from_id", "group_to_id", "form_id", "kind")
+        .scalaValues(1, 1, 2, 1, 0)
+        .scalaValues(1, 2, null, 2, 1)
         .build
     )
   }

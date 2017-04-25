@@ -5,9 +5,12 @@ import javax.inject.{Inject, Singleton}
 import models.dao.ProjectDao
 import models.project.Project
 import models.user.User
-import utils.errors.{ExceptionHandler, NotFoundError}
+import utils.errors.{ApplicationError, ConflictError, ExceptionHandler, NotFoundError}
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
+
+import scalaz._
+import Scalaz._
 
 /**
   * Project service.
@@ -39,7 +42,8 @@ class ProjectService @Inject()(
     */
   def create(project: Project)(implicit account: User): SingleResult = {
     for {
-      created <- projectDao.create(project).lift(ExceptionHandler.sql)
+      relations <- validateRelations(project.relations).lift
+      created <- projectDao.create(project.copy(relations = relations)).lift(ExceptionHandler.sql)
     } yield created
   }
 
@@ -52,7 +56,9 @@ class ProjectService @Inject()(
     for {
       _ <- getById(draft.id)
 
-      updated <- projectDao.update(draft).lift(ExceptionHandler.sql)
+      relations <- validateRelations(draft.relations).lift
+
+      updated <- projectDao.update(draft.copy(relations = relations)).lift(ExceptionHandler.sql)
     } yield updated
   }
 
@@ -66,5 +72,31 @@ class ProjectService @Inject()(
       _ <- getById(id)
      _ <- projectDao.delete(id).lift
     } yield ()
+  }
+
+  /**
+    * Validate relations and returns either new relations or error.
+    */
+  private def validateRelations(relations: Seq[Project.Relation]): ApplicationError \/ Seq[Project.Relation] = {
+
+    def validateRelation(relation: Project.Relation): ApplicationError \/ Project.Relation = {
+      val needGroupTo = relation.kind == Project.RelationKind.Classic
+      val isEmptyGroupTo = relation.groupTo.isEmpty
+
+      if (needGroupTo && isEmptyGroupTo)
+        ConflictError.Project.RelationGroupToMissed(relation.toString).left
+      else if(!needGroupTo && !isEmptyGroupTo)
+        relation.copy(groupTo = None).right
+      else
+        relation.right
+    }
+
+    relations
+      .foldLeft(Seq.empty[Project.Relation].right[ApplicationError]) { (result, sourceRelation) =>
+        for {
+          relations <- result
+          validatedRelation <- validateRelation(sourceRelation)
+        } yield relations :+ validatedRelation
+      }
   }
 }

@@ -57,14 +57,16 @@ trait ProjectComponent {
   case class DbRelation(
     projectId: Long,
     groupFromId: Long,
-    groupToId: Long,
-    formId: Long
+    groupToId: Option[Long],
+    formId: Long,
+    kind: Project.RelationKind
   ) {
 
     def toModel = Project.Relation(
       groupFromId,
       groupToId,
-      formId
+      formId,
+      kind
     )
   }
 
@@ -73,19 +75,30 @@ trait ProjectComponent {
       projectId,
       r.groupFrom,
       r.groupTo,
-      r.form
+      r.form,
+      r.kind
     )
   }
+
+  implicit val relationKindColumnType = MappedColumnType.base[Project.RelationKind, Byte](
+    {
+      case Project.RelationKind.Classic => 0
+      case Project.RelationKind.Survey => 1
+    }, {
+      case 0 => Project.RelationKind.Classic
+      case 1 => Project.RelationKind.Survey
+    }
+  )
 
   class RelationTable(tag: Tag) extends Table[DbRelation](tag, "relation") {
 
     def projectId = column[Long]("project_id")
     def groupFromId = column[Long]("group_from_id")
-    def groupToId = column[Long]("group_to_id")
+    def groupToId = column[Option[Long]]("group_to_id")
     def formId = column[Long]("form_id")
+    def kind = column[Project.RelationKind]("kind")
 
-
-    def * = (projectId, groupFromId, groupToId, formId) <> ((DbRelation.apply _).tupled, DbRelation.unapply)
+    def * = (projectId, groupFromId, groupToId, formId, kind) <> ((DbRelation.apply _).tupled, DbRelation.unapply)
   }
 
   val Relations = TableQuery[RelationTable]
