@@ -30,11 +30,8 @@ class FormController @Inject()(
     toResult(Ok) {
       formService
         .getList()
-        .map {
-          forms =>
-            Response.List(forms) {
-              form => ApiForm(form)
-            }
+        .map { forms =>
+          Response.List(forms)(ApiForm(_))
         }
     }
   }
