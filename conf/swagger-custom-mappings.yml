@@ -15,7 +15,6 @@
     specAsParameter:
       - type: string
         enum:
-          - "textbox"
           - "radio"
           - "textfield"
           - "textarea"
