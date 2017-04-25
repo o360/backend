@@ -8,21 +8,12 @@ import play.api.libs.json.Json
   * Project API model.
   */
 case class ApiProject(
-  id: Option[Long],
+  id: Long,
   name: String,
   description: Option[String],
   groupAuditor: Long,
   relations: Seq[ApiProject.Relation]
-) extends Response {
-
-  def toModel(newId: Option[Long] = None) = Project(
-    newId.getOrElse(id.getOrElse(0)),
-    name,
-    description,
-    groupAuditor,
-    relations.map(_.toModel)
-  )
-}
+) extends Response
 
 object ApiProject {
 
@@ -54,7 +45,7 @@ object ApiProject {
   implicit val projectFormat = Json.format[ApiProject]
 
   def apply(project: Project): ApiProject = ApiProject(
-    Some(project.id),
+    project.id,
     project.name,
     project.description,
     project.groupAuditor,

@@ -4,7 +4,7 @@ import javax.inject.{Inject, Singleton}
 
 import com.mohiva.play.silhouette.api.Silhouette
 import controllers.api.Response
-import controllers.api.project.ApiProject
+import controllers.api.project.{ApiPartialProject, ApiProject}
 import controllers.authorization.AllowedRole
 import services.ProjectService
 import silhouette.DefaultEnv
@@ -30,11 +30,8 @@ class ProjectController @Inject()(
     toResult(Ok) {
       projectService
         .getList()
-        .map {
-          projects =>
-            Response.List(projects) {
-              project => ApiProject(project)
-            }
+        .map { projects =>
+          Response.List(projects)(ApiProject(_))
         }
     }
   }
@@ -53,7 +50,7 @@ class ProjectController @Inject()(
   /**
     * Creates project.
     */
-  def create = silhouette.SecuredAction(AllowedRole.admin).async(parse.json[ApiProject]) { implicit request =>
+  def create = silhouette.SecuredAction(AllowedRole.admin).async(parse.json[ApiPartialProject]) { implicit request =>
     toResult(Created) {
       val project = request.body.toModel()
       projectService
@@ -65,9 +62,9 @@ class ProjectController @Inject()(
   /**
     * Updates project.
     */
-  def update(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async(parse.json[ApiProject]) { implicit request =>
+  def update(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async(parse.json[ApiPartialProject]) { implicit request =>
     toResult(Ok) {
-      val project = request.body.toModel(Some(id))
+      val project = request.body.toModel(id)
       projectService
         .update(project)
         .map(ApiProject(_))

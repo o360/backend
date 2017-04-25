@@ -114,8 +114,7 @@ class ProjectDao @Inject()(
 
     val countQuery = baseQuery.length
     val resultQuery = baseQuery
-      .applySorting(meta.sorting) {
-        project => {
+      .applySorting(meta.sorting) { project => {
           case 'id => project.id
           case 'name => project.name
           case 'description => project.description
