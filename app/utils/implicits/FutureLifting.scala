@@ -71,6 +71,15 @@ object FutureLifting {
     def unary_! : Future[Boolean] = fb.map(!_)
   }
 
+  implicit class EitherDecorator[E <: ApplicationError, A](val either: E \/ A) {
+    /**
+      * Converts either to EitherT.
+      */
+    def lift: EitherT[Future, ApplicationError, A] = {
+      EitherT.eitherT(either.leftMap(_.asInstanceOf[ApplicationError]).toFuture)
+    }
+  }
+
   /**
     * If condition is false, lifts error to the left, otherwise lifts Unit to the right.
     *

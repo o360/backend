@@ -11,3 +11,15 @@
         enum:
           - "new"
           - "approved"
+  - type: .*.ApiForm\.ElementKind
+    specAsParameter:
+      - type: string
+        enum:
+          - "textbox"
+          - "radio"
+          - "textfield"
+          - "textarea"
+          - "checkbox"
+          - "checkboxgroup"
+          - "radio"
+          - "select"
