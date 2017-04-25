@@ -3,7 +3,7 @@ package controllers
 import com.mohiva.play.silhouette.api.Silhouette
 import com.mohiva.play.silhouette.test.FakeEnvironment
 import controllers.api.Response
-import controllers.api.form.ApiForm
+import controllers.api.form.{ApiForm, ApiPartialForm}
 import models.ListWithTotal
 import models.form.{Form, FormShort}
 import models.user.User
@@ -106,10 +106,10 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
         when(fixture.formServiceMock.update(form)(admin))
           .thenReturn(EitherT.eitherT(toFuture(\/-(form): ApplicationError \/ Form)))
 
-        val apiForm = ApiForm(form)
+        val apiForm = ApiPartialForm(form)
         val request = authenticated(
           FakeRequest("PUT", "/forms")
-            .withBody[ApiForm](apiForm)
+            .withBody[ApiPartialForm](apiForm)
             .withHeaders(CONTENT_TYPE -> "application/json"),
           env
         )
@@ -132,10 +132,10 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
         when(fixture.formServiceMock.create(form)(admin))
           .thenReturn(EitherT.eitherT(toFuture(\/-(form): ApplicationError \/ Form)))
 
-        val apiForm = ApiForm(form)
+        val apiForm = ApiPartialForm(form)
         val request = authenticated(
           FakeRequest("POST", "/forms")
-            .withBody[ApiForm](apiForm)
+            .withBody[ApiPartialForm](apiForm)
             .withHeaders(CONTENT_TYPE -> "application/json"),
           env
         )

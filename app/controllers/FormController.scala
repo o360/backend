@@ -4,7 +4,7 @@ import javax.inject.{Inject, Singleton}
 
 import com.mohiva.play.silhouette.api.Silhouette
 import controllers.api.Response
-import controllers.api.form.ApiForm
+import controllers.api.form.{ApiForm, ApiPartialForm}
 import controllers.authorization.AllowedRole
 import services.FormService
 import silhouette.DefaultEnv
@@ -51,7 +51,7 @@ class FormController @Inject()(
   /**
     * Creates form template.
     */
-  def create = silhouette.SecuredAction(AllowedRole.admin).async(parse.json[ApiForm]) { implicit request =>
+  def create = silhouette.SecuredAction(AllowedRole.admin).async(parse.json[ApiPartialForm]) { implicit request =>
     toResult(Created) {
       val form = request.body.toModel()
       formService
@@ -63,9 +63,9 @@ class FormController @Inject()(
   /**
     * Updates form template.
     */
-  def update(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async(parse.json[ApiForm]) { implicit request =>
+  def update(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async(parse.json[ApiPartialForm]) { implicit request =>
     toResult(Ok) {
-      val form = request.body.toModel(Some(id))
+      val form = request.body.toModel(id)
       formService
         .update(form)
         .map(ApiForm(_))

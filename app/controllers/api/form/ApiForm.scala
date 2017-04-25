@@ -12,17 +12,10 @@ import play.api.libs.json.Json
   * @param elements form elements
   */
 case class ApiForm(
-  id: Option[Long],
+  id: Long,
   name: String,
-  elements: Option[Seq[ApiForm.Element]]
-) extends Response {
-
-  def toModel(newId: Option[Long] = None) = Form(
-    newId.getOrElse(id.getOrElse(0)),
-    name,
-    elements.getOrElse(Nil).map(_.toModel)
-  )
-}
+  elements: Seq[ApiForm.Element]
+) extends Response
 
 object ApiForm {
 
@@ -32,9 +25,9 @@ object ApiForm {
     * @param form form
     */
   def apply(form: Form): ApiForm = ApiForm(
-    Some(form.id),
+    form.id,
     form.name,
-    Some(form.elements.map(Element(_)))
+    form.elements.map(Element(_))
   )
 
   /**
@@ -43,9 +36,9 @@ object ApiForm {
     * @param form short form
     */
   def apply(form: FormShort): ApiForm = ApiForm(
-    Some(form.id),
+    form.id,
     form.name,
-    None
+    Nil
   )
 
   implicit val elementValueFormat = Json.format[ElementValue]

@@ -387,7 +387,7 @@ GET           /forms                                controllers.FormController.g
 # parameters:
 #   - name: body
 #     schema:
-#       $ref: '#/definitions/controllers.api.form.ApiForm'
+#       $ref: '#/definitions/controllers.api.form.ApiPartialForm'
 # responses:
 #   201:
 #       description: Form created
@@ -413,7 +413,7 @@ POST          /forms                                controllers.FormController.c
 # parameters:
 #   - name: body
 #     schema:
-#       $ref: '#/definitions/controllers.api.form.ApiForm'
+#       $ref: '#/definitions/controllers.api.form.ApiPartialForm'
 # responses:
 #   200:
 #       description: Form updated
