@@ -6,6 +6,7 @@ import models.user.User.Status
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
+
 /**
   * User format model.
   *
@@ -40,9 +41,10 @@ object ApiUser {
     (__ \ "id").read[Long] and
       (__ \ "name").readNullable[String](maxLength[String](1024)) and
       (__ \ "email").readNullable[String](maxLength[String](255)) and
+      (__ \ "gender").readNullable[ApiUser.ApiGender] and
       (__ \ "role").read[ApiUser.ApiRole] and
       (__ \ "status").read[ApiUser.ApiStatus]
-    ) (ApiUser(_, _, _, _, _))
+    ) (ApiUser(_, _, _, _, _, _))
 
   implicit val format = Format(reads, Json.writes[ApiUser])
 
