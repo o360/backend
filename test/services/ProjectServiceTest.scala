@@ -85,39 +85,56 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
   }
 
   "create" should {
+    "return conflict if can't validate relations" in {
+      forAll { (project: Project) =>
+        whenever(project.relations.exists(x => x.kind == Project.RelationKind.Classic && x.groupTo.isEmpty)) {
+          val fixture = getFixture
+
+          val result = wait(fixture.service.create(project)(admin).run)
+
+          result mustBe 'left
+          result.swap.toOption.get mustBe a[ConflictError]
+        }
+      }
+    }
+
     "return conflict if db exception" in {
       forAll { (project: Project) =>
-        val fixture = getFixture
-        when(fixture.projectDaoMock.create(project.copy(id = 0))).thenReturn(Future.failed(new SQLException("", "2300")))
-        val result = wait(fixture.service.create(project.copy(id = 0))(admin).run)
+        whenever(project.relations.forall(x => x.kind == Project.RelationKind.Survey || x.groupTo.nonEmpty)) {
+          val fixture = getFixture
+          when(fixture.projectDaoMock.create(any[Project])).thenReturn(Future.failed(new SQLException("", "2300")))
+          val result = wait(fixture.service.create(project.copy(id = 0))(admin).run)
 
-        result mustBe 'left
-        result.swap.toOption.get mustBe a[ConflictError]
+          result mustBe 'left
+          result.swap.toOption.get mustBe a[ConflictError]
+        }
       }
     }
 
     "create project in db" in {
-      forAll { (project: Project) =>
-        val fixture = getFixture
-        when(fixture.projectDaoMock.create(project.copy(id = 0))).thenReturn(toFuture(project))
-        val result = wait(fixture.service.create(project.copy(id = 0))(admin).run)
+      val project = Projects(0)
 
-        result mustBe 'right
-        result.toOption.get mustBe project
-      }
+      val fixture = getFixture
+      when(fixture.projectDaoMock.create(project.copy(id = 0))).thenReturn(toFuture(project))
+      val result = wait(fixture.service.create(project.copy(id = 0))(admin).run)
+
+      result mustBe 'right
+      result.toOption.get mustBe project
     }
   }
 
   "update" should {
     "return conflict if db exception" in {
       forAll { (project: Project) =>
-        val fixture = getFixture
-        when(fixture.projectDaoMock.findById(project.id)).thenReturn(toFuture(Some(project)))
-        when(fixture.projectDaoMock.update(project.copy(id = 0))).thenReturn(Future.failed(new SQLException("", "2300")))
-        val result = wait(fixture.service.update(project.copy(id = 0))(admin).run)
+        whenever(project.relations.forall(x => x.kind == Project.RelationKind.Survey || x.groupTo.nonEmpty)) {
+          val fixture = getFixture
+          when(fixture.projectDaoMock.findById(project.id)).thenReturn(toFuture(Some(project)))
+          when(fixture.projectDaoMock.update(any[Project])).thenReturn(Future.failed(new SQLException("", "2300")))
+          val result = wait(fixture.service.update(project.copy(id = 0))(admin).run)
 
-        result mustBe 'left
-        result.swap.toOption.get mustBe a[ConflictError]
+          result mustBe 'left
+          result.swap.toOption.get mustBe a[ConflictError]
+        }
       }
     }
 
@@ -136,15 +153,14 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
     }
 
     "update project in db" in {
-      forAll { (project: Project) =>
-        val fixture = getFixture
-        when(fixture.projectDaoMock.findById(project.id)).thenReturn(toFuture(Some(project)))
-        when(fixture.projectDaoMock.update(project)).thenReturn(toFuture(project))
-        val result = wait(fixture.service.update(project)(admin).run)
+      val project = Projects(0)
+      val fixture = getFixture
+      when(fixture.projectDaoMock.findById(project.id)).thenReturn(toFuture(Some(project)))
+      when(fixture.projectDaoMock.update(project)).thenReturn(toFuture(project))
+      val result = wait(fixture.service.update(project)(admin).run)
 
-        result mustBe 'right
-        result.toOption.get mustBe project
-      }
+      result mustBe 'right
+      result.toOption.get mustBe project
     }
   }
 

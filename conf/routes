@@ -512,7 +512,7 @@ GET           /projects                                controllers.ProjectContro
 #       $ref: '#/definitions/controllers.api.project.ApiPartialProject'
 # responses:
 #   201:
-#       description: Form created
+#       description: Project created
 #       schema:
 #           $ref: '#/definitions/controllers.api.project.ApiProject'
 #   401:
@@ -536,7 +536,7 @@ POST          /projects                                controllers.ProjectContro
 #       $ref: '#/definitions/controllers.api.project.ApiPartialProject'
 # responses:
 #   200:
-#       description: Form updated
+#       description: Project updated
 #       schema:
 #           $ref: '#/definitions/controllers.api.project.ApiProject'
 #   401:
@@ -558,7 +558,7 @@ PUT           /projects/:id                            controllers.ProjectContro
 #   - Project
 # responses:
 #   204:
-#       description: Form deleted successfully
+#       description: Project deleted successfully
 #   401:
 #       $ref: '#/responses/Unauthorized'
 #   403:

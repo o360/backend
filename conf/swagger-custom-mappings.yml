@@ -22,3 +22,9 @@
           - "checkboxgroup"
           - "radio"
           - "select"
+  - type: .*.ApiProject\.RelationKind
+    specAsParameter:
+      - type: string
+        enum:
+          - "classic"
+          - "survey"
