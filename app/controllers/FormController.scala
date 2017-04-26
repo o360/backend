@@ -81,4 +81,16 @@ class FormController @Inject()(
       _ => NoContent
     )
   }
+
+  /**
+    * Clones form.
+    */
+  def cloneForm(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
+    toResult(Created) {
+      for {
+        original <- formService.getById(id)
+        created <- formService.create(original.copy(id = 0))
+      } yield ApiForm(created)
+    }
+  }
 }

@@ -450,6 +450,24 @@ PUT           /forms/:id                            controllers.FormController.u
 DELETE        /forms/:id                            controllers.FormController.delete(id: Long)
 
 ###
+# summary: Clones form with given ID
+# tags:
+#   - Form template
+# responses:
+#   201:
+#       description: New form
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST          /forms/:id/clone                      controllers.FormController.cloneForm(id: Long)
+
+###
 # summary: Returns project with relations by ID
 # tags:
 #   - Project

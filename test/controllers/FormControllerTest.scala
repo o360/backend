@@ -165,4 +165,37 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
       }
     }
   }
+
+  "POST /forms/id/clone" should {
+    "return 404 if form not found" in {
+      forAll { (id: Long) =>
+        val env = fakeEnvironment(admin)
+        val fixture = getFixture(env)
+        when(fixture.formServiceMock.getById(id)(admin))
+          .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Form(id)): ApplicationError \/ Form)))
+
+        val request = authenticated(FakeRequest(), env)
+
+        val response = fixture.controller.cloneForm(id).apply(request)
+        status(response) mustBe NOT_FOUND
+      }
+    }
+
+    "clone form" in {
+      forAll { (id: Long, form: Form) =>
+        val env = fakeEnvironment(admin)
+        val fixture = getFixture(env)
+        when(fixture.formServiceMock.getById(id)(admin))
+          .thenReturn(EitherT.eitherT(toFuture(\/-(form.copy(id = id)): ApplicationError \/ Form)))
+        when(fixture.formServiceMock.create(form.copy(id = 0))(admin))
+          .thenReturn(EitherT.eitherT(toFuture(\/-(form): ApplicationError \/ Form)))
+        val request = authenticated(FakeRequest(), env)
+
+        val response = fixture.controller.cloneForm(id)(request)
+        status(response) mustBe CREATED
+        val formJson = contentAsJson(response)
+        formJson mustBe Json.toJson(ApiForm(form))
+      }
+    }
+  }
 }
