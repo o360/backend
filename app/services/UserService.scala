@@ -4,12 +4,12 @@ import javax.inject.{Inject, Singleton}
 
 import com.mohiva.play.silhouette.api.LoginInfo
 import com.mohiva.play.silhouette.api.services.IdentityService
-import com.mohiva.play.silhouette.impl.providers.CommonSocialProfile
 import models.dao.{UserDao, UserGroupDao}
 import models.user.{User => UserModel}
 import org.davidbild.tristate.Tristate
 import play.api.libs.concurrent.Execution.Implicits._
 import services.authorization.UserSda
+import silhouette.CustomSocialProfile
 import utils.errors.{ConflictError, NotFoundError}
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
@@ -34,7 +34,7 @@ class UserService @Inject()(
     *
     * @param socialProfile silhouette social profile
     */
-  def createIfNotExist(socialProfile: CommonSocialProfile): Future[Unit] = {
+  def createIfNotExist(socialProfile: CustomSocialProfile): Future[Unit] = {
     val loginInfo = socialProfile.loginInfo
     retrieve(loginInfo).flatMap {
       case Some(_) => ().toFuture

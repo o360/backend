@@ -65,7 +65,7 @@ class SilhouetteModule extends AbstractModule {
     httpLayer: HTTPLayer,
     stateProvider: OAuth2StateProvider,
     configuration: Configuration
-  ): GoogleProvider = {
+  ): CustomGoogleProvider = {
 
     val oauthConfig = OAuth2Settings(
       accessTokenURL = configuration.getString("silhouette.google.accessTokenURL").get,
@@ -75,12 +75,11 @@ class SilhouetteModule extends AbstractModule {
       scope = configuration.getString("silhouette.google.scope")
     )
 
-    new GoogleProvider(httpLayer, stateProvider, oauthConfig)
+    new CustomGoogleProvider(httpLayer, stateProvider, oauthConfig)
   }
 
   @Provides
-  def provideSocialProviderRegistry(googleProvider: GoogleProvider): SocialProviderRegistry = {
-
+  def provideSocialProviderRegistry(googleProvider: CustomGoogleProvider): SocialProviderRegistry = {
     SocialProviderRegistry(Seq(googleProvider))
   }
 

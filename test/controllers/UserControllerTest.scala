@@ -13,6 +13,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import services.UserService
 import silhouette.DefaultEnv
+import testutils.fixture.UserFixture
 import testutils.generator.{TristateGenerator, UserGenerator}
 import utils.errors.{ApplicationError, NotFoundError}
 import utils.listmeta.ListMeta
@@ -37,7 +38,7 @@ class UserControllerTest extends BaseControllerTest with UserGenerator with Tris
     TestFixture(silhouette, userServiceMock, controller)
   }
 
-  private val admin = User(1, None, None, User.Role.Admin, User.Status.Approved)
+  private val admin = UserFixture.admin
 
   "GET /users/id" should {
     "return not found if user not found" in {

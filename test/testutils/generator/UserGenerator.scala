@@ -16,13 +16,18 @@ trait UserGenerator {
     Gen.oneOf(User.Status.New, User.Status.Approved)
   }
 
+  implicit val genderArb = Arbitrary[User.Gender] {
+    Gen.oneOf(User.Gender.Male, User.Gender.Female)
+  }
+
   implicit val userArbitrary = Arbitrary {
     for {
       name <- Arbitrary.arbitrary[Option[String]]
       email <- Arbitrary.arbitrary[Option[String]]
+      gender <- Arbitrary.arbitrary[Option[User.Gender]]
       role <- Arbitrary.arbitrary[User.Role]
       status <- Arbitrary.arbitrary[User.Status]
-    } yield User(0, name, email, role, status)
+    } yield User(0, name, email, gender, role, status)
   }
 
 }

@@ -5,7 +5,7 @@ import models.group.Group
 import models.user.User
 import org.mockito.ArgumentMatchers.{eq => eqTo}
 import org.mockito.Mockito._
-import testutils.fixture.UserGroupFixture
+import testutils.fixture.{UserFixture, UserGroupFixture}
 import testutils.generator.TristateGenerator
 import utils.errors.{ApplicationError, NotFoundError}
 
@@ -16,7 +16,7 @@ import scalaz.{-\/, EitherT, \/, \/-}
   */
 class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with UserGroupFixture {
 
-  private val admin = User(1, None, None, User.Role.Admin, User.Status.Approved)
+  private val admin = UserFixture.admin
 
   private case class TestFixture(
     userGroupDaoMock: UserGroupDao,

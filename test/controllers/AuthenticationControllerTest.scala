@@ -16,6 +16,8 @@ import services.UserService
 import silhouette.DefaultEnv
 import testutils.generator.UserGenerator
 
+import scala.concurrent.Future
+
 /**
   * Authentication controller test.
   */
@@ -75,7 +77,7 @@ class AuthenticationControllerTest extends BaseControllerTest with UserGenerator
 
     "return unauthorized if exception thrown by silhouette" in {
       val socialProviderMock = mock[SocialProvider]
-      when(socialProviderMock.authenticate()(FakeRequest())).thenThrow(classOf[SilhouetteException])
+      when(socialProviderMock.authenticate()(any())).thenReturn(Future.failed(new SilhouetteException("")))
       when(socialProviderRegistryMock.get[SocialProvider](any[String])(any())).thenReturn(Some(socialProviderMock))
 
       val controller = new Authentication(silhouetteMock, socialProviderRegistryMock, userServiceMock)

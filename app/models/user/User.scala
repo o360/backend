@@ -1,7 +1,7 @@
 package models.user
 
 import com.mohiva.play.silhouette.api.Identity
-import com.mohiva.play.silhouette.impl.providers.CommonSocialProfile
+import silhouette.CustomSocialProfile
 
 /**
   * User model.
@@ -9,6 +9,7 @@ import com.mohiva.play.silhouette.impl.providers.CommonSocialProfile
   * @param id     DB ID
   * @param name   full name
   * @param email  email
+  * @param gender gender
   * @param role   role
   * @param status status
   */
@@ -16,6 +17,7 @@ case class User(
   id: Long,
   name: Option[String],
   email: Option[String],
+  gender: Option[User.Gender],
   role: User.Role,
   status: User.Status
 ) extends Identity
@@ -56,11 +58,27 @@ object User {
     case object Approved extends Status
   }
 
-  def fromSocialProfile(socialProfile: CommonSocialProfile): User = User(
-    0,
-    socialProfile.fullName,
-    socialProfile.email,
-    User.Role.User,
-    User.Status.New
-  )
+  /**
+    * User's gender.
+    */
+  trait Gender
+  object Gender {
+    case object Male extends Gender
+    case object Female extends Gender
+  }
+
+  /**
+    * Creates user model from social profile.
+    */
+  def fromSocialProfile(socialProfile: CustomSocialProfile): User = {
+    User(
+      0,
+      socialProfile.fullName,
+      socialProfile.email,
+      socialProfile.gender,
+      User.Role.User,
+      User.Status.New
+    )
+  }
+
 }
