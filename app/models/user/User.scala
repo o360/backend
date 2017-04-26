@@ -81,4 +81,8 @@ object User {
     )
   }
 
+  /**
+    * Generic admin user.
+    */
+  def admin = User(0, Some("admin"), Some("admin@email.com"), Role.Admin, Status.Approved)
 }
