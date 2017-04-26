@@ -4,7 +4,7 @@ import javax.inject.Inject
 
 import com.mohiva.play.silhouette.api.Silhouette
 import com.mohiva.play.silhouette.api.exceptions.SilhouetteException
-import com.mohiva.play.silhouette.impl.providers.{CommonSocialProfileBuilder, SocialProvider, SocialProviderRegistry}
+import com.mohiva.play.silhouette.impl.providers.{SocialProvider, SocialProviderRegistry}
 import controllers.api.user.ApiUser
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json.Json
@@ -46,7 +46,10 @@ class Authentication @Inject()(
       case Right(authInfo) =>
         for {
           profile <- p.retrieveProfile(authInfo.asInstanceOf[p.A])
-          _ <- userService.createIfNotExist(profile.asInstanceOf[CustomSocialProfile])
+          customProfile = profile match {
+            case p: CustomSocialProfile => p
+          }
+          _ <- userService.createIfNotExist(customProfile)
           authenticator <- silhouette.env.authenticatorService.create(profile.loginInfo)
           token <- silhouette.env.authenticatorService.init(authenticator)
         } yield Ok(Json.obj("token" -> token))
