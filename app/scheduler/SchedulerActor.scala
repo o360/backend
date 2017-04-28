@@ -3,7 +3,6 @@ package scheduler
 import javax.inject.{Inject, Singleton}
 
 import akka.actor.Actor
-import models.user.User
 import play.api.libs.concurrent.Execution.Implicits._
 import utils.Logger
 import utils.errors.ApplicationError
@@ -18,8 +17,6 @@ import scalaz.{-\/, \/}
   */
 @Singleton
 class SchedulerActor @Inject()() extends Actor with Logger {
-
-  private implicit val account = User.admin
 
   def receive: Receive = {
     case SchedulerActor.Tick =>
