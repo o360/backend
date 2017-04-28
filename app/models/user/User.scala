@@ -80,5 +80,4 @@ object User {
       User.Status.New
     )
   }
-
 }
