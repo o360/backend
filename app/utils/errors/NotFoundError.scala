@@ -16,4 +16,6 @@ object NotFoundError {
   case class Form(id: Long) extends NotFoundError("NOTFOUND-FORM", s"Can't find form with id:$id")
 
   case class Project(id: Long) extends NotFoundError("NOTFOUND-PROJECT", s"Can't find project with id:$id")
+
+  case class Event(id: Long) extends NotFoundError("NOTFOUND-EVENT", s"Can't find event with id:$id")
 }

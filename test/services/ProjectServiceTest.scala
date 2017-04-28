@@ -3,7 +3,8 @@ package services
 import java.sql.SQLException
 
 import models.ListWithTotal
-import models.dao.ProjectDao
+import models.dao.{EventDao, ProjectDao}
+import models.event.Event
 import models.project.Project
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
@@ -23,12 +24,14 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
 
   private case class TestFixture(
     projectDaoMock: ProjectDao,
+    eventDaoMock: EventDao,
     service: ProjectService)
 
   private def getFixture = {
     val daoMock = mock[ProjectDao]
-    val service = new ProjectService(daoMock)
-    TestFixture(daoMock, service)
+    val eventDaoMock = mock[EventDao]
+    val service = new ProjectService(daoMock, eventDaoMock)
+    TestFixture(daoMock, eventDaoMock, service)
   }
 
   "getById" should {
@@ -65,37 +68,32 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
   "list" should {
     "return list of projects from db" in {
       forAll { (
+      eventId: Option[Long],
       projects: Seq[Project],
       total: Int
       ) =>
         val fixture = getFixture
-        when(fixture.projectDaoMock.getList(optId = any[Option[Long]])(eqTo(ListMeta.default)))
+        when(fixture.projectDaoMock.getList(optId = any[Option[Long]], optEventId = eqTo(eventId))(eqTo(ListMeta.default)))
           .thenReturn(toFuture(ListWithTotal(total, projects)))
-        val result = wait(fixture.service.getList()(admin, ListMeta.default).run)
+        val result = wait(fixture.service.getList(eventId)(admin, ListMeta.default).run)
 
         result mustBe 'right
         result.toOption.get mustBe ListWithTotal(total, projects)
-
-        verify(fixture.projectDaoMock, times(1)).getList(
-          optId = any[Option[Long]]
-        )(eqTo(ListMeta.default))
       }
     }
   }
 
   "create" should {
     "return conflict if can't validate relations" in {
-      forAll { (project: Project) =>
-        whenever(project.relations.exists(x => x.kind == Project.RelationKind.Classic && x.groupTo.isEmpty)) {
-          val fixture = getFixture
+      val fixture = getFixture
+      val project = Projects(0).copy(relations = Seq(Project.Relation(1, None, 2, Project.RelationKind.Classic)))
 
-          val result = wait(fixture.service.create(project)(admin).run)
+      val result = wait(fixture.service.create(project)(admin).run)
 
-          result mustBe 'left
-          result.swap.toOption.get mustBe a[ConflictError]
-        }
-      }
+      result mustBe 'left
+      result.swap.toOption.get mustBe a[ConflictError]
     }
+
 
     "return conflict if db exception" in {
       forAll { (project: Project) =>
@@ -128,8 +126,31 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
         whenever(project.relations.forall(x => x.kind == Project.RelationKind.Survey || x.groupTo.nonEmpty)) {
           val fixture = getFixture
           when(fixture.projectDaoMock.findById(project.id)).thenReturn(toFuture(Some(project)))
+          when(fixture.eventDaoMock.getList(
+            optId = any[Option[Long]],
+            optStatus = eqTo(Some(Event.Status.InProgress)),
+            optProjectId = eqTo(Some(project.id))
+          )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
           when(fixture.projectDaoMock.update(any[Project])).thenReturn(Future.failed(new SQLException("", "2300")))
-          val result = wait(fixture.service.update(project.copy(id = 0))(admin).run)
+          val result = wait(fixture.service.update(project)(admin).run)
+
+          result mustBe 'left
+          result.swap.toOption.get mustBe a[ConflictError]
+        }
+      }
+    }
+
+    "return conflict if exists events in progress" in {
+      forAll { (project: Project) =>
+        whenever(project.relations.forall(x => x.kind == Project.RelationKind.Survey || x.groupTo.nonEmpty)) {
+          val fixture = getFixture
+          when(fixture.projectDaoMock.findById(project.id)).thenReturn(toFuture(Some(project)))
+          when(fixture.eventDaoMock.getList(
+            optId = any[Option[Long]],
+            optStatus = eqTo(Some(Event.Status.InProgress.asInstanceOf[Event.Status])),
+            optProjectId = eqTo(Some(project.id))
+          )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](1, Nil)))
+          val result = wait(fixture.service.update(project)(admin).run)
 
           result mustBe 'left
           result.swap.toOption.get mustBe a[ConflictError]
@@ -155,6 +176,11 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
       val project = Projects(0)
       val fixture = getFixture
       when(fixture.projectDaoMock.findById(project.id)).thenReturn(toFuture(Some(project)))
+      when(fixture.eventDaoMock.getList(
+        optId = any[Option[Long]],
+        optStatus = eqTo(Some(Event.Status.InProgress)),
+        optProjectId = eqTo(Some(project.id))
+      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       when(fixture.projectDaoMock.update(project)).thenReturn(toFuture(project))
       val result = wait(fixture.service.update(project)(admin).run)
 

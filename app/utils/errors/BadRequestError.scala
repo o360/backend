@@ -20,5 +20,12 @@ object BadRequestError {
       extends BadRequestError("SORTING", s"Unsupported fields: [$unsupported]. Available fields for sorting: [$available]")
   }
 
+  object Event {
+    case object StartAfterEnd
+      extends BadRequestError("BAD-REQUEST-EVENT-1", "Start date is after end date")
+
+    case object NotUniqueNotifications
+      extends BadRequestError("BAD-REQUEST-EVENT-2", "Duplicate notifications")
+  }
 
 }
