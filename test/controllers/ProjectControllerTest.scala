@@ -73,16 +73,17 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
   "GET /projects" should {
     "return projects list from service" in {
       forAll { (
+      eventId: Option[Long],
       total: Int,
       projects: Seq[Project]
       ) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.projectServiceMock.getList()(admin, ListMeta.default))
+        when(fixture.projectServiceMock.getList(eventId)(admin, ListMeta.default))
           .thenReturn(EitherT.eitherT(toFuture(\/-(ListWithTotal(total, projects)): ApplicationError \/ ListWithTotal[Project])))
         val request = authenticated(FakeRequest(), env)
 
-        val response = fixture.controller.getList()(request)
+        val response = fixture.controller.getList(eventId)(request)
 
         status(response) mustBe OK
         val projectsJson = contentAsJson(response)
@@ -96,7 +97,7 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
       val env = fakeEnvironment(admin.copy(role = User.Role.User))
       val fixture = getFixture(env)
       val request = authenticated(FakeRequest(), env)
-      val response = fixture.controller.getList().apply(request)
+      val response = fixture.controller.getList(None).apply(request)
 
       status(response) mustBe FORBIDDEN
     }

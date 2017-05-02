@@ -112,6 +112,7 @@ class ProjectDao @Inject()(
   protected val dbConfigProvider: DatabaseConfigProvider
 ) extends HasDatabaseConfigProvider[JdbcProfile]
   with ProjectComponent
+  with EventProjectComponent
   with DaoHelper {
 
   import driver.api._
@@ -121,9 +122,19 @@ class ProjectDao @Inject()(
     *
     * @param meta sorting and pagination
     */
-  def getList(optId: Option[Long] = None)
-    (implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Project]] = {
-    val baseQuery = Projects.applyFilter(x => Seq(optId.map(x.id === _)))
+  def getList(
+    optId: Option[Long] = None,
+    optEventId: Option[Long] = None
+  )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Project]] = {
+    val baseQuery = Projects
+      .applyFilter { x =>
+        Seq(
+          optId.map(x.id === _),
+          optEventId.map { eventId =>
+            EventProjects.filter(ep => ep.projectId === x.id && ep.eventId === eventId).exists
+          }
+        )
+      }
 
     val countQuery = baseQuery.length
     val resultQuery = baseQuery

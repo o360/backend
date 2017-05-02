@@ -2,13 +2,13 @@ package models.dao
 
 import models.project.Project
 import org.scalacheck.Gen
-import testutils.fixture.ProjectFixture
+import testutils.fixture.{EventProjectFixture, ProjectFixture}
 import testutils.generator.ProjectGenerator
 
 /**
   * Test for project DAO.
   */
-class ProjectDaoTest extends BaseDaoTest with ProjectFixture with ProjectGenerator {
+class ProjectDaoTest extends BaseDaoTest with ProjectFixture with ProjectGenerator with EventProjectFixture {
 
   private val dao = inject[ProjectDao]
 
@@ -19,6 +19,16 @@ class ProjectDaoTest extends BaseDaoTest with ProjectFixture with ProjectGenerat
         val expectedProjects =
           Projects.filter(u => id.forall(_ == u.id))
         projects.total mustBe expectedProjects.length
+        projects.data must contain theSameElementsAs expectedProjects
+      }
+    }
+
+    "return projects filtered by event" in {
+      forAll { (eventId: Option[Long]) =>
+        val projects = wait(dao.getList(optEventId = eventId))
+        val expectedProjects = Projects
+          .filter(p => eventId.forall(e => EventProjects.filter(_._1 == e).map(_._2).contains(p.id)))
+
         projects.data must contain theSameElementsAs expectedProjects
       }
     }

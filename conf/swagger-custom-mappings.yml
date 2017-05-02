@@ -34,3 +34,28 @@
         enum:
           - "classic"
           - "survey"
+  - type: .*.ApiEvent\.EventStatus
+    specAsParameter:
+      - type: string
+        enum:
+          - "notStarted"
+          - "inProgress"
+          - "completed"
+  - type: .*.ApiEvent\.NotificationKind
+    specAsParameter:
+      - type: string
+        enum:
+          - "preBegin"
+          - "begin"
+          - "preEnd"
+          - "end"
+  - type: .*.ApiEvent\.NotificationRecipient
+    specAsParameter:
+      - type: string
+        enum:
+          - "respondent"
+          - "auditor"
+  - type: java\.sql\.Timestamp
+    specAsParameter:
+      - type: string
+        format: date-time
