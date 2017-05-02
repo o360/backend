@@ -11,7 +11,7 @@ libraryDependencies ++= Seq(
   "org.postgresql" % "postgresql" % "42.0.0",
   "com.mohiva" %% "play-silhouette" % "4.0.0",
   "com.mohiva" %% "play-silhouette-persistence" % "4.0.0",
-//  "org.scala-lang.modules" %% "scala-async" % "0.9.6",
+  "com.typesafe.play" %% "play-mailer" % "5.0.0",
   "org.davidbild" %% "tristate-play" % "0.2.0",
   "org.scalaz" %% "scalaz-core" % "7.2.10",
     filters
