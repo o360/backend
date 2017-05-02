@@ -84,27 +84,14 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
   }
 
   "create" should {
-    "return conflict if can't validate relations" in {
-      val fixture = getFixture
-      val project = Projects(0).copy(relations = Seq(Project.Relation(1, None, 2, Project.RelationKind.Classic)))
-
-      val result = wait(fixture.service.create(project)(admin).run)
-
-      result mustBe 'left
-      result.swap.toOption.get mustBe a[ConflictError]
-    }
-
-
     "return conflict if db exception" in {
       forAll { (project: Project) =>
-        whenever(project.relations.forall(x => x.kind == Project.RelationKind.Survey || x.groupTo.nonEmpty)) {
-          val fixture = getFixture
-          when(fixture.projectDaoMock.create(any[Project])).thenReturn(Future.failed(new SQLException("", "2300")))
-          val result = wait(fixture.service.create(project.copy(id = 0))(admin).run)
+        val fixture = getFixture
+        when(fixture.projectDaoMock.create(any[Project])).thenReturn(Future.failed(new SQLException("", "2300")))
+        val result = wait(fixture.service.create(project.copy(id = 0))(admin).run)
 
-          result mustBe 'left
-          result.swap.toOption.get mustBe a[ConflictError]
-        }
+        result mustBe 'left
+        result.swap.toOption.get mustBe a[ConflictError]
       }
     }
 
@@ -123,38 +110,34 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
   "update" should {
     "return conflict if db exception" in {
       forAll { (project: Project) =>
-        whenever(project.relations.forall(x => x.kind == Project.RelationKind.Survey || x.groupTo.nonEmpty)) {
-          val fixture = getFixture
-          when(fixture.projectDaoMock.findById(project.id)).thenReturn(toFuture(Some(project)))
-          when(fixture.eventDaoMock.getList(
-            optId = any[Option[Long]],
-            optStatus = eqTo(Some(Event.Status.InProgress)),
-            optProjectId = eqTo(Some(project.id))
-          )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
-          when(fixture.projectDaoMock.update(any[Project])).thenReturn(Future.failed(new SQLException("", "2300")))
-          val result = wait(fixture.service.update(project)(admin).run)
+        val fixture = getFixture
+        when(fixture.projectDaoMock.findById(project.id)).thenReturn(toFuture(Some(project)))
+        when(fixture.eventDaoMock.getList(
+          optId = any[Option[Long]],
+          optStatus = eqTo(Some(Event.Status.InProgress)),
+          optProjectId = eqTo(Some(project.id))
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
+        when(fixture.projectDaoMock.update(any[Project])).thenReturn(Future.failed(new SQLException("", "2300")))
+        val result = wait(fixture.service.update(project)(admin).run)
 
-          result mustBe 'left
-          result.swap.toOption.get mustBe a[ConflictError]
-        }
+        result mustBe 'left
+        result.swap.toOption.get mustBe a[ConflictError]
       }
     }
 
     "return conflict if exists events in progress" in {
       forAll { (project: Project) =>
-        whenever(project.relations.forall(x => x.kind == Project.RelationKind.Survey || x.groupTo.nonEmpty)) {
-          val fixture = getFixture
-          when(fixture.projectDaoMock.findById(project.id)).thenReturn(toFuture(Some(project)))
-          when(fixture.eventDaoMock.getList(
-            optId = any[Option[Long]],
-            optStatus = eqTo(Some(Event.Status.InProgress.asInstanceOf[Event.Status])),
-            optProjectId = eqTo(Some(project.id))
-          )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](1, Nil)))
-          val result = wait(fixture.service.update(project)(admin).run)
+        val fixture = getFixture
+        when(fixture.projectDaoMock.findById(project.id)).thenReturn(toFuture(Some(project)))
+        when(fixture.eventDaoMock.getList(
+          optId = any[Option[Long]],
+          optStatus = eqTo(Some(Event.Status.InProgress.asInstanceOf[Event.Status])),
+          optProjectId = eqTo(Some(project.id))
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](1, Nil)))
+        val result = wait(fixture.service.update(project)(admin).run)
 
-          result mustBe 'left
-          result.swap.toOption.get mustBe a[ConflictError]
-        }
+        result mustBe 'left
+        result.swap.toOption.get mustBe a[ConflictError]
       }
     }
 

@@ -468,7 +468,7 @@ DELETE        /forms/:id                            controllers.FormController.d
 POST          /forms/:id/clone                      controllers.FormController.cloneForm(id: Long)
 
 ###
-# summary: Returns project with relations by ID
+# summary: Returns project by ID
 # tags:
 #   - Project
 # responses:
@@ -587,6 +587,127 @@ PUT           /projects/:id                            controllers.ProjectContro
 #       $ref: '#/responses/InternalServerError'
 ###
 DELETE        /projects/:id                            controllers.ProjectController.delete(id: Long)
+
+###
+# summary: Returns relation by ID
+# tags:
+#   - Project
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.project.ApiRelation'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET           /relations/:id                           controllers.ProjectRelationController.getById(id: Long)
+
+###
+# summary: Returns list of relations
+# tags:
+#   - Project
+# parameters:
+#   - name: sort
+#     in: query
+#     type: string
+#     pattern: '^-?\w+(,-?\w+)*$'
+#     description: 'Available fields: id, projectId. Format: field1,-field2,...'
+#   - $ref: '#/parameters/pageSize'
+#   - $ref: '#/parameters/pageNumber'
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.project.ApiRelation'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET           /relations                               controllers.ProjectRelationController.getList(projectId: Option[Long])
+
+###
+# summary: Creates relation
+# tags:
+#   - Project
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.project.ApiPartialRelation'
+# responses:
+#   201:
+#       description: Relation created
+#       schema:
+#           $ref: '#/definitions/controllers.api.project.ApiRelation'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST          /relations                               controllers.ProjectRelationController.create
+
+###
+# summary: Updates relation
+# tags:
+#   - Project
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.project.ApiPartialRelation'
+# responses:
+#   200:
+#       description: Relation updated
+#       schema:
+#           $ref: '#/definitions/controllers.api.project.ApiRelation'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+PUT           /relations/:id                           controllers.ProjectRelationController.update(id: Long)
+
+###
+# summary: Removes relation
+# tags:
+#   - Project
+# responses:
+#   204:
+#       description: Relation deleted successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+DELETE        /relations/:id                           controllers.ProjectRelationController.delete(id: Long)
 
 ###
 # summary: Returns event by ID
