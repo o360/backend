@@ -17,7 +17,7 @@ class ProjectRelationDaoTest extends BaseDaoTest with ProjectRelationFixture wit
       forAll(Gen.option(Gen.choose(0L, 3L)), Gen.option(Gen.choose(0L, 3L))) { (id: Option[Long], projectId: Option[Long]) =>
         val projectRelations = wait(dao.getList(id, projectId))
         val expectedProjectRelations =
-          ProjectRelations.filter(u => id.forall(_ == u.id) && projectId.forall(_ == u.projectId))
+          ProjectRelations.filter(u => id.forall(_ == u.id) && projectId.forall(_ == u.project.id))
         projectRelations.total mustBe expectedProjectRelations.length
         projectRelations.data must contain theSameElementsAs expectedProjectRelations
       }
@@ -43,10 +43,10 @@ class ProjectRelationDaoTest extends BaseDaoTest with ProjectRelationFixture wit
       forAll { (relation: Relation) =>
         whenever(!ProjectRelations
           .exists { x =>
-            x.projectId == relation.projectId &&
-            x.groupFrom == relation.groupFrom &&
-            x.groupTo == relation.groupTo &&
-            x.form == relation.form &&
+            x.project.id == relation.project.id &&
+            x.groupFrom.id == relation.groupFrom.id &&
+            x.groupTo.map(_.id) == relation.groupTo.map(_.id) &&
+            x.form.id == relation.form.id &&
             x.kind == relation.kind
           }) {
 

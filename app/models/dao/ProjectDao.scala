@@ -2,7 +2,7 @@ package models.dao
 
 import javax.inject.{Inject, Singleton}
 
-import models.ListWithTotal
+import models.{ListWithTotal, NamedEntity}
 import models.project.Project
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.api.libs.concurrent.Execution.Implicits._
@@ -30,11 +30,20 @@ trait ProjectComponent {
     groupAuditorId: Long
   ) {
 
-    def toModel = Project(
+    def toModel(groupAuditorName: String) = Project(
       id,
       name,
       description,
-      groupAuditorId
+      NamedEntity(groupAuditorId, groupAuditorName)
+    )
+  }
+
+  object DbProject {
+    def fromModel(p: Project) = DbProject(
+      p.id,
+      p.name,
+      p.description,
+      p.groupAuditor.id
     )
   }
 
@@ -62,6 +71,7 @@ class ProjectDao @Inject()(
 ) extends HasDatabaseConfigProvider[JdbcProfile]
   with ProjectComponent
   with EventProjectComponent
+  with GroupComponent
   with DaoHelper {
 
   import driver.api._
@@ -84,15 +94,16 @@ class ProjectDao @Inject()(
           }
         )
       }
+    .join(Groups).on(_.groupAuditorId === _.id)
 
     runListQuery(query) {
-      project => {
+      case (project, _) => {
         case 'id => project.id
         case 'name => project.name
         case 'description => project.description
       }
     }.map { case ListWithTotal(total, data) =>
-      ListWithTotal(total, data.map(_.toModel))
+      ListWithTotal(total, data.map { case (project, groupAuditor) => project.toModel(groupAuditor.name) })
     }
   }
 
@@ -113,8 +124,8 @@ class ProjectDao @Inject()(
     */
   def create(project: Project): Future[Project] = {
     db.run(Projects.returning(Projects.map(_.id))
-      += DbProject(0, project.name, project.description, project.groupAuditor))
-      .map(id => project.copy(id = id))
+      += DbProject.fromModel(project))
+      .flatMap(findById(_).map(_.get))
   }
 
   /**
@@ -125,8 +136,8 @@ class ProjectDao @Inject()(
     */
   def update(project: Project): Future[Project] = {
     db.run(Projects.filter(_.id === project.id)
-      .update(DbProject(project.id, project.name, project.description, project.groupAuditor)))
-      .map(_ => project)
+      .update(DbProject.fromModel(project)))
+      .flatMap(_ => findById(project.id).map(_.get))
   }
 
   /**

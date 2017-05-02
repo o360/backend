@@ -1,6 +1,7 @@
 package testutils.fixture
 
 import com.ninja_squad.dbsetup.Operations._
+import models.NamedEntity
 import models.project.Project
 
 /**
@@ -14,13 +15,13 @@ trait ProjectFixture extends FixtureHelper with GroupFixture {
       1,
       "first",
       Some("description"),
-      3
+      NamedEntity(3, Groups.find(_.id == 3).get.name)
     ),
     Project(
       2,
       "second",
       None,
-      1
+      NamedEntity(1, Groups.find(_.id == 1).get.name)
     )
   )
 

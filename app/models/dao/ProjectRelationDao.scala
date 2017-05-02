@@ -2,7 +2,7 @@ package models.dao
 
 import javax.inject.{Inject, Singleton}
 
-import models.ListWithTotal
+import models.{ListWithTotal, NamedEntity}
 import models.project.Relation
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.driver.JdbcProfile
@@ -31,12 +31,17 @@ trait ProjectRelationComponent {
     kind: Relation.Kind
   ) {
 
-    def toModel = Relation(
+    def toModel(
+      projectName: String,
+      groupFromName: String,
+      groupToName: Option[String],
+      formName: String
+    ) = Relation(
       id,
-      projectId,
-      groupFromId,
-      groupToId,
-      formId,
+      NamedEntity(projectId, projectName),
+      NamedEntity(groupFromId, groupFromName),
+      groupToId.map(NamedEntity(_, groupToName.getOrElse(""))),
+      NamedEntity(formId, formName),
       kind
     )
   }
@@ -44,10 +49,10 @@ trait ProjectRelationComponent {
   object DbRelation {
     def fromModel(r: Relation) = DbRelation(
       r.id,
-      r.projectId,
-      r.groupFrom,
-      r.groupTo,
-      r.form,
+      r.project.id,
+      r.groupFrom.id,
+      r.groupTo.map(_.id),
+      r.form.id,
       r.kind
     )
   }
@@ -85,6 +90,9 @@ class ProjectRelationDao @Inject()(
   protected val dbConfigProvider: DatabaseConfigProvider
 ) extends HasDatabaseConfigProvider[JdbcProfile]
   with ProjectRelationComponent
+  with GroupComponent
+  with FormComponent
+  with ProjectComponent
   with DaoHelper {
 
   import driver.api._
@@ -104,14 +112,22 @@ class ProjectRelationDao @Inject()(
             optProjectId.map(x.projectId === _)
           )
       }
+      .join(Groups).on(_.groupFromId === _.id)
+      .join(Forms).on { case ((relation, _), form) => relation.formId === form.id }
+      .join(Projects).on { case (((relation, _), _), project) => relation.projectId === project.id }
+      .joinLeft(Groups).on { case ((((relation, _), _), _), group) => relation.groupToId === group.id }
 
     runListQuery(query) {
-      relation => {
+      case ((((relation, _), _), _), _) => {
         case 'id => relation.id
         case 'projectId => relation.projectId
       }
     }.map { case ListWithTotal(total, data) =>
-      ListWithTotal(total, data.map(_.toModel))
+      val result = data.map {
+        case ((((relation, groupFrom), form), project), groupTo) =>
+          relation.toModel(project.name, groupFrom.name, groupTo.map(_.name), form.name)
+      }
+      ListWithTotal(total, result)
     }
   }
 
@@ -128,13 +144,13 @@ class ProjectRelationDao @Inject()(
   def exists(relation: Relation): Future[Boolean] = db.run {
     Relations
       .filter { x =>
-        x.projectId === relation.projectId &&
-          x.groupFromId === relation.groupFrom &&
+        x.projectId === relation.project.id &&
+          x.groupFromId === relation.groupFrom.id &&
           (relation.groupTo match {
             case None => x.groupToId.isEmpty
-            case Some(groupToId) => x.groupToId.fold(false: Rep[Boolean])(_ === groupToId)
+            case Some(groupTo) => x.groupToId.fold(false: Rep[Boolean])(_ === groupTo.id)
           }) &&
-          x.formId === relation.form &&
+          x.formId === relation.form.id &&
           x.kind === relation.kind
       }
       .exists
@@ -148,7 +164,7 @@ class ProjectRelationDao @Inject()(
     */
   def create(model: Relation): Future[Relation] = {
     db.run(Relations.returning(Relations.map(_.id)) += DbRelation.fromModel(model))
-      .map(id => model.copy(id = id))
+      .flatMap(findById(_).map(_.get))
   }
 
   /**
@@ -158,7 +174,7 @@ class ProjectRelationDao @Inject()(
     */
   def update(model: Relation): Future[Relation] = {
     db.run(Relations.filter(_.id === model.id).update(DbRelation.fromModel(model)))
-      .map(_ => model)
+      .flatMap(_ => findById(model.id).map(_.get))
   }
 
   /**
