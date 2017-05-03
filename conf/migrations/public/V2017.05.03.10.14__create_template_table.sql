@@ -1,0 +1,9 @@
+CREATE TABLE template
+(
+  id BIGSERIAL PRIMARY KEY NOT NULL,
+  name VARCHAR(1024) NOT NULL,
+  subject VARCHAR NOT NULL,
+  body VARCHAR NOT NULL,
+  kind SMALLINT NOT NULL,
+  recipient_kind SMALLINT NOT NULL
+);

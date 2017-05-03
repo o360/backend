@@ -15,9 +15,42 @@ import utils.listmeta.ListMeta
 import scala.concurrent.Future
 
 /**
+  * Component for notification datatypes.
+  */
+trait NotificationComponent {
+  self: HasDatabaseConfigProvider[JdbcProfile] =>
+
+  import driver.api._
+
+  implicit val eventKindMappedType = MappedColumnType.base[Notification.Kind, Byte](
+    {
+      case Notification.Kind.PreBegin => 0
+      case Notification.Kind.Begin => 1
+      case Notification.Kind.PreEnd => 2
+      case Notification.Kind.End => 3
+    }, {
+      case 0 => Notification.Kind.PreBegin
+      case 1 => Notification.Kind.Begin
+      case 2 => Notification.Kind.PreEnd
+      case 3 => Notification.Kind.End
+    }
+  )
+
+  implicit val eventRecipient = MappedColumnType.base[Notification.Recipient, Byte](
+    {
+      case Notification.Recipient.Respondent => 0
+      case Notification.Recipient.Auditor => 1
+    }, {
+      case 0 => Notification.Recipient.Respondent
+      case 1 => Notification.Recipient.Auditor
+    }
+  )
+}
+
+/**
   * Component for event and event_notification tables.
   */
-trait EventComponent {
+trait EventComponent extends NotificationComponent {
   self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import driver.api._
@@ -76,30 +109,6 @@ trait EventComponent {
       notification.recipient
     )
   }
-
-  implicit val eventKindMappedType = MappedColumnType.base[Notification.Kind, Byte](
-    {
-      case Notification.Kind.PreBegin => 0
-      case Notification.Kind.Begin => 1
-      case Notification.Kind.PreEnd => 2
-      case Notification.Kind.End => 3
-    }, {
-      case 0 => Notification.Kind.PreBegin
-      case 1 => Notification.Kind.Begin
-      case 2 => Notification.Kind.PreEnd
-      case 3 => Notification.Kind.End
-    }
-  )
-
-  implicit val eventRecipient = MappedColumnType.base[Notification.Recipient, Byte](
-    {
-      case Notification.Recipient.Respondent => 0
-      case Notification.Recipient.Auditor => 1
-    }, {
-      case 0 => Notification.Recipient.Respondent
-      case 1 => Notification.Recipient.Auditor
-    }
-  )
 
   class EventNotificationTable(tag: Tag) extends Table[DbEventNotification](tag, "event_notification") {
 

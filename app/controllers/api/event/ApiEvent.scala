@@ -4,9 +4,9 @@ import java.sql.Timestamp
 
 import controllers.api.{EnumFormat, EnumFormatHelper, Response}
 import models.event.Event
-import models.notification.Notification
 import play.api.libs.json.Json
 import controllers.api.TimestampFormat._
+import controllers.api.notification.{ApiNotificationKind, ApiNotificationRecipient}
 
 /**
   * Api model for event.
@@ -44,8 +44,8 @@ object ApiEvent {
     */
   case class NotificationTime(
     time: Timestamp,
-    kind: NotificationKind,
-    recipient: NotificationRecipient
+    kind: ApiNotificationKind,
+    recipient: ApiNotificationRecipient
   ){
     /**
       * Converts api model to model.
@@ -63,39 +63,8 @@ object ApiEvent {
       */
     def apply(n: Event.NotificationTime): NotificationTime = NotificationTime(
       n.time,
-      NotificationKind(n.kind),
-      NotificationRecipient(n.recipient)
-    )
-  }
-
-  /**
-    * Kind of notification.
-    */
-  case class NotificationKind(value: Notification.Kind) extends EnumFormat[Notification.Kind]
-  object NotificationKind extends EnumFormatHelper[Notification.Kind, NotificationKind]("notification kind") {
-
-    import Notification.Kind._
-
-    override protected def mapping: Map[String, Notification.Kind] = Map(
-      "preBegin" -> PreBegin,
-      "begin" -> Begin,
-      "preEnd" -> PreEnd,
-      "end" -> End
-    )
-  }
-
-  /**
-    * Kind of notification recipient.
-    */
-  case class NotificationRecipient(value: Notification.Recipient) extends EnumFormat[Notification.Recipient]
-  object NotificationRecipient
-    extends EnumFormatHelper[Notification.Recipient, NotificationRecipient]("notification recipient") {
-
-    import Notification.Recipient._
-
-    override protected def mapping: Map[String, Notification.Recipient] = Map(
-      "respondent" -> Respondent,
-      "auditor" -> Auditor
+      ApiNotificationKind(n.kind),
+      ApiNotificationRecipient(n.recipient)
     )
   }
 

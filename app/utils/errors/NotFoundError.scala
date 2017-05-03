@@ -20,4 +20,6 @@ object NotFoundError {
   case class ProjectRelation(id: Long) extends NotFoundError("NOTFOUND-RELATION", s"Can't find relation with id:$id")
 
   case class Event(id: Long) extends NotFoundError("NOTFOUND-EVENT", s"Can't find event with id:$id")
+
+  case class Template(id: Long) extends NotFoundError("NOTFOUND-TEMPLATE", s"Can't find template with id:$id")
 }
