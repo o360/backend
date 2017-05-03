@@ -40,9 +40,6 @@ object ConflictError {
   }
 
   object Project {
-    case class RelationGroupToMissed(relation: String)
-      extends ConflictError("CONFLICT-PROJECT-1", s"GroupTo missed in relation [$relation]")
-
     case object ActiveEventExists extends ConflictError("CONFLICT-PROJECT-2", "Can't update, active events exists")
   }
 }

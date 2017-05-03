@@ -28,4 +28,14 @@ object BadRequestError {
       extends BadRequestError("BAD-REQUEST-EVENT-2", "Duplicate notifications")
   }
 
+  object Relation {
+    case object ProjectIdIsImmutable
+      extends BadRequestError("BAD-REQUEST-RELATION-1", "Can't change relation project ID")
+
+    case object DuplicateRelation
+      extends BadRequestError("BAD-REQUEST-RELATION-2", "Duplicate relation")
+
+    case class GroupToMissed(relation: String)
+      extends BadRequestError("BAD-REQUEST-RELATION-3", s"GroupTo missed in relation [$relation]")
+  }
 }

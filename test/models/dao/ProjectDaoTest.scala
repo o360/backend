@@ -46,7 +46,7 @@ class ProjectDaoTest extends BaseDaoTest with ProjectFixture with ProjectGenerat
   }
 
   "create" should {
-    "create project with relations" in {
+    "create project" in {
       forAll(Gen.oneOf(Projects)) { (project: Project) =>
         val created = wait(dao.create(project))
 
@@ -58,7 +58,7 @@ class ProjectDaoTest extends BaseDaoTest with ProjectFixture with ProjectGenerat
   }
 
   "delete" should {
-    "delete project with elements" in {
+    "delete project" in {
       forAll(Gen.oneOf(Projects)) { (project: Project) =>
         val created = wait(dao.create(project))
 

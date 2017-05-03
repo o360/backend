@@ -17,5 +17,7 @@ object NotFoundError {
 
   case class Project(id: Long) extends NotFoundError("NOTFOUND-PROJECT", s"Can't find project with id:$id")
 
+  case class ProjectRelation(id: Long) extends NotFoundError("NOTFOUND-RELATION", s"Can't find relation with id:$id")
+
   case class Event(id: Long) extends NotFoundError("NOTFOUND-EVENT", s"Can't find event with id:$id")
 }
