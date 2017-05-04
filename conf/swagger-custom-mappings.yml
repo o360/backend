@@ -41,7 +41,7 @@
           - "notStarted"
           - "inProgress"
           - "completed"
-  - type: .*.ApiEvent\.NotificationKind
+  - type: .*.notification\.ApiNotificationKind
     specAsParameter:
       - type: string
         enum:
@@ -49,7 +49,7 @@
           - "begin"
           - "preEnd"
           - "end"
-  - type: .*.ApiEvent\.NotificationRecipient
+  - type: .*.notification\.ApiNotificationRecipient
     specAsParameter:
       - type: string
         enum:

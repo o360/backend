@@ -876,3 +876,136 @@ POST          /events/:eventId/projects/:projectId        controllers.EventProje
 #       $ref: '#/responses/InternalServerError'
 ###
 DELETE        /events/:eventId/projects/:projectId        controllers.EventProjectController.delete(eventId: Long, projectId: Long)
+
+###
+# summary: Returns template by ID
+# tags:
+#   - Email template
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.template.ApiTemplate'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET           /templates/:id                              controllers.TemplateController.getById(id: Long)
+
+###
+# summary: Returns list of templates
+# tags:
+#   - Email template
+# parameters:
+#   - in: query
+#     name: kind
+#     schema:
+#     type: string
+#     enum:
+#       - "preBegin"
+#       - "begin"
+#       - "preEnd"
+#       - "end"
+#   - in: query
+#     name: recipient
+#     schema:
+#     type: string
+#     enum:
+#       - "respondent"
+#       - "auditor"
+#   - name: sort
+#     in: query
+#     type: string
+#     pattern: '^-?\w+(,-?\w+)*$'
+#     description: 'Available fields: id, name, kind, recipient. Format: field1,-field2,...'
+#   - $ref: '#/parameters/pageSize'
+#   - $ref: '#/parameters/pageNumber'
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.template.ApiTemplate'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET           /templates                                  controllers.TemplateController.getList(kind: Option[controllers.api.notification.ApiNotificationKind], recipient: Option[controllers.api.notification.ApiNotificationRecipient])
+
+###
+# summary: Creates template
+# tags:
+#   - Email template
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.template.ApiPartialTemplate'
+# responses:
+#   201:
+#       description: Template created
+#       schema:
+#           $ref: '#/definitions/controllers.api.template.ApiTemplate'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST          /templates                                  controllers.TemplateController.create
+
+###
+# summary: Updates template
+# tags:
+#   - Email template
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.template.ApiPartialTemplate'
+# responses:
+#   200:
+#       description: Template updated
+#       schema:
+#           $ref: '#/definitions/controllers.api.template.ApiTemplate'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+PUT           /templates/:id                              controllers.TemplateController.update(id: Long)
+
+###
+# summary: Removes template
+# tags:
+#   - Email template
+# responses:
+#   204:
+#       description: Template deleted successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+DELETE        /templates/:id                              controllers.TemplateController.delete(id: Long)

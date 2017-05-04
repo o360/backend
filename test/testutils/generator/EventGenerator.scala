@@ -9,7 +9,7 @@ import org.scalacheck.{Arbitrary, Gen}
 /**
   * Event generator for scalacheck.
   */
-trait EventGenerator {
+trait EventGenerator extends NotificationGenerator {
 
   implicit val eventStatusArb = Arbitrary[Event.Status] {
     Gen.oneOf(Event.Status.NotStarted, Event.Status.InProgress, Event.Status.Completed)
@@ -17,16 +17,6 @@ trait EventGenerator {
 
   implicit val timestampArb = Arbitrary {
     Gen.choose(0L, 253402300799L).map(new Timestamp(_)) // max year - 9999
-  }
-
-  implicit val notificationKindArb = Arbitrary[Notification.Kind] {
-    import Notification.Kind._
-    Gen.oneOf(PreBegin, Begin, PreEnd, End)
-  }
-
-  implicit val notificationRecipientArb = Arbitrary[Notification.Recipient] {
-    import Notification.Recipient._
-    Gen.oneOf(Respondent, Auditor)
   }
 
   implicit val notificationTimeArb = Arbitrary {
