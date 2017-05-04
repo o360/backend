@@ -1,7 +1,6 @@
 package models.event
 
 import java.sql.Timestamp
-import java.time.{Instant, LocalDateTime, ZoneId}
 
 import models.notification.Notification
 
@@ -29,13 +28,9 @@ case class Event(
     * Status of event.
     */
   val status: Event.Status =
-    if (currentTime before start) {
-      Event.Status.NotStarted
-    } else if (currentTime before end) {
-      Event.Status.InProgress
-    } else {
-      Event.Status.Completed
-    }
+    if (currentTime.before(start)) Event.Status.NotStarted
+    else if (currentTime.before(end)) Event.Status.InProgress
+    else Event.Status.Completed
 }
 
 object Event {

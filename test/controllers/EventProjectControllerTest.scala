@@ -42,7 +42,7 @@ class EventProjectControllerTest extends BaseControllerTest with TristateGenerat
           .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Event(eventId)): ApplicationError \/ Unit)))
 
         val request = authenticated(FakeRequest(), env)
-        val response = fixture.controller.add(eventId, projectId).apply(request)
+        val response = fixture.controller.create(eventId, projectId).apply(request)
         status(response) mustBe NOT_FOUND
       }
     }
@@ -55,7 +55,7 @@ class EventProjectControllerTest extends BaseControllerTest with TristateGenerat
           .thenReturn(EitherT.eitherT(toFuture(\/-(()): ApplicationError \/ Unit)))
 
         val request = authenticated(FakeRequest(), env)
-        val response = fixture.controller.add(eventId, projectId).apply(request)
+        val response = fixture.controller.create(eventId, projectId).apply(request)
         status(response) mustBe NO_CONTENT
       }
     }
@@ -70,7 +70,7 @@ class EventProjectControllerTest extends BaseControllerTest with TristateGenerat
           .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Event(eventId)): ApplicationError \/ Unit)))
 
         val request = authenticated(FakeRequest(), env)
-        val response = fixture.controller.remove(eventId, projectId).apply(request)
+        val response = fixture.controller.delete(eventId, projectId).apply(request)
         status(response) mustBe NOT_FOUND
       }
     }
@@ -83,7 +83,7 @@ class EventProjectControllerTest extends BaseControllerTest with TristateGenerat
           .thenReturn(EitherT.eitherT(toFuture(\/-(()): ApplicationError \/ Unit)))
 
         val request = authenticated(FakeRequest(), env)
-        val response = fixture.controller.remove(eventId, projectId).apply(request)
+        val response = fixture.controller.delete(eventId, projectId).apply(request)
         status(response) mustBe NO_CONTENT
       }
     }
