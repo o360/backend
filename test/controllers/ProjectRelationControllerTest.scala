@@ -112,10 +112,10 @@ class ProjectRelationControllerTest extends BaseControllerTest with ProjectRelat
           .thenReturn(EitherT.eitherT(toFuture(\/-(relation): ApplicationError \/ Relation)))
 
         val partialRelation = ApiPartialRelation(
-          relation.projectId,
-          relation.groupFrom,
-          relation.groupTo,
-          relation.form,
+          relation.project.id,
+          relation.groupFrom.id,
+          relation.groupTo.map(_.id),
+          relation.form.id,
           ApiRelation.Kind(relation.kind)
         )
         val request = authenticated(
@@ -144,10 +144,10 @@ class ProjectRelationControllerTest extends BaseControllerTest with ProjectRelat
           .thenReturn(EitherT.eitherT(toFuture(\/-(relation): ApplicationError \/ Relation)))
 
         val partialRelation = ApiPartialRelation(
-          relation.projectId,
-          relation.groupFrom,
-          relation.groupTo,
-          relation.form,
+          relation.project.id,
+          relation.groupFrom.id,
+          relation.groupTo.map(_.id),
+          relation.form.id,
           ApiRelation.Kind(relation.kind)
         )
         val request = authenticated(

@@ -1,5 +1,6 @@
 package controllers.api.project
 
+import models.NamedEntity
 import models.project.Project
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
@@ -18,7 +19,7 @@ case class ApiPartialProject(
     id,
     name,
     description,
-    groupAuditorId
+    NamedEntity(groupAuditorId)
   )
 }
 
@@ -33,6 +34,6 @@ object ApiPartialProject {
   def apply(project: Project): ApiPartialProject = ApiPartialProject(
     project.name,
     project.description,
-    project.groupAuditor
+    project.groupAuditor.id
   )
 }

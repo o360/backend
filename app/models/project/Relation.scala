@@ -1,21 +1,24 @@
 package models.project
 
+import models.NamedEntity
+
 /**
   * Relation inside project.
   *
   * @param id        DB ID
-  * @param groupFrom reviewer group ID
-  * @param groupTo   reviewed group ID
-  * @param form      form template ID
+  * @param project   relation project
+  * @param groupFrom reviewer group
+  * @param groupTo   reviewed group
+  * @param form      form template
   * @param kind      relation kind
   */
 case class Relation(
   id: Long,
-  projectId: Long,
-  groupFrom: Long,
-  groupTo: Option[Long],
-  form: Long,
-    kind: Relation.Kind
+  project: NamedEntity,
+  groupFrom: NamedEntity,
+  groupTo: Option[NamedEntity],
+  form: NamedEntity,
+  kind: Relation.Kind
 )
 
 object Relation {
