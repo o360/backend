@@ -152,40 +152,46 @@ class EventDao @Inject()(
     optStatus: Option[Event.Status] = None,
     optProjectId: Option[Long] = None
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Event]] = {
+
+    def statusFilter(event: EventTable) = optStatus.map { status =>
+      val currentTime = new Timestamp(System.currentTimeMillis)
+      status match {
+        case Event.Status.NotStarted => event.start > currentTime
+        case Event.Status.InProgress => event.start <= currentTime && event.end > currentTime
+        case Event.Status.Completed => event.end <= currentTime
+      }
+    }
+
+    def projectFilter(event: EventTable) = optProjectId.map { projectId =>
+      EventProjects
+        .filter(x => x.eventId === event.id && x.projectId === projectId)
+        .exists
+    }
+
     val baseQuery = Events
       .applyFilter { event =>
         Seq(
           optId.map(event.id === _),
-          optStatus.map { status =>
-            val currentTime = new Timestamp(System.currentTimeMillis)
-            status match {
-              case Event.Status.NotStarted => event.start > currentTime
-              case Event.Status.InProgress => event.start <= currentTime && event.end > currentTime
-              case Event.Status.Completed => event.end <= currentTime
-            }
-          },
-          optProjectId.map { projectId =>
-            EventProjects
-              .filter(x => x.eventId === event.id && x.projectId === projectId)
-              .exists
-          }
+          statusFilter(event),
+          projectFilter(event)
         )
       }
 
     val countQuery = baseQuery.length
 
+    def sortMapping(event: EventTable): PartialFunction[Symbol, Rep[_]] = {
+      case 'id => event.id
+      case 'start => event.start
+      case 'end => event.end
+      case 'description => event.description
+      case 'canRevote => event.canRevote
+    }
+
     val resultQuery = baseQuery
-      .applySorting(meta.sorting) { event => {
-        case 'id => event.id
-        case 'start => event.start
-        case 'end => event.end
-        case 'description => event.description
-        case 'canRevote => event.canRevote
-      }
-      }
+      .applySorting(meta.sorting)(sortMapping)
       .applyPagination(meta.pagination)
       .joinLeft(EventNotifications).on(_.id === _.eventId)
-
+      .applySorting(meta.sorting) { case (event, _) => sortMapping(event) } // sort one page (order not preserved after join)
 
     for {
       count <- db.run(countQuery.result)
@@ -195,9 +201,7 @@ class EventDao @Inject()(
         .groupByWithOrder { case (event, _) => event }
         .map { case (event, notificationsWithEvent) =>
           val notifications = notificationsWithEvent
-            .collect {
-              case (_, Some(n)) => Event.NotificationTime(n.time, n.kind, n.recipient)
-            }
+            .collect { case (_, Some(n)) => Event.NotificationTime(n.time, n.kind, n.recipient) }
           Event(event.id, event.description, event.start, event.end, event.canRevote, notifications)
         }
 

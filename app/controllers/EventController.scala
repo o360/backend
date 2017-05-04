@@ -44,8 +44,8 @@ class EventController @Inject()(
     toResult(Ok) {
       eventService
         .list(status.map(_.value), projectId)
-        .map {
-          events => Response.List(events) {
+        .map { events =>
+          Response.List(events) {
             event => ApiEvent(event)
           }
         }

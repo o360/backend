@@ -747,7 +747,7 @@ GET           /events/:id                           controllers.EventController.
 #     in: query
 #     type: string
 #     pattern: '^-?\w+(,-?\w+)*$'
-#     description: 'Available fields: id, name. Format: field1,-field2,...'
+#     description: 'Available fields: id, start, end, description, canRevote. Format: field1,-field2,...'
 #   - $ref: '#/parameters/pageSize'
 #   - $ref: '#/parameters/pageNumber'
 # responses:
@@ -857,7 +857,7 @@ DELETE        /events/:id                           controllers.EventController.
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-POST          /events/:eventId/projects/:projectId        controllers.EventProjectController.add(eventId: Long, projectId: Long)
+POST          /events/:eventId/projects/:projectId        controllers.EventProjectController.create(eventId: Long, projectId: Long)
 
 ###
 # summary: Remove project from event
@@ -875,4 +875,4 @@ POST          /events/:eventId/projects/:projectId        controllers.EventProje
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-DELETE        /events/:eventId/projects/:projectId        controllers.EventProjectController.remove(eventId: Long, projectId: Long)
+DELETE        /events/:eventId/projects/:projectId        controllers.EventProjectController.delete(eventId: Long, projectId: Long)
