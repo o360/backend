@@ -84,7 +84,7 @@ class ProjectRelationServiceTest extends BaseServiceTest with ProjectRelationGen
   "create" should {
     "return bad request if can't validate relations" in {
       val fixture = getFixture
-      val relation = Relation(1, NamedEntity(1), NamedEntity(1), None, NamedEntity(2), Relation.Kind.Classic)
+      val relation = Relation(1, NamedEntity(1), NamedEntity(1), None, NamedEntity(2), Relation.Kind.Classic, Nil)
 
       val result = wait(fixture.service.create(relation)(admin).run)
 
@@ -171,7 +171,7 @@ class ProjectRelationServiceTest extends BaseServiceTest with ProjectRelationGen
 
     "return bad request if can't validate relations" in {
       val fixture = getFixture
-      val relation = Relation(1, NamedEntity(1), NamedEntity(1), None, NamedEntity(2), Relation.Kind.Classic)
+      val relation = Relation(1, NamedEntity(1), NamedEntity(1), None, NamedEntity(2), Relation.Kind.Classic, Nil)
 
       when(fixture.projectDaoMock.findById(relation.id)).thenReturn(toFuture(Some(relation)))
       when(fixture.eventDaoMock.getList(

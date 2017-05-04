@@ -11,7 +11,8 @@ case class ApiProject(
   id: Long,
   name: String,
   description: Option[String],
-  groupAuditor: ApiNamedEntity
+  groupAuditor: ApiNamedEntity,
+  templates: Seq[ApiTemplateBinding]
 ) extends Response
 
 object ApiProject {
@@ -22,6 +23,7 @@ object ApiProject {
     project.id,
     project.name,
     project.description,
-    ApiNamedEntity(project.groupAuditor)
+    ApiNamedEntity(project.groupAuditor),
+    project.templates.map(ApiTemplateBinding(_))
   )
 }

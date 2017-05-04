@@ -13,7 +13,8 @@ case class ApiRelation(
   groupFrom: ApiNamedEntity,
   groupTo: Option[ApiNamedEntity],
   form: ApiNamedEntity,
-  kind: ApiRelation.Kind
+  kind: ApiRelation.Kind,
+  templates: Seq[ApiTemplateBinding]
 ) extends Response
 
 object ApiRelation {
@@ -23,7 +24,8 @@ object ApiRelation {
     ApiNamedEntity(r.groupFrom),
     r.groupTo.map(ApiNamedEntity(_)),
     ApiNamedEntity(r.form),
-    Kind(r.kind)
+    Kind(r.kind),
+    r.templates.map(ApiTemplateBinding(_))
   )
 
   case class Kind(value: Relation.Kind) extends EnumFormat[Relation.Kind]
@@ -35,5 +37,5 @@ object ApiRelation {
     )
   }
 
-  implicit val relationWrites = Json.format[ApiRelation]
+  implicit val relationWrites = Json.writes[ApiRelation]
 }

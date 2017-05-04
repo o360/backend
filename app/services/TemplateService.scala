@@ -68,7 +68,7 @@ class TemplateService @Inject()(
   def delete(id: Long)(implicit account: User): UnitResult = {
     for {
       _ <- getById(id)
-      _ <- templateDao.delete(id).lift
+      _ <- templateDao.delete(id).lift(ExceptionHandler.sql)
     } yield ()
   }
 }

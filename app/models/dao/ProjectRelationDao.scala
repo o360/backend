@@ -3,13 +3,15 @@ package models.dao
 import javax.inject.{Inject, Singleton}
 
 import models.{ListWithTotal, NamedEntity}
-import models.project.Relation
+import models.project.{Relation, TemplateBinding}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.driver.JdbcProfile
 import utils.listmeta.ListMeta
 
 import scala.concurrent.Future
 import play.api.libs.concurrent.Execution.Implicits._
+import utils.implicits.FutureLifting._
+
 
 /**
   * Component for relation table.
@@ -35,14 +37,16 @@ trait ProjectRelationComponent {
       projectName: String,
       groupFromName: String,
       groupToName: Option[String],
-      formName: String
+      formName: String,
+      templates: Seq[TemplateBinding]
     ) = Relation(
       id,
       NamedEntity(projectId, projectName),
       NamedEntity(groupFromId, groupFromName),
       groupToId.map(NamedEntity(_, groupToName.getOrElse(""))),
       NamedEntity(formId, formName),
-      kind
+      kind,
+      templates
     )
   }
 
@@ -93,6 +97,8 @@ class ProjectRelationDao @Inject()(
   with GroupComponent
   with FormComponent
   with ProjectComponent
+  with TemplateBindingComponent
+  with TemplateComponent
   with DaoHelper {
 
   import driver.api._
@@ -104,7 +110,13 @@ class ProjectRelationDao @Inject()(
     optId: Option[Long] = None,
     optProjectId: Option[Long] = None
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Relation]] = {
-    val query = Relations
+
+    def sortMapping(relation: RelationTable): PartialFunction[Symbol, Rep[_]] = {
+      case 'id => relation.id
+      case 'projectId => relation.projectId
+    }
+
+    val baseQuery = Relations
       .applyFilter {
         x =>
           Seq(
@@ -112,22 +124,38 @@ class ProjectRelationDao @Inject()(
             optProjectId.map(x.projectId === _)
           )
       }
+
+    val countQuery = baseQuery.length
+
+    val templatesQuery = RelationTemplates.join(Templates).on(_.templateId === _.id)
+
+    val resultQuery = baseQuery
       .join(Groups).on(_.groupFromId === _.id)
       .join(Forms).on { case ((relation, _), form) => relation.formId === form.id }
       .join(Projects).on { case (((relation, _), _), project) => relation.projectId === project.id }
       .joinLeft(Groups).on { case ((((relation, _), _), _), group) => relation.groupToId === group.id }
+      .applySorting(meta.sorting) { case ((((relation, _), _), _), _) => sortMapping(relation) }
+      .applyPagination(meta.pagination)
+      .joinLeft(templatesQuery).on { case (((((relation, _), _), _), _), (template, _)) =>
+        relation.id === template.relationId
+      }
+      .applySorting(meta.sorting) { case (((((relation, _), _), _), _), _) => sortMapping(relation) } // sort one page (order not preserved after join)
 
-    runListQuery(query) {
-      case ((((relation, _), _), _), _) => {
-        case 'id => relation.id
-        case 'projectId => relation.projectId
-      }
-    }.map { case ListWithTotal(total, data) =>
-      val result = data.map {
-        case ((((relation, groupFrom), form), project), groupTo) =>
-          relation.toModel(project.name, groupFrom.name, groupTo.map(_.name), form.name)
-      }
-      ListWithTotal(total, result)
+    for {
+      count <- db.run(countQuery.result)
+      flatResult <- if (count > 0) db.run(resultQuery.result) else Nil.toFuture
+    } yield {
+      val data = flatResult
+        .groupByWithOrder { case (((((relation, groupFrom), form), project), groupTo), _) =>
+          (relation, groupFrom, form, project, groupTo)
+        }
+        .map { case ((relation, groupFrom, form, project, groupTo), flatTemplates) =>
+          val templates = flatTemplates
+            .collect { case (_, Some((templateBinding, template))) => templateBinding.toModel(template.name) }
+
+          relation.toModel(project.name, groupFrom.name, groupTo.map(_.name), form.name, templates)
+        }
+      ListWithTotal(count, data)
     }
   }
 
@@ -163,8 +191,12 @@ class ProjectRelationDao @Inject()(
     * @return created relation with ID
     */
   def create(model: Relation): Future[Relation] = {
-    db.run(Relations.returning(Relations.map(_.id)) += DbRelation.fromModel(model))
-      .flatMap(findById(_).map(_.get))
+    db.run {
+      (for {
+        relationId <- Relations.returning(Relations.map(_.id)) += DbRelation.fromModel(model)
+        _ <- DBIO.seq(RelationTemplates ++= model.templates.map(DbTemplateBinding.fromModel(_, relationId)))
+      } yield relationId).transactionally
+    }.flatMap(findById(_).map(_.get))
   }
 
   /**
@@ -173,8 +205,13 @@ class ProjectRelationDao @Inject()(
     * @return updated relation
     */
   def update(model: Relation): Future[Relation] = {
-    db.run(Relations.filter(_.id === model.id).update(DbRelation.fromModel(model)))
-      .flatMap(_ => findById(model.id).map(_.get))
+    db.run {
+      (for {
+        _ <- Relations.filter(_.id === model.id).update(DbRelation.fromModel(model))
+        _ <- RelationTemplates.filter(_.relationId === model.id).delete
+        _ <- DBIO.seq(RelationTemplates ++= model.templates.map(DbTemplateBinding.fromModel(_, model.id)))
+      } yield ()).transactionally
+    }.flatMap(_ => findById(model.id).map(_.get))
   }
 
   /**

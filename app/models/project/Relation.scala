@@ -11,6 +11,7 @@ import models.NamedEntity
   * @param groupTo   reviewed group
   * @param form      form template
   * @param kind      relation kind
+  * @param templates relation-wide email templates
   */
 case class Relation(
   id: Long,
@@ -18,7 +19,8 @@ case class Relation(
   groupFrom: NamedEntity,
   groupTo: Option[NamedEntity],
   form: NamedEntity,
-  kind: Relation.Kind
+  kind: Relation.Kind,
+  templates: Seq[TemplateBinding]
 )
 
 object Relation {
