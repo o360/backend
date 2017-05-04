@@ -1,6 +1,6 @@
 package controllers.api.project
 
-import controllers.api.{EnumFormat, EnumFormatHelper, Response}
+import controllers.api.{ApiNamedEntity, EnumFormat, EnumFormatHelper, Response}
 import models.project.Relation
 import play.api.libs.json.Json
 
@@ -9,20 +9,20 @@ import play.api.libs.json.Json
   */
 case class ApiRelation(
   id: Long,
-  projectId: Long,
-  groupFromId: Long,
-  groupToId: Option[Long],
-  formId: Long,
+  project: ApiNamedEntity,
+  groupFrom: ApiNamedEntity,
+  groupTo: Option[ApiNamedEntity],
+  form: ApiNamedEntity,
   kind: ApiRelation.Kind
 ) extends Response
 
 object ApiRelation {
   def apply(r: Relation): ApiRelation = ApiRelation(
     r.id,
-    r.projectId,
-    r.groupFrom,
-    r.groupTo,
-    r.form,
+    ApiNamedEntity(r.project),
+    ApiNamedEntity(r.groupFrom),
+    r.groupTo.map(ApiNamedEntity(_)),
+    ApiNamedEntity(r.form),
     Kind(r.kind)
   )
 

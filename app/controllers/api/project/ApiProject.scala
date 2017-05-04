@@ -1,6 +1,6 @@
 package controllers.api.project
 
-import controllers.api.Response
+import controllers.api.{ApiNamedEntity, Response}
 import models.project.Project
 import play.api.libs.json.Json
 
@@ -11,7 +11,7 @@ case class ApiProject(
   id: Long,
   name: String,
   description: Option[String],
-  groupAuditorId: Long
+  groupAuditor: ApiNamedEntity
 ) extends Response
 
 object ApiProject {
@@ -22,6 +22,6 @@ object ApiProject {
     project.id,
     project.name,
     project.description,
-    project.groupAuditor
+    ApiNamedEntity(project.groupAuditor)
   )
 }

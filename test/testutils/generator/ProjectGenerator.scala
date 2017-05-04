@@ -1,5 +1,6 @@
 package testutils.generator
 
+import models.NamedEntity
 import models.project.Project
 import org.scalacheck.Arbitrary
 
@@ -13,6 +14,6 @@ trait ProjectGenerator {
       name <- Arbitrary.arbitrary[String]
       description <- Arbitrary.arbitrary[Option[String]]
       groupAuditor <- Arbitrary.arbitrary[Long]
-    } yield Project(0, name, description, groupAuditor)
+    } yield Project(0, name, description, NamedEntity(groupAuditor))
   }
 }

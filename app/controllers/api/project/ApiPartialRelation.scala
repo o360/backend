@@ -1,5 +1,6 @@
 package controllers.api.project
 
+import models.NamedEntity
 import models.project.Relation
 import play.api.libs.json.Json
 
@@ -16,10 +17,10 @@ case class ApiPartialRelation(
 
   def toModel(id: Long = 0) = Relation(
     id,
-    projectId,
-    groupFromId,
-    groupToId,
-    formId,
+    NamedEntity(projectId),
+    NamedEntity(groupFromId),
+    groupToId.map(NamedEntity(_)),
+    NamedEntity(formId),
     kind.value
   )
 }

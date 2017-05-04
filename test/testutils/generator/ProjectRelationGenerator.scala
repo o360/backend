@@ -1,5 +1,6 @@
 package testutils.generator
 
+import models.NamedEntity
 import models.project.Relation
 import org.scalacheck.{Arbitrary, Gen}
 
@@ -19,6 +20,13 @@ trait ProjectRelationGenerator {
       groupTo <- Arbitrary.arbitrary[Option[Long]]
       formId <- Arbitrary.arbitrary[Long]
       kind <- Arbitrary.arbitrary[Relation.Kind]
-    } yield Relation(0, projectId, groupFrom, groupTo, formId, kind)
+    } yield Relation(
+      0,
+      NamedEntity(projectId),
+      NamedEntity(groupFrom),
+      groupTo.map(NamedEntity(_)),
+      NamedEntity(formId),
+      kind
+    )
   }
 }

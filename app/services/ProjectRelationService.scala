@@ -59,16 +59,16 @@ class ProjectRelationService @Inject()(
     */
   def update(draft: Relation)(implicit account: User): SingleResult = {
     def isSameRelations(left: Relation, right: Relation) =
-      left.projectId == right.projectId &&
-        left.groupFrom == right.groupFrom &&
-        left.groupTo == right.groupTo &&
-        left.form == right.form &&
+      left.project.id == right.project.id &&
+        left.groupFrom.id == right.groupFrom.id &&
+        left.groupTo.map(_.id) == right.groupTo.map(_.id) &&
+        left.form.id == right.form.id &&
         left.kind == right.kind
 
     for {
       original <- getById(draft.id)
 
-      _ <- ensure(original.projectId == draft.projectId) {
+      _ <- ensure(original.project.id == draft.project.id) {
         BadRequestError.Relation.ProjectIdIsImmutable
       }
 
@@ -117,7 +117,7 @@ class ProjectRelationService @Inject()(
       activeEvents <- eventDao.getList(
         optId = None,
         optStatus = Some(Event.Status.InProgress),
-        optProjectId = Some(validatedRelation.projectId)
+        optProjectId = Some(validatedRelation.project.id)
       ).lift
 
       _ <- ensure(activeEvents.total == 0) {
