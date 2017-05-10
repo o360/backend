@@ -3,7 +3,8 @@ package controllers
 import com.mohiva.play.silhouette.api.Silhouette
 import com.mohiva.play.silhouette.test.FakeEnvironment
 import controllers.api.Response
-import controllers.api.project.{ApiPartialProject, ApiProject}
+import controllers.api.notification.{ApiNotificationKind, ApiNotificationRecipient}
+import controllers.api.project.{ApiPartialProject, ApiPartialTemplateBinding, ApiProject}
 import models.ListWithTotal
 import models.project.Project
 import models.user.User
@@ -73,16 +74,17 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
   "GET /projects" should {
     "return projects list from service" in {
       forAll { (
+      eventId: Option[Long],
       total: Int,
       projects: Seq[Project]
       ) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.projectServiceMock.getList()(admin, ListMeta.default))
+        when(fixture.projectServiceMock.getList(eventId)(admin, ListMeta.default))
           .thenReturn(EitherT.eitherT(toFuture(\/-(ListWithTotal(total, projects)): ApplicationError \/ ListWithTotal[Project])))
         val request = authenticated(FakeRequest(), env)
 
-        val response = fixture.controller.getList()(request)
+        val response = fixture.controller.getList(eventId)(request)
 
         status(response) mustBe OK
         val projectsJson = contentAsJson(response)
@@ -96,7 +98,7 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
       val env = fakeEnvironment(admin.copy(role = User.Role.User))
       val fixture = getFixture(env)
       val request = authenticated(FakeRequest(), env)
-      val response = fixture.controller.getList().apply(request)
+      val response = fixture.controller.getList(None).apply(request)
 
       status(response) mustBe FORBIDDEN
     }
@@ -110,7 +112,13 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
         when(fixture.projectServiceMock.update(project)(admin))
           .thenReturn(EitherT.eitherT(toFuture(\/-(project): ApplicationError \/ Project)))
 
-        val partialProject = ApiPartialProject(project)
+        val partialProject = ApiPartialProject(
+          project.name,
+          project.description,
+          project.groupAuditor.id,
+          project.templates.map(t =>
+            ApiPartialTemplateBinding(t.template.id, ApiNotificationKind(t.kind), ApiNotificationRecipient(t.recipient)))
+        )
         val request = authenticated(
           FakeRequest("PUT", "/projects")
             .withBody[ApiPartialProject](partialProject)
@@ -136,7 +144,13 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
         when(fixture.projectServiceMock.create(project.copy(id = 0))(admin))
           .thenReturn(EitherT.eitherT(toFuture(\/-(project): ApplicationError \/ Project)))
 
-        val partialProject = ApiPartialProject(project)
+        val partialProject = ApiPartialProject(
+          project.name,
+          project.description,
+          project.groupAuditor.id,
+          project.templates.map(t =>
+            ApiPartialTemplateBinding(t.template.id, ApiNotificationKind(t.kind), ApiNotificationRecipient(t.recipient)))
+        )
         val request = authenticated(
           FakeRequest("POST", "/projects")
             .withBody[ApiPartialProject](partialProject)

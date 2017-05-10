@@ -468,7 +468,7 @@ DELETE        /forms/:id                            controllers.FormController.d
 POST          /forms/:id/clone                      controllers.FormController.cloneForm(id: Long)
 
 ###
-# summary: Returns project with relations by ID
+# summary: Returns project by ID
 # tags:
 #   - Project
 # responses:
@@ -518,7 +518,7 @@ GET           /projects/:id                            controllers.ProjectContro
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /projects                                controllers.ProjectController.getList
+GET           /projects                                controllers.ProjectController.getList(eventId: Option[Long])
 
 ###
 # summary: Creates project
@@ -587,3 +587,425 @@ PUT           /projects/:id                            controllers.ProjectContro
 #       $ref: '#/responses/InternalServerError'
 ###
 DELETE        /projects/:id                            controllers.ProjectController.delete(id: Long)
+
+###
+# summary: Returns relation by ID
+# tags:
+#   - Project
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.project.ApiRelation'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET           /relations/:id                           controllers.ProjectRelationController.getById(id: Long)
+
+###
+# summary: Returns list of relations
+# tags:
+#   - Project
+# parameters:
+#   - name: sort
+#     in: query
+#     type: string
+#     pattern: '^-?\w+(,-?\w+)*$'
+#     description: 'Available fields: id, projectId. Format: field1,-field2,...'
+#   - $ref: '#/parameters/pageSize'
+#   - $ref: '#/parameters/pageNumber'
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.project.ApiRelation'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET           /relations                               controllers.ProjectRelationController.getList(projectId: Option[Long])
+
+###
+# summary: Creates relation
+# tags:
+#   - Project
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.project.ApiPartialRelation'
+# responses:
+#   201:
+#       description: Relation created
+#       schema:
+#           $ref: '#/definitions/controllers.api.project.ApiRelation'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST          /relations                               controllers.ProjectRelationController.create
+
+###
+# summary: Updates relation
+# tags:
+#   - Project
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.project.ApiPartialRelation'
+# responses:
+#   200:
+#       description: Relation updated
+#       schema:
+#           $ref: '#/definitions/controllers.api.project.ApiRelation'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+PUT           /relations/:id                           controllers.ProjectRelationController.update(id: Long)
+
+###
+# summary: Removes relation
+# tags:
+#   - Project
+# responses:
+#   204:
+#       description: Relation deleted successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+DELETE        /relations/:id                           controllers.ProjectRelationController.delete(id: Long)
+
+###
+# summary: Returns event by ID
+# tags:
+#   - Event
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.event.ApiEvent'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET           /events/:id                           controllers.EventController.getById(id: Long)
+
+###
+# summary: Returns list of events
+# tags:
+#   - Event
+# parameters:
+#   - name: status
+#     in: query
+#     required: false
+#     schema:
+#     type: string
+#     enum:
+#       - notStarted
+#       - inProgress
+#       - completed
+#   - name: sort
+#     in: query
+#     type: string
+#     pattern: '^-?\w+(,-?\w+)*$'
+#     description: 'Available fields: id, start, end, description, canRevote. Format: field1,-field2,...'
+#   - $ref: '#/parameters/pageSize'
+#   - $ref: '#/parameters/pageNumber'
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.event.ApiEvent'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET           /events                               controllers.EventController.getList(status: Option[controllers.api.event.ApiEvent.EventStatus], projectId: Option[Long])
+
+###
+# summary: Creates event
+# tags:
+#   - Event
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.event.ApiPartialEvent'
+# responses:
+#   201:
+#       description: Event created
+#       schema:
+#           $ref: '#/definitions/controllers.api.event.ApiEvent'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST          /events                               controllers.EventController.create
+
+###
+# summary: Updates event
+# tags:
+#   - Event
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.event.ApiPartialEvent'
+# responses:
+#   200:
+#       description: Event updated
+#       schema:
+#           $ref: '#/definitions/controllers.api.event.ApiEvent'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+PUT           /events/:id                           controllers.EventController.update(id: Long)
+
+###
+# summary: Removes event by ID
+# tags:
+#   - Event
+# responses:
+#   204:
+#       description: Event deleted successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+DELETE        /events/:id                           controllers.EventController.delete(id: Long)
+
+###
+# summary: Adds project to event
+# tags:
+#   - Event
+# responses:
+#   204:
+#       description: Project added to event successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST          /events/:eventId/projects/:projectId        controllers.EventProjectController.create(eventId: Long, projectId: Long)
+
+###
+# summary: Remove project from event
+# tags:
+#   - Event
+# responses:
+#   204:
+#       description: Project removed from event successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+DELETE        /events/:eventId/projects/:projectId        controllers.EventProjectController.delete(eventId: Long, projectId: Long)
+
+###
+# summary: Returns template by ID
+# tags:
+#   - Email template
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.template.ApiTemplate'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET           /templates/:id                              controllers.TemplateController.getById(id: Long)
+
+###
+# summary: Returns list of templates
+# tags:
+#   - Email template
+# parameters:
+#   - in: query
+#     name: kind
+#     schema:
+#     type: string
+#     enum:
+#       - "preBegin"
+#       - "begin"
+#       - "preEnd"
+#       - "end"
+#   - in: query
+#     name: recipient
+#     schema:
+#     type: string
+#     enum:
+#       - "respondent"
+#       - "auditor"
+#   - name: sort
+#     in: query
+#     type: string
+#     pattern: '^-?\w+(,-?\w+)*$'
+#     description: 'Available fields: id, name, kind, recipient. Format: field1,-field2,...'
+#   - $ref: '#/parameters/pageSize'
+#   - $ref: '#/parameters/pageNumber'
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.template.ApiTemplate'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET           /templates                                  controllers.TemplateController.getList(kind: Option[controllers.api.notification.ApiNotificationKind], recipient: Option[controllers.api.notification.ApiNotificationRecipient])
+
+###
+# summary: Creates template
+# tags:
+#   - Email template
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.template.ApiPartialTemplate'
+# responses:
+#   201:
+#       description: Template created
+#       schema:
+#           $ref: '#/definitions/controllers.api.template.ApiTemplate'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST          /templates                                  controllers.TemplateController.create
+
+###
+# summary: Updates template
+# tags:
+#   - Email template
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.template.ApiPartialTemplate'
+# responses:
+#   200:
+#       description: Template updated
+#       schema:
+#           $ref: '#/definitions/controllers.api.template.ApiTemplate'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+PUT           /templates/:id                              controllers.TemplateController.update(id: Long)
+
+###
+# summary: Removes template
+# tags:
+#   - Email template
+# responses:
+#   204:
+#       description: Template deleted successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+DELETE        /templates/:id                              controllers.TemplateController.delete(id: Long)

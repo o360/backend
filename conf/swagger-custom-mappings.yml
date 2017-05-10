@@ -28,9 +28,34 @@
           - "checkboxgroup"
           - "radio"
           - "select"
-  - type: .*.ApiProject\.RelationKind
+  - type: .*.ApiRelation\.Kind
     specAsParameter:
       - type: string
         enum:
           - "classic"
           - "survey"
+  - type: .*.ApiEvent\.EventStatus
+    specAsParameter:
+      - type: string
+        enum:
+          - "notStarted"
+          - "inProgress"
+          - "completed"
+  - type: .*.notification\.ApiNotificationKind
+    specAsParameter:
+      - type: string
+        enum:
+          - "preBegin"
+          - "begin"
+          - "preEnd"
+          - "end"
+  - type: .*.notification\.ApiNotificationRecipient
+    specAsParameter:
+      - type: string
+        enum:
+          - "respondent"
+          - "auditor"
+  - type: java\.sql\.Timestamp
+    specAsParameter:
+      - type: string
+        format: date-time
