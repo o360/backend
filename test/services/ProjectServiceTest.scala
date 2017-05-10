@@ -84,18 +84,6 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
   }
 
   "create" should {
-    "return conflict if can't validate relations" in {
-      forAll { (p: Project) =>
-        val project = p.copy(relations = Seq(Project.Relation(0, None, 0, Project.RelationKind.Classic)))
-        val fixture = getFixture
-
-        val result = wait(fixture.service.create(project)(admin).run)
-
-        result mustBe 'left
-        result.swap.toOption.get mustBe a[ConflictError]
-      }
-    }
-
     "return conflict if db exception" in {
       forAll { (project: Project) =>
         val fixture = getFixture
