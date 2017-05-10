@@ -12,14 +12,16 @@ import play.api.libs.json._
 case class ApiPartialProject(
   name: String,
   description: Option[String],
-  groupAuditorId: Long
+  groupAuditorId: Long,
+  templates: Seq[ApiPartialTemplateBinding]
 ) {
 
   def toModel(id: Long = 0) = Project(
     id,
     name,
     description,
-    NamedEntity(groupAuditorId)
+    NamedEntity(groupAuditorId),
+    templates.map(_.toModel)
   )
 }
 
@@ -28,12 +30,7 @@ object ApiPartialProject {
   implicit val reads: Reads[ApiPartialProject] = (
     (__ \ "name").read[String](maxLength[String](1024)) and
       (__ \ "description").readNullable[String](maxLength[String](1024)) and
-      (__ \ "groupAuditorId").read[Long]
-    ) (ApiPartialProject(_, _, _))
-
-  def apply(project: Project): ApiPartialProject = ApiPartialProject(
-    project.name,
-    project.description,
-    project.groupAuditor.id
-  )
+      (__ \ "groupAuditorId").read[Long] and
+      (__ \ "templates").read[Seq[ApiPartialTemplateBinding]]
+    ) (ApiPartialProject(_, _, _, _))
 }

@@ -12,7 +12,8 @@ case class ApiPartialRelation(
   groupFromId: Long,
   groupToId: Option[Long],
   formId: Long,
-  kind: ApiRelation.Kind
+  kind: ApiRelation.Kind,
+  templates: Seq[ApiPartialTemplateBinding]
 ) {
 
   def toModel(id: Long = 0) = Relation(
@@ -21,7 +22,8 @@ case class ApiPartialRelation(
     NamedEntity(groupFromId),
     groupToId.map(NamedEntity(_)),
     NamedEntity(formId),
-    kind.value
+    kind.value,
+    templates.map(_.toModel)
   )
 }
 

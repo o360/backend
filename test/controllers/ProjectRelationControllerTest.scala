@@ -3,7 +3,8 @@ package controllers
 import com.mohiva.play.silhouette.api.Silhouette
 import com.mohiva.play.silhouette.test.FakeEnvironment
 import controllers.api.Response
-import controllers.api.project.{ApiPartialRelation, ApiRelation}
+import controllers.api.notification.{ApiNotificationKind, ApiNotificationRecipient}
+import controllers.api.project.{ApiPartialRelation, ApiPartialTemplateBinding, ApiRelation}
 import models.ListWithTotal
 import models.project.Relation
 import models.user.User
@@ -116,8 +117,10 @@ class ProjectRelationControllerTest extends BaseControllerTest with ProjectRelat
           relation.groupFrom.id,
           relation.groupTo.map(_.id),
           relation.form.id,
-          ApiRelation.Kind(relation.kind)
-        )
+          ApiRelation.Kind(relation.kind),
+          relation.templates.map(t =>
+            ApiPartialTemplateBinding(t.template.id, ApiNotificationKind(t.kind), ApiNotificationRecipient(t.recipient))
+        ))
         val request = authenticated(
           FakeRequest("PUT", "/relations")
             .withBody[ApiPartialRelation](partialRelation)
@@ -148,8 +151,11 @@ class ProjectRelationControllerTest extends BaseControllerTest with ProjectRelat
           relation.groupFrom.id,
           relation.groupTo.map(_.id),
           relation.form.id,
-          ApiRelation.Kind(relation.kind)
-        )
+          ApiRelation.Kind(relation.kind),
+          relation.templates.map(t =>
+            ApiPartialTemplateBinding(t.template.id, ApiNotificationKind(t.kind), ApiNotificationRecipient(t.recipient))
+          ))
+
         val request = authenticated(
           FakeRequest("POST", "/relations")
             .withBody[ApiPartialRelation](partialRelation)
