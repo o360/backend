@@ -9,7 +9,8 @@ if [[ \
 -z $GOOGLE_REDIRECT_URL || \
 -z $GOOGLE_CLIENT_ID || \
 -z $GOOGLE_CLIENT_SECRET || \
--z $APPLICATION_SECRET \
+-z $APPLICATION_SECRET || \
+-z $MAIL_SEND_FROM \
  ]];
 then
 echo "ENVIRONMENT VARIABLES ARE UNSET"
@@ -31,4 +32,9 @@ docker run -d --name private-bw-assessment-api --restart=always -p 9000:9000 \
     -e GOOGLE_REDIRECT_URL=${GOOGLE_REDIRECT_URL} \
     -e GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID} \
     -e GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET} \
+    -e MAIL_HOST=${MAIL_HOST} \
+    -e MAIL_PORT=${MAIL_PORT} \
+    -e MAIL_USER=${MAIL_USER} \
+    -e MAIL_PASSWORD=${MAIL_PASSWORD} \
+    -e MAIL_SEND_FROM=${MAIL_SEND_FROM} \
     bw-assessment/api:latest
