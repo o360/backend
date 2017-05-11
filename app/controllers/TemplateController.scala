@@ -86,4 +86,16 @@ class TemplateController @Inject()(
       _ => NoContent
     )
   }
+
+  /**
+    * Clones template.
+    */
+  def cloneTemplate(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
+    toResult(Created) {
+      for {
+        original <- templateService.getById(id)
+        created <- templateService.create(original.copy(id = 0))
+      } yield ApiTemplate(created)
+    }
+  }
 }
