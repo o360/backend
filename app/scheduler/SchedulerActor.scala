@@ -1,9 +1,12 @@
 package scheduler
 
+import java.sql.Timestamp
 import javax.inject.{Inject, Singleton}
 
 import akka.actor.Actor
+import play.api.Configuration
 import play.api.libs.concurrent.Execution.Implicits._
+import services.NotificationService
 import utils.Logger
 import utils.errors.ApplicationError
 
@@ -16,13 +19,20 @@ import scalaz.{-\/, \/}
   * Scheduler actor.
   */
 @Singleton
-class SchedulerActor @Inject()() extends Actor with Logger {
+class SchedulerActor @Inject()(
+  protected val configuration: Configuration,
+  protected val notificationService: NotificationService
+) extends Actor with Logger {
+
+  private val interval = configuration.getMilliseconds("scheduler.interval").get
+  private def now = new Timestamp(System.currentTimeMillis)
+  private def from = new Timestamp(now.getTime - interval)
 
   def receive: Receive = {
     case SchedulerActor.Tick =>
       log.trace("scheduler tick")
       try {
-        // Do smth
+        notificationService.sendEventsNotifications(from, now)
       } catch {
         case NonFatal(e) =>
           log.error("scheduler", e)

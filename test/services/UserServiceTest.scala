@@ -2,7 +2,7 @@ package services
 
 import com.mohiva.play.silhouette.api.LoginInfo
 import models.ListWithTotal
-import models.dao.{UserGroupDao, UserDao => UserDAO}
+import models.dao.{GroupDao, UserGroupDao, UserDao => UserDAO}
 import models.user.{User => UserModel}
 import org.davidbild.tristate.Tristate
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
@@ -25,13 +25,15 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
   private case class TestFixture(
     userDaoMock: UserDAO,
     userGroupDaoMock: UserGroupDao,
+    groupDaoMock: GroupDao,
     service: UserService)
 
   private def getFixture = {
     val daoMock = mock[UserDAO]
     val userGroupDaoMock = mock[UserGroupDao]
-    val service = new UserService(daoMock, userGroupDaoMock)
-    TestFixture(daoMock, userGroupDaoMock, service)
+    val groupDaoMock = mock[GroupDao]
+    val service = new UserService(daoMock, userGroupDaoMock, groupDaoMock)
+    TestFixture(daoMock, userGroupDaoMock, groupDaoMock, service)
   }
 
   "retrieve" should {
@@ -161,20 +163,38 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
           optId = any[Option[Long]],
           optRole = eqTo(role),
           optStatus = eqTo(status),
-          optGroupId = eqTo(groupId)
+          optGroupIds = eqTo(groupId.map(Seq(_)))
         )(eqTo(ListMeta.default)))
           .thenReturn(toFuture(ListWithTotal(total, users)))
         val result = wait(fixture.service.list(role, status, groupId)(admin, ListMeta.default).run)
 
         result mustBe 'isRight
         result.toOption.get mustBe ListWithTotal(total, users)
+      }
+    }
+  }
 
-        verify(fixture.userDaoMock, times(1)).getList(
+  "listByGroupId" should {
+    "return list of users in group including child groups" in {
+      forAll { (
+      groupId: Long,
+      childGroups: Seq[Long],
+      users: Seq[UserModel],
+      total: Int
+      ) =>
+        val fixture = getFixture
+        when(fixture.groupDaoMock.findChildrenIds(groupId)).thenReturn(toFuture(childGroups))
+        when(fixture.userDaoMock.getList(
           optId = any[Option[Long]],
-          optRole = eqTo(role),
-          optStatus = eqTo(status),
-          optGroupId = eqTo(groupId)
-        )(eqTo(ListMeta.default))
+          optRole = any[Option[UserModel.Role]],
+          optStatus = any[Option[UserModel.Status]],
+          optGroupIds = eqTo(Tristate.Present(childGroups :+ groupId))
+        )(eqTo(ListMeta.default))).thenReturn(toFuture(ListWithTotal(total, users)))
+
+        val result = wait(fixture.service.listByGroupId(groupId).run)
+
+        result mustBe 'isRight
+        result.toOption.get mustBe ListWithTotal(total, users)
       }
     }
   }

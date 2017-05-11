@@ -1,6 +1,6 @@
 package services
 
-import java.sql.SQLException
+import java.sql.{SQLException, Timestamp}
 
 import models.ListWithTotal
 import models.dao.{EventDao, ProjectDao}
@@ -115,7 +115,9 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
         when(fixture.eventDaoMock.getList(
           optId = any[Option[Long]],
           optStatus = eqTo(Some(Event.Status.InProgress)),
-          optProjectId = eqTo(Some(project.id))
+          optProjectId = eqTo(Some(project.id)),
+          optNotificationFrom = any[Option[Timestamp]],
+          optNotificationTo = any[Option[Timestamp]]
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
         when(fixture.projectDaoMock.update(any[Project])).thenReturn(Future.failed(new SQLException("", "2300")))
         val result = wait(fixture.service.update(project)(admin).run)
@@ -132,7 +134,9 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
         when(fixture.eventDaoMock.getList(
           optId = any[Option[Long]],
           optStatus = eqTo(Some(Event.Status.InProgress.asInstanceOf[Event.Status])),
-          optProjectId = eqTo(Some(project.id))
+          optProjectId = eqTo(Some(project.id)),
+          optNotificationFrom = any[Option[Timestamp]],
+          optNotificationTo = any[Option[Timestamp]]
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](1, Nil)))
         val result = wait(fixture.service.update(project)(admin).run)
 
@@ -162,7 +166,9 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
       when(fixture.eventDaoMock.getList(
         optId = any[Option[Long]],
         optStatus = eqTo(Some(Event.Status.InProgress)),
-        optProjectId = eqTo(Some(project.id))
+        optProjectId = eqTo(Some(project.id)),
+        optNotificationFrom = any[Option[Timestamp]],
+        optNotificationTo = any[Option[Timestamp]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       when(fixture.projectDaoMock.update(project)).thenReturn(toFuture(project))
       val result = wait(fixture.service.update(project)(admin).run)

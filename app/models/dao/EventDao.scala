@@ -159,7 +159,9 @@ class EventDao @Inject()(
   def getList(
     optId: Option[Long] = None,
     optStatus: Option[Event.Status] = None,
-    optProjectId: Option[Long] = None
+    optProjectId: Option[Long] = None,
+    optNotificationFrom: Option[Timestamp] = None,
+    optNotificationTo: Option[Timestamp] = None
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Event]] = {
 
     def statusFilter(event: EventTable) = optStatus.map { status =>
@@ -177,12 +179,23 @@ class EventDao @Inject()(
         .exists
     }
 
+    def notificationFilter(event: EventTable) = (optNotificationFrom, optNotificationTo) match {
+      case (Some(from), Some(to)) =>
+        Some(EventNotifications.filter(n => n.time >= from && n.time <= to && n.eventId === event.id).exists)
+      case (Some(from), None) =>
+        Some(EventNotifications.filter(n => n.time >= from && n.eventId === event.id).exists)
+      case (None, Some(to)) =>
+        Some(EventNotifications.filter(n => n.time >= to && n.eventId === event.id).exists)
+      case (None, None) => None
+    }
+
     val baseQuery = Events
       .applyFilter { event =>
         Seq(
           optId.map(event.id === _),
           statusFilter(event),
-          projectFilter(event)
+          projectFilter(event),
+          notificationFilter(event)
         )
       }
 
