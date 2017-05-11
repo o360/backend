@@ -32,8 +32,9 @@ class ProjectRelationService @Inject()(
   /**
     * Returns relations list.
     */
-  def getList(projectId: Option[Long])(implicit account: User, meta: ListMeta): ListResult =
+  def getList(projectId: Option[Long])(implicit account: User, meta: ListMeta): ListResult = {
     projectRelationDao.getList(optId = None, optProjectId = projectId).lift
+  }
 
   /**
     * Creates new relation.
@@ -58,12 +59,9 @@ class ProjectRelationService @Inject()(
     * @param draft relation draft
     */
   def update(draft: Relation)(implicit account: User): SingleResult = {
-    def isSameRelations(left: Relation, right: Relation) =
-      left.project.id == right.project.id &&
-        left.groupFrom.id == right.groupFrom.id &&
-        left.groupTo.map(_.id) == right.groupTo.map(_.id) &&
-        left.form.id == right.form.id &&
-        left.kind == right.kind
+    def isSameRelations(left: Relation, right: Relation) = {
+      left.copy(id = 0, templates = Nil) == right.copy(id = 0, templates = Nil)
+    }
 
     for {
       original <- getById(draft.id)
@@ -103,11 +101,7 @@ class ProjectRelationService @Inject()(
   private def validateRelation(relation: Relation): SingleResult = {
     val needGroupTo = relation.kind == Relation.Kind.Classic
     val isEmptyGroupTo = relation.groupTo.isEmpty
-    val validatedRelation =
-      if (!needGroupTo && !isEmptyGroupTo)
-        relation.copy(groupTo = None)
-      else
-        relation
+    val validatedRelation = if (!needGroupTo && !isEmptyGroupTo) relation.copy(groupTo = None) else relation
 
     for {
       _ <- ensure(!needGroupTo || !isEmptyGroupTo) {
