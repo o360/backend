@@ -186,4 +186,37 @@ class TemplateControllerTest extends BaseControllerTest with TemplateGenerator {
       }
     }
   }
+
+  "POST /templates/id/clone" should {
+    "return 404 if template not found" in {
+      forAll { (id: Long) =>
+        val env = fakeEnvironment(admin)
+        val fixture = getFixture(env)
+        when(fixture.templateServiceMock.getById(id)(admin))
+          .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Template(id)): ApplicationError \/ Template)))
+
+        val request = authenticated(FakeRequest(), env)
+
+        val response = fixture.controller.cloneTemplate(id).apply(request)
+        status(response) mustBe NOT_FOUND
+      }
+    }
+
+    "clone template" in {
+      forAll { (id: Long, template: Template) =>
+        val env = fakeEnvironment(admin)
+        val fixture = getFixture(env)
+        when(fixture.templateServiceMock.getById(id)(admin))
+          .thenReturn(EitherT.eitherT(toFuture(\/-(template.copy(id = id)): ApplicationError \/ Template)))
+        when(fixture.templateServiceMock.create(template.copy(id = 0))(admin))
+          .thenReturn(EitherT.eitherT(toFuture(\/-(template): ApplicationError \/ Template)))
+        val request = authenticated(FakeRequest(), env)
+
+        val response = fixture.controller.cloneTemplate(id)(request)
+        status(response) mustBe CREATED
+        val templateJson = contentAsJson(response)
+        templateJson mustBe Json.toJson(ApiTemplate(template))
+      }
+    }
+  }
 }

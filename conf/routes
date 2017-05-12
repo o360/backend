@@ -1009,3 +1009,23 @@ PUT           /templates/:id                              controllers.TemplateCo
 #       $ref: '#/responses/InternalServerError'
 ###
 DELETE        /templates/:id                              controllers.TemplateController.delete(id: Long)
+
+###
+# summary: Clones template with given ID
+# tags:
+#   - Email template
+# responses:
+#   201:
+#       description: New template
+#       schema:
+#           $ref: '#/definitions/controllers.api.template.ApiTemplate'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST          /templates/:id/clone                      controllers.TemplateController.cloneTemplate(id: Long)
