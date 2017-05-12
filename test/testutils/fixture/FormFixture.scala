@@ -15,24 +15,24 @@ trait FormFixture extends FixtureHelper {
       "first",
       Seq(
         Form.Element(
+          1,
           Form.ElementKind.TextField,
           "cap1",
-          Some("def1"),
           required = true,
           Nil
         ),
         Form.Element(
+          2,
           Form.ElementKind.Radio,
           "cap2",
-          None,
           required = false,
           Seq(
             Form.ElementValue(
-              "val1",
+              1,
               "cap1"
             ),
             Form.ElementValue(
-              "val2",
+              2,
               "cap2"
             )
           )
@@ -56,14 +56,14 @@ trait FormFixture extends FixtureHelper {
         .scalaValues(2, "second")
         .build,
       insertInto("form_element")
-        .columns("id", "form_id", "kind", "caption", "default_value", "required", "ord")
-        .scalaValues(1, 1, 0, "cap1", "def1", true, 1)
-        .scalaValues(2, 1, 4, "cap2", null, false, 2)
+        .columns("id", "form_id", "kind", "caption", "required", "ord")
+        .scalaValues(1, 1, 0, "cap1", true, 1)
+        .scalaValues(2, 1, 4, "cap2", false, 2)
         .build,
       insertInto("form_element_value")
-        .columns("id", "element_id", "value", "caption", "ord")
-        .scalaValues(1, 2, "val1", "cap1", 1)
-        .scalaValues(2, 2, "val2", "cap2", 2)
+        .columns("id", "element_id", "caption", "ord")
+        .scalaValues(1, 2, "cap1", 1)
+        .scalaValues(2, 2, "cap2", 2)
         .build
     )
   }

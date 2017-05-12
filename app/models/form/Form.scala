@@ -24,16 +24,16 @@ object Form {
   /**
     * Form element.
     *
+    * @param id           DB ID
     * @param kind         type of element(textbox, radio, ...)
     * @param caption      caption
-    * @param defaultValue default value
     * @param required     is element required
     * @param values       list of element values
     */
   case class Element(
+    id: Long,
     kind: ElementKind,
     caption: String,
-    defaultValue: Option[String],
     required: Boolean,
     values: Seq[ElementValue]
   )
@@ -58,11 +58,11 @@ object Form {
   /**
     * Form element value.
     *
-    * @param value   value
+    * @param id      DB ID
     * @param caption caption
     */
   case class ElementValue(
-    value: String,
+    id: Long,
     caption: String
   )
 }

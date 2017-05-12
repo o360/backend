@@ -79,18 +79,13 @@ class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixtur
 
   "create" should {
     "return conflict if form is incorrect" in {
-      forAll { (form: Form) =>
-        val valuesMissed = form.elements.exists(x => x.kind.needValues && x.values.isEmpty)
-        val incorrectDefault = form.elements.exists(x =>
-          x.kind.needValues && x.defaultValue.nonEmpty && !x.values.exists(_.value == x.defaultValue.get))
-        whenever(valuesMissed || incorrectDefault) {
-          val fixture = getFixture
-          val result = wait(fixture.service.create(form)(admin).run)
+      val form = Forms(0).copy(elements = Seq(Form.Element(1, Form.ElementKind.Radio, "", false, Nil)))
 
-          result mustBe 'left
-          result.swap.toOption.get mustBe a[ConflictError]
-        }
-      }
+      val fixture = getFixture
+      val result = wait(fixture.service.create(form)(admin).run)
+
+      result mustBe 'left
+      result.swap.toOption.get mustBe a[ConflictError]
     }
 
     "create form in db" in {
@@ -123,20 +118,14 @@ class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixtur
     }
 
     "return conflict if form is incorrect" in {
-      forAll { (form: Form) =>
-        val valuesMissed = form.elements.exists(x => x.kind.needValues && x.values.isEmpty)
-        val incorrectDefault = form.elements.exists(x =>
-          x.kind.needValues && x.defaultValue.nonEmpty && !x.values.exists(_.value == x.defaultValue.get))
-        whenever(valuesMissed || incorrectDefault) {
-          val fixture = getFixture
-          when(fixture.formDaoMock.findById(form.id)).thenReturn(toFuture(Some(form)))
+      val form = Forms(0).copy(elements = Seq(Form.Element(1, Form.ElementKind.Radio, "", false, Nil)))
+      val fixture = getFixture
+      when(fixture.formDaoMock.findById(form.id)).thenReturn(toFuture(Some(form)))
 
-          val result = wait(fixture.service.update(form)(admin).run)
+      val result = wait(fixture.service.update(form)(admin).run)
 
-          result mustBe 'left
-          result.swap.toOption.get mustBe a[ConflictError]
-        }
-      }
+      result mustBe 'left
+      result.swap.toOption.get mustBe a[ConflictError]
     }
 
     "update form in db" in {

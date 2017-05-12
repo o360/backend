@@ -2,8 +2,6 @@ package controllers.api.form
 
 import controllers.api.{EnumFormat, EnumFormatHelper, Response}
 import models.form.{Form, FormShort}
-import play.api.libs.functional.syntax._
-import play.api.libs.json.Reads._
 import play.api.libs.json._
 /**
   * Api form model.
@@ -42,42 +40,21 @@ object ApiForm {
     Nil
   )
 
-  private val elementValueReads: Reads[ElementValue] = (
-    (__ \ "value").read[String](maxLength[String](1024)) and
-      (__ \ "caption").read[String](maxLength[String](1024))
-    ) (ElementValue)
-  implicit val elementValueFormat = Format(elementValueReads, Json.writes[ElementValue])
 
-  private val elementReads: Reads[Element] = (
-    (__ \ "kind").read[ElementKind] and
-      (__ \ "caption").read[String](maxLength[String](1024)) and
-      (__ \ "defaultValue").readNullable[String](maxLength(1024)) and
-      (__ \ "required").read[Boolean] and
-      (__ \ "values").readNullable[Seq[ElementValue]]
-    ) (Element(_, _, _, _, _))
-  implicit val elementFormat = Format(elementReads, Json.writes[Element])
-
+  implicit val elementValueWrites = Json.writes[ElementValue]
+  implicit val elementWrites = Json.writes[Element]
   implicit val formWrites = Json.writes[ApiForm]
 
   /**
     * Form element api model.
     */
   case class Element(
+    id: Long,
     kind: ElementKind,
     caption: String,
-    defaultValue: Option[String],
     required: Boolean,
     values: Option[Seq[ElementValue]]
-  ) extends Response {
-
-    def toModel = Form.Element(
-      kind.value,
-      caption,
-      defaultValue,
-      required,
-      values.getOrElse(Nil).map(_.toModel)
-    )
-  }
+  ) extends Response
 
   object Element {
     /**
@@ -86,14 +63,14 @@ object ApiForm {
     def apply(element: Form.Element): Element = {
       val values = element.values.map { value =>
         ElementValue(
-          value.value,
+          value.id,
           value.caption
         )
       }
       Element(
+        element.id,
         ElementKind(element.kind),
         element.caption,
-        element.defaultValue,
         element.required,
         if (values.isEmpty) None else Some(values)
       )
@@ -122,12 +99,12 @@ object ApiForm {
     * Form element value api model.
     */
   case class ElementValue(
-    value: String,
+    id: Long,
     caption: String
   ) extends Response {
 
     def toModel = Form.ElementValue(
-      value,
+      id,
       caption
     )
   }
