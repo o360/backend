@@ -6,7 +6,7 @@ import models.{ListWithTotal, NamedEntity}
 import models.dao.{EventDao, ProjectDao, ProjectRelationDao, TemplateDao}
 import models.event.Event
 import models.notification.Notification
-import models.project.{Project, TemplateBinding}
+import models.project.{Project, Relation, TemplateBinding}
 import org.mockito.ArgumentMatchers.any
 import testutils.generator.{EventGenerator, ListWithTotalGenerator}
 import utils.listmeta.ListMeta
@@ -132,6 +132,11 @@ class NotificationServiceTest
 
       when(fixture.templateDao.findById(1)).thenReturn(toFuture(Some(template)))
 
+      when(fixture.relationDao.getList(
+        optId = any[Option[Long]],
+        optProjectId = eqTo(Some(project.id))
+      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
+
       when(fixture.userService.listByGroupId(
         groupId = eqTo(project.groupAuditor.id)
       )(any[ListMeta]))
@@ -165,7 +170,12 @@ class NotificationServiceTest
         )))
       val template = Templates(0)
       val user = Users(0)
-      val relation = ProjectRelations(0)
+      val relation = ProjectRelations(0).copy(
+        templates = Seq(TemplateBinding(
+          NamedEntity(1, "template name"),
+          Notification.Kind.Begin,
+          Notification.Recipient.Respondent
+        )))
 
       when(fixture.eventDao.getList(
         optId = any[Option[Long]],
@@ -203,7 +213,7 @@ class NotificationServiceTest
       when(fixture.templateEngineService.render(template.body, context)).thenReturn(renderedBody)
 
       wait(fixture.service.sendEventsNotifications(from, to))
-      verify(fixture.mailService, times(1)).send(renderedSubject, user, renderedBody)
+      verify(fixture.mailService, times(2)).send(renderedSubject, user, renderedBody)
     }
   }
 }

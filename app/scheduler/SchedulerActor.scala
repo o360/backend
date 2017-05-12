@@ -25,12 +25,14 @@ class SchedulerActor @Inject()(
 ) extends Actor with Logger {
 
   private val interval = configuration.getMilliseconds("scheduler.interval").get
-  private def now = new Timestamp(System.currentTimeMillis)
-  private def from = new Timestamp(now.getTime - interval)
 
   def receive: Receive = {
     case SchedulerActor.Tick =>
       log.trace("scheduler tick")
+
+      val now = new Timestamp(System.currentTimeMillis)
+      val from = new Timestamp(now.getTime - interval)
+
       try {
         notificationService.sendEventsNotifications(from, now)
       } catch {
