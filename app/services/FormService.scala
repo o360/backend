@@ -99,16 +99,10 @@ class FormService @Inject()(
     def validateElement(element: Form.Element): ApplicationError \/ Form.Element = {
       val needValues = element.kind.needValues
       val isEmptyValues = element.values.isEmpty
-      val defaultValueNotInValues = element.defaultValue match {
-        case None => false
-        case Some(defaultValue) => !element.values.exists(_.value === defaultValue)
-      }
       val needToRemoveValues = !needValues && !isEmptyValues
 
       if (needValues && isEmptyValues) {
         ConflictError.Form.ElementValuesMissed(s"${element.kind}: ${element.caption}").left
-      } else if (needValues && defaultValueNotInValues) {
-        ConflictError.Form.DefaultValueNotInValues(s"${element.kind}: ${element.caption}").left
       } else if (needToRemoveValues) {
         element.copy(values = Nil).right
       } else {

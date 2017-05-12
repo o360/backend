@@ -9,10 +9,7 @@ import org.scalacheck.{Arbitrary, Gen}
 trait FormGenerator {
 
   implicit val elementValueArb = Arbitrary {
-    for {
-      value <- Arbitrary.arbitrary[String]
-      caption <- Arbitrary.arbitrary[String]
-    } yield Form.ElementValue(value, caption)
+      Arbitrary.arbitrary[String].map(Form.ElementValue(0, _))
   }
 
   implicit val elementKindArb = Arbitrary[Form.ElementKind] {
@@ -24,10 +21,9 @@ trait FormGenerator {
     for {
       kind <- Arbitrary.arbitrary[Form.ElementKind]
       caption <- Arbitrary.arbitrary[String]
-      defaultValue <- Arbitrary.arbitrary[Option[String]]
       required <- Arbitrary.arbitrary[Boolean]
       values <- Arbitrary.arbitrary[Seq[Form.ElementValue]]
-    } yield Form.Element(kind, caption, defaultValue, required, values)
+    } yield Form.Element(0, kind, caption, required, values)
   }
 
   implicit val formShortArb = Arbitrary {

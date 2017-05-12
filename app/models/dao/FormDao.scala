@@ -51,15 +51,14 @@ trait FormComponent {
     formId: Long,
     kind: Form.ElementKind,
     caption: String,
-    defaultValue: Option[String],
     required: Boolean,
     order: Int
   ) {
 
     def toModel(values: Seq[Form.ElementValue]) = Form.Element(
+      id,
       kind,
       caption,
-      defaultValue,
       required,
       values
     )
@@ -68,11 +67,10 @@ trait FormComponent {
   object DbFormElement {
 
     def fromModel(formId: Long, element: Form.Element, order: Int): DbFormElement = DbFormElement(
-      0,
+      element.id,
       formId,
       element.kind,
       element.caption,
-      element.defaultValue,
       element.required,
       order
     )
@@ -84,11 +82,10 @@ trait FormComponent {
     def formId = column[Long]("form_id")
     def kind = column[Form.ElementKind]("kind")
     def caption = column[String]("caption")
-    def defaultValue = column[Option[String]]("default_value")
     def required = column[Boolean]("required")
     def order = column[Int]("ord")
 
-    def * = (id, formId, kind, caption, defaultValue, required, order) <>
+    def * = (id, formId, kind, caption, required, order) <>
       ((DbFormElement.apply _).tupled, DbFormElement.unapply)
   }
 
@@ -100,13 +97,12 @@ trait FormComponent {
   case class DbFormElementValue(
     id: Long,
     elementId: Long,
-    value: String,
     caption: String,
     order: Int
   ) {
 
     def toModel = Form.ElementValue(
-      value,
+      id,
       caption
     )
   }
@@ -115,11 +111,10 @@ trait FormComponent {
 
     def id = column[Long]("id", O.AutoInc, O.PrimaryKey)
     def elementId = column[Long]("element_id")
-    def value = column[String]("value")
     def caption = column[String]("caption")
     def order = column[Int]("ord")
 
-    def * = (id, elementId, value, caption, order) <> ((DbFormElementValue.apply _).tupled, DbFormElementValue.unapply)
+    def * = (id, elementId, caption, order) <> ((DbFormElementValue.apply _).tupled, DbFormElementValue.unapply)
   }
 
   val FormElementValues = TableQuery[FormElementValueTable]
@@ -213,7 +208,7 @@ class FormDao @Inject()(
           .values
           .zipWithIndex
           .map { case (value, valueIndex) =>
-            DbFormElementValue(id = 0, elementId = 0, value.value, value.caption, valueIndex)
+            DbFormElementValue(id = 0, elementId = 0, value.caption, valueIndex)
           }
 
         (DbFormElement.fromModel(formId, element, index), values)
@@ -228,7 +223,10 @@ class FormDao @Inject()(
       } else elementId
     }
 
-    Future.sequence(results).map(_ => elements)
+    for {
+      _ <- Future.sequence(results)
+      form <- findById(formId)
+    } yield form.get.elements
   }
 
   /**
