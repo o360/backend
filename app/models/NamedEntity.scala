@@ -17,6 +17,8 @@ class NamedEntity(
   }
 
   override def hashCode(): Int = id.hashCode
+
+  override def toString: String = s"NamedEntity(id: $id, name: $name)"
 }
 
 object NamedEntity {

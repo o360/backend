@@ -1,6 +1,6 @@
 package services
 
-import java.sql.SQLException
+import java.sql.{SQLException, Timestamp}
 
 import models.ListWithTotal
 import models.dao.EventDao
@@ -74,7 +74,10 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
         when(fixture.eventDaoMock.getList(
           optId = any[Option[Long]],
           optStatus = eqTo(status),
-          optProjectId = eqTo(projectId))(eqTo(ListMeta.default)))
+          optProjectId = eqTo(projectId),
+          optNotificationFrom = any[Option[Timestamp]],
+          optNotificationTo = any[Option[Timestamp]]
+        )(eqTo(ListMeta.default)))
           .thenReturn(toFuture(ListWithTotal(total, events)))
         val result = wait(fixture.service.list(status, projectId)(admin, ListMeta.default).run)
 

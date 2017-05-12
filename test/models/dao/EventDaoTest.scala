@@ -1,5 +1,7 @@
 package models.dao
 
+import java.sql.Timestamp
+
 import models.event.Event
 import org.scalacheck.Gen
 import testutils.fixture.{EventFixture, EventProjectFixture}
@@ -14,10 +16,18 @@ class EventDaoTest extends BaseDaoTest with EventFixture with EventGenerator wit
 
   "get" should {
     "return events by specific criteria" in {
-      forAll { (status: Option[Event.Status]) =>
-        val events = wait(dao.getList(optStatus = status))
+      forAll { (status: Option[Event.Status], notificationFrom: Option[Timestamp], notificationTo: Option[Timestamp]) =>
+        val events = wait(dao.getList(
+          optStatus = status,
+          optNotificationFrom = notificationFrom,
+          optNotificationTo = notificationTo
+        ))
         val expectedEvents =
-          Events.filter(u => status.forall(_ == u.status))
+          Events.filter(u =>
+            status.forall(_ == u.status) &&
+              ((notificationFrom.isEmpty && notificationTo.isEmpty) || u.notifications.exists(nt =>
+                notificationFrom.forall(_.before(nt.time) && notificationTo.forall(_.after(nt.time)))
+              )))
         events.total mustBe expectedEvents.length
         events.data must contain theSameElementsAs expectedEvents
       }

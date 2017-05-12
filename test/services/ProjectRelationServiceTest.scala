@@ -1,5 +1,7 @@
 package services
 
+import java.sql.Timestamp
+
 import models.{ListWithTotal, NamedEntity}
 import models.dao.{EventDao, ProjectRelationDao}
 import models.event.Event
@@ -101,7 +103,9 @@ class ProjectRelationServiceTest extends BaseServiceTest with ProjectRelationGen
       when(fixture.eventDaoMock.getList(
         optId = any[Option[Long]],
         optStatus = eqTo(Some(Event.Status.InProgress)),
-        optProjectId = eqTo(Some(relation.project.id))
+        optProjectId = eqTo(Some(relation.project.id)),
+        optNotificationFrom = any[Option[Timestamp]],
+        optNotificationTo = any[Option[Timestamp]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       val result = wait(fixture.service.create(relation)(admin).run)
 
@@ -117,7 +121,9 @@ class ProjectRelationServiceTest extends BaseServiceTest with ProjectRelationGen
       when(fixture.eventDaoMock.getList(
         optId = any[Option[Long]],
         optStatus = eqTo(Some(Event.Status.InProgress)),
-        optProjectId = eqTo(Some(relation.project.id))
+        optProjectId = eqTo(Some(relation.project.id)),
+        optNotificationFrom = any[Option[Timestamp]],
+        optNotificationTo = any[Option[Timestamp]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](1, Nil)))
       val result = wait(fixture.service.create(relation)(admin).run)
 
@@ -135,7 +141,9 @@ class ProjectRelationServiceTest extends BaseServiceTest with ProjectRelationGen
       when(fixture.eventDaoMock.getList(
         optId = any[Option[Long]],
         optStatus = eqTo(Some(Event.Status.InProgress)),
-        optProjectId = eqTo(Some(relation.project.id))
+        optProjectId = eqTo(Some(relation.project.id)),
+        optNotificationFrom = any[Option[Timestamp]],
+        optNotificationTo = any[Option[Timestamp]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       val result = wait(fixture.service.create(relation.copy(id = 0))(admin).run)
 
@@ -177,7 +185,9 @@ class ProjectRelationServiceTest extends BaseServiceTest with ProjectRelationGen
       when(fixture.eventDaoMock.getList(
         optId = any[Option[Long]],
         optStatus = eqTo(Some(Event.Status.InProgress)),
-        optProjectId = eqTo(Some(relation.project.id))
+        optProjectId = eqTo(Some(relation.project.id)),
+        optNotificationFrom = any[Option[Timestamp]],
+        optNotificationTo = any[Option[Timestamp]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       val result = wait(fixture.service.update(relation)(admin).run)
 
@@ -196,7 +206,9 @@ class ProjectRelationServiceTest extends BaseServiceTest with ProjectRelationGen
       when(fixture.eventDaoMock.getList(
         optId = any[Option[Long]],
         optStatus = eqTo(Some(Event.Status.InProgress)),
-        optProjectId = eqTo(Some(relation.project.id))
+        optProjectId = eqTo(Some(relation.project.id)),
+        optNotificationFrom = any[Option[Timestamp]],
+        optNotificationTo = any[Option[Timestamp]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       val result = wait(fixture.service.update(relation)(admin).run)
 
@@ -213,7 +225,9 @@ class ProjectRelationServiceTest extends BaseServiceTest with ProjectRelationGen
       when(fixture.eventDaoMock.getList(
         optId = any[Option[Long]],
         optStatus = eqTo(Some(Event.Status.InProgress)),
-        optProjectId = eqTo(Some(relation.project.id))
+        optProjectId = eqTo(Some(relation.project.id)),
+        optNotificationFrom = any[Option[Timestamp]],
+        optNotificationTo = any[Option[Timestamp]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](1, Nil)))
       val result = wait(fixture.service.update(relation)(admin).run)
 
@@ -232,7 +246,9 @@ class ProjectRelationServiceTest extends BaseServiceTest with ProjectRelationGen
       when(fixture.eventDaoMock.getList(
         optId = any[Option[Long]],
         optStatus = eqTo(Some(Event.Status.InProgress)),
-        optProjectId = eqTo(Some(relation.project.id))
+        optProjectId = eqTo(Some(relation.project.id)),
+        optNotificationFrom = any[Option[Timestamp]],
+        optNotificationTo = any[Option[Timestamp]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       val result = wait(fixture.service.update(relation)(admin).run)
 

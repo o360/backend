@@ -36,7 +36,7 @@ class UserDaoTest
 
     "return users filtered by group" in {
       forAll { (groupId: Tristate[Long]) =>
-        val users = wait(dao.getList(optGroupId = groupId))
+        val users = wait(dao.getList(optGroupIds = groupId.map(Seq(_))))
         val expectedUsers = Users.filter(u => groupId match {
           case Tristate.Unspecified => true
           case Tristate.Absent => !UserGroups.map(_._1).contains(u.id)

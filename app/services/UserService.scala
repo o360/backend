@@ -4,7 +4,7 @@ import javax.inject.{Inject, Singleton}
 
 import com.mohiva.play.silhouette.api.LoginInfo
 import com.mohiva.play.silhouette.api.services.IdentityService
-import models.dao.{UserDao, UserGroupDao}
+import models.dao.{GroupDao, UserDao, UserGroupDao}
 import models.user.{User => UserModel}
 import org.davidbild.tristate.Tristate
 import play.api.libs.concurrent.Execution.Implicits._
@@ -22,7 +22,8 @@ import scala.concurrent.Future
 @Singleton
 class UserService @Inject()(
   protected val userDao: UserDao,
-  protected val userGroupDao: UserGroupDao
+  protected val userGroupDao: UserGroupDao,
+  protected val groupDao: GroupDao
 ) extends IdentityService[UserModel]
   with ServiceResults[UserModel] {
 
@@ -78,8 +79,19 @@ class UserService @Inject()(
       optId = None,
       optRole = role,
       optStatus = status,
-      optGroupId = groupId
+      optGroupIds = groupId.map(Seq(_))
     ).lift
+  }
+
+  /**
+    * Returns users list by group ID including users of all child groups.
+    */
+  def listByGroupId(groupId: Long)(implicit meta: ListMeta = ListMeta.default): ListResult = {
+    for {
+      childGroups <- groupDao.findChildrenIds(groupId).lift
+      allGroups = childGroups :+ groupId
+      result <- userDao.getList(optGroupIds = Tristate.Present(allGroups)).lift
+    } yield result
   }
 
   /**

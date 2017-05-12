@@ -15,7 +15,7 @@ import scala.util.matching.Regex.Match
 @Singleton
 class TemplateEngineService {
 
-  private val templateRegex = """\{\{\s*([a-zA-Z]+)\s*\}\}""".r
+  private val templateRegex = """\{\{\s*([a-zA-Z_]+)\s*\}\}""".r
 
   /**
     * Render template using context.

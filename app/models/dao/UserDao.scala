@@ -111,17 +111,24 @@ class UserDao @Inject()(
   /**
     * Returns list of users, filtered by given criteria.
     *
-    * @param optId      user ID
-    * @param optRole    user role
-    * @param optStatus  user status
-    * @param optGroupId only users of the group
+    * @param optId       user ID
+    * @param optRole     user role
+    * @param optStatus   user status
+    * @param optGroupIds only users of the groups
     */
   def getList(
     optId: Option[Long] = None,
     optRole: Option[User.Role] = None,
     optStatus: Option[User.Status] = None,
-    optGroupId: Tristate[Long] = Tristate.Unspecified
+    optGroupIds: Tristate[Seq[Long]] = Tristate.Unspecified
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[User]] = {
+
+    def filterGroup(user: UserTable) = optGroupIds match {
+      case Tristate.Unspecified => None
+      case Tristate.Absent => Some(!(user.id in UserGroups.map(_.userId)))
+      case Tristate.Present(groupIds) =>
+        Some(user.id in UserGroups.filter(_.groupId inSet groupIds.distinct).map(_.userId))
+    }
 
     val query = Users
       .applyFilter { x =>
@@ -129,11 +136,7 @@ class UserDao @Inject()(
           optId.map(x.id === _),
           optRole.map(x.role === _),
           optStatus.map(x.status === _),
-          optGroupId match {
-            case Tristate.Unspecified => None
-            case Tristate.Absent => Some(!(x.id in UserGroups.map(_.userId)))
-            case Tristate.Present(groupId) => Some(x.id in UserGroups.filter(_.groupId === groupId).map(_.userId))
-          }
+          filterGroup(x)
         )
       }
 
