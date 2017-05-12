@@ -34,7 +34,9 @@ class SchedulerActor @Inject()(
       val from = new Timestamp(now.getTime - interval)
 
       try {
-        notificationService.sendEventsNotifications(from, now)
+        notificationService.sendEventsNotifications(from, now).onFailure {
+          case e => log.error("scheduler", e)
+        }
       } catch {
         case NonFatal(e) =>
           log.error("scheduler", e)
