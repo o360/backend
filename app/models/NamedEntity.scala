@@ -3,9 +3,9 @@ package models
 /**
   * Entity with ID and name.
   */
-class NamedEntity(
-  val id: Long,
-  val name: Option[String]
+case class NamedEntity(
+  id: Long,
+  name: Option[String]
 ) {
   override def equals(obj: scala.Any): Boolean = {
     if (super.equals(obj)) true
@@ -16,14 +16,10 @@ class NamedEntity(
     }
   }
 
-  override def hashCode(): Int = id.hashCode
-
-  override def toString: String = s"NamedEntity(id: $id, name: $name)"
+  override def hashCode(): Int = id.##
 }
 
 object NamedEntity {
-
-  def apply(id: Long, name: Option[String]) = new NamedEntity(id, name)
 
   /**
     * Creates entity using ID.
