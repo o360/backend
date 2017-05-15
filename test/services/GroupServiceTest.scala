@@ -204,30 +204,6 @@ class GroupServiceTest extends BaseServiceTest with GroupGenerator with GroupFix
       }
     }
 
-    "return conflict if children exists" in {
-      val fixture = getFixture
-      val group = Groups(2)
-      when(fixture.groupDaoMock.findById(group.id)).thenReturn(toFuture(Some(group)))
-      when(fixture.groupDaoMock.findChildrenIds(group.id)).thenReturn(toFuture(Seq(1L, 2L, 3L, 4L)))
-      val result = wait(fixture.service.delete(group.id)(admin).run)
-
-      result mustBe 'left
-      result.swap.toOption.get mustBe a[ConflictError]
-    }
-
-    "return conflict if users in group exists" in {
-      val fixture = getFixture
-      val group = Groups(2)
-      when(fixture.groupDaoMock.findById(group.id)).thenReturn(toFuture(Some(group)))
-      when(fixture.groupDaoMock.findChildrenIds(group.id)).thenReturn(toFuture(Nil))
-      when(fixture.userGroupDaoMock.exists(groupId = eqTo(Some(group.id)), userId = any[Option[Long]]))
-        .thenReturn(toFuture(true))
-      val result = wait(fixture.service.delete(group.id)(admin).run)
-
-      result mustBe 'left
-      result.swap.toOption.get mustBe a[ConflictError]
-    }
-
     "delete group from db" in {
       val fixture = getFixture
       val group = Groups(2)
