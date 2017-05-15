@@ -3,7 +3,7 @@ package services
 import java.sql.{SQLException, Timestamp}
 
 import models.ListWithTotal
-import models.dao.EventDao
+import models.dao.{EventDao, GroupDao}
 import models.event.Event
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
@@ -23,12 +23,14 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
 
   private case class TestFixture(
     eventDaoMock: EventDao,
+    groupDao: GroupDao,
     service: EventService)
 
   private def getFixture = {
     val daoMock = mock[EventDao]
-    val service = new EventService(daoMock)
-    TestFixture(daoMock, service)
+    val groupDao = mock[GroupDao]
+    val service = new EventService(daoMock, groupDao)
+    TestFixture(daoMock, groupDao, service)
   }
 
   "getById" should {
@@ -63,7 +65,7 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
   }
 
   "list" should {
-    "return list of events from db" in {
+    "return list of events from db for admin" in {
       forAll { (
       projectId: Option[Long],
       status: Option[Event.Status],
@@ -77,10 +79,39 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
           optProjectId = eqTo(projectId),
           optNotificationFrom = any[Option[Timestamp]],
           optNotificationTo = any[Option[Timestamp]],
-          optFormId = any[Option[Long]]
+          optFormId = any[Option[Long]],
+          optGroupFromIds = eqTo(None)
         )(eqTo(ListMeta.default)))
           .thenReturn(toFuture(ListWithTotal(total, events)))
         val result = wait(fixture.service.list(status, projectId)(admin, ListMeta.default).run)
+
+        result mustBe 'right
+        result.toOption.get mustBe ListWithTotal(total, events)
+      }
+    }
+
+    "filter events by groupFrom for user" in {
+      val user = UserFixture.user
+      forAll { (
+      projectId: Option[Long],
+      status: Option[Event.Status],
+      userGroups: Seq[Long],
+      events: Seq[Event],
+      total: Int
+      ) =>
+        val fixture = getFixture
+        when(fixture.eventDaoMock.getList(
+          optId = any[Option[Long]],
+          optStatus = eqTo(status),
+          optProjectId = eqTo(projectId),
+          optNotificationFrom = any[Option[Timestamp]],
+          optNotificationTo = any[Option[Timestamp]],
+          optFormId = any[Option[Long]],
+          optGroupFromIds = eqTo(Some(userGroups))
+        )(eqTo(ListMeta.default)))
+          .thenReturn(toFuture(ListWithTotal(total, events)))
+        when(fixture.groupDao.findGroupIdsByUserId(user.id)).thenReturn(toFuture(userGroups))
+        val result = wait(fixture.service.list(status, projectId)(user, ListMeta.default).run)
 
         result mustBe 'right
         result.toOption.get mustBe ListWithTotal(total, events)

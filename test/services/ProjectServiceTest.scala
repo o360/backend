@@ -118,7 +118,8 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
           optProjectId = eqTo(Some(project.id)),
           optNotificationFrom = any[Option[Timestamp]],
           optNotificationTo = any[Option[Timestamp]],
-          optFormId = any[Option[Long]]
+          optFormId = any[Option[Long]],
+          optGroupFromIds = any[Option[Seq[Long]]]
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
         when(fixture.projectDaoMock.update(any[Project])).thenReturn(Future.failed(new SQLException("", "2300")))
         val result = wait(fixture.service.update(project)(admin).run)
@@ -138,7 +139,8 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
           optProjectId = eqTo(Some(project.id)),
           optNotificationFrom = any[Option[Timestamp]],
           optNotificationTo = any[Option[Timestamp]],
-          optFormId = any[Option[Long]]
+          optFormId = any[Option[Long]],
+          optGroupFromIds = any[Option[Seq[Long]]]
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](1, Nil)))
         val result = wait(fixture.service.update(project)(admin).run)
 
@@ -171,7 +173,8 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
         optProjectId = eqTo(Some(project.id)),
         optNotificationFrom = any[Option[Timestamp]],
         optNotificationTo = any[Option[Timestamp]],
-        optFormId = any[Option[Long]]
+        optFormId = any[Option[Long]],
+        optGroupFromIds = any[Option[Seq[Long]]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       when(fixture.projectDaoMock.update(project)).thenReturn(toFuture(project))
       val result = wait(fixture.service.update(project)(admin).run)

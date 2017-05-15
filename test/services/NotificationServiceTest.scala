@@ -68,7 +68,8 @@ class NotificationServiceTest
         optProjectId = any[Option[Long]],
         optNotificationFrom = eqTo(Some(from)),
         optNotificationTo = eqTo(Some(to)),
-        optFormId = any[Option[Long]]
+        optFormId = any[Option[Long]],
+        optGroupFromIds = any[Option[Seq[Long]]]
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
 
@@ -86,7 +87,8 @@ class NotificationServiceTest
         optProjectId = any[Option[Long]],
         optNotificationFrom = eqTo(Some(from)),
         optNotificationTo = eqTo(Some(to)),
-        optFormId = any[Option[Long]]
+        optFormId = any[Option[Long]],
+        optGroupFromIds = any[Option[Seq[Long]]]
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal(1, Seq(event))))
 
@@ -123,7 +125,8 @@ class NotificationServiceTest
         optProjectId = any[Option[Long]],
         optNotificationFrom = eqTo(Some(from)),
         optNotificationTo = eqTo(Some(to)),
-        optFormId = any[Option[Long]]
+        optFormId = any[Option[Long]],
+        optGroupFromIds = any[Option[Seq[Long]]]
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal(1, Seq(event))))
 
@@ -186,7 +189,8 @@ class NotificationServiceTest
         optProjectId = any[Option[Long]],
         optNotificationFrom = eqTo(Some(from)),
         optNotificationTo = eqTo(Some(to)),
-        optFormId = any[Option[Long]]
+        optFormId = any[Option[Long]],
+        optGroupFromIds = any[Option[Seq[Long]]]
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal(1, Seq(event))))
 

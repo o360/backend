@@ -2,20 +2,22 @@ package services
 
 import javax.inject.{Inject, Singleton}
 
-import models.dao.EventDao
+import models.dao.{EventDao, GroupDao}
 import models.event.Event
 import models.user.User
 import services.authorization.EventSda
 import utils.errors.{BadRequestError, ExceptionHandler, NotFoundError}
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
+import play.api.libs.concurrent.Execution.Implicits._
 
 /**
   * Event service.
   */
 @Singleton
 class EventService @Inject()(
-  protected val eventDao: EventDao
+  protected val eventDao: EventDao,
+  protected val groupDao: GroupDao
 ) extends ServiceResults[Event] {
 
   /**
@@ -36,11 +38,21 @@ class EventService @Inject()(
     status: Option[Event.Status],
     projectId: Option[Long]
   )(implicit account: User, meta: ListMeta): ListResult = {
-    eventDao.getList(
-      optId = None,
-      optStatus = status,
-      optProjectId = projectId
-    ).lift
+
+    val groupFromFilter = account.role match {
+      case User.Role.Admin => None.toFuture
+      case User.Role.User => groupDao.findGroupIdsByUserId(account.id).map(Some(_))
+    }
+
+    for {
+      groupFromIds <- groupFromFilter.lift
+      events <- eventDao.getList(
+        optId = None,
+        optStatus = status,
+        optProjectId = projectId,
+        optGroupFromIds = groupFromIds
+      ).lift
+    } yield events
   }
 
   /**

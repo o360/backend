@@ -7,6 +7,7 @@ import models.event.Event
 import play.api.libs.json.Json
 import controllers.api.TimestampFormat._
 import controllers.api.notification.{ApiNotificationKind, ApiNotificationRecipient}
+import models.user.User
 
 /**
   * Api model for event.
@@ -17,7 +18,7 @@ case class ApiEvent(
   start: Timestamp,
   end: Timestamp,
   canRevote: Boolean,
-  notifications: Seq[ApiEvent.NotificationTime],
+  notifications: Option[Seq[ApiEvent.NotificationTime]],
   status: ApiEvent.EventStatus
 ) extends Response
 
@@ -26,15 +27,28 @@ object ApiEvent {
   /**
     * Creates api model form model.
     */
-  def apply(e: Event): ApiEvent = ApiEvent(
-    e.id,
-    e.description,
-    e.start,
-    e.end,
-    e.canRevote,
-    e.notifications.map(NotificationTime(_)),
-    EventStatus(e.status)
-  )
+  def apply(e: Event)(implicit account: User): ApiEvent = account.role match {
+    case User.Role.Admin =>
+      ApiEvent(
+        e.id,
+        e.description,
+        e.start,
+        e.end,
+        e.canRevote,
+        Some(e.notifications.map(NotificationTime(_))),
+        EventStatus(e.status)
+      )
+    case User.Role.User =>
+      ApiEvent(
+        e.id,
+        e.description,
+        e.start,
+        e.end,
+        e.canRevote,
+        None,
+        EventStatus(e.status)
+      )
+  }
 
   implicit val notificationTimeFormat = Json.format[NotificationTime]
   implicit val eventWrites = Json.writes[ApiEvent]

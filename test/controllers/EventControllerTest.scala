@@ -65,7 +65,7 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
         val response = fixture.controller.getById(id)(request)
         status(response) mustBe OK
         val eventJson = contentAsJson(response)
-        eventJson mustBe Json.toJson(ApiEvent(event))
+        eventJson mustBe Json.toJson(ApiEvent(event)(UserFixture.admin))
       }
     }
   }
@@ -89,18 +89,10 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
         status(response) mustBe OK
         val eventsJson = contentAsJson(response)
         val expectedJson = Json.toJson(
-          Response.List(Response.Meta(total, ListMeta.default), events.map(ApiEvent(_)))
+          Response.List(Response.Meta(total, ListMeta.default), events.map(ApiEvent(_)(UserFixture.admin)))
         )
         eventsJson mustBe expectedJson
       }
-    }
-    "return forbidden for non admin user" in {
-      val env = fakeEnvironment(admin.copy(role = User.Role.User))
-      val fixture = getFixture(env)
-      val request = authenticated(FakeRequest(), env)
-      val response = fixture.controller.getList(None, None).apply(request)
-
-      status(response) mustBe FORBIDDEN
     }
   }
 
@@ -129,7 +121,7 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
 
         val response = fixture.controller.update(event.id).apply(request)
         val responseJson = contentAsJson(response)
-        val expectedJson = Json.toJson(ApiEvent(event))
+        val expectedJson = Json.toJson(ApiEvent(event)(UserFixture.admin))
 
         status(response) mustBe OK
         responseJson mustBe expectedJson
@@ -163,7 +155,7 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
 
         val response = fixture.controller.create.apply(request)
         val responseJson = contentAsJson(response)
-        val expectedJson = Json.toJson(ApiEvent(event))
+        val expectedJson = Json.toJson(ApiEvent(event)(UserFixture.admin))
 
         status(response) mustBe CREATED
         responseJson mustBe expectedJson

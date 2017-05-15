@@ -135,4 +135,28 @@ class GroupDao @Inject()(
 
     db.run(sql)
   }
+
+  /**
+    * Returns group ids for user (including all parent groups).
+    *
+    * @param userId user ID
+    */
+  def findGroupIdsByUserId(userId: Long): Future[Seq[Long]] = {
+    val sql =
+      sql"""
+           WITH RECURSIVE T(id, parent_id) AS (
+               SELECT id, parent_id
+               FROM orgstructure g
+               WHERE id IN(SELECT group_id FROM user_group WHERE user_id = $userId)
+               UNION ALL
+               SELECT gc.id, gc.parent_id
+               FROM T JOIN orgstructure gc
+               ON gc.id = T.parent_id
+           )
+           SELECT DISTINCT id
+           FROM T
+         """.as[Long]
+
+    db.run(sql)
+  }
 }
