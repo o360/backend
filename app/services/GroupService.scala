@@ -82,15 +82,6 @@ class GroupService @Inject()(
     for {
       _ <- getById(id)
 
-      childList <- groupDao.findChildrenIds(id).lift
-      _ <- ensure(childList.isEmpty) {
-        ConflictError.Group.ChildrenExists(id, childList)
-      }
-
-      _ <- ensure(!userGroupDao.exists(groupId = Some(id))) {
-        ConflictError.Group.UserExists(id)
-      }
-
       _ <- groupDao.delete(id).lift(ExceptionHandler.sql)
     } yield ()
   }
