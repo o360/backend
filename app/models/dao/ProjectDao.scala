@@ -112,15 +112,15 @@ class ProjectDao @Inject()(
     val resultQuery = baseQuery
       .applySorting(meta.sorting)(sortMapping)
       .applyPagination(meta.pagination)
-    .join(Groups).on(_.groupAuditorId === _.id)
+      .join(Groups).on(_.groupAuditorId === _.id)
       .joinLeft(templatesQuery).on { case ((project, _), (template, _)) => project.id === template.projectId }
       .applySorting(meta.sorting) { case ((project, _), _) => sortMapping(project) } // sort one page (order not preserved after join)
 
     for {
       count <- db.run(countQuery.result)
-      flatResult <- if (count > 0) db.run(resultQuery.result) else Nil.toFuture
+      result <- if (count > 0) db.run(resultQuery.result) else Nil.toFuture
     } yield {
-      val data = flatResult
+      val data = result
         .groupByWithOrder { case ((project, auditorGroup), _) => (project, auditorGroup) }
         .map { case ((project, auditorGroup), flatTemplates) =>
           val templates = flatTemplates
@@ -148,12 +148,12 @@ class ProjectDao @Inject()(
     * @return created project with ID
     */
   def create(project: Project): Future[Project] = {
-    db.run {
-      (for {
-        projectId <- Projects.returning(Projects.map(_.id)) += DbProject.fromModel(project)
-        _ <- DBIO.seq(ProjectTemplates ++= project.templates.map(DbTemplateBinding.fromModel(_, projectId)))
-      } yield projectId).transactionally
-    }.flatMap(findById(_).map(_.get))
+    val action = for {
+      projectId <- Projects.returning(Projects.map(_.id)) += DbProject.fromModel(project)
+      _ <- DBIO.seq(ProjectTemplates ++= project.templates.map(DbTemplateBinding.fromModel(_, projectId)))
+    } yield projectId
+
+    db.run(action.transactionally).flatMap(findById(_).map(_.get))
   }
 
   /**
@@ -163,13 +163,13 @@ class ProjectDao @Inject()(
     * @return updated project
     */
   def update(project: Project): Future[Project] = {
-    db.run {
-      (for {
-        _ <- Projects.filter(_.id === project.id).update(DbProject.fromModel(project))
-        _ <- ProjectTemplates.filter(_.projectId === project.id).delete
-        _ <- DBIO.seq(ProjectTemplates ++= project.templates.map(DbTemplateBinding.fromModel(_, project.id)))
-      } yield ()).transactionally
-    }.flatMap(_ => findById(project.id).map(_.get))
+    val action = for {
+      _ <- Projects.filter(_.id === project.id).update(DbProject.fromModel(project))
+      _ <- ProjectTemplates.filter(_.projectId === project.id).delete
+      _ <- DBIO.seq(ProjectTemplates ++= project.templates.map(DbTemplateBinding.fromModel(_, project.id)))
+    } yield ()
+
+    db.run(action.transactionally).flatMap(_ => findById(project.id).map(_.get))
   }
 
   /**
