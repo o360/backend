@@ -134,6 +134,7 @@ class EventDao @Inject()(
 ) extends HasDatabaseConfigProvider[JdbcProfile]
   with EventComponent
   with EventProjectComponent
+  with ProjectRelationComponent
   with DaoHelper {
 
   import driver.api._
@@ -161,7 +162,8 @@ class EventDao @Inject()(
     optStatus: Option[Event.Status] = None,
     optProjectId: Option[Long] = None,
     optNotificationFrom: Option[Timestamp] = None,
-    optNotificationTo: Option[Timestamp] = None
+    optNotificationTo: Option[Timestamp] = None,
+    optFormId: Option[Long] = None
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Event]] = {
 
     def statusFilter(event: EventTable) = optStatus.map { status =>
@@ -189,13 +191,22 @@ class EventDao @Inject()(
       case (None, None) => None
     }
 
+    def formFilter(event: EventTable) = optFormId.map { formId =>
+      EventProjects.join(Relations).on(_.projectId === _.projectId)
+        .filter { case (eventProject, relation) =>
+          eventProject.eventId === event.id && relation.formId === formId
+        }
+        .exists
+    }
+
     val baseQuery = Events
       .applyFilter { event =>
         Seq(
           optId.map(event.id === _),
           statusFilter(event),
           projectFilter(event),
-          notificationFilter(event)
+          notificationFilter(event),
+          formFilter(event)
         )
       }
 
