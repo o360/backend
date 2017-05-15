@@ -66,7 +66,7 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
         val response = fixture.controller.getById(id)(request)
         status(response) mustBe OK
         val projectJson = contentAsJson(response)
-        projectJson mustBe Json.toJson(ApiProject(project))
+        projectJson mustBe Json.toJson(ApiProject(project)(UserFixture.admin))
       }
     }
   }
@@ -89,18 +89,10 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
         status(response) mustBe OK
         val projectsJson = contentAsJson(response)
         val expectedJson = Json.toJson(
-          Response.List(Response.Meta(total, ListMeta.default), projects.map(ApiProject(_)))
+          Response.List(Response.Meta(total, ListMeta.default), projects.map(ApiProject(_)(UserFixture.admin)))
         )
         projectsJson mustBe expectedJson
       }
-    }
-    "return forbidden for non admin user" in {
-      val env = fakeEnvironment(admin.copy(role = User.Role.User))
-      val fixture = getFixture(env)
-      val request = authenticated(FakeRequest(), env)
-      val response = fixture.controller.getList(None).apply(request)
-
-      status(response) mustBe FORBIDDEN
     }
   }
 
@@ -128,7 +120,7 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
 
         val response = fixture.controller.update(project.id).apply(request)
         val responseJson = contentAsJson(response)
-        val expectedJson = Json.toJson(ApiProject(project))
+        val expectedJson = Json.toJson(ApiProject(project)(UserFixture.admin))
 
         status(response) mustBe OK
         responseJson mustBe expectedJson
@@ -160,7 +152,7 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
 
         val response = fixture.controller.create.apply(request)
         val responseJson = contentAsJson(response)
-        val expectedJson = Json.toJson(ApiProject(project))
+        val expectedJson = Json.toJson(ApiProject(project)(UserFixture.admin))
 
         status(response) mustBe CREATED
         responseJson mustBe expectedJson

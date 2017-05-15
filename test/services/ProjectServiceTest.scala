@@ -3,7 +3,7 @@ package services
 import java.sql.{SQLException, Timestamp}
 
 import models.ListWithTotal
-import models.dao.{EventDao, ProjectDao}
+import models.dao.{EventDao, GroupDao, ProjectDao}
 import models.event.Event
 import models.project.Project
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
@@ -25,13 +25,15 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
   private case class TestFixture(
     projectDaoMock: ProjectDao,
     eventDaoMock: EventDao,
+    groupDao: GroupDao,
     service: ProjectService)
 
   private def getFixture = {
     val daoMock = mock[ProjectDao]
     val eventDaoMock = mock[EventDao]
-    val service = new ProjectService(daoMock, eventDaoMock)
-    TestFixture(daoMock, eventDaoMock, service)
+    val groupDao = mock[GroupDao]
+    val service = new ProjectService(daoMock, eventDaoMock, groupDao)
+    TestFixture(daoMock, eventDaoMock, groupDao, service)
   }
 
   "getById" should {
@@ -66,16 +68,44 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
   }
 
   "list" should {
-    "return list of projects from db" in {
+    "return list of projects from db for admin" in {
       forAll { (
       eventId: Option[Long],
       projects: Seq[Project],
       total: Int
       ) =>
         val fixture = getFixture
-        when(fixture.projectDaoMock.getList(optId = any[Option[Long]], optEventId = eqTo(eventId))(eqTo(ListMeta.default)))
+        when(fixture.projectDaoMock.getList(
+          optId = any[Option[Long]],
+          optEventId = eqTo(eventId),
+          optGroupFromIds = any[Option[Seq[Long]]]
+        )(eqTo(ListMeta.default)))
           .thenReturn(toFuture(ListWithTotal(total, projects)))
         val result = wait(fixture.service.getList(eventId)(admin, ListMeta.default).run)
+
+        result mustBe 'right
+        result.toOption.get mustBe ListWithTotal(total, projects)
+      }
+    }
+
+    "return list of projects from db for user" in {
+      val user = UserFixture.user
+      forAll { (
+      eventId: Option[Long],
+      userGroups: Seq[Long],
+      projects: Seq[Project],
+      total: Int
+      ) =>
+        val fixture = getFixture
+        when(fixture.projectDaoMock.getList(
+          optId = any[Option[Long]],
+          optEventId = eqTo(eventId),
+          optGroupFromIds = eqTo(Some(userGroups))
+        )(eqTo(ListMeta.default)))
+          .thenReturn(toFuture(ListWithTotal(total, projects)))
+        when(fixture.groupDao.findGroupIdsByUserId(user.id)).thenReturn(toFuture(userGroups))
+
+        val result = wait(fixture.service.getList(eventId)(user, ListMeta.default).run)
 
         result mustBe 'right
         result.toOption.get mustBe ListWithTotal(total, projects)

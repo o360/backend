@@ -75,6 +75,7 @@ class ProjectDao @Inject()(
   with GroupComponent
   with TemplateBindingComponent
   with TemplateComponent
+  with ProjectRelationComponent
   with DaoHelper {
 
   import driver.api._
@@ -86,7 +87,8 @@ class ProjectDao @Inject()(
     */
   def getList(
     optId: Option[Long] = None,
-    optEventId: Option[Long] = None
+    optEventId: Option[Long] = None,
+    optGroupFromIds: Option[Seq[Long]] = None
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Project]] = {
 
     def sortMapping(project: ProjectTable): PartialFunction[Symbol, Rep[_]] = {
@@ -95,13 +97,20 @@ class ProjectDao @Inject()(
       case 'description => project.description
     }
 
+    def eventFilter(project: ProjectTable) = optEventId.map { eventId =>
+      project.id in EventProjects.filter(_.eventId === eventId).map(_.projectId)
+    }
+
+    def groupFromFilter(project: ProjectTable) = optGroupFromIds.map { groupFromIds =>
+      project.id in Relations.filter(_.groupFromId.inSet(groupFromIds)).map(_.projectId)
+    }
+
     val baseQuery = Projects
       .applyFilter { x =>
         Seq(
           optId.map(x.id === _),
-          optEventId.map { eventId =>
-            EventProjects.filter(ep => ep.projectId === x.id && ep.eventId === eventId).exists
-          }
+          eventFilter(x),
+          groupFromFilter(x)
         )
       }
 

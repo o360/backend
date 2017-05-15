@@ -5,7 +5,7 @@ import javax.inject.{Inject, Singleton}
 import com.mohiva.play.silhouette.api.Silhouette
 import controllers.api.Response
 import controllers.api.project.{ApiPartialProject, ApiProject}
-import controllers.authorization.AllowedRole
+import controllers.authorization.{AllowedRole, AllowedStatus}
 import services.ProjectService
 import silhouette.DefaultEnv
 import utils.implicits.FutureLifting._
@@ -27,7 +27,7 @@ class ProjectController @Inject()(
     * Returns list of projects with relations.
     */
   def getList(eventId: Option[Long]) =
-    (silhouette.SecuredAction(AllowedRole.admin) andThen ListAction).async { implicit request =>
+    (silhouette.SecuredAction(AllowedStatus.approved) andThen ListAction).async { implicit request =>
 
     toResult(Ok) {
       projectService
