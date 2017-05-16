@@ -163,7 +163,8 @@ class EventDao @Inject()(
     optProjectId: Option[Long] = None,
     optNotificationFrom: Option[Timestamp] = None,
     optNotificationTo: Option[Timestamp] = None,
-    optFormId: Option[Long] = None
+    optFormId: Option[Long] = None,
+    optGroupFromIds: Option[Seq[Long]] = None
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Event]] = {
 
     def statusFilter(event: EventTable) = optStatus.map { status =>
@@ -199,6 +200,14 @@ class EventDao @Inject()(
         .exists
     }
 
+    def groupFromFilter(event: EventTable) = optGroupFromIds.map { groupFromIds =>
+      EventProjects.join(Relations).on(_.projectId === _.projectId)
+        .filter { case (eventProject, relation) =>
+          eventProject.eventId === event.id && relation.groupFromId.inSet(groupFromIds)
+      }
+      .exists
+    }
+
     val baseQuery = Events
       .applyFilter { event =>
         Seq(
@@ -206,7 +215,8 @@ class EventDao @Inject()(
           statusFilter(event),
           projectFilter(event),
           notificationFilter(event),
-          formFilter(event)
+          formFilter(event),
+          groupFromFilter(event)
         )
       }
 

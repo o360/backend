@@ -27,4 +27,6 @@ trait UserFixture extends FixtureHelper {
 
 object UserFixture {
   val admin = User(1, None, None, None, User.Role.Admin, User.Status.Approved)
+
+  val user = User(1, None, None, None, User.Role.User, User.Status.Approved)
 }

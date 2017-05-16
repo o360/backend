@@ -4,13 +4,18 @@ import java.sql.Timestamp
 
 import models.event.Event
 import org.scalacheck.Gen
-import testutils.fixture.{EventFixture, EventProjectFixture}
+import testutils.fixture.{EventFixture, EventProjectFixture, ProjectRelationFixture}
 import testutils.generator.EventGenerator
 
 /**
   * Test for event DAO.
   */
-class EventDaoTest extends BaseDaoTest with EventFixture with EventGenerator with EventProjectFixture {
+class EventDaoTest
+  extends BaseDaoTest
+    with EventFixture
+    with EventGenerator
+    with EventProjectFixture
+    with ProjectRelationFixture {
 
   private val dao = inject[EventDao]
 
@@ -41,6 +46,18 @@ class EventDaoTest extends BaseDaoTest with EventFixture with EventGenerator wit
 
         events.data must contain theSameElementsAs expectedEvents
       }
+    }
+
+    "return events filtered by groupFrom ids" in {
+      val eventsOne = wait(dao.getList(optGroupFromIds = Some(Seq(1))))
+      val eventsTwo = wait(dao.getList(optGroupFromIds = Some(Seq(2))))
+      val eventsEmpty = wait(dao.getList(optGroupFromIds = Some(Seq(3))))
+
+      val expectedEventsIds = Seq(1, 3)
+
+      eventsEmpty.total mustBe 0
+      eventsOne mustBe eventsTwo
+      eventsOne.data.map(_.id) must contain theSameElementsAs expectedEventsIds
     }
   }
 

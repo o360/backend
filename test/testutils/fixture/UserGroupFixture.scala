@@ -11,7 +11,8 @@ trait UserGroupFixture extends FixtureHelper with UserFixture with GroupFixture 
   val UserGroups = Seq(
     (1, 1),
     (1, 2),
-    (2, 3)
+    (2, 3),
+    (2, 5)
   )
 
   addFixtureOperation {

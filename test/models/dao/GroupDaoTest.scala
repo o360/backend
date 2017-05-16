@@ -114,4 +114,18 @@ class GroupDaoTest
       children mustBe empty
     }
   }
+
+  "findGroupIdsByUserId" should {
+    "return group ids" in {
+      val groupIds = wait(dao.findGroupIdsByUserId(2))
+
+      groupIds must contain theSameElementsAs Seq(2, 3, 4, 5)
+    }
+
+    "return Nil if there are no groups" in {
+      val groupIds = wait(dao.findGroupIdsByUserId(3))
+
+      groupIds mustBe empty
+    }
+  }
 }

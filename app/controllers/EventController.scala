@@ -5,7 +5,7 @@ import javax.inject.{Inject, Singleton}
 import com.mohiva.play.silhouette.api.Silhouette
 import controllers.api.Response
 import controllers.api.event.{ApiEvent, ApiPartialEvent}
-import controllers.authorization.AllowedRole
+import controllers.authorization.{AllowedRole, AllowedStatus}
 import services.EventService
 import silhouette.DefaultEnv
 import utils.implicits.FutureLifting._
@@ -40,7 +40,7 @@ class EventController @Inject()(
   def getList(
     status: Option[ApiEvent.EventStatus],
     projectId: Option[Long]
-  ) = (silhouette.SecuredAction(AllowedRole.admin) andThen ListAction).async { implicit request =>
+  ) = (silhouette.SecuredAction(AllowedStatus.approved) andThen ListAction).async { implicit request =>
     toResult(Ok) {
       eventService
         .list(status.map(_.value), projectId)
