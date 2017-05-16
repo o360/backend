@@ -5,7 +5,7 @@ import javax.inject.{Inject, Singleton}
 import com.mohiva.play.silhouette.api.Silhouette
 import controllers.api.Response
 import controllers.api.form.{ApiForm, ApiPartialForm}
-import controllers.authorization.AllowedRole
+import controllers.authorization.{AllowedRole, AllowedStatus}
 import services.FormService
 import silhouette.DefaultEnv
 import utils.implicits.FutureLifting._
@@ -39,7 +39,7 @@ class FormController @Inject()(
   /**
     * Returns form template with elements.
     */
-  def getById(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
+  def getById(id: Long) = silhouette.SecuredAction(AllowedStatus.approved).async { implicit request =>
     toResult(Ok) {
       formService
         .getById(id)
