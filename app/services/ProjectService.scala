@@ -2,13 +2,14 @@ package services
 
 import javax.inject.{Inject, Singleton}
 
-import models.dao.{EventDao, ProjectDao}
+import models.dao.{EventDao, GroupDao, ProjectDao}
 import models.event.Event
 import models.project.Project
 import models.user.User
 import utils.errors.{ApplicationError, ConflictError, ExceptionHandler, NotFoundError}
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
+import play.api.libs.concurrent.Execution.Implicits._
 
 import scalaz.Scalaz._
 import scalaz._
@@ -19,7 +20,8 @@ import scalaz._
 @Singleton
 class ProjectService @Inject()(
   protected val projectDao: ProjectDao,
-  protected val eventDao: EventDao
+  protected val eventDao: EventDao,
+  protected val groupDao: GroupDao
 ) extends ServiceResults[Project] {
 
   /**
@@ -35,8 +37,22 @@ class ProjectService @Inject()(
   /**
     * Returns projects list.
     */
-  def getList(eventId: Option[Long])(implicit account: User, meta: ListMeta): ListResult =
-    projectDao.getList(optId = None, optEventId = eventId).lift
+  def getList(eventId: Option[Long])(implicit account: User, meta: ListMeta): ListResult = {
+
+    val groupFromFilter = account.role match {
+      case User.Role.Admin => None.toFuture
+      case User.Role.User => groupDao.findGroupIdsByUserId(account.id).map(Some(_))
+    }
+
+    for {
+      groupFromIds <- groupFromFilter.lift
+      projects <- projectDao.getList(
+        optId = None,
+        optEventId = eventId,
+        optGroupFromIds = groupFromIds
+      ).lift
+    } yield projects
+  }
 
   /**
     * Creates new project.
