@@ -19,6 +19,7 @@ import scala.concurrent.Future
   */
 @Singleton
 class AssessmentService @Inject()(
+  protected val formService: FormService,
   protected val userService: UserService,
   protected val groupDao: GroupDao,
   protected val eventDao: EventDao,
@@ -90,6 +91,28 @@ class AssessmentService @Inject()(
       Future.sequence(usersWithRelation).map(userWithRelationToAssessments)
     }
 
+    /**
+      * Replace form templates with freezed forms in assessments.
+      */
+    def replaceTemplatesWithFreezedForms(assessments: Seq[Assessment]) = {
+      val formIds = assessments.flatMap(_.formIds).distinct
+      val templateIdTofreezedForm = Future.sequence {
+        formIds.map { formId =>
+          formService
+            .getOrCreateFreezedForm(eventId, formId)
+            .run
+            .map(x => (formId, x.getOrElse(throw new NoSuchElementException("Missed freezed form"))))
+        }
+      }.map(_.toMap)
+
+      templateIdTofreezedForm.map { mapping =>
+        assessments.map { assessment =>
+          val freezedFormIds = assessment.formIds.map(mapping(_).id)
+          assessment.copy(formIds = freezedFormIds)
+        }
+      }
+    }
+
     for {
       userGroups <- groupDao.findGroupIdsByUserId(account.id).lift
 
@@ -108,7 +131,7 @@ class AssessmentService @Inject()(
 
       surveyAssessment = surveyRelationsToAssessments(userRelations)
       classicAssessments <- classicRelationsToAssessments(userRelations).lift
-      assessments = surveyAssessment ++ classicAssessments
+      assessments <- replaceTemplatesWithFreezedForms(surveyAssessment ++ classicAssessments).lift
     } yield ListWithTotal(assessments.length, assessments)
   }
 }

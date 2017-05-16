@@ -22,7 +22,8 @@ case class ApiPartialForm(
   def toModel(id: Long = 0) = Form(
     id,
     name,
-    elements.getOrElse(Nil).map(_.toModel)
+    elements.getOrElse(Nil).map(_.toModel),
+    Form.Kind.Active
   )
 }
 

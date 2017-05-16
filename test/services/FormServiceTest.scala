@@ -70,14 +70,12 @@ class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixtur
       total: Int
       ) =>
         val fixture = getFixture
-        when(fixture.formDaoMock.getList()(eqTo(ListMeta.default)))
+        when(fixture.formDaoMock.getList(any[Option[Form.Kind]], any[Option[Long]])(eqTo(ListMeta.default)))
           .thenReturn(toFuture(ListWithTotal(total, forms)))
         val result = wait(fixture.service.getList()(admin, ListMeta.default).run)
 
         result mustBe 'right
         result.toOption.get mustBe ListWithTotal(total, forms)
-
-        verify(fixture.formDaoMock, times(1)).getList()(eqTo(ListMeta.default))
       }
     }
   }
@@ -144,6 +142,7 @@ class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixtur
 
     "update form in db" in {
       val form = Forms(0)
+      val childForm = Forms(2).toShort
       val fixture = getFixture
       when(fixture.formDaoMock.findById(form.id)).thenReturn(toFuture(Some(form)))
       when(fixture.formDaoMock.update(form.toShort)).thenReturn(toFuture(form.toShort))
@@ -159,6 +158,12 @@ class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixtur
         optFormId = eqTo(Some(form.id)),
         optGroupFromIds = any[Option[Seq[Long]]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
+      when(fixture.formDaoMock.getList(
+        optKind = eqTo(Some(Form.Kind.Freezed)),
+        optFormTemplateId = eqTo(Some(form.id))
+      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Seq(childForm))))
+      when(fixture.formDaoMock.update(childForm.copy(name = form.name))).thenReturn(toFuture(childForm))
+
 
       val result = wait(fixture.service.update(form)(admin).run)
 
@@ -182,10 +187,22 @@ class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixtur
       }
     }
 
+    "return conflict if form is freezed" in {
+      forAll { (form: Form) =>
+        val fixture = getFixture
+        when(fixture.formDaoMock.findById(form.id)).thenReturn(toFuture(Some(form.copy(kind = Form.Kind.Freezed))))
+
+        val result = wait(fixture.service.delete(form.id)(admin).run)
+
+        result mustBe 'left
+        result.swap.toOption.get mustBe a[ConflictError]
+      }
+    }
+
     "delete form from db" in {
       forAll { (form: Form) =>
         val fixture = getFixture
-        when(fixture.formDaoMock.findById(form.id)).thenReturn(toFuture(Some(form)))
+        when(fixture.formDaoMock.findById(form.id)).thenReturn(toFuture(Some(form.copy(kind = Form.Kind.Active))))
         when(fixture.formDaoMock.delete(form.id)).thenReturn(toFuture(1))
 
         val result = wait(fixture.service.delete(form.id)(admin).run)

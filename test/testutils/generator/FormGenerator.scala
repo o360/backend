@@ -26,10 +26,16 @@ trait FormGenerator {
     } yield Form.Element(0, kind, caption, required, values)
   }
 
+  implicit val formKindArb = Arbitrary[Form.Kind] {
+    import Form.Kind._
+    Gen.oneOf(Active, Freezed)
+  }
+
   implicit val formShortArb = Arbitrary {
     for {
       name <- Arbitrary.arbitrary[String]
-    } yield FormShort(0, name)
+      kind <- Arbitrary.arbitrary[Form.Kind]
+    } yield FormShort(0, name, kind)
   }
 
   implicit val formArb = Arbitrary {

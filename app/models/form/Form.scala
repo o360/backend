@@ -6,17 +6,19 @@ package models.form
   * @param id       DB ID
   * @param name     form name
   * @param elements form elements
+  * @param kind     kind of the form
   */
 case class Form(
   id: Long,
   name: String,
-  elements: Seq[Form.Element]
+  elements: Seq[Form.Element],
+  kind: Form.Kind
 ) {
 
   /**
     * Returns short form.
     */
-  def toShort = FormShort(id, name)
+  def toShort = FormShort(id, name, kind)
 }
 
 object Form {
@@ -65,4 +67,19 @@ object Form {
     id: Long,
     caption: String
   )
+
+  /**
+    * Form kind.
+    */
+  sealed trait Kind
+  object Kind {
+    /**
+      * Active form used as template. Active forms can be listed, edited, deleted.
+      */
+    case object Active extends Kind
+    /**
+      * Freezed form. Freezed form is a copy of active form assigned to event.
+      */
+    case object Freezed extends Kind
+  }
 }

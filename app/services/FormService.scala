@@ -14,6 +14,7 @@ import utils.listmeta.ListMeta
 import scala.concurrent.Future
 import scalaz.Scalaz._
 import scalaz._
+import play.api.libs.concurrent.Execution.Implicits._
 
 /**
   * Form template service.
@@ -32,7 +33,7 @@ class FormService @Inject()(
     * @param meta    list meta
     */
   def getList()(implicit account: User, meta: ListMeta): EitherT[Future, ApplicationError, ListWithTotal[FormShort]] = {
-    formDao.getList().lift
+    formDao.getList(optKind = Some(Form.Kind.Active)).lift
   }
 
   /**
@@ -70,8 +71,23 @@ class FormService @Inject()(
     * @return updated form
     */
   def update(form: Form)(implicit account: User): SingleResult = {
+
+    def updateChildFreezedForms() = for {
+      childFreezedForms <- formDao.getList(optKind = Some(Form.Kind.Freezed), optFormTemplateId = Some(form.id))
+
+      _ <- Future.sequence {
+        childFreezedForms.data.map { childFreezedForm =>
+          formDao.update(childFreezedForm.copy(name = form.name))
+        }
+      }
+    } yield ()
+
     for {
-      _ <- getById(form.id)
+      original <- getById(form.id)
+
+      _ <- ensure(original.kind == form.kind) {
+        ConflictError.Form.FormKind("change form kind")
+      }
 
       activeEvents <- eventDao.getList(optStatus = Some(Event.Status.InProgress), optFormId = Some(form.id)).lift
       _ <- ensure(activeEvents.total == 0) {
@@ -82,6 +98,8 @@ class FormService @Inject()(
       _ <- formDao.update(form.toShort).lift
       _ <- formDao.deleteElements(form.id).lift
       createdElements <- formDao.createElements(form.id, elements).lift
+
+      _ <- updateChildFreezedForms().lift
     } yield form.copy(elements = createdElements)
   }
 
@@ -93,9 +111,33 @@ class FormService @Inject()(
     */
   def delete(id: Long)(implicit account: User): UnitResult = {
     for {
-      _ <- getById(id)
+      original <- getById(id)
+      _ <- ensure(original.kind != Form.Kind.Freezed) {
+        ConflictError.Form.FormKind("delete freezed form")
+      }
       _ <- formDao.delete(id).lift(ExceptionHandler.sql)
     } yield ()
+  }
+
+  /**
+    * Creates freezed form if not exists and returns it.
+    *
+    * @param eventId event ID
+    * @param formId  template form ID
+    */
+  def getOrCreateFreezedForm(eventId: Long, formId: Long)(implicit account: User): SingleResult = {
+    for {
+      freezedFormId <- formDao.getFreezedFormId(eventId, formId).lift
+      freezedForm <- freezedFormId match {
+        case Some(freezedFormId) => getById(freezedFormId)
+        case None =>
+          for {
+            form <- getById(formId)
+            freezedForm <- create(form.copy(kind = Form.Kind.Freezed))
+            _ <- formDao.setFreezedFormId(eventId, formId, freezedForm.id).lift
+          } yield freezedForm
+      }
+    } yield freezedForm
   }
 
   /**

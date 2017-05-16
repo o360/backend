@@ -5,7 +5,8 @@ package models.form
   */
 case class FormShort(
   id: Long,
-  name: String
+  name: String,
+  kind: Form.Kind
 ) {
 
   /**
@@ -16,6 +17,7 @@ case class FormShort(
   def toModel(elements: Seq[Form.Element]) = Form(
     id,
     name,
-    elements
+    elements,
+    kind
   )
 }

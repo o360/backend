@@ -10,7 +10,7 @@ import models.user.UserShort
 import models.{ListWithTotal, NamedEntity}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito._
-import testutils.fixture.{EventFixture, ProjectRelationFixture, UserFixture}
+import testutils.fixture.{EventFixture, FormFixture, ProjectRelationFixture, UserFixture}
 import utils.errors.{ApplicationError, NotFoundError}
 import utils.listmeta.ListMeta
 
@@ -20,9 +20,15 @@ import scalaz._
 /**
   * Test for assessment service.
   */
-class AssessmentServiceTest extends BaseServiceTest with EventFixture with ProjectRelationFixture with UserFixture {
+class AssessmentServiceTest
+  extends BaseServiceTest
+    with EventFixture
+    with ProjectRelationFixture
+    with UserFixture
+    with FormFixture {
 
   private case class Fixture(
+    formService: FormService,
     userService: UserService,
     groupDao: GroupDao,
     eventDao: EventDao,
@@ -31,12 +37,13 @@ class AssessmentServiceTest extends BaseServiceTest with EventFixture with Proje
   )
 
   private def getFixture = {
+    val formService = mock[FormService]
     val userService = mock[UserService]
     val groupDao = mock[GroupDao]
     val eventDao = mock[EventDao]
     val relationDao = mock[ProjectRelationDao]
-    val service = new AssessmentService(userService, groupDao, eventDao, relationDao)
-    Fixture(userService, groupDao, eventDao, relationDao, service)
+    val service = new AssessmentService(formService, userService, groupDao, eventDao, relationDao)
+    Fixture(formService, userService, groupDao, eventDao, relationDao, service)
   }
 
   "getList" should {
@@ -108,12 +115,18 @@ class AssessmentServiceTest extends BaseServiceTest with EventFixture with Proje
       when(fixture.userService.listByGroupId(eqTo(relations(0).groupTo.get.id))(any[ListMeta]))
         .thenReturn(EitherT.eitherT(toFuture(ListWithTotal(1, Seq(assessedUser)).right[ApplicationError])))
 
+      when(fixture.formService.getOrCreateFreezedForm(event.id, relations(0).form.id)(user))
+        .thenReturn(EitherT.eitherT(toFuture(Forms(0).right[ApplicationError])))
+
+      when(fixture.formService.getOrCreateFreezedForm(event.id, relations(1).form.id)(user))
+        .thenReturn(EitherT.eitherT(toFuture(Forms(1).right[ApplicationError])))
+
       val result = wait(fixture.service.getList(event.id, projectId)(user).run)
 
       result mustBe 'right
       result.toOption.get mustBe ListWithTotal(2, Seq(
-        Assessment(None, Seq(relations(1).form.id)),
-        Assessment(Some(UserShort.fromUser(assessedUser)), Seq(relations(0).form.id))
+        Assessment(None, Seq(Forms(1).id)),
+        Assessment(Some(UserShort.fromUser(assessedUser)), Seq(Forms(0).id))
       ))
     }
   }
