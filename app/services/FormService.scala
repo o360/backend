@@ -3,7 +3,8 @@ package services
 import javax.inject.{Inject, Singleton}
 
 import models.ListWithTotal
-import models.dao.FormDao
+import models.dao.{EventDao, FormDao}
+import models.event.Event
 import models.form.{Form, FormShort}
 import models.user.User
 import utils.errors.{ApplicationError, ConflictError, ExceptionHandler, NotFoundError}
@@ -19,7 +20,8 @@ import scalaz._
   */
 @Singleton
 class FormService @Inject()(
-  protected val formDao: FormDao
+  protected val formDao: FormDao,
+  protected val eventDao: EventDao
 ) extends ServiceResults[Form] {
 
 
@@ -70,6 +72,12 @@ class FormService @Inject()(
   def update(form: Form)(implicit account: User): SingleResult = {
     for {
       _ <- getById(form.id)
+
+      activeEvents <- eventDao.getList(optStatus = Some(Event.Status.InProgress), optFormId = Some(form.id)).lift
+      _ <- ensure(activeEvents.total == 0) {
+        ConflictError.Form.ActiveEventExists
+      }
+
       elements <- validateElements(form.elements).lift
       _ <- formDao.update(form.toShort).lift
       _ <- formDao.deleteElements(form.id).lift

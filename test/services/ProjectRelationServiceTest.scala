@@ -105,7 +105,8 @@ class ProjectRelationServiceTest extends BaseServiceTest with ProjectRelationGen
         optStatus = eqTo(Some(Event.Status.InProgress)),
         optProjectId = eqTo(Some(relation.project.id)),
         optNotificationFrom = any[Option[Timestamp]],
-        optNotificationTo = any[Option[Timestamp]]
+        optNotificationTo = any[Option[Timestamp]],
+        optFormId = any[Option[Long]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       val result = wait(fixture.service.create(relation)(admin).run)
 
@@ -123,7 +124,8 @@ class ProjectRelationServiceTest extends BaseServiceTest with ProjectRelationGen
         optStatus = eqTo(Some(Event.Status.InProgress)),
         optProjectId = eqTo(Some(relation.project.id)),
         optNotificationFrom = any[Option[Timestamp]],
-        optNotificationTo = any[Option[Timestamp]]
+        optNotificationTo = any[Option[Timestamp]],
+        optFormId = any[Option[Long]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](1, Nil)))
       val result = wait(fixture.service.create(relation)(admin).run)
 
@@ -143,7 +145,8 @@ class ProjectRelationServiceTest extends BaseServiceTest with ProjectRelationGen
         optStatus = eqTo(Some(Event.Status.InProgress)),
         optProjectId = eqTo(Some(relation.project.id)),
         optNotificationFrom = any[Option[Timestamp]],
-        optNotificationTo = any[Option[Timestamp]]
+        optNotificationTo = any[Option[Timestamp]],
+        optFormId = any[Option[Long]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       val result = wait(fixture.service.create(relation.copy(id = 0))(admin).run)
 
@@ -187,7 +190,8 @@ class ProjectRelationServiceTest extends BaseServiceTest with ProjectRelationGen
         optStatus = eqTo(Some(Event.Status.InProgress)),
         optProjectId = eqTo(Some(relation.project.id)),
         optNotificationFrom = any[Option[Timestamp]],
-        optNotificationTo = any[Option[Timestamp]]
+        optNotificationTo = any[Option[Timestamp]],
+        optFormId = any[Option[Long]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       val result = wait(fixture.service.update(relation)(admin).run)
 
@@ -208,7 +212,8 @@ class ProjectRelationServiceTest extends BaseServiceTest with ProjectRelationGen
         optStatus = eqTo(Some(Event.Status.InProgress)),
         optProjectId = eqTo(Some(relation.project.id)),
         optNotificationFrom = any[Option[Timestamp]],
-        optNotificationTo = any[Option[Timestamp]]
+        optNotificationTo = any[Option[Timestamp]],
+        optFormId = any[Option[Long]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       val result = wait(fixture.service.update(relation)(admin).run)
 
@@ -227,7 +232,8 @@ class ProjectRelationServiceTest extends BaseServiceTest with ProjectRelationGen
         optStatus = eqTo(Some(Event.Status.InProgress)),
         optProjectId = eqTo(Some(relation.project.id)),
         optNotificationFrom = any[Option[Timestamp]],
-        optNotificationTo = any[Option[Timestamp]]
+        optNotificationTo = any[Option[Timestamp]],
+        optFormId = any[Option[Long]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](1, Nil)))
       val result = wait(fixture.service.update(relation)(admin).run)
 
@@ -248,7 +254,8 @@ class ProjectRelationServiceTest extends BaseServiceTest with ProjectRelationGen
         optStatus = eqTo(Some(Event.Status.InProgress)),
         optProjectId = eqTo(Some(relation.project.id)),
         optNotificationFrom = any[Option[Timestamp]],
-        optNotificationTo = any[Option[Timestamp]]
+        optNotificationTo = any[Option[Timestamp]],
+        optFormId = any[Option[Long]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       val result = wait(fixture.service.update(relation)(admin).run)
 

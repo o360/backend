@@ -1,7 +1,10 @@
 package services
 
+import java.sql.Timestamp
+
 import models.ListWithTotal
-import models.dao.FormDao
+import models.dao.{EventDao, FormDao}
+import models.event.Event
 import models.form.{Form, FormShort}
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
@@ -19,12 +22,14 @@ class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixtur
 
   private case class TestFixture(
     formDaoMock: FormDao,
+    eventDao: EventDao,
     service: FormService)
 
   private def getFixture = {
     val daoMock = mock[FormDao]
-    val service = new FormService(daoMock)
-    TestFixture(daoMock, service)
+    val eventDao = mock[EventDao]
+    val service = new FormService(daoMock, eventDao)
+    TestFixture(daoMock, eventDao, service)
   }
 
   "getById" should {
@@ -121,6 +126,14 @@ class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixtur
       val form = Forms(0).copy(elements = Seq(Form.Element(1, Form.ElementKind.Radio, "", false, Nil)))
       val fixture = getFixture
       when(fixture.formDaoMock.findById(form.id)).thenReturn(toFuture(Some(form)))
+      when(fixture.eventDao.getList(
+        optId = any[Option[Long]],
+        optStatus = eqTo(Some(Event.Status.InProgress)),
+        optProjectId = any[Option[Long]],
+        optNotificationFrom = any[Option[Timestamp]],
+        optNotificationTo = any[Option[Timestamp]],
+        optFormId = eqTo(Some(form.id))
+      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
 
       val result = wait(fixture.service.update(form)(admin).run)
 
@@ -136,6 +149,14 @@ class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixtur
       when(fixture.formDaoMock.deleteElements(form.id)).thenReturn(toFuture(form.elements.length))
       when(fixture.formDaoMock.createElements(eqTo(form.id), any[Seq[Form.Element]]))
         .thenReturn(toFuture(form.elements))
+      when(fixture.eventDao.getList(
+        optId = any[Option[Long]],
+        optStatus = eqTo(Some(Event.Status.InProgress)),
+        optProjectId = any[Option[Long]],
+        optNotificationFrom = any[Option[Timestamp]],
+        optNotificationTo = any[Option[Timestamp]],
+        optFormId = eqTo(Some(form.id))
+      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
 
       val result = wait(fixture.service.update(form)(admin).run)
 

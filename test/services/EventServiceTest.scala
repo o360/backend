@@ -76,7 +76,8 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
           optStatus = eqTo(status),
           optProjectId = eqTo(projectId),
           optNotificationFrom = any[Option[Timestamp]],
-          optNotificationTo = any[Option[Timestamp]]
+          optNotificationTo = any[Option[Timestamp]],
+          optFormId = any[Option[Long]]
         )(eqTo(ListMeta.default)))
           .thenReturn(toFuture(ListWithTotal(total, events)))
         val result = wait(fixture.service.list(status, projectId)(admin, ListMeta.default).run)

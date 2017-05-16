@@ -11,9 +11,9 @@ import models.project.{Relation, TemplateBinding}
 trait ProjectRelationFixture
   extends FixtureHelper
   with ProjectFixture
-    with GroupFixture
-    with FormFixture
-    with TemplateFixture {
+  with GroupFixture
+  with FormFixture
+  with TemplateFixture {
   self: FixtureSupport =>
 
   val ProjectRelations = Seq(
