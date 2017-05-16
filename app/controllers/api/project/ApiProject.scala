@@ -20,22 +20,20 @@ object ApiProject {
 
   implicit val projectWrites = Json.writes[ApiProject]
 
-  def apply(project: Project)(implicit account: User): ApiProject = account.role match {
-    case User.Role.Admin =>
-      ApiProject(
-        project.id,
-        project.name,
-        project.description,
-        Some(ApiNamedEntity(project.groupAuditor)),
-        Some(project.templates.map(ApiTemplateBinding(_)))
-      )
-    case User.Role.User =>
-      ApiProject(
-        project.id,
-        project.name,
-        project.description,
-        None,
-        None
-      )
+  def apply(project: Project)(implicit account: User): ApiProject = {
+    val (groupAuditor, templates) = account.role match {
+      case User.Role.Admin =>
+        (Some(ApiNamedEntity(project.groupAuditor)), Some(project.templates.map(ApiTemplateBinding(_))))
+      case User.Role.User =>
+        (None, None)
+    }
+
+    ApiProject(
+      project.id,
+      project.name,
+      project.description,
+      groupAuditor,
+      templates
+    )
   }
 }
