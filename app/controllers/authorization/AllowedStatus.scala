@@ -20,7 +20,7 @@ case class AllowedStatus(statuses: User.Status*) extends Authorization[User, JWT
 
 case object AllowedStatus {
   /**
-    * Allows access only to admins.
+    * Allows access only to approved users.
     */
-  def approved = AllowedStatus(User.Status.Approved)
+  val approved = AllowedStatus(User.Status.Approved)
 }

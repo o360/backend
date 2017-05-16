@@ -27,27 +27,21 @@ object ApiEvent {
   /**
     * Creates api model form model.
     */
-  def apply(e: Event)(implicit account: User): ApiEvent = account.role match {
-    case User.Role.Admin =>
-      ApiEvent(
-        e.id,
-        e.description,
-        e.start,
-        e.end,
-        e.canRevote,
-        Some(e.notifications.map(NotificationTime(_))),
-        EventStatus(e.status)
-      )
-    case User.Role.User =>
-      ApiEvent(
-        e.id,
-        e.description,
-        e.start,
-        e.end,
-        e.canRevote,
-        None,
-        EventStatus(e.status)
-      )
+  def apply(e: Event)(implicit account: User): ApiEvent = {
+    val notifications = account.role match {
+      case User.Role.Admin => Some(e.notifications.map(NotificationTime(_)))
+      case User.Role.User => None
+    }
+    
+    ApiEvent(
+      e.id,
+      e.description,
+      e.start,
+      e.end,
+      e.canRevote,
+      notifications,
+      EventStatus(e.status)
+    )
   }
 
   implicit val notificationTimeFormat = Json.format[NotificationTime]
