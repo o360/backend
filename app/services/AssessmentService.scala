@@ -5,6 +5,7 @@ import javax.inject.{Inject, Singleton}
 import models.ListWithTotal
 import models.assessment.Assessment
 import models.dao.{EventDao, GroupDao, ProjectRelationDao}
+import models.form.Form
 import models.project.Relation
 import models.user.{User, UserShort}
 import play.api.libs.concurrent.Execution.Implicits._
@@ -96,7 +97,7 @@ class AssessmentService @Inject()(
       */
     def replaceTemplatesWithFreezedForms(assessments: Seq[Assessment]) = {
       val formIds = assessments.flatMap(_.formIds).distinct
-      val templateIdTofreezedForm = Future.sequence {
+      val templateIdTofreezedForm: Future[Map[Long, Form]] = Future.sequence {
         formIds.map { formId =>
           formService
             .getOrCreateFreezedForm(eventId, formId)
