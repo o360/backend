@@ -65,19 +65,21 @@ class AssessmentService @Inject()(
       /**
         * Maps relation-users tuple to assessments objects.
         */
-      def userWithRelationToAssessments(usersWithRelation: Seq[(Seq[User], Relation)]) = usersWithRelation
-        .flatMap { case (users, relation) =>
-          users.map((_, relation))
-        }
-        .groupBy { case (user, _) => user }
-        .map { case (user, relationsWithUsers) =>
-          val formIds = relationsWithUsers
-            .map { case (_, relation) => relation.form.id }
-            .distinct
+      def userWithRelationToAssessments(usersWithRelation: Seq[(Seq[User], Relation)]) = {
+        usersWithRelation
+          .flatMap { case (users, relation) =>
+            users.map((_, relation))
+          }
+          .groupBy { case (user, _) => user }
+          .map { case (user, relationsWithUsers) =>
+            val formIds = relationsWithUsers
+              .map { case (_, relation) => relation.form.id }
+              .distinct
 
-          Assessment(Some(UserShort.fromUser(user)), formIds)
-        }
-        .toSeq
+            Assessment(Some(UserShort.fromUser(user)), formIds)
+          }
+          .toSeq
+      }
 
       val usersWithRelation = relations
         .filter(x => x.kind == Relation.Kind.Classic && x.groupTo.isDefined)
