@@ -1,5 +1,6 @@
 package models.assessment
 
+import models.NamedEntity
 import models.user.{User, UserShort}
 
 /**
@@ -20,9 +21,9 @@ object Assessment {
     * @param formsWithAnswers forms IDs paired with answers.
     * @param user             assessed user
     */
-  def apply(formsWithAnswers: Seq[(Long, Option[Answer.Form])], user: Option[User] = None): Assessment = {
-    val forms = formsWithAnswers.map { case (formId, answer) =>
-      answer.getOrElse(Answer.Form(formId, Set()))
+  def apply(formsWithAnswers: Seq[(NamedEntity, Option[Answer.Form])], user: Option[User] = None): Assessment = {
+    val forms = formsWithAnswers.map { case (form, answer) =>
+      answer.getOrElse(Answer.Form(form, Set()))
     }
     Assessment(user.map(UserShort.fromUser), forms)
   }

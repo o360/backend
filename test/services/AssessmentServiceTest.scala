@@ -137,7 +137,7 @@ class AssessmentServiceTest
       result mustBe 'right
       result.toOption.get mustBe ListWithTotal(2, Seq(
         Assessment(None, Seq(answer)),
-        Assessment(Some(UserShort.fromUser(assessedUser)), Seq(Answer.Form(Forms(0).id, Set())))
+        Assessment(Some(UserShort.fromUser(assessedUser)), Seq(Answer.Form(NamedEntity(Forms(0).id, Forms(0).name), Set())))
       ))
     }
   }

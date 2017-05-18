@@ -38,17 +38,17 @@ class AssessmentService @Inject()(
 
 
     /**
-      * Returns formIds paired with answers.
+      * Returns forms paired with answers.
       *
-      * @param formIds IDs of the forms
+      * @param forms IDs of the forms
       * @param user    assessed user, none for survey forms
       */
-    def getAnswersForForms(formIds: Seq[Long], user: Option[User] = None): Future[Seq[(Long, Option[Answer.Form])]] = {
+    def getAnswersForForms(forms: Seq[NamedEntity], user: Option[User] = None): Future[Seq[(NamedEntity, Option[Answer.Form])]] = {
       Future.sequence {
-        formIds
+        forms
           .distinct
-          .map { formId =>
-            answerDao.getAnswer(eventId, projectId, account.id, user.map(_.id), formId).map((formId, _))
+          .map { form =>
+            answerDao.getAnswer(eventId, projectId, account.id, user.map(_.id), form.id).map((form, _))
           }
       }
     }
@@ -57,12 +57,12 @@ class AssessmentService @Inject()(
       * Maps survey relations to assessment objects.
       */
     def surveyRelationsToAssessments(relations: Seq[Relation]): Future[Seq[Assessment]] = {
-      val formIds =
+      val forms =
         relations
         .filter(_.kind == Relation.Kind.Survey)
-        .map(_.form.id)
+        .map(_.form)
 
-      val formsWithAnswersF = getAnswersForForms(formIds)
+      val formsWithAnswersF = getAnswersForForms(forms)
 
       formsWithAnswersF.map { formsWithAnswers =>
         if (formsWithAnswers.isEmpty) Nil
@@ -97,11 +97,11 @@ class AssessmentService @Inject()(
             }
             .groupBy { case (user, _) => user }
             .map { case (user, relationsWithUsers) =>
-              val formIds = relationsWithUsers
-                .map { case (_, relation) => relation.form.id }
+              val forms = relationsWithUsers
+                .map { case (_, relation) => relation.form }
                 .distinct
 
-              val formsWithAnswersF = getAnswersForForms(formIds, Some(user))
+              val formsWithAnswersF = getAnswersForForms(forms, Some(user))
 
               formsWithAnswersF.map { formsWithAnswers =>
                 Assessment(formsWithAnswers, Some(user))

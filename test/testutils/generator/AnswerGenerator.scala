@@ -1,5 +1,6 @@
 package testutils.generator
 
+import models.NamedEntity
 import models.assessment.Answer
 import org.scalacheck.Arbitrary
 
@@ -20,6 +21,6 @@ trait AnswerGenerator {
     for {
       id <- Arbitrary.arbitrary[Long]
       answers <- Arbitrary.arbitrary[Set[Answer.Element]]
-    } yield Answer.Form(id, answers)
+    } yield Answer.Form(NamedEntity(id), answers)
   }
 }

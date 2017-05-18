@@ -1,5 +1,7 @@
 package models.assessment
 
+import models.NamedEntity
+
 /**
   * Answers.
   */
@@ -7,11 +9,11 @@ object Answer {
   /**
     * Answer for form.
     *
-    * @param formId  ID of form
+    * @param form    form ID with name
     * @param answers answers for elements.
     */
   case class Form(
-    formId: Long,
+    form: NamedEntity,
     answers: Set[Element]
   )
 

@@ -2,6 +2,7 @@ package models.dao
 
 import javax.inject.{Inject, Singleton}
 
+import models.NamedEntity
 import models.assessment.Answer
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.driver.JdbcProfile
@@ -28,8 +29,8 @@ trait AnswerComponent {
     userToId: Option[Long],
     formId: Long
   ) {
-    def toModel(answers: Seq[Answer.Element]) = Answer.Form(
-      formId,
+    def toModel(answers: Seq[Answer.Element], formName: String) = Answer.Form(
+      NamedEntity(formId, formName),
       answers.toSet
     )
   }
@@ -103,6 +104,7 @@ class AnswerDao @Inject()(
   protected val dbConfigProvider: DatabaseConfigProvider
 ) extends HasDatabaseConfigProvider[JdbcProfile]
   with AnswerComponent
+  with FormComponent
   with DaoHelper {
 
   import driver.api._
@@ -130,15 +132,16 @@ class AnswerDao @Inject()(
         userToFilter(answer) &&
         answer.formId === formId
       }
+      .join(Forms).on(_.formId === _.id)
       .take(1)
       .joinLeft {
         FormElementAnswers
           .joinLeft(FormElementAnswerValues)
           .on(_.id === _.answerElementId)
-      }.on { case (answer, (element, _)) => answer.id === element.answerId }
+      }.on { case ((answer, _), (element, _)) => answer.id === element.answerId }
 
     db.run(query.result).map { flatResults =>
-      flatResults.headOption.map { case (answer, _) =>
+      flatResults.headOption.map { case ((answer, form), _) =>
         val elements = flatResults
           .collect { case (_, Some(elementWithValues)) => elementWithValues }
           .groupBy { case (element, _) => element }
@@ -151,7 +154,7 @@ class AnswerDao @Inject()(
             element.toModel(valuesOpt)
           }
           .toSeq
-        answer.toModel(elements)
+        answer.toModel(elements, form.name)
       }
     }
   }

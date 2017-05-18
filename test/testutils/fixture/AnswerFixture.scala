@@ -1,6 +1,7 @@
 package testutils.fixture
 
 import com.ninja_squad.dbsetup.Operations._
+import models.NamedEntity
 import models.assessment.Answer
 
 /**
@@ -11,7 +12,7 @@ trait AnswerFixture extends FixtureHelper with EventFixture with ProjectFixture 
 
   val Answers = Seq(
     Answer.Form(
-      formId = 1,
+      form = NamedEntity(1, "first"),
       answers = Set(
         Answer.Element(
           elementId = 1,
@@ -26,7 +27,7 @@ trait AnswerFixture extends FixtureHelper with EventFixture with ProjectFixture 
       )
     ),
     Answer.Form(
-      formId = 2,
+      form = NamedEntity(2, "second"),
       answers = Set()
     )
   )

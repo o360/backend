@@ -1,6 +1,6 @@
 package controllers.api.assessment
 
-import controllers.api.Response
+import controllers.api.{ApiNamedEntity, Response}
 import models.assessment.Answer
 import play.api.libs.json.Json
 
@@ -8,7 +8,7 @@ import play.api.libs.json.Json
   * Api model for form answer.
   */
 case class ApiFormAnswer(
-  formId: Long,
+  form: ApiNamedEntity,
   answers: Seq[ApiFormAnswer.ElementAnswer]
 ) extends Response
 
@@ -18,7 +18,7 @@ object ApiFormAnswer {
   implicit val answerWrites = Json.writes[ApiFormAnswer]
 
   def apply(answer: Answer.Form): ApiFormAnswer = ApiFormAnswer(
-    answer.formId,
+    ApiNamedEntity(answer.form),
     answer.answers.toSeq.map(ElementAnswer(_))
   )
 
