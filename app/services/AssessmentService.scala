@@ -2,9 +2,9 @@ package services
 
 import javax.inject.{Inject, Singleton}
 
-import models.ListWithTotal
-import models.assessment.Assessment
-import models.dao.{EventDao, GroupDao, ProjectRelationDao}
+import models.{ListWithTotal, NamedEntity}
+import models.assessment.{Answer, Assessment}
+import models.dao.{AnswerDao, EventDao, GroupDao, ProjectRelationDao}
 import models.form.Form
 import models.project.Relation
 import models.user.{User, UserShort}
@@ -24,7 +24,8 @@ class AssessmentService @Inject()(
   protected val userService: UserService,
   protected val groupDao: GroupDao,
   protected val eventDao: EventDao,
-  protected val relationDao: ProjectRelationDao
+  protected val relationDao: ProjectRelationDao,
+  protected val answerDao: AnswerDao
 ) extends ServiceResults[Assessment] {
 
   /**
@@ -35,28 +36,49 @@ class AssessmentService @Inject()(
     */
   def getList(eventId: Long, projectId: Long)(implicit account: User): ListResult = {
 
+
+    /**
+      * Returns formIds paired with answers.
+      *
+      * @param formIds IDs of the forms
+      * @param user    assessed user, none for survey forms
+      */
+    def getAnswersForForms(formIds: Seq[Long], user: Option[User] = None): Future[Seq[(Long, Option[Answer.Form])]] = {
+      Future.sequence {
+        formIds
+          .distinct
+          .map { formId =>
+            answerDao.getAnswer(eventId, projectId, account.id, user.map(_.id), formId).map((formId, _))
+          }
+      }
+    }
+
     /**
       * Maps survey relations to assessment objects.
       */
-    def surveyRelationsToAssessments(relations: Seq[Relation]) = {
-      val formIds = relations
+    def surveyRelationsToAssessments(relations: Seq[Relation]): Future[Seq[Assessment]] = {
+      val formIds =
+        relations
         .filter(_.kind == Relation.Kind.Survey)
         .map(_.form.id)
-        .distinct
 
-      if (formIds.nonEmpty) Seq(Assessment(None, formIds))
-      else Nil
+      val formsWithAnswersF = getAnswersForForms(formIds)
+
+      formsWithAnswersF.map { formsWithAnswers =>
+        if (formsWithAnswers.isEmpty) Nil
+        else Seq(Assessment(formsWithAnswers))
+      }
     }
 
     /**
       * Maps classic relations to assessment objects.
       */
-    def classicRelationsToAssessments(relations: Seq[Relation]) = {
+    def classicRelationsToAssessments(relations: Seq[Relation]): Future[Seq[Assessment]] = {
 
       /**
         * Returns assessed users for relation.
         */
-      def getUsersForRelation(relation: Relation) = {
+      def getUsersForRelation(relation: Relation): Future[Seq[User]] = {
         userService
           .listByGroupId(relation.groupTo.get.id)
           .map(_.data)
@@ -67,20 +89,26 @@ class AssessmentService @Inject()(
       /**
         * Maps relation-users tuple to assessments objects.
         */
-      def userWithRelationToAssessments(usersWithRelation: Seq[(Seq[User], Relation)]) = {
-        usersWithRelation
-          .flatMap { case (users, relation) =>
-            users.map((_, relation))
-          }
-          .groupBy { case (user, _) => user }
-          .map { case (user, relationsWithUsers) =>
-            val formIds = relationsWithUsers
-              .map { case (_, relation) => relation.form.id }
-              .distinct
+      def userWithRelationToAssessments(usersWithRelation: Seq[(Seq[User], Relation)]): Future[Seq[Assessment]] = {
+        Future.sequence {
+          usersWithRelation
+            .flatMap { case (users, relation) =>
+              users.map((_, relation))
+            }
+            .groupBy { case (user, _) => user }
+            .map { case (user, relationsWithUsers) =>
+              val formIds = relationsWithUsers
+                .map { case (_, relation) => relation.form.id }
+                .distinct
 
-            Assessment(Some(UserShort.fromUser(user)), formIds)
-          }
-          .toSeq
+              val formsWithAnswersF = getAnswersForForms(formIds, Some(user))
+
+              formsWithAnswersF.map { formsWithAnswers =>
+                Assessment(formsWithAnswers, Some(user))
+              }
+            }
+            .toSeq
+        }
       }
 
       val usersWithRelation = relations
@@ -89,14 +117,14 @@ class AssessmentService @Inject()(
           getUsersForRelation(relation).map((_, relation))
         }
 
-      Future.sequence(usersWithRelation).map(userWithRelationToAssessments)
+      Future.sequence(usersWithRelation).flatMap(userWithRelationToAssessments)
     }
 
     /**
-      * Replace form templates with freezed forms in assessments.
+      * Replace form templates ids with freezed ids forms in relations.
       */
-    def replaceTemplatesWithFreezedForms(assessments: Seq[Assessment]) = {
-      val formIds = assessments.flatMap(_.formIds).distinct
+    def replaceTemplatesWithFreezedForms(relations: Seq[Relation]) = {
+      val formIds = relations.map(_.form.id).distinct
       val templateIdTofreezedForm: Future[Map[Long, Form]] = Future.sequence {
         formIds.map { formId =>
           formService
@@ -107,9 +135,9 @@ class AssessmentService @Inject()(
       }.map(_.toMap)
 
       templateIdTofreezedForm.map { mapping =>
-        assessments.map { assessment =>
-          val freezedFormIds = assessment.formIds.map(mapping(_).id)
-          assessment.copy(formIds = freezedFormIds)
+        relations.map { relation =>
+          val freezedForm = mapping(relation.form.id)
+          relation.copy(form = NamedEntity(freezedForm.id, freezedForm.name))
         }
       }
     }
@@ -128,11 +156,12 @@ class AssessmentService @Inject()(
 
       relations <- relationDao.getList(optProjectId = Some(projectId)).lift
 
-      userRelations = relations.data.filter(x => userGroups.contains(x.groupFrom.id))
+      userRelations <- replaceTemplatesWithFreezedForms(
+        relations.data.filter(x => userGroups.contains(x.groupFrom.id))).lift
 
-      surveyAssessment = surveyRelationsToAssessments(userRelations)
+      surveyAssessment <- surveyRelationsToAssessments(userRelations).lift
       classicAssessments <- classicRelationsToAssessments(userRelations).lift
-      assessments <- replaceTemplatesWithFreezedForms(surveyAssessment ++ classicAssessments).lift
+      assessments = surveyAssessment ++ classicAssessments
     } yield ListWithTotal(assessments.length, assessments)
   }
 }

@@ -10,7 +10,7 @@ import play.api.libs.json.Json
   */
 case class ApiAssessment(
   user: Option[ApiShortUser],
-  formIds: Seq[Long]
+  forms: Seq[ApiFormAnswer]
 ) extends Response
 
 object ApiAssessment {
@@ -18,6 +18,6 @@ object ApiAssessment {
 
   def apply(assessment: Assessment): ApiAssessment = ApiAssessment(
     assessment.user.map(ApiShortUser(_)),
-    assessment.formIds
+    assessment.forms.map(ApiFormAnswer(_))
   )
 }
