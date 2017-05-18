@@ -1,6 +1,6 @@
 package testutils.generator
 
-import models.user.User
+import models.user.{User, UserShort}
 import org.scalacheck.{Arbitrary, Gen}
 
 /**
@@ -28,6 +28,13 @@ trait UserGenerator {
       role <- Arbitrary.arbitrary[User.Role]
       status <- Arbitrary.arbitrary[User.Status]
     } yield User(0, name, email, gender, role, status)
+  }
+
+  implicit val userShortArb = Arbitrary {
+    for {
+      name <- Arbitrary.arbitrary[String]
+      gender <- Arbitrary.arbitrary[User.Gender]
+    } yield UserShort(0, name, gender)
   }
 
 }

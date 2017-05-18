@@ -1029,3 +1029,30 @@ DELETE        /templates/:id                              controllers.TemplateCo
 #       $ref: '#/responses/InternalServerError'
 ###
 POST          /templates/:id/clone                      controllers.TemplateController.cloneTemplate(id: Long)
+
+###
+# summary: Returns list of assessment objects
+# tags:
+#   - Assessment
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.assessment.ApiAssessment'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET           /assessments                              controllers.AssessmentController.getList(eventId: Long, projectId: Long)
