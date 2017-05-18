@@ -5,31 +5,41 @@ import java.sql.Timestamp
 import models.{ListWithTotal, NamedEntity}
 import models.dao.{EventDao, ProjectRelationDao}
 import models.event.Event
+import models.form.Form
 import models.project.Relation
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
-import testutils.fixture.{ProjectRelationFixture, UserFixture}
+import testutils.fixture.{FormFixture, ProjectRelationFixture, UserFixture}
 import testutils.generator.ProjectRelationGenerator
-import utils.errors.{BadRequestError, ConflictError, NotFoundError}
+import utils.errors.{ApplicationError, BadRequestError, ConflictError, NotFoundError}
 import utils.listmeta.ListMeta
+
+import scalaz._
+import Scalaz.ToEitherOps
 
 /**
   * Test for project relation service.
   */
-class ProjectRelationServiceTest extends BaseServiceTest with ProjectRelationGenerator with ProjectRelationFixture {
+class ProjectRelationServiceTest
+  extends BaseServiceTest
+    with ProjectRelationGenerator
+    with ProjectRelationFixture
+    with FormFixture {
 
   private val admin = UserFixture.admin
 
   private case class TestFixture(
     projectDaoMock: ProjectRelationDao,
     eventDaoMock: EventDao,
+    formService: FormService,
     service: ProjectRelationService)
 
   private def getFixture = {
     val daoMock = mock[ProjectRelationDao]
     val eventDaoMock = mock[EventDao]
-    val service = new ProjectRelationService(daoMock, eventDaoMock)
-    TestFixture(daoMock, eventDaoMock, service)
+    val formService = mock[FormService]
+    val service = new ProjectRelationService(daoMock, eventDaoMock, formService)
+    TestFixture(daoMock, eventDaoMock, formService, service)
   }
 
   "getById" should {
@@ -98,6 +108,7 @@ class ProjectRelationServiceTest extends BaseServiceTest with ProjectRelationGen
     "return bad request if relation already exists" in {
       val fixture = getFixture
       val relation = ProjectRelations(0)
+      val form = Forms(0).copy(kind = Form.Kind.Active)
 
       when(fixture.projectDaoMock.exists(relation)).thenReturn(toFuture(true))
       when(fixture.eventDaoMock.getList(
@@ -109,6 +120,8 @@ class ProjectRelationServiceTest extends BaseServiceTest with ProjectRelationGen
         optFormId = any[Option[Long]],
         optGroupFromIds = any[Option[Seq[Long]]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
+      when(fixture.formService.getById(relation.form.id)(admin))
+        .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
       val result = wait(fixture.service.create(relation)(admin).run)
 
       result mustBe 'left
@@ -135,8 +148,9 @@ class ProjectRelationServiceTest extends BaseServiceTest with ProjectRelationGen
       result.swap.toOption.get mustBe a[ConflictError]
     }
 
-    "create relation in db" in {
+    "return conflict if used form is freezed" in {
       val relation = ProjectRelations(0)
+      val form = Forms(0).copy(kind = Form.Kind.Freezed)
 
       val fixture = getFixture
 
@@ -151,6 +165,33 @@ class ProjectRelationServiceTest extends BaseServiceTest with ProjectRelationGen
         optFormId = any[Option[Long]],
         optGroupFromIds = any[Option[Seq[Long]]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
+      when(fixture.formService.getById(relation.form.id)(admin))
+        .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
+      val result = wait(fixture.service.create(relation.copy(id = 0))(admin).run)
+
+      result mustBe 'left
+      result.swap.toOption.get mustBe a[ConflictError]
+    }
+
+    "create relation in db" in {
+      val relation = ProjectRelations(0)
+      val form = Forms(0).copy(kind = Form.Kind.Active)
+
+      val fixture = getFixture
+
+      when(fixture.projectDaoMock.exists(relation.copy(id = 0))).thenReturn(toFuture(false))
+      when(fixture.projectDaoMock.create(relation.copy(id = 0))).thenReturn(toFuture(relation))
+      when(fixture.eventDaoMock.getList(
+        optId = any[Option[Long]],
+        optStatus = eqTo(Some(Event.Status.InProgress)),
+        optProjectId = eqTo(Some(relation.project.id)),
+        optNotificationFrom = any[Option[Timestamp]],
+        optNotificationTo = any[Option[Timestamp]],
+        optFormId = any[Option[Long]],
+        optGroupFromIds = any[Option[Seq[Long]]]
+      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
+      when(fixture.formService.getById(relation.form.id)(admin))
+        .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
       val result = wait(fixture.service.create(relation.copy(id = 0))(admin).run)
 
       result mustBe 'right
@@ -207,6 +248,7 @@ class ProjectRelationServiceTest extends BaseServiceTest with ProjectRelationGen
     "return bad request if relation already exists" in {
       val fixture = getFixture
       val relation = ProjectRelations(0)
+      val form = Forms(0).copy(kind = Form.Kind.Active)
 
       when(fixture.projectDaoMock.findById(relation.id))
         .thenReturn(toFuture(Some(relation.copy(groupFrom = NamedEntity(999)))))
@@ -220,6 +262,8 @@ class ProjectRelationServiceTest extends BaseServiceTest with ProjectRelationGen
         optFormId = any[Option[Long]],
         optGroupFromIds = any[Option[Seq[Long]]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
+      when(fixture.formService.getById(relation.form.id)(admin))
+        .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
       val result = wait(fixture.service.update(relation)(admin).run)
 
       result mustBe 'left
@@ -247,8 +291,9 @@ class ProjectRelationServiceTest extends BaseServiceTest with ProjectRelationGen
       result.swap.toOption.get mustBe a[ConflictError]
     }
 
-    "update relation in db" in {
+    "return conflict if used form is freezed" in {
       val relation = ProjectRelations(0)
+      val form = Forms(0).copy(kind = Form.Kind.Freezed)
 
       val fixture = getFixture
 
@@ -264,6 +309,34 @@ class ProjectRelationServiceTest extends BaseServiceTest with ProjectRelationGen
         optFormId = any[Option[Long]],
         optGroupFromIds = any[Option[Seq[Long]]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
+      when(fixture.formService.getById(relation.form.id)(admin))
+        .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
+      val result = wait(fixture.service.update(relation)(admin).run)
+
+      result mustBe 'left
+      result.swap.toOption.get mustBe a[ConflictError]
+    }
+
+    "update relation in db" in {
+      val relation = ProjectRelations(0)
+      val form = Forms(0).copy(kind = Form.Kind.Active)
+
+      val fixture = getFixture
+
+      when(fixture.projectDaoMock.findById(relation.id)).thenReturn(toFuture(Some(relation)))
+      when(fixture.projectDaoMock.exists(relation)).thenReturn(toFuture(false))
+      when(fixture.projectDaoMock.update(relation)).thenReturn(toFuture(relation))
+      when(fixture.eventDaoMock.getList(
+        optId = any[Option[Long]],
+        optStatus = eqTo(Some(Event.Status.InProgress)),
+        optProjectId = eqTo(Some(relation.project.id)),
+        optNotificationFrom = any[Option[Timestamp]],
+        optNotificationTo = any[Option[Timestamp]],
+        optFormId = any[Option[Long]],
+        optGroupFromIds = any[Option[Seq[Long]]]
+      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
+      when(fixture.formService.getById(relation.form.id)(admin))
+        .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
       val result = wait(fixture.service.update(relation)(admin).run)
 
       result mustBe 'right

@@ -104,7 +104,7 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
       forAll { (form: Form) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.formServiceMock.update(form)(admin))
+        when(fixture.formServiceMock.update(form.copy(kind = Form.Kind.Active))(admin))
           .thenReturn(EitherT.eitherT(toFuture(\/-(form): ApplicationError \/ Form)))
 
         val apiForm = ApiPartialForm(
@@ -138,7 +138,7 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
       forAll { (form: Form) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.formServiceMock.create(form)(admin))
+        when(fixture.formServiceMock.create(form.copy(kind = Form.Kind.Active))(admin))
           .thenReturn(EitherT.eitherT(toFuture(\/-(form): ApplicationError \/ Form)))
 
         val apiForm = ApiPartialForm(
@@ -150,7 +150,7 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
               element.required,
               Some(element.values.map(value => ApiPartialForm.ElementValue(value.caption))))
           }))
-        
+
         val request = authenticated(
           FakeRequest("POST", "/forms")
             .withBody[ApiPartialForm](apiForm)

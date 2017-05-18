@@ -4,6 +4,7 @@ import javax.inject.{Inject, Singleton}
 
 import models.dao.{EventDao, ProjectRelationDao}
 import models.event.Event
+import models.form.Form
 import models.project.Relation
 import models.user.User
 import utils.errors._
@@ -16,7 +17,8 @@ import utils.listmeta.ListMeta
 @Singleton
 class ProjectRelationService @Inject()(
   protected val projectRelationDao: ProjectRelationDao,
-  protected val eventDao: EventDao
+  protected val eventDao: EventDao,
+  protected val formService: FormService
 ) extends ServiceResults[Relation] {
 
   /**
@@ -98,7 +100,7 @@ class ProjectRelationService @Inject()(
   /**
     * Validate relation and returns either new relation or error.
     */
-  private def validateRelation(relation: Relation): SingleResult = {
+  private def validateRelation(relation: Relation)(implicit account: User): SingleResult = {
     val needGroupTo = relation.kind == Relation.Kind.Classic
     val isEmptyGroupTo = relation.groupTo.isEmpty
     val validatedRelation = if (!needGroupTo && !isEmptyGroupTo) relation.copy(groupTo = None) else relation
@@ -116,6 +118,11 @@ class ProjectRelationService @Inject()(
 
       _ <- ensure(activeEvents.total == 0) {
         ConflictError.Project.ActiveEventExists
+      }
+
+      form <- formService.getById(relation.form.id)
+      _ <- ensure(form.kind == Form.Kind.Active) {
+        ConflictError.Form.FormKind("use non active form in relation")
       }
     } yield validatedRelation
   }

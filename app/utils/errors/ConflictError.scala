@@ -35,6 +35,8 @@ object ConflictError {
     case object ActiveEventExists extends ConflictError("CONFLICT-FORM-3", "Can't update, active events exists")
 
     case object RelationExists extends ConflictError("CONFLICT-FORM-4", "Can't delete, relation exists")
+
+    case class FormKind(action: String) extends ConflictError("CONFLICT-FORM-5", s"Can't $action.")
   }
 
   object Project {

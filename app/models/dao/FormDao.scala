@@ -17,12 +17,23 @@ trait FormComponent {
 
   import driver.api._
 
+  implicit lazy val formKindColumnType = MappedColumnType.base[Form.Kind, Byte](
+    {
+      case Form.Kind.Active => 0
+      case Form.Kind.Freezed => 1
+    }, {
+      case 0 => Form.Kind.Active
+      case 1 => Form.Kind.Freezed
+    }
+  )
+
   class FormTable(tag: Tag) extends Table[FormShort](tag, "form") {
 
     def id = column[Long]("id", O.AutoInc, O.PrimaryKey)
     def name = column[String]("name")
+    def kind = column[Form.Kind]("kind")
 
-    def * = (id, name) <> ((FormShort.apply _).tupled, FormShort.unapply)
+    def * = (id, name, kind) <> ((FormShort.apply _).tupled, FormShort.unapply)
   }
 
   val Forms = TableQuery[FormTable]
@@ -121,6 +132,34 @@ trait FormComponent {
 }
 
 /**
+  * Component for event_form_mapping table.
+  */
+trait EventFormMappingComponent {
+  self: HasDatabaseConfigProvider[JdbcProfile] =>
+
+  import driver.api._
+
+  /**
+    * DB model for form event mapping.
+    */
+  case class DbEventFormMapping(
+    eventId: Long,
+    formTemplateId: Long,
+    formFreezedId: Long
+  )
+
+  class EventFormMappingTable(tag: Tag) extends Table[DbEventFormMapping](tag, "event_form_mapping") {
+    def eventId = column[Long]("event_id")
+    def formTemplateId = column[Long]("form_template_id")
+    def formFreezedId = column[Long]("form_freezed_id")
+
+    def * = (eventId, formTemplateId, formFreezedId) <> ((DbEventFormMapping.apply _).tupled, DbEventFormMapping.unapply)
+  }
+
+  val EventFormMappings = TableQuery[EventFormMappingTable]
+}
+
+/**
   * Form DAO.
   */
 @Singleton
@@ -128,6 +167,7 @@ class FormDao @Inject()(
   protected val dbConfigProvider: DatabaseConfigProvider
 ) extends HasDatabaseConfigProvider[JdbcProfile]
   with FormComponent
+  with EventFormMappingComponent
   with DaoHelper {
 
   import driver.api._
@@ -137,8 +177,21 @@ class FormDao @Inject()(
     *
     * @param meta sorting and pagination
     */
-  def getList()(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[FormShort]] = {
-    runListQuery(Forms) {
+  def getList(
+    optKind: Option[Form.Kind] = None,
+    optFormTemplateId: Option[Long] = None
+  )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[FormShort]] = {
+    val query = Forms
+      .applyFilter { form =>
+        Seq(
+          optKind.map(form.kind === _),
+          optFormTemplateId.map { formTemplateId =>
+            form.id in EventFormMappings.filter(_.formTemplateId === formTemplateId).map(_.formFreezedId)
+          }
+        )
+      }
+
+    runListQuery(query) {
       form => {
         case 'id => form.id
         case 'name => form.name
@@ -257,4 +310,29 @@ class FormDao @Inject()(
   def update(form: FormShort): Future[FormShort] = db.run {
     Forms.filter(_.id === form.id).update(form)
   }.map(_ => form)
+
+  /**
+    * Returns ID of freezed form.
+    *
+    * @param eventId        ID of event
+    * @param templateFormId ID of template form
+    */
+  def getFreezedFormId(eventId: Long, templateFormId: Long): Future[Option[Long]] = db.run {
+    EventFormMappings
+      .filter(x => x.eventId === eventId && x.formTemplateId === templateFormId)
+      .map(_.formFreezedId)
+      .result
+      .headOption
+  }
+
+  /**
+    * Sets freezed form ID
+    *
+    * @param eventId        ID of event
+    * @param templateFormId ID of template form
+    * @param freezedFormId  ID of freezed form
+    */
+  def setFreezedFormId(eventId: Long, templateFormId: Long, freezedFormId: Long): Future[Unit] = db.run {
+    EventFormMappings += DbEventFormMapping(eventId, templateFormId, freezedFormId)
+  }.map(_ => ())
 }

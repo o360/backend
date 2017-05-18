@@ -37,13 +37,47 @@ trait FormFixture extends FixtureHelper {
             )
           )
         )
-      )
-    ),
+      ),
+      Form.Kind.Active
+    )
+    ,
     Form(
       2,
       "second",
-      Nil
+      Nil,
+      Form.Kind.Active
+    ),
+    Form(
+      3,
+      "first",
+      Seq(
+        Form.Element(
+          3,
+          Form.ElementKind.TextField,
+          "cap1",
+          required = true,
+          Nil
+        ),
+        Form.Element(
+          4,
+          Form.ElementKind.Radio,
+          "cap2",
+          required = false,
+          Seq(
+            Form.ElementValue(
+              3,
+              "cap1"
+            ),
+            Form.ElementValue(
+              4,
+              "cap2"
+            )
+          )
+        )
+      ),
+      Form.Kind.Freezed
     )
+
   )
 
   val FormsShort = Forms.map(_.toShort)
@@ -51,19 +85,24 @@ trait FormFixture extends FixtureHelper {
   addFixtureOperation {
     sequenceOf(
       insertInto("form")
-        .columns("id", "name")
-        .scalaValues(1, "first")
-        .scalaValues(2, "second")
+        .columns("id", "name", "kind")
+        .scalaValues(1, "first", 0)
+        .scalaValues(2, "second", 0)
+        .scalaValues(3, "first", 1)
         .build,
       insertInto("form_element")
         .columns("id", "form_id", "kind", "caption", "required", "ord")
         .scalaValues(1, 1, 0, "cap1", true, 1)
         .scalaValues(2, 1, 4, "cap2", false, 2)
+        .scalaValues(3, 3, 0, "cap1", true, 1)
+        .scalaValues(4, 3, 4, "cap2", false, 2)
         .build,
       insertInto("form_element_value")
         .columns("id", "element_id", "caption", "ord")
         .scalaValues(1, 2, "cap1", 1)
         .scalaValues(2, 2, "cap2", 2)
+        .scalaValues(3, 4, "cap1", 1)
+        .scalaValues(4, 4, "cap2", 2)
         .build
     )
   }
