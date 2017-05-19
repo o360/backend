@@ -2,15 +2,15 @@ package services
 
 import java.sql.Timestamp
 
-import models.assessment.Assessment
-import models.dao.{EventDao, GroupDao, ProjectRelationDao}
+import models.assessment.{Answer, Assessment}
+import models.dao.{AnswerDao, EventDao, GroupDao, ProjectRelationDao}
 import models.event.Event
 import models.project.Relation
 import models.user.UserShort
 import models.{ListWithTotal, NamedEntity}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito._
-import testutils.fixture.{EventFixture, FormFixture, ProjectRelationFixture, UserFixture}
+import testutils.fixture._
 import utils.errors.{ApplicationError, NotFoundError}
 import utils.listmeta.ListMeta
 
@@ -25,7 +25,8 @@ class AssessmentServiceTest
     with EventFixture
     with ProjectRelationFixture
     with UserFixture
-    with FormFixture {
+    with FormFixture
+    with AnswerFixture {
 
   private case class Fixture(
     formService: FormService,
@@ -33,6 +34,7 @@ class AssessmentServiceTest
     groupDao: GroupDao,
     eventDao: EventDao,
     relationDao: ProjectRelationDao,
+    answerDao: AnswerDao,
     service: AssessmentService
   )
 
@@ -42,8 +44,9 @@ class AssessmentServiceTest
     val groupDao = mock[GroupDao]
     val eventDao = mock[EventDao]
     val relationDao = mock[ProjectRelationDao]
-    val service = new AssessmentService(formService, userService, groupDao, eventDao, relationDao)
-    Fixture(formService, userService, groupDao, eventDao, relationDao, service)
+    val answerDao = mock[AnswerDao]
+    val service = new AssessmentService(formService, userService, groupDao, eventDao, relationDao, answerDao)
+    Fixture(formService, userService, groupDao, eventDao, relationDao, answerDao, service)
   }
 
   "getList" should {
@@ -96,6 +99,8 @@ class AssessmentServiceTest
         )
       )
 
+      val answer = Answers(0)
+
 
       when(fixture.groupDao.findGroupIdsByUserId(user.id)).thenReturn(toFuture(userGroupsIds))
       when(fixture.eventDao.getList(
@@ -121,12 +126,18 @@ class AssessmentServiceTest
       when(fixture.formService.getOrCreateFreezedForm(event.id, relations(1).form.id)(user))
         .thenReturn(EitherT.eitherT(toFuture(Forms(1).right[ApplicationError])))
 
+      when(fixture.answerDao.getAnswer(event.id, projectId, user.id, Some(assessedUser.id), Forms(0).id))
+        .thenReturn(toFuture(None))
+
+      when(fixture.answerDao.getAnswer(event.id, projectId, user.id, None, Forms(1).id))
+        .thenReturn(toFuture(Some(answer)))
+
       val result = wait(fixture.service.getList(event.id, projectId)(user).run)
 
       result mustBe 'right
       result.toOption.get mustBe ListWithTotal(2, Seq(
-        Assessment(None, Seq(Forms(1).id)),
-        Assessment(Some(UserShort.fromUser(assessedUser)), Seq(Forms(0).id))
+        Assessment(None, Seq(answer)),
+        Assessment(Some(UserShort.fromUser(assessedUser)), Seq(Answer.Form(NamedEntity(Forms(0).id, Forms(0).name), Set())))
       ))
     }
   }

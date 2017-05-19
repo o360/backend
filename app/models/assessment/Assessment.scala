@@ -1,16 +1,32 @@
 package models.assessment
 
-import models.user.UserShort
+import models.NamedEntity
+import models.user.{User, UserShort}
 
 /**
   * Assessment object model.
   *
-  * @param user assessed user
-  * @param formIds form ids
+  * @param user  assessed user
+  * @param forms forms ids with answers
   */
 case class Assessment(
   user: Option[UserShort],
-  formIds: Seq[Long]
+  forms: Seq[Answer.Form]
 )
+
+object Assessment {
+  /**
+    * Creates new assessment object from formsWithAnswers list.
+    *
+    * @param formsWithAnswers forms IDs paired with answers.
+    * @param user             assessed user
+    */
+  def apply(formsWithAnswers: Seq[(NamedEntity, Option[Answer.Form])], user: Option[User] = None): Assessment = {
+    val forms = formsWithAnswers.map { case (form, answer) =>
+      answer.getOrElse(Answer.Form(form, Set()))
+    }
+    Assessment(user.map(UserShort.fromUser), forms)
+  }
+}
 
 
