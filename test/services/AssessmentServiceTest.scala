@@ -11,7 +11,7 @@ import models.{ListWithTotal, NamedEntity}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito._
 import testutils.fixture._
-import utils.errors.{ApplicationError, NotFoundError}
+import utils.errors.{ApplicationError, ConflictError, NotFoundError}
 import utils.listmeta.ListMeta
 
 import scalaz.Scalaz.ToEitherOps
@@ -114,7 +114,11 @@ class AssessmentServiceTest
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal[Event](1, Seq(event))))
 
-      when(fixture.relationDao.getList(optId = any[Option[Long]], optProjectId = eqTo(Some(projectId)))(any[ListMeta]))
+      when(fixture.relationDao.getList(
+        optId = any[Option[Long]],
+        optProjectId = eqTo(Some(projectId)),
+        optKind = any[Option[Relation.Kind]]
+      )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal(2, relations)))
 
       when(fixture.userService.listByGroupId(eqTo(relations(0).groupTo.get.id))(any[ListMeta]))
@@ -140,5 +144,68 @@ class AssessmentServiceTest
         Assessment(Some(UserShort.fromUser(assessedUser)), Seq(Answer.Form(NamedEntity(Forms(0).id, Forms(0).name), Set())))
       ))
     }
+  }
+
+  "submit" should {
+    "return error if event not found" in {
+      val fixture = getFixture
+
+      val user = UserFixture.user
+      val event = Events(0)
+      val projectId = 3
+      val userGroupsIds = Seq(1L, 2, 3)
+      val assessment = Assessment(None, Seq(Answer.Form(NamedEntity(1), Set())))
+
+      when(fixture.groupDao.findGroupIdsByUserId(user.id)).thenReturn(toFuture(userGroupsIds))
+      when(fixture.eventDao.getList(
+        optId = eqTo(Some(event.id)),
+        optStatus = any[Option[Event.Status]],
+        optProjectId = eqTo(Some(projectId)),
+        optNotificationFrom = any[Option[Timestamp]],
+        optNotificationTo = any[Option[Timestamp]],
+        optFormId = any[Option[Long]],
+        optGroupFromIds = eqTo(Some(userGroupsIds))
+      )(any[ListMeta]))
+        .thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
+
+      val result = wait(fixture.service.submit(event.id, projectId, assessment)(user).run)
+
+      result mustBe 'left
+      result.swap.toOption.get mustBe a[NotFoundError]
+    }
+
+    "return error if cant revote" in {
+      val fixture = getFixture
+
+      val user = UserFixture.user
+      val event = Events(0).copy(canRevote = false)
+      val projectId = 3
+      val userGroupsIds = Seq(1L, 2, 3)
+      val formId = 1
+      val answer = Answer.Form(NamedEntity(formId), Set())
+      val assessment = Assessment(None, Seq(answer))
+
+      when(fixture.groupDao.findGroupIdsByUserId(user.id)).thenReturn(toFuture(userGroupsIds))
+      when(fixture.eventDao.getList(
+        optId = eqTo(Some(event.id)),
+        optStatus = any[Option[Event.Status]],
+        optProjectId = eqTo(Some(projectId)),
+        optNotificationFrom = any[Option[Timestamp]],
+        optNotificationTo = any[Option[Timestamp]],
+        optFormId = any[Option[Long]],
+        optGroupFromIds = eqTo(Some(userGroupsIds))
+      )(any[ListMeta]))
+        .thenReturn(toFuture(ListWithTotal(1, Seq(event))))
+
+      when(fixture.answerDao.getAnswer(event.id, projectId, user.id, None, formId))
+        .thenReturn(toFuture(Some(answer)))
+
+      val result = wait(fixture.service.submit(event.id, projectId, assessment)(user).run)
+
+      result mustBe 'left
+      result.swap.toOption.get mustBe a[ConflictError]
+    }
+
+    // TODO Other test cases
   }
 }

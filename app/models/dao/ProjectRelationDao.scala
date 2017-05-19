@@ -108,7 +108,8 @@ class ProjectRelationDao @Inject()(
     */
   def getList(
     optId: Option[Long] = None,
-    optProjectId: Option[Long] = None
+    optProjectId: Option[Long] = None,
+    optKind: Option[Relation.Kind] = None
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Relation]] = {
 
     def sortMapping(relation: RelationTable): PartialFunction[Symbol, Rep[_]] = {
@@ -121,7 +122,8 @@ class ProjectRelationDao @Inject()(
         x =>
           Seq(
             optId.map(x.id === _),
-            optProjectId.map(x.projectId === _)
+            optProjectId.map(x.projectId === _),
+            optKind.map(x.kind === _)
           )
       }
 

@@ -4,7 +4,7 @@ import javax.inject.{Inject, Singleton}
 
 import com.mohiva.play.silhouette.api.Silhouette
 import controllers.api.Response
-import controllers.api.assessment.ApiAssessment
+import controllers.api.assessment.{ApiAssessment, ApiPartialAssessment}
 import controllers.authorization.AllowedStatus
 import services.AssessmentService
 import silhouette.DefaultEnv
@@ -33,4 +33,16 @@ class AssessmentController @Inject()(
           }
       }
     }
+
+  /**
+    * Submits form answer for given event and project ids.
+    */
+  def submit(eventId: Long, projectId: Long) =
+    silhouette.SecuredAction(AllowedStatus.approved).async(parse.json[ApiPartialAssessment]) { implicit request =>
+      val model = request.body.toModel
+      assessmentService.submit(eventId, projectId, model).fold(
+        error => toResult(error),
+        _ => NoContent
+      )
+  }
 }

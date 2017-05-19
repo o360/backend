@@ -142,7 +142,8 @@ class NotificationServiceTest
 
       when(fixture.relationDao.getList(
         optId = any[Option[Long]],
-        optProjectId = eqTo(Some(project.id))
+        optProjectId = eqTo(Some(project.id)),
+        optKind = any[Option[Relation.Kind]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
 
       when(fixture.userService.listByGroupId(
@@ -207,7 +208,8 @@ class NotificationServiceTest
 
       when(fixture.relationDao.getList(
         optId = any[Option[Long]],
-        optProjectId = eqTo(Some(project.id))
+        optProjectId = eqTo(Some(project.id)),
+        optKind = any[Option[Relation.Kind]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Seq(relation))))
 
       when(fixture.userService.listByGroupId(

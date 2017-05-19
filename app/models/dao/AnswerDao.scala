@@ -109,6 +109,11 @@ class AnswerDao @Inject()(
 
   import driver.api._
 
+  private def userToFilter(answer: FormAnswerTable, userToId: Option[Long]) = userToId match {
+    case Some(toId) => answer.userToId.fold(false: Rep[Boolean])(_ === toId)
+    case None => answer.userToId.isEmpty
+  }
+
   /**
     * Returns answer by given criteria.
     */
@@ -120,16 +125,13 @@ class AnswerDao @Inject()(
     formId: Long
   ): Future[Option[Answer.Form]] = {
 
-    def userToFilter(answer: FormAnswerTable) = userToId match {
-      case Some(toId) => answer.userToId.fold(false: Rep[Boolean])(_ === toId)
-      case None => answer.userToId.isEmpty
-    }
+
 
     val query = FormAnswers.filter { answer =>
         answer.eventId === eventId &&
         answer.projectId === projectId &&
         answer.userFromId === userFromId &&
-        userToFilter(answer) &&
+        userToFilter(answer, userToId) &&
         answer.formId === formId
       }
       .join(Forms).on(_.formId === _.id)
@@ -157,5 +159,44 @@ class AnswerDao @Inject()(
         answer.toModel(elements, form.name)
       }
     }
+  }
+
+  /**
+    * Saves answer with elements and values in DB.
+    */
+  def saveAnswer(
+    eventId: Long,
+    projectId: Long,
+    userFromId: Long,
+    userToId: Option[Long],
+    answer: Answer.Form
+  ): Future[Answer.Form] = {
+    val deleteExistedAnswer = FormAnswers.filter { x =>
+      x.eventId === eventId &&
+        x.projectId === projectId &&
+        x.userFromId === userFromId &&
+        userToFilter(x, userToId) &&
+        x.formId === answer.form.id
+    }.delete
+
+    def insertAnswerElementAction(answerId: Long, element: Answer.Element) = {
+      for {
+        elementId <- FormElementAnswers.returning(FormElementAnswers.map(_.id)) +=
+          DbFormElementAnswer(0, answerId, element.elementId, element.text)
+
+        _ <- FormElementAnswerValues ++=
+          element.valuesIds.getOrElse(Nil).map(DbFormElementAnswerValue(0, elementId, _))
+      } yield ()
+    }
+
+    val actions = for {
+      _ <- deleteExistedAnswer
+      answerId <- FormAnswers.returning(FormAnswers.map(_.id)) +=
+        DbFormAnswer(0, eventId, projectId, userFromId, userToId, answer.form.id)
+
+      _ <- DBIO.seq(answer.answers.toSeq.map(insertAnswerElementAction(answerId, _)): _*)
+    } yield ()
+
+    db.run(actions.transactionally).map(_ => answer)
   }
 }

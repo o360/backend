@@ -83,7 +83,8 @@ class ProjectRelationServiceTest
         val fixture = getFixture
         when(fixture.projectDaoMock.getList(
           optId = any[Option[Long]],
-          optProjectId = eqTo(projectId))(eqTo(ListMeta.default))
+          optProjectId = eqTo(projectId),
+          optKind = any[Option[Relation.Kind]])(eqTo(ListMeta.default))
         ).thenReturn(toFuture(ListWithTotal(total, relations)))
         val result = wait(fixture.service.getList(projectId)(admin, ListMeta.default).run)
 
