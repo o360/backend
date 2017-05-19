@@ -1056,3 +1056,25 @@ POST          /templates/:id/clone                      controllers.TemplateCont
 #       $ref: '#/responses/InternalServerError'
 ###
 GET           /assessments                              controllers.AssessmentController.getList(eventId: Long, projectId: Long)
+
+###
+# summary: Submits answers
+# tags:
+#   - Assessment
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.assessment.ApiPartialAssessment'
+# responses:
+#   200:
+#       description: Template created
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST          /assessments                              controllers.AssessmentController.submit(eventId: Long, projectId: Long)

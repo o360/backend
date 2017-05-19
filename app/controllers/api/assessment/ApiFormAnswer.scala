@@ -2,7 +2,9 @@ package controllers.api.assessment
 
 import controllers.api.{ApiNamedEntity, Response}
 import models.assessment.Answer
-import play.api.libs.json.Json
+import play.api.libs.functional.syntax._
+import play.api.libs.json.Reads._
+import play.api.libs.json._
 
 /**
   * Api model for form answer.
@@ -26,9 +28,21 @@ object ApiFormAnswer {
     elementId: Long,
     text: Option[String],
     valuesIds: Option[Seq[Long]]
-  )
+  ) {
+    def toModel = Answer.Element(
+      elementId,
+      text,
+      valuesIds
+    )
+  }
 
   object ElementAnswer {
+    implicit val answerElementReads: Reads[ElementAnswer] = (
+      (__ \ "elementId").read[Long] and
+        (__ \ "text").readNullable[String](maxLength(16384)) and
+        (__ \ "valuesIds").readNullable[Seq[Long]]
+      ) (ElementAnswer(_, _, _))
+
     def apply(element: Answer.Element): ElementAnswer = ElementAnswer(
       element.elementId,
       element.text,

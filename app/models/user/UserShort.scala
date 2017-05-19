@@ -15,4 +15,6 @@ object UserShort {
     user.name.getOrElse(""),
     user.gender.getOrElse(User.Gender.Male)
   )
+
+  def apply(id: Long): UserShort = UserShort(id, "", User.Gender.Male)
 }

@@ -38,4 +38,10 @@ object BadRequestError {
     case class GroupToMissed(relation: String)
       extends BadRequestError("BAD-REQUEST-RELATION-3", s"GroupTo missed in relation [$relation]")
   }
+
+  object Assessment {
+    case class InvalidForm(message: String) extends BadRequestError("BAD-REQUEST-ASSESSMENT-1", message)
+
+    case object RequiredAnswersMissed extends BadRequestError("BAD-REQUEST-ASSESSMENT-2", "Required answers missed")
+  }
 }

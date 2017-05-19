@@ -50,4 +50,10 @@ object ConflictError {
 
     case object RelationExists extends ConflictError("CONFLICT-RELATION-2", "Can't delete, relation exists")
   }
+
+  object Assessment {
+    case object WrongParameters extends ConflictError("CONFLICT-ASSESSMENT-1", "Can't find relation matched user and form ids")
+
+    case object CantRevote extends ConflictError("CONFLICT-ASSESSMENT-2", "Revoting is forbidden")
+  }
 }
