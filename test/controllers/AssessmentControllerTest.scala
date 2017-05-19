@@ -22,7 +22,7 @@ import scalaz.{EitherT, \/, \/-}
 /**
   * Test for assessment controller.
   */
-class AssessmentControllerTest extends BaseControllerTest with AssessmentGenerator {
+class AssessmentControllerTest extends BaseControllerTest {
 
   private case class TestFixture(
     silhouette: Silhouette[DefaultEnv],
@@ -41,27 +41,24 @@ class AssessmentControllerTest extends BaseControllerTest with AssessmentGenerat
 
   "GET /assessments" should {
     "return assessments list from service" in {
-      forAll { (
-      eventId: Long,
-      projectId: Long,
-      total: Int,
-      assessments: Seq[Assessment]
-      ) =>
-        val env = fakeEnvironment(admin)
-        val fixture = getFixture(env)
-        when(fixture.assessmentServiceMock.getList(eventId, projectId)(admin))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(ListWithTotal(total, assessments)): ApplicationError \/ ListWithTotal[Assessment])))
-        val request = authenticated(FakeRequest(), env)
+      val env = fakeEnvironment(admin)
+      val fixture = getFixture(env)
+      val eventId = 1
+      val projectId = 2
+      val total = 3
+      val assessments = Seq(Assessment(None, Nil))
+      when(fixture.assessmentServiceMock.getList(eventId, projectId)(admin))
+        .thenReturn(EitherT.eitherT(toFuture(\/-(ListWithTotal(total, assessments)): ApplicationError \/ ListWithTotal[Assessment])))
+      val request = authenticated(FakeRequest(), env)
 
-        val response = fixture.controller.getList(eventId, projectId)(request)
+      val response = fixture.controller.getList(eventId, projectId)(request)
 
-        status(response) mustBe OK
-        val assessmentsJson = contentAsJson(response)
-        val expectedJson = Json.toJson(
-          Response.List(Response.Meta(total, ListMeta.default), assessments.map(ApiAssessment(_)))
-        )
-        assessmentsJson mustBe expectedJson
-      }
+      status(response) mustBe OK
+      val assessmentsJson = contentAsJson(response)
+      val expectedJson = Json.toJson(
+        Response.List(Response.Meta(total, ListMeta.default), assessments.map(ApiAssessment(_)))
+      )
+      assessmentsJson mustBe expectedJson
     }
   }
 }
