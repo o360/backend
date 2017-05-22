@@ -50,25 +50,25 @@ class AssessmentService @Inject()(
         forms
           .distinct
           .map { form =>
-            answerDao.getAnswer(eventId, projectId, account.id, user.map(_.id), form.id).map((form, _))
+            answerDao
+              .getAnswer(eventId, projectId, account.id, user.map(_.id), form.id)
+              .map((form, _))
           }
       }
     }
 
     /**
-      * Maps survey relations to assessment objects.
+      * Maps survey relations to assessment object.
       */
-    def surveyRelationsToAssessments(relations: Seq[Relation]): Future[Seq[Assessment]] = {
+    def surveyRelationsToAssessments(relations: Seq[Relation]): Future[Option[Assessment]] = {
       val forms =
         relations
         .filter(_.kind == Relation.Kind.Survey)
         .map(_.form)
 
-      val formsWithAnswersF = getAnswersForForms(forms)
-
-      formsWithAnswersF.map { formsWithAnswers =>
-        if (formsWithAnswers.isEmpty) Nil
-        else Seq(Assessment(formsWithAnswers))
+      getAnswersForForms(forms).map { formsWithAnswers =>
+        if (formsWithAnswers.isEmpty) None
+        else Some(Assessment(formsWithAnswers))
       }
     }
 
@@ -103,9 +103,7 @@ class AssessmentService @Inject()(
                 .map { case (_, relation) => relation.form }
                 .distinct
 
-              val formsWithAnswersF = getAnswersForForms(forms, Some(user))
-
-              formsWithAnswersF.map { formsWithAnswers =>
+              getAnswersForForms(forms, Some(user)).map { formsWithAnswers =>
                 Assessment(formsWithAnswers, Some(user))
               }
             }
@@ -163,7 +161,7 @@ class AssessmentService @Inject()(
 
       surveyAssessment <- surveyRelationsToAssessments(userRelations).lift
       classicAssessments <- classicRelationsToAssessments(userRelations).lift
-      assessments = surveyAssessment ++ classicAssessments
+      assessments = surveyAssessment.toSeq ++ classicAssessments
     } yield ListWithTotal(assessments.length, assessments)
   }
 

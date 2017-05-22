@@ -120,18 +120,16 @@ class AnswerDao @Inject()(
   def getAnswer(
     eventId: Long,
     projectId: Long,
-    userFromId: Long,
-    userToId: Option[Long],
+    fromUserId: Long,
+    toUserId: Option[Long],
     formId: Long
   ): Future[Option[Answer.Form]] = {
-
-
 
     val query = FormAnswers.filter { answer =>
         answer.eventId === eventId &&
         answer.projectId === projectId &&
-        answer.userFromId === userFromId &&
-        userToFilter(answer, userToId) &&
+        answer.userFromId === fromUserId &&
+        userToFilter(answer, toUserId) &&
         answer.formId === formId
       }
       .join(Forms).on(_.formId === _.id)
@@ -167,15 +165,15 @@ class AnswerDao @Inject()(
   def saveAnswer(
     eventId: Long,
     projectId: Long,
-    userFromId: Long,
-    userToId: Option[Long],
+    fromUserId: Long,
+    toUserId: Option[Long],
     answer: Answer.Form
   ): Future[Answer.Form] = {
     val deleteExistedAnswer = FormAnswers.filter { x =>
       x.eventId === eventId &&
         x.projectId === projectId &&
-        x.userFromId === userFromId &&
-        userToFilter(x, userToId) &&
+        x.userFromId === fromUserId &&
+        userToFilter(x, toUserId) &&
         x.formId === answer.form.id
     }.delete
 
@@ -192,7 +190,7 @@ class AnswerDao @Inject()(
     val actions = for {
       _ <- deleteExistedAnswer
       answerId <- FormAnswers.returning(FormAnswers.map(_.id)) +=
-        DbFormAnswer(0, eventId, projectId, userFromId, userToId, answer.form.id)
+        DbFormAnswer(0, eventId, projectId, fromUserId, toUserId, answer.form.id)
 
       _ <- DBIO.seq(answer.answers.toSeq.map(insertAnswerElementAction(answerId, _)): _*)
     } yield ()
