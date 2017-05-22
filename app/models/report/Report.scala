@@ -42,11 +42,11 @@ object Report {
   /**
     * Answer of single user.
     *
-    * @param userFrom user
+    * @param fromUser user
     * @param answer   answer
     */
   case class FormElementAnswerReport(
-    userFrom: User,
+    fromUser: User,
     answer: Answer.Element
   )
 }

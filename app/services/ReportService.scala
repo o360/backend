@@ -49,14 +49,26 @@ class ReportService @Inject()(
         * Map from groupId to sequence of group users.
         */
       val getGroupToUsersMap: Future[Map[Long, Seq[User]]] = {
+
+        def getUsersListOrNil(groupId: Long) = {
+          userService
+            .listByGroupId(groupId)
+            .map(_.data)
+            .run
+            .map { maybeUsers =>
+              val users = maybeUsers.getOrElse(Nil)
+              (groupId, users)
+            }
+        }
+
         val allGroups = (relations.map(_.groupFrom.id) ++ relations.flatMap(_.groupTo.map(_.id))).distinct
         log.trace(s"\tcreating GroupToUsersMap, allGroups = $allGroups")
-        Future.sequence {
+        futureSeqToMap {
           allGroups.map { groupId =>
             log.trace(s"\t\tgetting users of group $groupId")
-            userService.listByGroupId(groupId).map(_.data).run.map(_.getOrElse(Nil)).map((groupId, _))
+            getUsersListOrNil(groupId)
           }
-        }.map(_.toMap)
+        }
       }
 
       /**
@@ -65,7 +77,7 @@ class ReportService @Inject()(
       val getTemplateIdToFreezedFormMap: Future[Map[Long, Form]] = {
         val allTemplates = relations.map(_.form.id).distinct
         log.trace(s"\tcreating TemplateIdToFreezedFormMap, allTEmplates = $allTemplates")
-        Future.sequence {
+        futureSeqToMap {
           allTemplates.map { templateId =>
             log.trace(s"\t\tgetting freezed form for template $templateId")
             formService.getOrCreateFreezedForm(eventId, templateId)
@@ -73,7 +85,7 @@ class ReportService @Inject()(
               .map(_.getOrElse(throw new NoSuchElementException("missed form")))
               .map((templateId, _))
           }
-        }.map(_.toMap)
+        }
       }
 
       /**
@@ -90,9 +102,8 @@ class ReportService @Inject()(
           } yield {
             val form = templateIdToFreezedForm(relation.form.id)
 
-            val combination = Combination(userFrom, userTo, form)
             log.trace(s"\treturning Combination userFrom:${userFrom.id}, userTo:${userTo.map(_.id)}, form:${form.id}")
-            combination
+            Combination(userFrom, userTo, form)
           }
         }
       }
@@ -123,14 +134,21 @@ class ReportService @Inject()(
       def getUserFromToAnswer(form: Form, usersFrom: Seq[User]) = {
         log.trace(s"\tcreating UserFromToAnswerMap for form:${form.id}, usersFroms:${usersFrom.map(_.id)}")
 
-        Future.sequence {
+        val maybeAnswersSeqFuture = Future.sequence {
           usersFrom.map { userFrom =>
             log.trace(s"\t\tgetting answer for userFrom:${userFrom.id}, userTo:${assessedUser.map(_.id)}, form:${form.id}")
             answerDao
               .getAnswer(eventId, projectId, userFrom.id, assessedUser.map(_.id), form.id)
-              .map(_.map((userFrom, _)))
+              .map {
+                case Some(answer) => Some((userFrom, answer))
+                case None => None
+              }
           }
-        }.map(_.collect { case (Some(v)) => v })
+        }
+
+        maybeAnswersSeqFuture.map { maybeAnswersSeq =>
+          maybeAnswersSeq.collect { case (Some(v)) => v }
+        }
       }
 
       /**
@@ -142,15 +160,26 @@ class ReportService @Inject()(
       def getFormReport(form: Form, userFromToAnswers: Seq[(User, Answer.Form)]) = {
         log.trace(s"\tcreating form report userTo:${assessedUser.map(_.id)}, form:${form.id}, userAnswers:${userFromToAnswers.map(x => s"userFrom:${x._1.id}, answer: ${x._2}")}")
         val formElementIdToUserAnswerMap =
-          userFromToAnswers.flatMap(x => x._2.answers.map(answer => (answer.elementId, (x._1, answer))))
+          userFromToAnswers
+            .flatMap { x =>
+              x._2
+                .answers
+                .map { answer =>
+                  (answer.elementId, (x._1, answer))
+                }
+            }
+
+        import Report._
 
         val formAnswers = form.elements.map { formElement =>
-          val answers = formElementIdToUserAnswerMap.filter(_._1 == formElement.id).map { case (_, (user, answer)) =>
-            Report.FormElementAnswerReport(user, answer)
+          val answers = formElementIdToUserAnswerMap
+            .filter(_._1 == formElement.id)
+            .map { case (_, (user, answer)) =>
+              FormElementAnswerReport(user, answer)
           }
-          Report.FormElementReport(formElement, answers)
+          FormElementReport(formElement, answers)
         }
-        Report.FormReport(form, formAnswers)
+        FormReport(form, formAnswers)
       }
       /**
         * Map from form to combinations with its form.
@@ -204,7 +233,7 @@ class ReportService @Inject()(
       val textsWithCount = answers
         .flatMap(_.text)
         .groupBy(identity)
-        .map(x => (x._1, x._2.length))
+        .mapValues(_.length)
 
       val totalCount = textsWithCount.values.sum
 
@@ -228,7 +257,7 @@ class ReportService @Inject()(
         .flatMap(_.valuesIds)
         .flatten
         .groupBy(identity)
-        .map(x => (x._1, x._2.length))
+        .mapValues(_.length)
 
       val totalCount = valueIdToCount.values.sum
 
@@ -243,6 +272,8 @@ class ReportService @Inject()(
       captionsToPercents.mkString("; ")
     }
 
+    import AggregatedReport._
+
     val forms = report.forms.map { formReport =>
       val elements = formReport.answers.map { answerReport =>
         val answers = answerReport.elementAnswers.map(_.answer)
@@ -252,11 +283,18 @@ class ReportService @Inject()(
           case Checkbox => aggregateEachTextPercent(answers)
           case CheckboxGroup | Radio | Select => aggregateEachValuePercent(answers, formReport.form)
         }
-        AggregatedReport.FormElementAnswer(answerReport.formElement, result)
+        FormElementAnswer(answerReport.formElement, result)
       }
-      AggregatedReport.FormAnswer(formReport.form, elements)
+      FormAnswer(formReport.form, elements)
     }
     AggregatedReport(report.assessedUser, forms)
+  }
+
+  /**
+    * Converts seq of futures of pairs to future of map.
+    */
+  private def futureSeqToMap[A, T, U](futures: Seq[Future[A]])(implicit ev: A <:< (T, U)): Future[Map[T, U]] = {
+    Future.sequence(futures).map(_.toMap)
   }
 }
 
