@@ -38,10 +38,11 @@ class SpreadsheetService @Inject()() {
       val answers = aggregatedReports.map { report =>
         val userCell = textCell(report.assessedUser.flatMap(_.name).getOrElse(""))
 
-        val elementIdToAnswer: Map[Long, String] = report.forms.flatMap { form =>
-          form.answers.map { answer =>
-            (answer.element.id, answer.aggregationResult)
-          }
+        val elementIdToAnswer: Map[Long, String] = {
+          for {
+            form <- report.forms
+            answer <- form.answers
+          } yield (answer.element.id, answer.aggregationResult)
         }.toMap
 
         val answersCells = formElementIds.map(elementId => textCell(elementIdToAnswer.getOrElse(elementId, "")))
@@ -67,13 +68,11 @@ class SpreadsheetService @Inject()() {
       def getManyToOneSection(report: Report) = {
         val toUserRow = row(Seq(textCell(report.assessedUser.flatMap(_.name).getOrElse(""))))
 
-        val answers: Seq[(Long, User, String)] = report.forms.flatMap { form =>
-          form.answers.flatMap { answer =>
-            answer.elementAnswers.map { element =>
-              (answer.formElement.id, element.userFrom, element.answer.getText(answer.formElement))
-            }
-          }
-        }
+        val answers: Seq[(Long, User, String)] = for {
+          form <- report.forms
+          answer <- form.answers
+          element <- answer.elementAnswers
+        } yield (answer.formElement.id, element.fromUser, element.answer.getText(answer.formElement))
 
         val sectionForms = report.forms.map(_.form)
         val formElementIds = sectionForms.flatMap(_.elements.map(_.id))
