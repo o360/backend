@@ -164,7 +164,9 @@ class EventDao @Inject()(
     optNotificationFrom: Option[Timestamp] = None,
     optNotificationTo: Option[Timestamp] = None,
     optFormId: Option[Long] = None,
-    optGroupFromIds: Option[Seq[Long]] = None
+    optGroupFromIds: Option[Seq[Long]] = None,
+    optEndFrom: Option[Timestamp] = None,
+    optEndTimeTo: Option[Timestamp] = None
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Event]] = {
 
     def statusFilter(event: EventTable) = optStatus.map { status =>
@@ -216,7 +218,9 @@ class EventDao @Inject()(
           projectFilter(event),
           notificationFilter(event),
           formFilter(event),
-          groupFromFilter(event)
+          groupFromFilter(event),
+          optEndFrom.map(event.end >= _),
+          optEndTimeTo.map(event.end < _)
         )
       }
 

@@ -1,6 +1,7 @@
 package models.dao
 
 import models.NamedEntity
+import models.assessment.Answer
 import org.scalacheck.Gen
 import testutils.fixture.AnswerFixture
 import testutils.generator.AnswerGenerator
@@ -32,9 +33,9 @@ class AnswerDaoTest extends BaseDaoTest with AnswerFixture with AnswerGenerator 
   "saveAnswer" should {
     "saveAnswer in DB" in {
       forAll(answerFormArb.arbitrary, Gen.oneOf(1L, 2L, 3L, 4L), Gen.listOf(Gen.oneOf(1L, 2L, 3L, 4L))) { (
-      answer,
-      elementId,
-      elementValueIds ) =>
+      answer: Answer.Form,
+      elementId: Long,
+      elementValueIds: Seq[Long]) =>
         val preparedAnswer = answer.copy(
           answers = answer.answers.map(_.copy(elementId = elementId, valuesIds = Some(elementValueIds))),
           form = NamedEntity(1))

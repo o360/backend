@@ -80,7 +80,9 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
           optNotificationFrom = any[Option[Timestamp]],
           optNotificationTo = any[Option[Timestamp]],
           optFormId = any[Option[Long]],
-          optGroupFromIds = eqTo(None)
+          optGroupFromIds = eqTo(None),
+          optEndFrom = any[Option[Timestamp]],
+          optEndTimeTo = any[Option[Timestamp]]
         )(eqTo(ListMeta.default)))
           .thenReturn(toFuture(ListWithTotal(total, events)))
         val result = wait(fixture.service.list(status, projectId)(admin, ListMeta.default).run)
@@ -107,7 +109,9 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
           optNotificationFrom = any[Option[Timestamp]],
           optNotificationTo = any[Option[Timestamp]],
           optFormId = any[Option[Long]],
-          optGroupFromIds = eqTo(Some(userGroups))
+          optGroupFromIds = eqTo(Some(userGroups)),
+          optEndFrom = any[Option[Timestamp]],
+          optEndTimeTo = any[Option[Timestamp]]
         )(eqTo(ListMeta.default)))
           .thenReturn(toFuture(ListWithTotal(total, events)))
         when(fixture.groupDao.findGroupIdsByUserId(user.id)).thenReturn(toFuture(userGroups))

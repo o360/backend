@@ -66,7 +66,9 @@ class AssessmentServiceTest
         optNotificationFrom = any[Option[Timestamp]],
         optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = eqTo(Some(userGroupsIds))
+        optGroupFromIds = eqTo(Some(userGroupsIds)),
+        optEndFrom = any[Option[Timestamp]],
+        optEndTimeTo = any[Option[Timestamp]]
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
 
@@ -110,7 +112,9 @@ class AssessmentServiceTest
         optNotificationFrom = any[Option[Timestamp]],
         optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = eqTo(Some(userGroupsIds))
+        optGroupFromIds = eqTo(Some(userGroupsIds)),
+        optEndFrom = any[Option[Timestamp]],
+        optEndTimeTo = any[Option[Timestamp]]
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal[Event](1, Seq(event))))
 
@@ -124,10 +128,10 @@ class AssessmentServiceTest
       when(fixture.userService.listByGroupId(eqTo(relations(0).groupTo.get.id))(any[ListMeta]))
         .thenReturn(EitherT.eitherT(toFuture(ListWithTotal(1, Seq(assessedUser)).right[ApplicationError])))
 
-      when(fixture.formService.getOrCreateFreezedForm(event.id, relations(0).form.id)(user))
+      when(fixture.formService.getOrCreateFreezedForm(event.id, relations(0).form.id))
         .thenReturn(EitherT.eitherT(toFuture(Forms(0).right[ApplicationError])))
 
-      when(fixture.formService.getOrCreateFreezedForm(event.id, relations(1).form.id)(user))
+      when(fixture.formService.getOrCreateFreezedForm(event.id, relations(1).form.id))
         .thenReturn(EitherT.eitherT(toFuture(Forms(1).right[ApplicationError])))
 
       when(fixture.answerDao.getAnswer(event.id, projectId, user.id, Some(assessedUser.id), Forms(0).id))
@@ -164,7 +168,9 @@ class AssessmentServiceTest
         optNotificationFrom = any[Option[Timestamp]],
         optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = eqTo(Some(userGroupsIds))
+        optGroupFromIds = eqTo(Some(userGroupsIds)),
+        optEndFrom = any[Option[Timestamp]],
+        optEndTimeTo = any[Option[Timestamp]]
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
 
@@ -193,7 +199,9 @@ class AssessmentServiceTest
         optNotificationFrom = any[Option[Timestamp]],
         optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = eqTo(Some(userGroupsIds))
+        optGroupFromIds = eqTo(Some(userGroupsIds)),
+        optEndFrom = any[Option[Timestamp]],
+        optEndTimeTo = any[Option[Timestamp]]
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal(1, Seq(event))))
 

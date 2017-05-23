@@ -119,9 +119,11 @@ class ProjectRelationServiceTest
         optNotificationFrom = any[Option[Timestamp]],
         optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]]
+        optGroupFromIds = any[Option[Seq[Long]]],
+        optEndFrom = any[Option[Timestamp]],
+        optEndTimeTo = any[Option[Timestamp]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
-      when(fixture.formService.getById(relation.form.id)(admin))
+      when(fixture.formService.getById(relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
       val result = wait(fixture.service.create(relation)(admin).run)
 
@@ -141,7 +143,9 @@ class ProjectRelationServiceTest
         optNotificationFrom = any[Option[Timestamp]],
         optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]]
+        optGroupFromIds = any[Option[Seq[Long]]],
+        optEndFrom = any[Option[Timestamp]],
+        optEndTimeTo = any[Option[Timestamp]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](1, Nil)))
       val result = wait(fixture.service.create(relation)(admin).run)
 
@@ -164,9 +168,11 @@ class ProjectRelationServiceTest
         optNotificationFrom = any[Option[Timestamp]],
         optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]]
+        optGroupFromIds = any[Option[Seq[Long]]],
+        optEndFrom = any[Option[Timestamp]],
+        optEndTimeTo = any[Option[Timestamp]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
-      when(fixture.formService.getById(relation.form.id)(admin))
+      when(fixture.formService.getById(relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
       val result = wait(fixture.service.create(relation.copy(id = 0))(admin).run)
 
@@ -189,9 +195,11 @@ class ProjectRelationServiceTest
         optNotificationFrom = any[Option[Timestamp]],
         optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]]
+        optGroupFromIds = any[Option[Seq[Long]]],
+        optEndFrom = any[Option[Timestamp]],
+        optEndTimeTo = any[Option[Timestamp]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
-      when(fixture.formService.getById(relation.form.id)(admin))
+      when(fixture.formService.getById(relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
       val result = wait(fixture.service.create(relation.copy(id = 0))(admin).run)
 
@@ -237,7 +245,9 @@ class ProjectRelationServiceTest
         optNotificationFrom = any[Option[Timestamp]],
         optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]]
+        optGroupFromIds = any[Option[Seq[Long]]],
+        optEndFrom = any[Option[Timestamp]],
+        optEndTimeTo = any[Option[Timestamp]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       val result = wait(fixture.service.update(relation)(admin).run)
 
@@ -261,9 +271,11 @@ class ProjectRelationServiceTest
         optNotificationFrom = any[Option[Timestamp]],
         optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]]
+        optGroupFromIds = any[Option[Seq[Long]]],
+        optEndFrom = any[Option[Timestamp]],
+        optEndTimeTo = any[Option[Timestamp]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
-      when(fixture.formService.getById(relation.form.id)(admin))
+      when(fixture.formService.getById(relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
       val result = wait(fixture.service.update(relation)(admin).run)
 
@@ -284,7 +296,9 @@ class ProjectRelationServiceTest
         optNotificationFrom = any[Option[Timestamp]],
         optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]]
+        optGroupFromIds = any[Option[Seq[Long]]],
+        optEndFrom = any[Option[Timestamp]],
+        optEndTimeTo = any[Option[Timestamp]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](1, Nil)))
       val result = wait(fixture.service.update(relation)(admin).run)
 
@@ -308,9 +322,11 @@ class ProjectRelationServiceTest
         optNotificationFrom = any[Option[Timestamp]],
         optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]]
+        optGroupFromIds = any[Option[Seq[Long]]],
+        optEndFrom = any[Option[Timestamp]],
+        optEndTimeTo = any[Option[Timestamp]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
-      when(fixture.formService.getById(relation.form.id)(admin))
+      when(fixture.formService.getById(relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
       val result = wait(fixture.service.update(relation)(admin).run)
 
@@ -334,9 +350,11 @@ class ProjectRelationServiceTest
         optNotificationFrom = any[Option[Timestamp]],
         optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]]
+        optGroupFromIds = any[Option[Seq[Long]]],
+        optEndFrom = any[Option[Timestamp]],
+        optEndTimeTo = any[Option[Timestamp]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
-      when(fixture.formService.getById(relation.form.id)(admin))
+      when(fixture.formService.getById(relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
       val result = wait(fixture.service.update(relation)(admin).run)
 

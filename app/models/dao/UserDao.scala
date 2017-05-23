@@ -33,6 +33,25 @@ trait UserLoginComponent {
 
   val UserLogins = TableQuery[UserLoginTable]
 }
+/**
+  * Component for user_meta table.
+  */
+trait UserMetaComponent {
+  self: HasDatabaseConfigProvider[JdbcProfile] =>
+
+  import driver.api._
+
+  case class DbUserMeta(userId: Long, gdriveFolderId: Option[String])
+
+  class UserMetaTable(tag: Tag) extends Table[DbUserMeta](tag, "user_meta") {
+    def userId = column[Long]("user_id")
+    def gdriveFolderId = column[Option[String]]("gdrive_folder_id")
+
+    def * = (userId, gdriveFolderId) <> ((DbUserMeta.apply _).tupled, DbUserMeta.unapply)
+  }
+
+  val UserMetas = TableQuery[UserMetaTable]
+}
 
 /**
   * Component for 'account' table.
@@ -96,6 +115,7 @@ class UserDao @Inject()(
   with UserComponent
   with UserLoginComponent
   with UserGroupComponent
+  with UserMetaComponent
   with DaoHelper {
 
   import driver.api._
@@ -203,5 +223,37 @@ class UserDao @Inject()(
     */
   def delete(id: Long): Future[Int] = db.run {
     Users.filter(_.id === id).delete
+  }
+
+  /**
+    * Sets users gdrive folder ID.
+    *
+    * @param userId   ID of user
+    * @param folderId gdrive folder ID
+    */
+  def setGdriveFolderId(userId: Long, folderId: String): Future[String] = {
+    val actions = for {
+      exists <- UserMetas.filter(_.userId === userId).exists.result
+      _ <- if (exists) UserMetas.filter(_.userId === userId).update(DbUserMeta(userId, Some(folderId)))
+      else UserMetas += DbUserMeta(userId, Some(folderId))
+    } yield ()
+
+    db.run(actions.transactionally).map(_ => folderId)
+  }
+
+  /**
+    * Gets users gdrive folder ID.
+    *
+    * @param userId ID of user
+    * @return some folder ID
+    */
+  def getGdriveFolder(userId: Long): Future[Option[String]] = {
+    val query = UserMetas
+      .filter(x => x.userId === userId && x.gdriveFolderId.nonEmpty)
+      .map(_.gdriveFolderId)
+      .result
+      .headOption
+
+    db.run(query).map(_.flatten)
   }
 }

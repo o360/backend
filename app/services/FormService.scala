@@ -40,9 +40,8 @@ class FormService @Inject()(
     * Returns form template with elements or not found error.
     *
     * @param id      form ID
-    * @param account logged in user
     */
-  def getById(id: Long)(implicit account: User): SingleResult = {
+  def getById(id: Long): SingleResult = {
     formDao.findById(id).liftRight {
       NotFoundError.Form(id)
     }
@@ -52,10 +51,9 @@ class FormService @Inject()(
     * Creates form and elements in DB.
     *
     * @param form    form model
-    * @param account logged in user
     * @return created form
     */
-  def create(form: Form)(implicit account: User): SingleResult = {
+  def create(form: Form): SingleResult = {
     for {
       elements <- validateElements(form.elements).lift
       createdForm <- formDao.create(form.toShort).lift
@@ -125,7 +123,7 @@ class FormService @Inject()(
     * @param eventId event ID
     * @param formId  template form ID
     */
-  def getOrCreateFreezedForm(eventId: Long, formId: Long)(implicit account: User): SingleResult = {
+  def getOrCreateFreezedForm(eventId: Long, formId: Long): SingleResult = {
     for {
       freezedFormId <- formDao.getFreezedFormId(eventId, formId).lift
       freezedForm <- freezedFormId match {

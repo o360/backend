@@ -6,14 +6,11 @@ import javax.inject.{Inject, Singleton}
 import akka.actor.Actor
 import play.api.Configuration
 import play.api.libs.concurrent.Execution.Implicits._
-import services.NotificationService
+import services.{NotificationService, UploadService}
 import utils.Logger
-import utils.errors.ApplicationError
 
 import scala.concurrent.Future
 import scala.util.control.NonFatal
-import scala.util.{Failure, Success}
-import scalaz.{-\/, \/}
 
 /**
   * Scheduler actor.
@@ -21,7 +18,8 @@ import scalaz.{-\/, \/}
 @Singleton
 class SchedulerActor @Inject()(
   protected val configuration: Configuration,
-  protected val notificationService: NotificationService
+  protected val notificationService: NotificationService,
+  protected val uploadService: UploadService
 ) extends Actor with Logger {
 
   private val interval = configuration.getMilliseconds("scheduler.interval").get
@@ -33,27 +31,23 @@ class SchedulerActor @Inject()(
       val now = new Timestamp(System.currentTimeMillis)
       val from = new Timestamp(now.getTime - interval)
 
-      try {
-        notificationService.sendEventsNotifications(from, now).onFailure {
-          case e => log.error("scheduler", e)
-        }
-      } catch {
-        case NonFatal(e) =>
-          log.error("scheduler", e)
-      }
+      logFutureError(notificationService.sendEventsNotifications(from, now))
+
+      logFutureError(uploadReports(from, now))
+  }
+
+  private def logFutureError(f: Future[_]) = f.onFailure {
+    case NonFatal(e) => log.error("scheduler", e)
   }
 
   /**
-    * Logs error if future failed.
+    * Generates reports and uploads them to google drive.
     */
-  private def logError(result: Future[ApplicationError \/ _]): Unit = {
-    result.onComplete {
-      case Success(-\/(error)) =>
-        log.error(s"scheduler [${error.getCode}] ${error.getMessage}; ${error.getLogMessage}")
-      case Failure(e) =>
-        log.error("scheduler", e)
-      case _ =>
-    }
+  private def uploadReports(from: Timestamp, to: Timestamp) = {
+    for {
+      uploadModels <- uploadService.getGroupedUploadModels(from, to)
+      _ <- uploadService.upload(uploadModels)
+    } yield ()
   }
 }
 

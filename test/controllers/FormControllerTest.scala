@@ -45,7 +45,7 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
       forAll { (id: Long) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.formServiceMock.getById(id)(admin))
+        when(fixture.formServiceMock.getById(id))
           .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Form(id)): ApplicationError \/ Form)))
         val request = authenticated(FakeRequest(), env)
 
@@ -58,7 +58,7 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
       forAll { (id: Long, form: Form) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.formServiceMock.getById(id)(admin))
+        when(fixture.formServiceMock.getById(id))
           .thenReturn(EitherT.eitherT(toFuture(\/-(form): ApplicationError \/ Form)))
         val request = authenticated(FakeRequest(), env)
 
@@ -138,7 +138,7 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
       forAll { (form: Form) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.formServiceMock.create(form.copy(kind = Form.Kind.Active))(admin))
+        when(fixture.formServiceMock.create(form.copy(kind = Form.Kind.Active)))
           .thenReturn(EitherT.eitherT(toFuture(\/-(form): ApplicationError \/ Form)))
 
         val apiForm = ApiPartialForm(
@@ -188,7 +188,7 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
       forAll { (id: Long) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.formServiceMock.getById(id)(admin))
+        when(fixture.formServiceMock.getById(id))
           .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Form(id)): ApplicationError \/ Form)))
 
         val request = authenticated(FakeRequest(), env)
@@ -202,9 +202,9 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
       forAll { (id: Long, form: Form) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.formServiceMock.getById(id)(admin))
+        when(fixture.formServiceMock.getById(id))
           .thenReturn(EitherT.eitherT(toFuture(\/-(form.copy(id = id)): ApplicationError \/ Form)))
-        when(fixture.formServiceMock.create(form.copy(id = 0))(admin))
+        when(fixture.formServiceMock.create(form.copy(id = 0)))
           .thenReturn(EitherT.eitherT(toFuture(\/-(form): ApplicationError \/ Form)))
         val request = authenticated(FakeRequest(), env)
 

@@ -34,7 +34,7 @@ class ReportService @Inject()(
     * @param eventId   ID of event
     * @param projectId ID of project
     */
-  def getReport(eventId: Long, projectId: Long)(implicit account: User): Future[Seq[Report]] = {
+  def getReport(eventId: Long, projectId: Long): Future[Seq[Report]] = {
     log.trace("getting report")
 
     /**
@@ -49,26 +49,9 @@ class ReportService @Inject()(
         * Map from groupId to sequence of group users.
         */
       val getGroupToUsersMap: Future[Map[Long, Seq[User]]] = {
-
-        def getUsersListOrNil(groupId: Long) = {
-          userService
-            .listByGroupId(groupId)
-            .map(_.data)
-            .run
-            .map { maybeUsers =>
-              val users = maybeUsers.getOrElse(Nil)
-              (groupId, users)
-            }
-        }
-
         val allGroups = (relations.map(_.groupFrom.id) ++ relations.flatMap(_.groupTo.map(_.id))).distinct
         log.trace(s"\tcreating GroupToUsersMap, allGroups = $allGroups")
-        futureSeqToMap {
-          allGroups.map { groupId =>
-            log.trace(s"\t\tgetting users of group $groupId")
-            getUsersListOrNil(groupId)
-          }
-        }
+        userService.getGroupIdToUsersMap(allGroups)
       }
 
       /**
