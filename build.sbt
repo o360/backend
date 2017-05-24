@@ -14,6 +14,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-mailer" % "5.0.0",
   "org.davidbild" %% "tristate-play" % "0.2.0",
   "org.scalaz" %% "scalaz-core" % "7.2.10",
+  "com.google.apis" % "google-api-services-sheets" % "v4-rev473-1.22.0",
     filters
 )
 

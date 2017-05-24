@@ -1,6 +1,7 @@
 package models.assessment
 
 import models.NamedEntity
+import models.form.{Form => FormTemplate}
 
 /**
   * Answers.
@@ -29,6 +30,22 @@ object Answer {
     elementId: Long,
     text: Option[String],
     valuesIds: Option[Seq[Long]]
-  )
+  ) {
 
+    /**
+      * Returns answer as text.
+      *
+      * @param element associated element
+      */
+    def getText(element: FormTemplate.Element): String = {
+      import FormTemplate.ElementKind._
+      element.kind match {
+        case TextArea | TextField | Checkbox => text.getOrElse("")
+        case CheckboxGroup | Radio | Select =>
+          def findCaption(id: Long) = element.values.find(_.id == id).map(_.caption)
+
+          valuesIds.map(_.map(findCaption).mkString(", ")).getOrElse("")
+      }
+    }
+  }
 }
