@@ -98,6 +98,7 @@ class AssessmentService @Inject()(
               users.map((_, relation))
             }
             .groupBy { case (user, _) => user }
+            .filterKeys(_.id != account.id)
             .map { case (user, relationsWithUsers) =>
               val forms = relationsWithUsers
                 .map { case (_, relation) => relation.form }
@@ -265,6 +266,10 @@ class AssessmentService @Inject()(
       existedAnswer <- answerDao.getAnswer(eventId, projectId, account.id, userToId, answer.form.id).lift
       _ <- ensure(existedAnswer.isEmpty || event.canRevote) {
         ConflictError.Assessment.CantRevote
+      }
+
+      _ <- ensure(!assessment.user.map(_.id).contains(account.id)) {
+        BadRequestError.Assessment.SelfVoting
       }
 
       form <- formService.getById(answer.form.id)

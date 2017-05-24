@@ -33,26 +33,37 @@ class SpreadsheetService @Inject()() {
       * Returns rows with aggregated report.
       */
     val aggregationRows: Seq[RowData] = {
-      val formElementIds = forms.flatMap(x => x.elements.map(_.id))
 
-      val answers = aggregatedReports.map { report =>
-        val userCell = textCell(report.assessedUser.flatMap(_.name).getOrElse(""))
+      def getRows(reports: Seq[AggregatedReport], rowForms: Seq[Form], userCellValue: String = "") = {
+        val formElementIds = rowForms.flatMap(x => x.elements.map(_.id))
+        reports.map { report =>
+          val userCell = textCell(report.assessedUser.flatMap(_.name).getOrElse(userCellValue))
 
-        val elementIdToAnswer: Map[Long, String] = {
-          for {
-            form <- report.forms
-            answer <- form.answers
-          } yield (answer.element.id, answer.aggregationResult)
-        }.toMap
+          val elementIdToAnswer: Map[Long, String] = {
+            for {
+              form <- report.forms
+              answer <- form.answers
+            } yield (answer.element.id, answer.aggregationResult)
+          }.toMap
 
-        val answersCells = formElementIds.map(elementId => textCell(elementIdToAnswer.getOrElse(elementId, "")))
+          val answersCells = formElementIds.map(elementId => textCell(elementIdToAnswer.getOrElse(elementId, "")))
 
-        row(userCell +: answersCells)
+          row(userCell +: answersCells)
+        }
       }
+
+      val userForms = aggregatedReports.filter(_.assessedUser.nonEmpty).flatMap(_.forms).map(_.form).distinct
+      val surveyForms = aggregatedReports.filter(_.assessedUser.isEmpty).flatMap(_.forms).map(_.form).distinct
+
+      val toUsersAnswers = getRows(aggregatedReports.filter(_.assessedUser.nonEmpty), userForms)
+      val surveyAnswers = getRows(aggregatedReports.filter(_.assessedUser.isEmpty), surveyForms, "SURVEY")
 
       val header = row(Seq(textCell("Aggregated result", bold = true)))
 
-      (header +: emptyRow +: getFormHeader(forms)) ++ answers
+      val toUserRows = (header +: emptyRow +: getFormHeader(userForms)) ++ toUsersAnswers
+      val surveyRows = (row(Seq(textCell("SURVEY", bold = true))) +: getFormHeader(surveyForms)) ++ surveyAnswers
+
+      (toUserRows :+ emptyRow) ++ surveyRows
     }
 
     /**
@@ -65,8 +76,12 @@ class SpreadsheetService @Inject()() {
         *
         * @param report single report
         */
-      def getManyToOneSection(report: Report) = {
-        val toUserRow = row(Seq(textCell(report.assessedUser.flatMap(_.name).getOrElse(""))))
+      def getManyToOneSection(report: Report, userCellValue: String = "") = {
+        val toUserRow = row(Seq(textCell(
+          text = report.assessedUser.flatMap(_.name).getOrElse(userCellValue),
+          bold = true,
+          highlight = true
+        )))
 
         val answers: Seq[(Long, User, String)] = for {
           form <- report.forms
@@ -94,17 +109,25 @@ class SpreadsheetService @Inject()() {
 
       val header = row(Seq(textCell("Many to one result", bold = true)))
 
-      header +: reports.flatMap { report =>
+      val toUserSections = reports.filter(_.assessedUser.nonEmpty).flatMap { report =>
         emptyRow +: getManyToOneSection(report)
       }
+
+      val surveySections = reports.filter(_.assessedUser.isEmpty).flatMap { report =>
+        emptyRow +: getManyToOneSection(report, "SURVEY")
+      }
+
+      (header +: toUserSections) ++ (emptyRow +: surveySections)
     }
 
     new BatchUpdateSpreadsheetRequest()
       .setRequests(Seq(
         addSheetRequest(1, "Aggregation"),
         updateCellsRequest(1, aggregationRows),
+        freezeFirstColumnRequest(1),
         addSheetRequest(2, "Many-One"),
         updateCellsRequest(2, manyToOneRows),
+        freezeFirstColumnRequest(2),
         deleteSheetRequest(0) // removes default sheet
       ))
   }
@@ -120,7 +143,10 @@ class SpreadsheetService @Inject()() {
     * @param text cell value
     * @param bold set to bold
     */
-  private def textCell(text: String, bold: Boolean = false) = {
+  private def textCell(text: String, bold: Boolean = false, highlight: Boolean = false) = {
+    val paleBlue = new Color().setRed(111F / 255).setGreen(168F / 255).setBlue(220F / 255)
+    val white = new Color().setRed(1F).setGreen(1F).setBlue(1F)
+
     val cell = new CellData()
       .setUserEnteredValue(
         new ExtendedValue()
@@ -133,6 +159,7 @@ class SpreadsheetService @Inject()() {
             new TextFormat()
               .setBold(true)
           )
+          .setBackgroundColor(if (highlight) paleBlue else white)
       )
     }
     cell
@@ -157,7 +184,7 @@ class SpreadsheetService @Inject()() {
     */
   private def getFormHeader(forms: Seq[Form]) = {
     val formHeaderCells = emptyCell +: forms.filter(_.elements.nonEmpty).flatMap { form =>
-      textCell(form.name, bold = true) +: form.elements.indices.map(_ => emptyCell)
+      textCell(form.name, bold = true) +: form.elements.indices.drop(1).map(_ => emptyCell)
     }
     val answerHeaderCells = textCell("Name", bold = true) +: forms.flatMap { form =>
       form.elements.map(x => textCell(x.caption, bold = true))
@@ -191,6 +218,26 @@ class SpreadsheetService @Inject()() {
   }
 
   /**
+    * Freeze first column for sheetID.
+    *
+    * @param sheetId ID of sheet
+    */
+  private def freezeFirstColumnRequest(sheetId: Int) = {
+    new Request()
+      .setUpdateSheetProperties(
+        new UpdateSheetPropertiesRequest()
+          .setFields("gridProperties.frozenColumnCount")
+          .setProperties(
+            new SheetProperties()
+              .setGridProperties(
+                new GridProperties()
+                  .setFrozenColumnCount(1)
+              )
+          )
+      )
+  }
+
+  /**
     * Updates cells in sheet.
     *
     * @param sheetId sheet ID
@@ -203,7 +250,7 @@ class SpreadsheetService @Inject()() {
       new UpdateCellsRequest()
         .setStart(startCoord)
         .setRows(rows)
-        .setFields("userEnteredValue,userEnteredFormat.textFormat.bold")
+        .setFields("userEnteredValue,userEnteredFormat.textFormat.bold,userEnteredFormat.backgroundColor")
     )
   }
 }

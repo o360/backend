@@ -206,7 +206,8 @@ class ReportService @Inject()(
       */
     def aggregateAnswersCount(answers: Seq[Answer.Element]) = {
       val total = answers.length
-      s"total: $total"
+      if (total > 0) s"total: $total"
+      else ""
     }
 
     /**

@@ -43,5 +43,7 @@ object BadRequestError {
     case class InvalidForm(message: String) extends BadRequestError("BAD-REQUEST-ASSESSMENT-1", message)
 
     case object RequiredAnswersMissed extends BadRequestError("BAD-REQUEST-ASSESSMENT-2", "Required answers missed")
+
+    case object SelfVoting extends BadRequestError("BAD-REQUEST-ASSESSMENT-3", "Self voting forbidden")
   }
 }
