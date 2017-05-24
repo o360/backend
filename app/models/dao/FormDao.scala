@@ -279,7 +279,7 @@ class FormDao @Inject()(
     for {
       _ <- Future.sequence(results)
       form <- findById(formId)
-    } yield form.get.elements
+    } yield form.getOrElse(throw new NoSuchElementException("form not found")).elements
   }
 
   /**

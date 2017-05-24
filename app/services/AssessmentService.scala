@@ -82,7 +82,7 @@ class AssessmentService @Inject()(
         */
       def getUsersForRelation(relation: Relation): Future[Seq[User]] = {
         userService
-          .listByGroupId(relation.groupTo.get.id)
+          .listByGroupId(relation.groupTo.getOrElse(throw new NoSuchElementException("group to not defined")).id)
           .map(_.data)
           .run
           .map(_.getOrElse(Nil))
