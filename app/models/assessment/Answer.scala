@@ -44,7 +44,12 @@ object Answer {
         case CheckboxGroup | Radio | Select =>
           def findCaption(id: Long) = element.values.find(_.id == id).map(_.caption)
 
-          valuesIds.map(_.map(findCaption).mkString(", ")).getOrElse("")
+          valuesIds
+            .map(_
+              .map(findCaption)
+              .collect { case Some(v) => v }
+              .mkString(", ")
+            ).getOrElse("")
       }
     }
   }

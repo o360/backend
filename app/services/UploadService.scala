@@ -78,8 +78,19 @@ class UploadService @Inject()(
             reports <- reportService.getReport(event.id, project.id)
             forms <- getForms(relations.data, event.id)
           } yield {
-            val aggregatedReports = reports.map(reportService.getAggregatedReport)
-            val batchUpdate = spreadsheetService.getBatchUpdateRequest(reports, aggregatedReports, forms)
+            val sortedReports = reports.sortWith{ (left, right) =>
+              val leftName = left.assessedUser.flatMap(_.name)
+              val rightName = right.assessedUser.flatMap(_.name)
+              (leftName, rightName) match {
+                case (None, None) => false
+                case (Some(l), Some(r)) => l > r
+                case (Some(_), None) => true
+                case (None, Some(_)) => false
+              }
+            }
+
+            val aggregatedReports = sortedReports.map(reportService.getAggregatedReport)
+            val batchUpdate = spreadsheetService.getBatchUpdateRequest(sortedReports, aggregatedReports, forms)
             UploadModel(event, project, batchUpdate)
           }
         }
