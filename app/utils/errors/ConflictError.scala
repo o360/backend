@@ -26,6 +26,8 @@ object ConflictError {
   object User {
     case class GroupExists(id: Long)
       extends ConflictError("CONFLICT-USER-1", s"Can't delete user id:$id. Group with this user exists")
+
+    case object Unapproved extends ConflictError("CONFLICT-USER-2", "Can't add unapproved user to group")
   }
 
   object Form {
