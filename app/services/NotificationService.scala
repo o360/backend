@@ -108,12 +108,13 @@ class NotificationService @Inject()(
       respondentGroupIds: Seq[Long]
     ) = {
       templateDao.findById(templateBinding.template.id).flatMap { emailTemplate =>
+        val template = emailTemplate.getOrElse(throw new NoSuchElementException("email template not found"))
         templateBinding.recipient match {
           case Notification.Recipient.Auditor =>
-            sendToUsersInGroup(auditorGroupId, emailTemplate.get)
+            sendToUsersInGroup(auditorGroupId, template)
           case Notification.Recipient.Respondent =>
             Future.sequence {
-              respondentGroupIds.map(sendToUsersInGroup(_, emailTemplate.get))
+              respondentGroupIds.map(sendToUsersInGroup(_, template))
             }
         }
       }

@@ -34,10 +34,13 @@ class MailService @Inject()(
     to: User,
     text: String
   ) = {
+    val name = to.name.getOrElse(throw new NoSuchElementException(s"name not defined, id ${to.id}"))
+    val address = to.email.getOrElse(throw new NoSuchElementException(s"email not defined, id ${to.id}"))
+
     val email = Email(
       subject,
       sendFromEmail,
-      Seq(s"${to.name.get} <${to.email.get}>"),
+      Seq(s"$name <$address>"),
       bodyHtml = Some(text)
     )
     try {

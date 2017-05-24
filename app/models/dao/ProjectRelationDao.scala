@@ -202,7 +202,7 @@ class ProjectRelationDao @Inject()(
         relationId <- Relations.returning(Relations.map(_.id)) += DbRelation.fromModel(model)
         _ <- DBIO.seq(RelationTemplates ++= model.templates.map(DbTemplateBinding.fromModel(_, relationId)))
       } yield relationId).transactionally
-    }.flatMap(findById(_).map(_.get))
+    }.flatMap(findById(_).map(_.getOrElse(throw new NoSuchElementException("relation not found"))))
   }
 
   /**
@@ -217,7 +217,7 @@ class ProjectRelationDao @Inject()(
         _ <- RelationTemplates.filter(_.relationId === model.id).delete
         _ <- DBIO.seq(RelationTemplates ++= model.templates.map(DbTemplateBinding.fromModel(_, model.id)))
       } yield ()).transactionally
-    }.flatMap(_ => findById(model.id).map(_.get))
+    }.flatMap(_ => findById(model.id).map(_.getOrElse(throw new NoSuchElementException("relation not found"))))
   }
 
   /**

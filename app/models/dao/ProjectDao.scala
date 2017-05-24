@@ -162,7 +162,8 @@ class ProjectDao @Inject()(
       _ <- DBIO.seq(ProjectTemplates ++= project.templates.map(DbTemplateBinding.fromModel(_, projectId)))
     } yield projectId
 
-    db.run(action.transactionally).flatMap(findById(_).map(_.get))
+    db.run(action.transactionally)
+      .flatMap(findById(_).map(_.getOrElse(throw new NoSuchElementException("project not found"))))
   }
 
   /**
@@ -178,7 +179,8 @@ class ProjectDao @Inject()(
       _ <- DBIO.seq(ProjectTemplates ++= project.templates.map(DbTemplateBinding.fromModel(_, project.id)))
     } yield ()
 
-    db.run(action.transactionally).flatMap(_ => findById(project.id).map(_.get))
+    db.run(action.transactionally)
+      .flatMap(_ => findById(project.id).map(_.getOrElse(throw new NoSuchElementException("project not found"))))
   }
 
   /**
