@@ -7,7 +7,7 @@ import org.mockito.ArgumentMatchers.{eq => eqTo}
 import org.mockito.Mockito._
 import testutils.fixture.{UserFixture, UserGroupFixture}
 import testutils.generator.TristateGenerator
-import utils.errors.{ApplicationError, NotFoundError}
+import utils.errors.{ApplicationError, ConflictError, NotFoundError}
 
 import scalaz.{-\/, EitherT, \/, \/-}
 
@@ -57,6 +57,21 @@ class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with U
         result mustBe 'left
         result.swap.toOption.get mustBe a[NotFoundError]
       }
+    }
+
+    "return error if user is unapproved" in {
+        forAll { (groupId: Long, userId: Long) =>
+          val fixture = getFixture
+          when(fixture.userServiceMock.getById(userId)(admin))
+            .thenReturn(EitherT.eitherT(toFuture(\/-(admin.copy(status = User.Status.New)):  ApplicationError \/ User)))
+          when(fixture.groupServiceMock.getById(groupId)(admin))
+            .thenReturn(EitherT.eitherT(toFuture(\/-(Groups(0)):  ApplicationError \/ Group)))
+
+          val result = wait(fixture.service.add(groupId, userId)(admin).run)
+
+          result mustBe 'left
+          result.swap.toOption.get mustBe a[ConflictError]
+        }
     }
 
     "not add if user already in group" in {
@@ -119,6 +134,21 @@ class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with U
 
         result mustBe 'left
         result.swap.toOption.get mustBe a[NotFoundError]
+      }
+    }
+
+    "return error if user is unapproved" in {
+      forAll { (groupId: Long, userId: Long) =>
+        val fixture = getFixture
+        when(fixture.userServiceMock.getById(userId)(admin))
+          .thenReturn(EitherT.eitherT(toFuture(\/-(admin.copy(status = User.Status.New)):  ApplicationError \/ User)))
+        when(fixture.groupServiceMock.getById(groupId)(admin))
+          .thenReturn(EitherT.eitherT(toFuture(\/-(Groups(0)):  ApplicationError \/ Group)))
+
+        val result = wait(fixture.service.remove(groupId, userId)(admin).run)
+
+        result mustBe 'left
+        result.swap.toOption.get mustBe a[ConflictError]
       }
     }
 

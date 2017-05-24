@@ -4,6 +4,7 @@ import javax.inject.{Inject, Singleton}
 
 import models.dao.UserGroupDao
 import models.user.User
+import utils.errors.ConflictError
 import utils.implicits.FutureLifting._
 
 import scalaz.Scalaz._
@@ -28,7 +29,12 @@ class UserGroupService @Inject()(
     */
   private def validateUserGroup(groupId: Long, userId: Long)(implicit account: User): UnitResult = {
     for {
-      _ <- userService.getById(userId)
+      user <- userService.getById(userId)
+
+      _ <- ensure(user.status == User.Status.Approved) {
+        ConflictError.User.Unapproved
+      }
+
       _ <- groupService.getById(groupId)
     } yield ()
   }
