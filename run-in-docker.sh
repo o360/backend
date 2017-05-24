@@ -17,6 +17,11 @@ echo "ENVIRONMENT VARIABLES ARE UNSET"
 exit 1
 fi
 
+if [ ! -f drive_service_key.json ]; then
+echo "drive_service_key.json NOT FOUND"
+exit 1
+fi
+
 sbt clean coverage test
 sbt coverageReport
 sbt flywayMigrate
@@ -37,4 +42,6 @@ docker run -d --name private-bw-assessment-api --restart=always -p 9000:9000 \
     -e MAIL_USER=${MAIL_USER} \
     -e MAIL_PASSWORD=${MAIL_PASSWORD} \
     -e MAIL_SEND_FROM=${MAIL_SEND_FROM} \
+    -e SCHEDULER_ENABLED=true \
+    -v $(pwd)/drive_service_key.json:/opt/docker/conf/drive_service_key.json \
     bw-assessment/api:latest

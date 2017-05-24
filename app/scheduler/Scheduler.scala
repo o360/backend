@@ -19,15 +19,15 @@ class Scheduler @Inject()(
   protected val environment: Environment
 ) {
 
-  environment.mode match {
-    case Mode.Test => ()
-    case _ =>
-      val interval = configuration.getMilliseconds("scheduler.interval").get
-      val cancellable = system.scheduler.schedule(
-        0.milliseconds,
-        interval.milliseconds,
-        schedulerActor,
-        SchedulerActor.Tick
-      )
+  private val isEnabled = configuration.getBoolean("scheduler.enabled")
+
+  if (isEnabled.contains(true)) {
+    val interval = configuration.getMilliseconds("scheduler.interval").get
+    val cancellable = system.scheduler.schedule(
+      0.milliseconds,
+      interval.milliseconds,
+      schedulerActor,
+      SchedulerActor.Tick
+    )
   }
 }

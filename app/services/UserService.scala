@@ -130,4 +130,23 @@ class UserService @Inject()(
       _ <- userDao.delete(id).lift
     } yield ()
   }
+
+  /**
+    * Returns group to users map.
+    *
+    * @param groupIds IDS of the groups to get users for
+    */
+  def getGroupIdToUsersMap(groupIds: Seq[Long]): Future[Map[Long, Seq[UserModel]]] = {
+    Future.sequence {
+      groupIds.map { groupId =>
+        listByGroupId(groupId)
+          .map(_.data)
+          .run
+          .map { maybeUsers =>
+            val users = maybeUsers.getOrElse(Nil)
+            (groupId, users)
+          }
+      }
+    }.map(_.toMap)
+  }
 }

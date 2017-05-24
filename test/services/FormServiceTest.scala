@@ -38,7 +38,7 @@ class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixtur
       forAll { (id: Long) =>
         val fixture = getFixture
         when(fixture.formDaoMock.findById(id)).thenReturn(toFuture(None))
-        val result = wait(fixture.service.getById(id)(admin).run)
+        val result = wait(fixture.service.getById(id).run)
 
         result mustBe 'left
         result.swap.toOption.get mustBe a[NotFoundError]
@@ -52,7 +52,7 @@ class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixtur
       forAll { (form: Form, id: Long) =>
         val fixture = getFixture
         when(fixture.formDaoMock.findById(id)).thenReturn(toFuture(Some(form)))
-        val result = wait(fixture.service.getById(id)(admin).run)
+        val result = wait(fixture.service.getById(id).run)
 
         result mustBe 'right
         result.toOption.get mustBe form
@@ -85,7 +85,7 @@ class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixtur
       val form = Forms(0).copy(elements = Seq(Form.Element(1, Form.ElementKind.Radio, "", false, Nil)))
 
       val fixture = getFixture
-      val result = wait(fixture.service.create(form)(admin).run)
+      val result = wait(fixture.service.create(form).run)
 
       result mustBe 'left
       result.swap.toOption.get mustBe a[ConflictError]
@@ -98,7 +98,7 @@ class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixtur
       when(fixture.formDaoMock.createElements(eqTo(form.id), any[Seq[Form.Element]]))
         .thenReturn(toFuture(form.elements))
 
-      val result = wait(fixture.service.create(form)(admin).run)
+      val result = wait(fixture.service.create(form).run)
 
       result mustBe 'right
       result.toOption.get mustBe form
@@ -131,7 +131,9 @@ class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixtur
         optNotificationFrom = any[Option[Timestamp]],
         optNotificationTo = any[Option[Timestamp]],
         optFormId = eqTo(Some(form.id)),
-        optGroupFromIds = any[Option[Seq[Long]]]
+        optGroupFromIds = any[Option[Seq[Long]]],
+        optEndFrom = any[Option[Timestamp]],
+        optEndTimeTo = any[Option[Timestamp]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
 
       val result = wait(fixture.service.update(form)(admin).run)
@@ -156,7 +158,9 @@ class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixtur
         optNotificationFrom = any[Option[Timestamp]],
         optNotificationTo = any[Option[Timestamp]],
         optFormId = eqTo(Some(form.id)),
-        optGroupFromIds = any[Option[Seq[Long]]]
+        optGroupFromIds = any[Option[Seq[Long]]],
+        optEndFrom = any[Option[Timestamp]],
+        optEndTimeTo = any[Option[Timestamp]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       when(fixture.formDaoMock.getList(
         optKind = eqTo(Some(Form.Kind.Freezed)),

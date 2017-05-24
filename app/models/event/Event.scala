@@ -3,6 +3,7 @@ package models.event
 import java.sql.Timestamp
 
 import models.notification.Notification
+import utils.TimestampFormatter
 
 /**
   * Event model.
@@ -31,6 +32,12 @@ case class Event(
     if (currentTime.before(start)) Event.Status.NotStarted
     else if (currentTime.before(end)) Event.Status.InProgress
     else Event.Status.Completed
+
+  /**
+    * Event text representation.
+    */
+  val caption = s"Event ${description.map(_ + " ").getOrElse("")}" +
+    s"(${TimestampFormatter.format(start)} - ${TimestampFormatter.format(end)})"
 }
 
 object Event {

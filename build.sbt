@@ -15,6 +15,7 @@ libraryDependencies ++= Seq(
   "org.davidbild" %% "tristate-play" % "0.2.0",
   "org.scalaz" %% "scalaz-core" % "7.2.10",
   "com.google.apis" % "google-api-services-sheets" % "v4-rev473-1.22.0",
+  "com.google.apis" % "google-api-services-drive" % "v3-rev74-1.22.0",
     filters
 )
 
