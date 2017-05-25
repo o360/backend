@@ -3,7 +3,7 @@ package services
 import javax.inject.{Inject, Singleton}
 
 import models.assessment.Answer
-import models.dao.{AnswerDao, EventDao, ProjectRelationDao}
+import models.dao.{AnswerDao, ProjectRelationDao}
 import models.form.Form
 import models.project.Relation
 import models.report._
@@ -22,7 +22,6 @@ import scala.concurrent.Future
 @Singleton
 class ReportService @Inject()(
   userService: UserService,
-  eventDao: EventDao,
   relationDao: ProjectRelationDao,
   formService: FormService,
   answerDao: AnswerDao
@@ -65,8 +64,10 @@ class ReportService @Inject()(
             log.trace(s"\t\tgetting freezed form for template $templateId")
             formService.getOrCreateFreezedForm(eventId, templateId)
               .run
-              .map(_.getOrElse(throw new NoSuchElementException("missed form")))
-              .map((templateId, _))
+              .map { maybeForm =>
+                val form = maybeForm.getOrElse(throw new NoSuchElementException("missed form"))
+                (templateId, form)
+              }
           }
         }
       }
