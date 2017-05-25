@@ -215,4 +215,64 @@ class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixtur
       }
     }
   }
+
+  "getOrCreateFreezedForm" should {
+    "return error if cant get form by id" in {
+      val fixture = getFixture
+
+      val eventId = 1
+      val templateFormId = 2
+      val freezedFormId = 3L
+
+      when(fixture.formDaoMock.getFreezedFormId(eventId, templateFormId))
+        .thenReturn(toFuture(Some(freezedFormId)))
+      when(fixture.formDaoMock.findById(freezedFormId)).thenReturn(toFuture(None))
+      val resultOne = wait(fixture.service.getOrCreateFreezedForm(eventId, templateFormId).run)
+
+      val resultTwo = wait(fixture.service.getOrCreateFreezedForm(eventId, templateFormId).run)
+
+
+      resultOne mustBe 'left
+      resultTwo mustBe 'left
+    }
+
+    "only return form if already exists" in {
+      val fixture = getFixture
+
+      val eventId = 1
+      val templateFormId = 2
+      val freezedForm = Forms(0).copy(id = 3)
+
+      when(fixture.formDaoMock.getFreezedFormId(eventId, templateFormId))
+        .thenReturn(toFuture(Some(freezedForm.id)))
+      when(fixture.formDaoMock.findById(freezedForm.id)).thenReturn(toFuture(Some(freezedForm)))
+      val result = wait(fixture.service.getOrCreateFreezedForm(eventId, templateFormId).run)
+
+      result mustBe 'right
+      result.toOption.get mustBe freezedForm
+    }
+
+    "create form if not exists before" in {
+      val fixture = getFixture
+
+      val eventId = 1
+      val templateForm = Forms(0).copy(id = 2)
+      val freezedForm = Forms(1).copy(id = 3, elements = templateForm.elements)
+
+      when(fixture.formDaoMock.getFreezedFormId(eventId, templateForm.id))
+        .thenReturn(toFuture(None))
+      when(fixture.formDaoMock.findById(templateForm.id))
+        .thenReturn(toFuture(Some(templateForm)))
+      when(fixture.formDaoMock.create(templateForm.toShort.copy(kind = Form.Kind.Freezed)))
+        .thenReturn(toFuture(freezedForm.toShort))
+      when(fixture.formDaoMock.createElements(freezedForm.id, freezedForm.elements))
+        .thenReturn(toFuture(freezedForm.elements))
+      when(fixture.formDaoMock.setFreezedFormId(eventId, templateForm.id, freezedForm.id))
+        .thenReturn(toFuture(()))
+      val result = wait(fixture.service.getOrCreateFreezedForm(eventId, templateForm.id).run)
+
+      result mustBe 'right
+      result.toOption.get mustBe freezedForm
+    }
+  }
 }

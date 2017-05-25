@@ -298,4 +298,40 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
       }
     }
   }
+
+  "getGroupIdToUserMap" should {
+    "return group-users map" in {
+      val fixture = getFixture
+
+      val groupIds = Seq(1L, 2L)
+      val firstGroupChild = Seq(3L, 4L)
+      val secondGroupChild = Seq(5L, 6L)
+
+      val usersOfFirstGroup = Seq(Users(0), Users(1))
+      val usersOfSecondGroup = Seq(Users(1), Users(2))
+
+      when(fixture.groupDaoMock.findChildrenIds(1))
+        .thenReturn(toFuture(firstGroupChild))
+      when(fixture.groupDaoMock.findChildrenIds(2))
+        .thenReturn(toFuture(secondGroupChild))
+
+      when(fixture.userDaoMock.getList(
+        optId = any[Option[Long]],
+        optRole = any[Option[UserModel.Role]],
+        optStatus = any[Option[UserModel.Status]],
+        optGroupIds = eqTo(Tristate.Present(firstGroupChild :+ 1L))
+      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(2, usersOfFirstGroup)))
+      when(fixture.userDaoMock.getList(
+        optId = any[Option[Long]],
+        optRole = any[Option[UserModel.Role]],
+        optStatus = any[Option[UserModel.Status]],
+        optGroupIds = eqTo(Tristate.Present(secondGroupChild :+ 2L))
+      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(2, usersOfSecondGroup)))
+
+      val result = wait(fixture.service.getGroupIdToUsersMap(groupIds))
+      val expectedResult = Map(1L -> usersOfFirstGroup, 2L -> usersOfSecondGroup)
+
+      result mustBe expectedResult
+    }
+  }
 }
