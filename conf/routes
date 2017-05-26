@@ -769,7 +769,7 @@ GET           /events/:id                           controllers.EventController.
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /events                               controllers.EventController.getList(status: Option[controllers.api.event.ApiEvent.EventStatus], projectId: Option[Long])
+GET           /events                               controllers.EventController.getList(status: Option[controllers.api.event.ApiEvent.EventStatus], projectId: Option[Long], onlyAvailable: Boolean ?= false)
 
 ###
 # summary: Creates event
