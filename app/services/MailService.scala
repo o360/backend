@@ -4,9 +4,8 @@ import javax.inject.{Inject, Singleton}
 
 import models.user.User
 import org.apache.commons.mail.EmailException
-import play.api.Configuration
 import play.api.libs.mailer.{Email, MailerClient}
-import utils.Logger
+import utils.{Config, Logger}
 
 /**
   * Mail service.
@@ -14,13 +13,13 @@ import utils.Logger
 @Singleton
 class MailService @Inject()(
   protected val mailerClient: MailerClient,
-  protected val configuration: Configuration
+  protected val config: Config
 ) extends Logger {
 
   /**
     * Sender address.
     */
-  private def sendFromEmail = configuration.getString("play.mailer.from").get
+  private def sendFromEmail = config.mailerSettings.sendFrom
 
   /**
     * Sends email.
