@@ -91,7 +91,41 @@ trait UserComponent {
     }
   )
 
-  class UserTable(tag: Tag) extends Table[User](tag, "account") {
+  /**
+    * Database user model.
+    */
+  case class DbUser(
+    id: Long,
+    name: Option[String],
+    email: Option[String],
+    gender: Option[User.Gender],
+    role: User.Role,
+    status: User.Status,
+    isDeleted: Boolean
+  ) {
+    def toModel = User(
+      id,
+      name,
+      email,
+      gender,
+      role,
+      status
+    )
+  }
+
+  object DbUser {
+    def fromModel(user: User) = DbUser(
+      user.id,
+      user.name,
+      user.email,
+      user.gender,
+      user.role,
+      user.status,
+      isDeleted = false
+    )
+  }
+
+  class UserTable(tag: Tag) extends Table[DbUser](tag, "account") {
 
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def name = column[Option[String]]("name")
@@ -99,8 +133,9 @@ trait UserComponent {
     def gender = column[Option[User.Gender]]("gender")
     def role = column[User.Role]("role")
     def status = column[User.Status]("status")
+    def isDeleted = column[Boolean]("is_deleted")
 
-    def * = (id, name, email, gender, role, status) <> ((User.apply _).tupled, User.unapply)
+    def * = (id, name, email, gender, role, status, isDeleted) <> ((DbUser.apply _).tupled, DbUser.unapply)
   }
 
   val Users = TableQuery[UserTable]
@@ -142,7 +177,8 @@ class UserDao @Inject()(
     optRole: Option[User.Role] = None,
     optStatus: Option[User.Status] = None,
     optGroupIds: Tristate[Seq[Long]] = Tristate.Unspecified,
-    optName: Option[String] = None
+    optName: Option[String] = None,
+    includeDeleted: Boolean = false
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[User]] = {
 
     def filterGroup(user: UserTable) = optGroupIds match {
@@ -157,6 +193,8 @@ class UserDao @Inject()(
       user.name.fold(false: Rep[Boolean])(_.like(s"%$escapedName%"))
     }
 
+    def deletedFilter(user: UserTable) = if (includeDeleted) None else Some(!user.isDeleted)
+
     val query = Users
       .applyFilter { x =>
         Seq(
@@ -164,7 +202,8 @@ class UserDao @Inject()(
           optRole.map(x.role === _),
           optStatus.map(x.status === _),
           filterGroup(x),
-          filterName(x)
+          filterName(x),
+          deletedFilter(x)
         )
       }
 
@@ -177,7 +216,7 @@ class UserDao @Inject()(
         case 'status => user.status
         case 'gender => user.gender
       }
-    }
+    }.map { case ListWithTotal(total, data) => ListWithTotal(total, data.map(_.toModel)) }
   }
 
   /**
@@ -197,6 +236,7 @@ class UserDao @Inject()(
       }
       .result
       .headOption
+      .map(_.map(_.toModel))
   }
 
   /**
@@ -208,7 +248,7 @@ class UserDao @Inject()(
     */
   def create(user: User, providerId: String, providerKey: String): Future[User] = {
     for {
-      userId <- db.run(Users.returning(Users.map(_.id)) += user)
+      userId <- db.run(Users.returning(Users.map(_.id)) += DbUser.fromModel(user))
       _ <- db.run(UserLogins += DbUserLogin(userId, providerId, providerKey))
     } yield user.copy(id = userId)
   }
@@ -220,17 +260,20 @@ class UserDao @Inject()(
     * @return number of rows affected.
     */
   def update(user: User): Future[User] = {
-    db.run(Users.filter(_.id === user.id).update(user)).map(_ => user)
+    db.run(Users.filter(_.id === user.id).update(DbUser.fromModel(user))).map(_ => user)
   }
 
   /**
-    * Deletes user.
+    * Deletes login info and marks user as deleted.
     *
     * @param id user ID
-    * @return number of rows affected
     */
-  def delete(id: Long): Future[Int] = db.run {
-    Users.filter(_.id === id).delete
+  def delete(id: Long): Future[Unit] = {
+    val actions = for {
+      _ <- Users.filter(_.id === id).map(_.isDeleted).update(true)
+      _ <- UserLogins.filter(_.userId === id).delete
+    } yield ()
+    db.run(actions.transactionally)
   }
 
   /**

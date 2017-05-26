@@ -165,7 +165,8 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
           optRole = eqTo(role),
           optStatus = eqTo(status),
           optGroupIds = eqTo(groupId.map(Seq(_))),
-          optName = eqTo(name)
+          optName = eqTo(name),
+          includeDeleted = any[Boolean]
         )(eqTo(ListMeta.default)))
           .thenReturn(toFuture(ListWithTotal(total, users)))
         val result = wait(fixture.service.list(role, status, groupId, name)(admin, ListMeta.default).run)
@@ -181,6 +182,7 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
       forAll { (
       groupId: Long,
       childGroups: Seq[Long],
+      includeDeleted: Boolean,
       users: Seq[UserModel],
       total: Int
       ) =>
@@ -191,10 +193,11 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
           optRole = any[Option[UserModel.Role]],
           optStatus = any[Option[UserModel.Status]],
           optGroupIds = eqTo(Tristate.Present(childGroups :+ groupId)),
-          optName = any[Option[String]]
+          optName = any[Option[String]],
+          includeDeleted = eqTo(includeDeleted)
         )(eqTo(ListMeta.default))).thenReturn(toFuture(ListWithTotal(total, users)))
 
-        val result = wait(fixture.service.listByGroupId(groupId).run)
+        val result = wait(fixture.service.listByGroupId(groupId, includeDeleted).run)
 
         result mustBe 'isRight
         result.toOption.get mustBe ListWithTotal(total, users)
@@ -290,7 +293,7 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
         val fixture = getFixture
         when(fixture.userDaoMock.findById(id)).thenReturn(toFuture(Some(user.copy(id = id))))
         when(fixture.userGroupDaoMock.exists(groupId = any[Option[Long]], userId = eqTo(Some(id)))).thenReturn(toFuture(false))
-        when(fixture.userDaoMock.delete(id)).thenReturn(toFuture(1))
+        when(fixture.userDaoMock.delete(id)).thenReturn(toFuture(()))
         val result = wait(fixture.service.delete(id)(admin).run)
 
         result mustBe 'isRight
@@ -312,6 +315,7 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
 
       val usersOfFirstGroup = Seq(Users(0), Users(1))
       val usersOfSecondGroup = Seq(Users(1), Users(2))
+      val includeDeleted = true
 
       when(fixture.groupDaoMock.findChildrenIds(1))
         .thenReturn(toFuture(firstGroupChild))
@@ -323,17 +327,19 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
         optRole = any[Option[UserModel.Role]],
         optStatus = any[Option[UserModel.Status]],
         optGroupIds = eqTo(Tristate.Present(firstGroupChild :+ 1L)),
-        optName = any[Option[String]]
+        optName = any[Option[String]],
+        includeDeleted = eqTo(includeDeleted)
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(2, usersOfFirstGroup)))
       when(fixture.userDaoMock.getList(
         optId = any[Option[Long]],
         optRole = any[Option[UserModel.Role]],
         optStatus = any[Option[UserModel.Status]],
         optGroupIds = eqTo(Tristate.Present(secondGroupChild :+ 2L)),
-        optName = any[Option[String]]
+        optName = any[Option[String]],
+        includeDeleted = eqTo(includeDeleted)
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(2, usersOfSecondGroup)))
 
-      val result = wait(fixture.service.getGroupIdToUsersMap(groupIds))
+      val result = wait(fixture.service.getGroupIdToUsersMap(groupIds, includeDeleted = true))
       val expectedResult = Map(1L -> usersOfFirstGroup, 2L -> usersOfSecondGroup)
 
       result mustBe expectedResult

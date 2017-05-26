@@ -89,11 +89,11 @@ class UserService @Inject()(
   /**
     * Returns users list by group ID including users of all child groups.
     */
-  def listByGroupId(groupId: Long)(implicit meta: ListMeta = ListMeta.default): ListResult = {
+  def listByGroupId(groupId: Long, includeDeleted: Boolean)(implicit meta: ListMeta = ListMeta.default): ListResult = {
     for {
       childGroups <- groupDao.findChildrenIds(groupId).lift
       allGroups = childGroups :+ groupId
-      result <- userDao.getList(optGroupIds = Tristate.Present(allGroups)).lift
+      result <- userDao.getList(optGroupIds = Tristate.Present(allGroups), includeDeleted = includeDeleted).lift
     } yield result
   }
 
@@ -139,10 +139,10 @@ class UserService @Inject()(
     *
     * @param groupIds IDS of the groups to get users for
     */
-  def getGroupIdToUsersMap(groupIds: Seq[Long]): Future[Map[Long, Seq[UserModel]]] = {
+  def getGroupIdToUsersMap(groupIds: Seq[Long], includeDeleted: Boolean): Future[Map[Long, Seq[UserModel]]] = {
     Future.sequence {
       groupIds.map { groupId =>
-        listByGroupId(groupId)
+        listByGroupId(groupId, includeDeleted)
           .map(_.data)
           .run
           .map { maybeUsers =>

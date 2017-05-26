@@ -71,7 +71,7 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
         optKind = any[Option[Relation.Kind]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Seq(relation))))
 
-      when(fixture.userService.getGroupIdToUsersMap(Seq(groupFromId, groupToId)))
+      when(fixture.userService.getGroupIdToUsersMap(Seq(groupFromId, groupToId), true))
         .thenReturn(toFuture(Map(groupFromId -> Seq(userFrom), groupToId -> Seq(userTo))))
 
       when(fixture.formService.getOrCreateFreezedForm(eventId, formTemplateId))

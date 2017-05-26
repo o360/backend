@@ -107,7 +107,7 @@ class UploadService @Inject()(
         */
       val getGroupToUsersMap: Future[Map[Long, Seq[User]]] = {
         val allGroups = uploadModels.map(_.project.groupAuditor.id).distinct
-        userService.getGroupIdToUsersMap(allGroups)
+        userService.getGroupIdToUsersMap(allGroups, includeDeleted = false)
       }
 
       getGroupToUsersMap.map { groupToUsersMap =>

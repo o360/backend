@@ -50,7 +50,7 @@ class ReportService @Inject()(
       val getGroupToUsersMap: Future[Map[Long, Seq[User]]] = {
         val allGroups = (relations.map(_.groupFrom.id) ++ relations.flatMap(_.groupTo.map(_.id))).distinct
         log.trace(s"\tcreating GroupToUsersMap, allGroups = $allGroups")
-        userService.getGroupIdToUsersMap(allGroups)
+        userService.getGroupIdToUsersMap(allGroups, includeDeleted = true)
       }
 
       /**

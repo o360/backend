@@ -127,7 +127,7 @@ class AssessmentServiceTest
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal(2, relations)))
 
-      when(fixture.userService.listByGroupId(eqTo(relations(0).groupTo.get.id))(any[ListMeta]))
+      when(fixture.userService.listByGroupId(eqTo(relations(0).groupTo.get.id), eqTo(false))(any[ListMeta]))
         .thenReturn(EitherT.eitherT(toFuture(ListWithTotal(1, Seq(assessedUser)).right[ApplicationError])))
 
       when(fixture.formService.getOrCreateFreezedForm(event.id, relations(0).form.id))
