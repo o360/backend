@@ -46,6 +46,14 @@ class UserDaoTest
         users.data must contain theSameElementsAs expectedUsers
       }
     }
+
+    "return users filtered by name" in {
+      val searchByName = "nam"
+      val users = wait(dao.getList(optName = Some(searchByName)))
+      val expectedUsers = Users.filter(_.name.exists(_.contains(searchByName)))
+
+      users.data must contain theSameElementsAs expectedUsers
+    }
   }
 
   "findById" should {

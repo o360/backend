@@ -155,6 +155,7 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
       role: Option[UserModel.Role],
       status: Option[UserModel.Status],
       groupId: Tristate[Long],
+      name: Option[String],
       users: Seq[UserModel],
       total: Int
       ) =>
@@ -163,10 +164,11 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
           optId = any[Option[Long]],
           optRole = eqTo(role),
           optStatus = eqTo(status),
-          optGroupIds = eqTo(groupId.map(Seq(_)))
+          optGroupIds = eqTo(groupId.map(Seq(_))),
+          optName = eqTo(name)
         )(eqTo(ListMeta.default)))
           .thenReturn(toFuture(ListWithTotal(total, users)))
-        val result = wait(fixture.service.list(role, status, groupId)(admin, ListMeta.default).run)
+        val result = wait(fixture.service.list(role, status, groupId, name)(admin, ListMeta.default).run)
 
         result mustBe 'isRight
         result.toOption.get mustBe ListWithTotal(total, users)
@@ -188,7 +190,8 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
           optId = any[Option[Long]],
           optRole = any[Option[UserModel.Role]],
           optStatus = any[Option[UserModel.Status]],
-          optGroupIds = eqTo(Tristate.Present(childGroups :+ groupId))
+          optGroupIds = eqTo(Tristate.Present(childGroups :+ groupId)),
+          optName = any[Option[String]]
         )(eqTo(ListMeta.default))).thenReturn(toFuture(ListWithTotal(total, users)))
 
         val result = wait(fixture.service.listByGroupId(groupId).run)
@@ -319,13 +322,15 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
         optId = any[Option[Long]],
         optRole = any[Option[UserModel.Role]],
         optStatus = any[Option[UserModel.Status]],
-        optGroupIds = eqTo(Tristate.Present(firstGroupChild :+ 1L))
+        optGroupIds = eqTo(Tristate.Present(firstGroupChild :+ 1L)),
+        optName = any[Option[String]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(2, usersOfFirstGroup)))
       when(fixture.userDaoMock.getList(
         optId = any[Option[Long]],
         optRole = any[Option[UserModel.Role]],
         optStatus = any[Option[UserModel.Status]],
-        optGroupIds = eqTo(Tristate.Present(secondGroupChild :+ 2L))
+        optGroupIds = eqTo(Tristate.Present(secondGroupChild :+ 2L)),
+        optName = any[Option[String]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(2, usersOfSecondGroup)))
 
       val result = wait(fixture.service.getGroupIdToUsersMap(groupIds))

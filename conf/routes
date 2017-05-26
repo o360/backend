@@ -117,7 +117,7 @@ GET           /users/:id                            controllers.UserController.g
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /users                                controllers.UserController.getList(role: Option[controllers.api.user.ApiUser.ApiRole], status: Option[controllers.api.user.ApiUser.ApiStatus], groupId: org.davidbild.tristate.Tristate[Long])
+GET           /users                                controllers.UserController.getList(role: Option[controllers.api.user.ApiUser.ApiRole], status: Option[controllers.api.user.ApiUser.ApiStatus], groupId: org.davidbild.tristate.Tristate[Long], name: Option[String])
 
 ###
 # summary: Updates user
