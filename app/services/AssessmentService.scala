@@ -82,7 +82,7 @@ class AssessmentService @Inject()(
         */
       def getUsersForRelation(relation: Relation): Future[Seq[User]] = {
         userService
-          .listByGroupId(relation.groupTo.getOrElse(throw new NoSuchElementException("group to not defined")).id)
+          .listByGroupId(relation.groupTo.getOrElse(throw new NoSuchElementException("group to is not defined")).id)
           .map(_.data)
           .run
           .map(_.getOrElse(Nil))
@@ -182,43 +182,6 @@ class AssessmentService @Inject()(
     val answer = assessment.forms.headOption.getOrElse(throw new NoSuchElementException("missed form in assessment"))
 
     /**
-      * Validates form. Returns none in case of success.
-      */
-    def validateForm(form: Form): Option[ApplicationError] = {
-
-      def validateElementAnswer(answerElement: Answer.Element): Option[ApplicationError] = {
-        form.elements.find(_.id == answerElement.elementId) match {
-          case Some(formElement) =>
-            lazy val answerIsText = answerElement.text.isDefined
-            lazy val answerIsValues = answerElement.valuesIds.isDefined
-            lazy val needValues = formElement.kind.needValues
-            lazy val answerValuesMatchFormValues =
-              answerElement.valuesIds.getOrElse(Nil).toSet.subsetOf(formElement.values.map(_.id).toSet)
-
-            if (needValues && answerIsText) Some(invalidForm("Values element contains text answer"))
-            else if (!needValues && answerIsValues) Some(invalidForm("Text element contains values answer"))
-            else if (needValues && !answerValuesMatchFormValues) Some(invalidForm("Values answer contains unknown valueId"))
-            else if (!needValues && !answerIsText) Some(invalidForm("Text answer is missed"))
-            else None
-          case None => Some(invalidForm("Unknown answer elementId"))
-        }
-      }
-
-      lazy val answerElementsIds = answer.answers.map(_.elementId)
-      lazy val elementAnswersAreDistinct = answerElementsIds.size == answer.answers.size
-      lazy val allRequiredElementsAreAnswered = form.elements.filter(_.required).forall(x => answerElementsIds.contains(x.id))
-      lazy val maybeElementValidationError = answer.answers.toSeq.map(validateElementAnswer).fold(None) {
-        case (err@Some(_), _) => err
-        case (None, maybeError) => maybeError
-      }
-
-      if (!elementAnswersAreDistinct) Some(invalidForm("Duplicate elementId in answers"))
-      else if (!allRequiredElementsAreAnswered) Some(BadRequestError.Assessment.RequiredAnswersMissed)
-      else if (maybeElementValidationError.nonEmpty) maybeElementValidationError
-      else None
-    }
-
-    /**
       * Checks ability of user to submit assessment with given user and form IDs.
       */
     def validateAssessment(userGroups: Seq[Long]): EitherT[Future, ApplicationError, Unit] = {
@@ -273,7 +236,7 @@ class AssessmentService @Inject()(
       }
 
       form <- formService.getById(answer.form.id)
-      _ <- validateForm(form).liftLeft
+      _ <- answer.validateUsing(form)(invalidForm, BadRequestError.Assessment.RequiredAnswersMissed).liftLeft
 
       _ <- if (existedAnswer.isEmpty) validateAssessment(userGroups) else ().lift
 

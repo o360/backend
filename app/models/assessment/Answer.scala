@@ -16,7 +16,44 @@ object Answer {
   case class Form(
     form: NamedEntity,
     answers: Set[Element]
-  )
+  ) {
+
+    /**
+      * Validates form. Returns none in case of success.
+      */
+    def validateUsing[V](form: FormTemplate)(invalidForm: String => V, requiredAnswerMissed: V): Option[V] = {
+      def validateElementAnswer(answerElement: Answer.Element): Option[V] = {
+        form.elements.find(_.id == answerElement.elementId) match {
+          case Some(formElement) =>
+            lazy val answerIsText = answerElement.text.isDefined
+            lazy val answerIsValues = answerElement.valuesIds.isDefined
+            lazy val needValues = formElement.kind.needValues
+            lazy val answerValuesMatchFormValues =
+              answerElement.valuesIds.getOrElse(Nil).toSet.subsetOf(formElement.values.map(_.id).toSet)
+
+            if (needValues && answerIsText) Some(invalidForm("Values element contains text answer"))
+            else if (!needValues && answerIsValues) Some(invalidForm("Text element contains values answer"))
+            else if (needValues && !answerValuesMatchFormValues) Some(invalidForm("Values answer contains unknown valueId"))
+            else if (!needValues && !answerIsText) Some(invalidForm("Text answer is missed"))
+            else None
+          case None => Some(invalidForm("Unknown answer elementId"))
+        }
+      }
+
+      lazy val answerElementsIds = answers.map(_.elementId)
+      lazy val elementAnswersAreDistinct = answerElementsIds.size == answers.size
+      lazy val allRequiredElementsAreAnswered = form.elements.filter(_.required).forall(x => answerElementsIds.contains(x.id))
+      lazy val maybeElementValidationError = answers.toSeq.map(validateElementAnswer).fold(None) {
+        case (err@Some(_), _) => err
+        case (None, maybeError) => maybeError
+      }
+
+      if (!elementAnswersAreDistinct) Some(invalidForm("Duplicate elementId in answers"))
+      else if (!allRequiredElementsAreAnswered) Some(requiredAnswerMissed)
+      else if (maybeElementValidationError.nonEmpty) maybeElementValidationError
+      else None
+    }
+  }
 
 
   /**

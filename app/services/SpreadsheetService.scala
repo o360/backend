@@ -46,7 +46,9 @@ class SpreadsheetService @Inject()() {
             } yield (answer.element.id, answer.aggregationResult)
           }.toMap
 
-          val answersCells = formElementIds.map(elementId => textCell(elementIdToAnswer.getOrElse(elementId, "")))
+          val answersCells = formElementIds.map { elementId =>
+            textCell(elementIdToAnswer.getOrElse(elementId, ""))
+          }
 
           row(userCell +: answersCells)
         }

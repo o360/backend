@@ -39,7 +39,7 @@ object ApiFormAnswer {
   object ElementAnswer {
     implicit val answerElementReads: Reads[ElementAnswer] = (
       (__ \ "elementId").read[Long] and
-        (__ \ "text").readNullable[String](maxLength(16384)) and
+        (__ \ "text").readNullable[String] and
         (__ \ "valuesIds").readNullable[Seq[Long]]
       ) (ElementAnswer(_, _, _))
 
