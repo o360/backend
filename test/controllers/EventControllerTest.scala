@@ -74,17 +74,18 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
     "return events list from service" in {
       forAll { (
       projectId: Option[Long],
-        optStatus: Option[Event.Status],
+      optStatus: Option[Event.Status],
+      onlyAvailable: Boolean,
       total: Int,
       events: Seq[Event]
       ) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.eventServiceMock.list(optStatus, projectId)(admin, ListMeta.default))
+        when(fixture.eventServiceMock.list(optStatus, projectId, onlyAvailable)(admin, ListMeta.default))
           .thenReturn(EitherT.eitherT(toFuture(\/-(ListWithTotal(total, events)): ApplicationError \/ ListWithTotal[Event])))
         val request = authenticated(FakeRequest(), env)
 
-        val response = fixture.controller.getList(optStatus.map(ApiEvent.EventStatus(_)), projectId)(request)
+        val response = fixture.controller.getList(optStatus.map(ApiEvent.EventStatus(_)), projectId, onlyAvailable)(request)
 
         status(response) mustBe OK
         val eventsJson = contentAsJson(response)

@@ -39,11 +39,12 @@ class EventController @Inject()(
     */
   def getList(
     status: Option[ApiEvent.EventStatus],
-    projectId: Option[Long]
+    projectId: Option[Long],
+    onlyAvailable: Boolean
   ) = (silhouette.SecuredAction(AllowedStatus.approved) andThen ListAction).async { implicit request =>
     toResult(Ok) {
       eventService
-        .list(status.map(_.value), projectId)
+        .list(status.map(_.value), projectId, onlyAvailable)
         .map { events =>
           Response.List(events) {
             event => ApiEvent(event)

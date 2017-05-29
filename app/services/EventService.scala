@@ -33,15 +33,19 @@ class EventService @Inject()(
   /**
     * Returns events list filtered by given criteria.
     *
+    * @param status        event status
+    * @param projectId     event containing project ID
+    * @param onlyAvailable only events user has access to
     */
   def list(
     status: Option[Event.Status],
-    projectId: Option[Long]
+    projectId: Option[Long],
+    onlyAvailable: Boolean = false
   )(implicit account: User, meta: ListMeta): ListResult = {
 
     val groupFromFilter = account.role match {
-      case User.Role.Admin => None.toFuture
-      case User.Role.User => groupDao.findGroupIdsByUserId(account.id).map(Some(_))
+      case User.Role.Admin if !onlyAvailable => None.toFuture
+      case _ => groupDao.findGroupIdsByUserId(account.id).map(Some(_))
     }
 
     for {
