@@ -78,7 +78,8 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
         when(fixture.projectDaoMock.getList(
           optId = any[Option[Long]],
           optEventId = eqTo(eventId),
-          optGroupFromIds = any[Option[Seq[Long]]]
+          optGroupFromIds = any[Option[Seq[Long]]],
+          optFormId = any[Option[Long]]
         )(eqTo(ListMeta.default)))
           .thenReturn(toFuture(ListWithTotal(total, projects)))
         val result = wait(fixture.service.getList(eventId)(admin, ListMeta.default).run)
@@ -100,7 +101,8 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
         when(fixture.projectDaoMock.getList(
           optId = any[Option[Long]],
           optEventId = eqTo(eventId),
-          optGroupFromIds = eqTo(Some(userGroups))
+          optGroupFromIds = eqTo(Some(userGroups)),
+          optFormId = any[Option[Long]]
         )(eqTo(ListMeta.default)))
           .thenReturn(toFuture(ListWithTotal(total, projects)))
         when(fixture.groupDao.findGroupIdsByUserId(user.id)).thenReturn(toFuture(userGroups))

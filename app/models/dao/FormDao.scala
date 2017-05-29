@@ -27,13 +27,39 @@ trait FormComponent {
     }
   )
 
-  class FormTable(tag: Tag) extends Table[FormShort](tag, "form") {
+  /**
+    * Form DB model.
+    */
+  case class DbForm(
+    id: Long,
+    name: String,
+    kind: Form.Kind,
+    isDeleted: Boolean
+  ) {
+    def toModel = FormShort(
+      id,
+      name,
+      kind
+    )
+  }
+
+  object DbForm {
+    def fromModel(form: FormShort) = DbForm(
+      form.id,
+      form.name,
+      form.kind,
+      isDeleted = false
+    )
+  }
+
+  class FormTable(tag: Tag) extends Table[DbForm](tag, "form") {
 
     def id = column[Long]("id", O.AutoInc, O.PrimaryKey)
     def name = column[String]("name")
     def kind = column[Form.Kind]("kind")
+    def isDeleted = column[Boolean]("is_deleted")
 
-    def * = (id, name, kind) <> ((FormShort.apply _).tupled, FormShort.unapply)
+    def * = (id, name, kind, isDeleted) <> ((DbForm.apply _).tupled, DbForm.unapply)
   }
 
   val Forms = TableQuery[FormTable]
@@ -179,15 +205,20 @@ class FormDao @Inject()(
     */
   def getList(
     optKind: Option[Form.Kind] = None,
-    optFormTemplateId: Option[Long] = None
+    optFormTemplateId: Option[Long] = None,
+    includeDeleted: Boolean = false
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[FormShort]] = {
+
+    def deletedFilter(form: FormTable) = if (includeDeleted) None else Some(!form.isDeleted)
+
     val query = Forms
       .applyFilter { form =>
         Seq(
           optKind.map(form.kind === _),
           optFormTemplateId.map { formTemplateId =>
             form.id in EventFormMappings.filter(_.formTemplateId === formTemplateId).map(_.formFreezedId)
-          }
+          },
+          deletedFilter(form)
         )
       }
 
@@ -196,7 +227,7 @@ class FormDao @Inject()(
         case 'id => form.id
         case 'name => form.name
       }
-    }
+    }.map { case ListWithTotal(total, data) => ListWithTotal(total, data.map(_.toModel)) }
   }
 
   /**
@@ -206,7 +237,7 @@ class FormDao @Inject()(
     * @return created form model with ID
     */
   def create(form: FormShort): Future[FormShort] = {
-    db.run(Forms.returning(Forms.map(_.id)).into((item, id) => item.copy(id = id)) += form)
+    db.run(Forms.returning(Forms.map(_.id)).into((item, id) => item.copy(id = id).toModel) += DbForm.fromModel(form))
   }
 
   /**
@@ -214,7 +245,7 @@ class FormDao @Inject()(
     */
   def findById(id: Long): Future[Option[Form]] = {
     val query = Forms
-      .filter(_.id === id)
+      .filter(form => form.id === id && !form.isDeleted)
       .joinLeft {
         FormElements
           .joinLeft(FormElementValues)
@@ -240,7 +271,7 @@ class FormDao @Inject()(
 
             element.toModel(values)
           }
-        form.toModel(elements)
+        form.toModel.withElements(elements)
       }
     }
   }
@@ -289,7 +320,7 @@ class FormDao @Inject()(
     * @return number of rows affected
     */
   def delete(id: Long): Future[Int] = db.run {
-    Forms.filter(_.id === id).delete
+    Forms.filter(_.id === id).map(_.isDeleted).update(true)
   }
 
   /**
@@ -308,7 +339,7 @@ class FormDao @Inject()(
     * @return updated form
     */
   def update(form: FormShort): Future[FormShort] = db.run {
-    Forms.filter(_.id === form.id).update(form)
+    Forms.filter(_.id === form.id).update(DbForm.fromModel(form))
   }.map(_ => form)
 
   /**

@@ -14,7 +14,7 @@ case class FormShort(
     *
     * @param elements form elements
     */
-  def toModel(elements: Seq[Form.Element]) = Form(
+  def withElements(elements: Seq[Form.Element]) = Form(
     id,
     name,
     elements,

@@ -42,6 +42,6 @@ trait FormGenerator {
     for {
       form <- Arbitrary.arbitrary[FormShort]
       elements <- Arbitrary.arbitrary[Seq[Form.Element]]
-    } yield form.toModel(elements)
+    } yield form.withElements(elements)
   }
 }
