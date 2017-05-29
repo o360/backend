@@ -43,11 +43,12 @@ class UserController @Inject()(
   def getList(
     role: Option[ApiUser.ApiRole],
     status: Option[ApiUser.ApiStatus],
-    groupId: Tristate[Long]
+    groupId: Tristate[Long],
+    name: Option[String]
   ) = (silhouette.SecuredAction(AllowedRole.admin) andThen ListAction).async { implicit request =>
     toResult(Ok) {
       userService
-        .list(role.map(_.value), status.map(_.value), groupId)
+        .list(role.map(_.value), status.map(_.value), groupId, name)
         .map {
           users => Response.List(users) {
             user => ApiUser(user)

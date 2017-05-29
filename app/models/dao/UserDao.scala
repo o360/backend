@@ -135,12 +135,14 @@ class UserDao @Inject()(
     * @param optRole     user role
     * @param optStatus   user status
     * @param optGroupIds only users of the groups
+    * @param optName     name containing string
     */
   def getList(
     optId: Option[Long] = None,
     optRole: Option[User.Role] = None,
     optStatus: Option[User.Status] = None,
-    optGroupIds: Tristate[Seq[Long]] = Tristate.Unspecified
+    optGroupIds: Tristate[Seq[Long]] = Tristate.Unspecified,
+    optName: Option[String] = None
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[User]] = {
 
     def filterGroup(user: UserTable) = optGroupIds match {
@@ -150,13 +152,19 @@ class UserDao @Inject()(
         Some(user.id in UserGroups.filter(_.groupId inSet groupIds.distinct).map(_.userId))
     }
 
+    def filterName(user: UserTable) = optName.map { name =>
+      val escapedName = name.replace("%", "\\%") // postgres specific % escape
+      user.name.fold(false: Rep[Boolean])(_.like(s"%$escapedName%"))
+    }
+
     val query = Users
       .applyFilter { x =>
         Seq(
           optId.map(x.id === _),
           optRole.map(x.role === _),
           optStatus.map(x.status === _),
-          filterGroup(x)
+          filterGroup(x),
+          filterName(x)
         )
       }
 

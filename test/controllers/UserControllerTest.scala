@@ -76,17 +76,18 @@ class UserControllerTest extends BaseControllerTest with UserGenerator with Tris
       role: Option[User.Role],
       st: Option[User.Status],
       groupId: Tristate[Long],
+      name: Option[String],
       total: Int,
       users: Seq[User]
       ) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.userServiceMock.list(role, st, groupId)(admin, ListMeta.default))
+        when(fixture.userServiceMock.list(role, st, groupId, name)(admin, ListMeta.default))
           .thenReturn(EitherT.eitherT(toFuture(\/-(ListWithTotal(total, users)): ApplicationError \/ ListWithTotal[User])))
         val request = authenticated(FakeRequest(), env)
 
         val response = fixture.controller
-          .getList(role.map(ApiUser.ApiRole(_)), st.map(ApiUser.ApiStatus(_)), groupId)(request)
+          .getList(role.map(ApiUser.ApiRole(_)), st.map(ApiUser.ApiStatus(_)), groupId, name)(request)
 
         status(response) mustBe OK
         val usersJson = contentAsJson(response)
@@ -100,7 +101,7 @@ class UserControllerTest extends BaseControllerTest with UserGenerator with Tris
       val env = fakeEnvironment(admin.copy(role = User.Role.User))
       val fixture = getFixture(env)
       val request = authenticated(FakeRequest(), env)
-      val response = fixture.controller.getList(None, None, Tristate.Unspecified).apply(request)
+      val response = fixture.controller.getList(None, None, Tristate.Unspecified, None).apply(request)
 
       status(response) mustBe FORBIDDEN
     }

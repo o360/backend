@@ -68,18 +68,21 @@ class UserService @Inject()(
     * @param status  status filter
     * @param account logged in user
     * @param groupId only users of the group
+    * @param name    part of user name
     * @param meta    list meta
     */
   def list(
     role: Option[UserModel.Role],
     status: Option[UserModel.Status],
-    groupId: Tristate[Long]
+    groupId: Tristate[Long],
+    name: Option[String]
   )(implicit account: UserModel, meta: ListMeta): ListResult = {
     userDao.getList(
       optId = None,
       optRole = role,
       optStatus = status,
-      optGroupIds = groupId.map(Seq(_))
+      optGroupIds = groupId.map(Seq(_)),
+      optName = name
     ).lift
   }
 
