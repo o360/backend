@@ -3,9 +3,10 @@ package controllers
 import com.mohiva.play.silhouette.api.Silhouette
 import com.mohiva.play.silhouette.test.FakeEnvironment
 import controllers.api.Response
-import controllers.api.assessment.ApiAssessment
-import models.ListWithTotal
-import models.assessment.Assessment
+import controllers.api.assessment.{ApiAssessment, ApiPartialAssessment, ApiPartialFormAnswer}
+import models.{ListWithTotal, NamedEntity}
+import models.assessment.{Answer, Assessment}
+import models.user.UserShort
 import org.mockito.Mockito._
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
@@ -59,6 +60,29 @@ class AssessmentControllerTest extends BaseControllerTest {
         Response.List(Response.Meta(total, ListMeta.default), assessments.map(ApiAssessment(_)))
       )
       assessmentsJson mustBe expectedJson
+    }
+  }
+
+  "POST /assessments" should {
+    "submit answers" in {
+      val env = fakeEnvironment(admin)
+      val fixture = getFixture(env)
+
+      val assessment = Assessment(Some(UserShort(1)), Seq(Answer.Form(NamedEntity(1), Set())))
+      when(fixture.assessmentServiceMock.submit(1, 2, assessment)(admin))
+        .thenReturn(EitherT.eitherT(toFuture(\/-(()): ApplicationError \/ Unit)))
+
+      val partialAssessment = ApiPartialAssessment(Some(1), ApiPartialFormAnswer(1, Seq()))
+
+      val request = authenticated(
+        FakeRequest("POST", "/assessments")
+          .withBody[ApiPartialAssessment](partialAssessment)
+          .withHeaders(CONTENT_TYPE -> "application/json"),
+        env
+      )
+
+      val response = fixture.controller.submit(1, 2).apply(request)
+      status(response) mustBe NO_CONTENT
     }
   }
 }
