@@ -3,11 +3,11 @@ package services
 import javax.inject.{Inject, Singleton}
 
 import models.ListWithTotal
-import models.dao.{EventDao, FormDao}
+import models.dao.{EventDao, FormDao, GroupDao}
 import models.event.Event
 import models.form.{Form, FormShort}
 import models.user.User
-import utils.errors.{ApplicationError, ConflictError, ExceptionHandler, NotFoundError}
+import utils.errors._
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
 
@@ -22,7 +22,8 @@ import play.api.libs.concurrent.Execution.Implicits._
 @Singleton
 class FormService @Inject()(
   protected val formDao: FormDao,
-  protected val eventDao: EventDao
+  protected val eventDao: EventDao,
+  protected val groupDao: GroupDao
 ) extends ServiceResults[Form] {
 
 
@@ -42,9 +43,40 @@ class FormService @Inject()(
     * @param id      form ID
     */
   def getById(id: Long): SingleResult = {
-    formDao.findById(id).liftRight {
-      NotFoundError.Form(id)
-    }
+    for {
+      form <- formDao.findById(id).liftRight {
+        NotFoundError.Form(id)
+      }
+    } yield form
+  }
+
+  /**
+    * Returns form by ID for user.
+    */
+  def userGetById(
+    formId: Long,
+    projectId: Long,
+    eventId: Long
+  )(implicit account: User): SingleResult = {
+    for {
+      form <- getById(formId)
+
+      userGroups <- groupDao.findGroupIdsByUserId(account.id).lift
+      events <- eventDao.getList(
+        optId = Some(eventId),
+        optProjectId = Some(projectId),
+        optGroupFromIds = Some(userGroups)
+      ).lift
+      _ <- ensure(events.total == 1) {
+        AuthorizationError.Form(formId)
+      }
+
+      event = events.data.head
+      maybeEventId <- formDao.getEventIdByFreezedForm(formId).lift
+      _ <- ensure(maybeEventId.contains(event.id)) {
+        AuthorizationError.Form(formId)
+      }
+    } yield form
   }
 
   /**

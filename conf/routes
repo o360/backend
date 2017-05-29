@@ -327,7 +327,28 @@ POST          /groups/:groupId/users/:userId        controllers.UserGroupControl
 DELETE        /groups/:groupId/users/:userId        controllers.UserGroupController.remove(groupId: Long, userId: Long)
 
 ###
-# summary: Returns form template with elements by ID
+# summary: Returns form template with elements by ID for user
+# tags:
+#   - Form template
+#   - Assessment
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.form.ApiForm'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET           /forms/user/:id                        controllers.FormController.userGetById(id: Long, projectId: Long, eventId: Long)
+
+###
+# summary: Returns form template with elements by ID for admin
 # tags:
 #   - Form template
 # responses:
