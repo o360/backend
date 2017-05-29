@@ -7,7 +7,7 @@ import akka.actor.Actor
 import play.api.Configuration
 import play.api.libs.concurrent.Execution.Implicits._
 import services.{NotificationService, UploadService}
-import utils.Logger
+import utils.{Config, Logger}
 
 import scala.concurrent.Future
 import scala.util.control.NonFatal
@@ -17,12 +17,12 @@ import scala.util.control.NonFatal
   */
 @Singleton
 class SchedulerActor @Inject()(
-  protected val configuration: Configuration,
+  protected val config: Config,
   protected val notificationService: NotificationService,
   protected val uploadService: UploadService
 ) extends Actor with Logger {
 
-  private val interval = configuration.getMilliseconds("scheduler.interval").get
+  private val interval = config.schedulerSettings.intervalMilliseconds
 
   def receive: Receive = {
     case SchedulerActor.Tick =>

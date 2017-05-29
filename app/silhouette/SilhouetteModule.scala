@@ -8,14 +8,12 @@ import com.mohiva.play.silhouette.api.crypto.{Crypter, CrypterAuthenticatorEncod
 import com.mohiva.play.silhouette.api.services.AuthenticatorService
 import com.mohiva.play.silhouette.api.util.{Clock, HTTPLayer, PlayHTTPLayer}
 import com.mohiva.play.silhouette.impl.authenticators.{JWTAuthenticator, JWTAuthenticatorService, JWTAuthenticatorSettings}
-import com.mohiva.play.silhouette.impl.providers.oauth2.GoogleProvider
 import com.mohiva.play.silhouette.impl.providers.oauth2.state.DummyStateProvider
 import com.mohiva.play.silhouette.impl.providers.{OAuth2Settings, OAuth2StateProvider, SocialProviderRegistry}
 import com.mohiva.play.silhouette.impl.util.SecureRandomIDGenerator
-import play.api.Configuration
-import play.api.libs.ws.WSClient
-
 import play.api.libs.concurrent.Execution.Implicits._
+import play.api.libs.ws.WSClient
+import utils.Config
 
 /**
   * DI module for silhouette.
@@ -45,34 +43,31 @@ class SilhouetteModule extends AbstractModule {
   }
 
   @Provides
-  def provideAuthenticatorCrypter(configuration: Configuration): Crypter = {
-    new DummyCrypter
-  }
-  @Provides
-  def provideAuthenticatorService(
-    crypter: Crypter,
-    configuration: Configuration): AuthenticatorService[JWTAuthenticator] = {
+  def provideAuthenticatorCrypter: Crypter = new DummyCrypter
 
-    val secret = configuration.getString("play.crypto.secret").get
-    val config = JWTAuthenticatorSettings(sharedSecret = secret)
+  @Provides
+  def provideAuthenticatorService(crypter: Crypter, config: Config): AuthenticatorService[JWTAuthenticator] = {
+
+    val secret = config.cryptoSecret
+    val jwtConfig = JWTAuthenticatorSettings(sharedSecret = secret)
     val encoder = new CrypterAuthenticatorEncoder(crypter)
 
-    new JWTAuthenticatorService(config, None, encoder, new SecureRandomIDGenerator(), Clock())
+    new JWTAuthenticatorService(jwtConfig, None, encoder, new SecureRandomIDGenerator(), Clock())
   }
 
   @Provides
   def provideGoogleProvider(
     httpLayer: HTTPLayer,
     stateProvider: OAuth2StateProvider,
-    configuration: Configuration
+    config: Config
   ): CustomGoogleProvider = {
 
     val oauthConfig = OAuth2Settings(
-      accessTokenURL = configuration.getString("silhouette.google.accessTokenURL").get,
-      redirectURL = configuration.getString("silhouette.google.redirectURL").get,
-      clientID =configuration.getString("silhouette.google.clientID").get,
-      clientSecret = configuration.getString("silhouette.google.clientSecret").get,
-      scope = configuration.getString("silhouette.google.scope")
+      accessTokenURL = config.googleSettings.accessTokenUrl,
+      redirectURL = config.googleSettings.redirectUrl,
+      clientID =config.googleSettings.clientId,
+      clientSecret = config.googleSettings.clientSecret,
+      scope = config.googleSettings.scope
     )
 
     new CustomGoogleProvider(httpLayer, stateProvider, oauthConfig)

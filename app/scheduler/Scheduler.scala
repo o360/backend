@@ -3,8 +3,9 @@ package scheduler
 import javax.inject.{Inject, Named}
 
 import akka.actor.{ActorRef, ActorSystem}
-import play.api.{Configuration, Environment, Mode}
+import play.api.Environment
 import play.api.libs.concurrent.Execution.Implicits._
+import utils.Config
 
 import scala.concurrent.duration._
 
@@ -15,14 +16,12 @@ import scala.concurrent.duration._
 class Scheduler @Inject()(
   protected val system: ActorSystem,
   @Named("scheduler-actor") protected val schedulerActor: ActorRef,
-  protected val configuration: Configuration,
+  protected val config: Config,
   protected val environment: Environment
 ) {
 
-  private val isEnabled = configuration.getBoolean("scheduler.enabled")
-
-  if (isEnabled.contains(true)) {
-    val interval = configuration.getMilliseconds("scheduler.interval").get
+  if (config.schedulerSettings.enabled) {
+    val interval = config.schedulerSettings.intervalMilliseconds
     val cancellable = system.scheduler.schedule(
       0.milliseconds,
       interval.milliseconds,
