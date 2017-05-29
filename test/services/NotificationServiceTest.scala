@@ -153,7 +153,8 @@ class NotificationServiceTest
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
 
       when(fixture.userService.listByGroupId(
-        groupId = eqTo(project.groupAuditor.id)
+        groupId = eqTo(project.groupAuditor.id),
+        includeDeleted = eqTo(false)
       )(any[ListMeta]))
         .thenReturn(EitherT.eitherT(toFuture(ListWithTotal(1, Seq(user)).right[ApplicationError])))
 
@@ -221,7 +222,8 @@ class NotificationServiceTest
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Seq(relation))))
 
       when(fixture.userService.listByGroupId(
-        groupId = eqTo(relation.groupFrom.id)
+        groupId = eqTo(relation.groupFrom.id),
+        includeDeleted = eqTo(false)
       )(any[ListMeta]))
         .thenReturn(EitherT.eitherT(toFuture(ListWithTotal(1, Seq(user)).right[ApplicationError])))
 

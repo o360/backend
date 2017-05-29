@@ -124,10 +124,9 @@ class UserDaoTest
     "delete user" in {
       forAll { (user: UserModel) =>
         val newUserId = wait(dao.create(user, "deletereallyunique", "key")).id
-        val rowsAffected = wait(dao.delete(newUserId))
+        wait(dao.delete(newUserId))
         val deletedUser = wait(dao.findById(newUserId))
 
-        rowsAffected mustBe 1
         deletedUser mustBe empty
       }
     }

@@ -101,7 +101,7 @@ class UploadServiceTest extends BaseServiceTest with EventFixture with ProjectFi
       when(fixture.reportService.getAggregatedReport(report)).thenReturn(aggregatedReport)
       when(fixture.spreadsheetService.getBatchUpdateRequest(Seq(report), Seq(aggregatedReport), Seq(freezedForm)))
         .thenReturn(batchUpdate)
-      when(fixture.userService.getGroupIdToUsersMap(Seq(project.groupAuditor.id)))
+      when(fixture.userService.getGroupIdToUsersMap(Seq(project.groupAuditor.id), false))
         .thenReturn(toFuture(Map(project.groupAuditor.id -> Seq(user))))
 
       val result = wait(fixture.service.getGroupedUploadModels(from, to))

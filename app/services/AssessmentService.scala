@@ -82,7 +82,10 @@ class AssessmentService @Inject()(
         */
       def getUsersForRelation(relation: Relation): Future[Seq[User]] = {
         userService
-          .listByGroupId(relation.groupTo.getOrElse(throw new NoSuchElementException("group to is not defined")).id)
+          .listByGroupId(
+            relation.groupTo.getOrElse(throw new NoSuchElementException("group to is not defined")).id,
+            includeDeleted = false
+          )
           .map(_.data)
           .run
           .map(_.getOrElse(Nil))
@@ -191,7 +194,7 @@ class AssessmentService @Inject()(
         val eitherT = for {
           groupToIsOk <- (relation.groupTo, userToId) match {
             case (Some(groupTo), Some(userId)) =>
-              userService.listByGroupId(groupTo.id).map(_.data.exists(_.id == userId))
+              userService.listByGroupId(groupTo.id, includeDeleted = false).map(_.data.exists(_.id == userId))
             case (None, None) => true.lift
             case _ => false.lift
           }
