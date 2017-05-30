@@ -3,10 +3,12 @@ package services
 import javax.inject.{Inject, Singleton}
 
 import models.ListWithTotal
-import models.dao.{EventDao, FormDao, GroupDao, ProjectDao}
+import models.dao._
 import models.event.Event
 import models.form.{Form, FormShort}
+import models.project.{Project, Relation}
 import models.user.User
+import play.api.libs.concurrent.Execution.Implicits._
 import utils.errors._
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
@@ -14,7 +16,6 @@ import utils.listmeta.ListMeta
 import scala.concurrent.Future
 import scalaz.Scalaz._
 import scalaz._
-import play.api.libs.concurrent.Execution.Implicits._
 
 /**
   * Form template service.
@@ -24,7 +25,8 @@ class FormService @Inject()(
   protected val formDao: FormDao,
   protected val eventDao: EventDao,
   protected val groupDao: GroupDao,
-  protected val projectDao: ProjectDao
+  protected val projectDao: ProjectDao,
+  protected val relationDao: ProjectRelationDao
 ) extends ServiceResults[Form] {
 
 
@@ -141,15 +143,28 @@ class FormService @Inject()(
     * @param account logged in user
     */
   def delete(id: Long)(implicit account: User): UnitResult = {
+
+    def getConflictedEntities = {
+      for {
+        projects <- projectDao.getList(optFormId = Some(id))
+        relations <- relationDao.getList(optFormId = Some(id))
+      } yield {
+        ConflictError.getConflictedEntitiesMap(
+          Project.namePlural -> projects.data.map(_.toNamedEntity),
+          Relation.namePlural -> relations.data.map(_.toNamedEntity)
+        )
+      }
+    }
+
     for {
       original <- getById(id)
       _ <- ensure(original.kind != Form.Kind.Freezed) {
         ConflictError.Form.FormKind("delete freezed form")
       }
 
-      projects <- projectDao.getList(optFormId = Some(id)).lift
-      _ <- ensure(projects.total == 0) {
-        ConflictError.Form.RelationExists
+     conflictedEntities <- getConflictedEntities.lift
+      _ <- ensure(conflictedEntities.isEmpty) {
+        ConflictError.General(Some(Form.nameSingular), conflictedEntities)
       }
 
       _ <- formDao.delete(id).lift

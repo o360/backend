@@ -1,33 +1,38 @@
 package services
 
 import models.ListWithTotal
-import models.dao.{EventDao, TemplateDao}
+import models.dao.{EventDao, ProjectDao, ProjectRelationDao, TemplateDao}
 import models.notification.Notification
+import models.project.{Project, Relation}
 import models.template.Template
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
-import testutils.fixture.{TemplateFixture, UserFixture}
+import testutils.fixture.{ProjectFixture, TemplateFixture, UserFixture}
 import testutils.generator.TemplateGenerator
-import utils.errors.NotFoundError
+import utils.errors.{ConflictError, NotFoundError}
 import utils.listmeta.ListMeta
 
 /**
   * Test for template service.
   */
-class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with TemplateFixture {
+class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with TemplateFixture with ProjectFixture {
 
   private val admin = UserFixture.admin
 
   private case class TestFixture(
     templateDaoMock: TemplateDao,
     eventDaoMock: EventDao,
+    projectDao: ProjectDao,
+    relationDao: ProjectRelationDao,
     service: TemplateService)
 
   private def getFixture = {
     val daoMock = mock[TemplateDao]
     val eventDaoMock = mock[EventDao]
-    val service = new TemplateService(daoMock, eventDaoMock)
-    TestFixture(daoMock, eventDaoMock, service)
+    val projectDao = mock[ProjectDao]
+    val relationDao = mock[ProjectRelationDao]
+    val service = new TemplateService(daoMock, eventDaoMock, projectDao, relationDao)
+    TestFixture(daoMock, eventDaoMock, projectDao, relationDao, service)
   }
 
   "getById" should {
@@ -139,10 +144,58 @@ class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with Te
       }
     }
 
+    "return conflict error if can't delete" in {
+      forAll { (id: Long) =>
+        val fixture = getFixture
+        when(fixture.templateDaoMock.findById(id)).thenReturn(toFuture(Some(Templates(0))))
+        when(fixture.projectDao.getList(
+          optId = any[Option[Long]],
+          optEventId = any[Option[Long]],
+          optGroupFromIds = any[Option[Seq[Long]]],
+          optFormId = any[Option[Long]],
+          optGroupAuditorId = any[Option[Long]],
+          optEmailTemplateId = eqTo(Some(id))
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Projects.take(1))))
+        when(fixture.relationDao.getList(
+          optId = any[Option[Long]],
+          optProjectId = any[Option[Long]],
+          optKind = any[Option[Relation.Kind]],
+          optFormId = any[Option[Long]],
+          optGroupFromId = any[Option[Long]],
+          optGroupToId = any[Option[Long]],
+          optEmailTemplateId = eqTo(Some(id))
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
+
+        val result = wait(fixture.service.delete(id)(admin).run)
+
+        result mustBe 'left
+        result.swap.toOption.get mustBe a[ConflictError]
+      }
+    }
+
+
     "delete template from db" in {
       forAll { (id: Long) =>
         val fixture = getFixture
         when(fixture.templateDaoMock.findById(id)).thenReturn(toFuture(Some(Templates(0))))
+        when(fixture.projectDao.getList(
+          optId = any[Option[Long]],
+          optEventId = any[Option[Long]],
+          optGroupFromIds = any[Option[Seq[Long]]],
+          optFormId = any[Option[Long]],
+          optGroupAuditorId = any[Option[Long]],
+          optEmailTemplateId = eqTo(Some(id))
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Project](0, Nil)))
+        when(fixture.relationDao.getList(
+          optId = any[Option[Long]],
+          optProjectId = any[Option[Long]],
+          optKind = any[Option[Relation.Kind]],
+          optFormId = any[Option[Long]],
+          optGroupFromId = any[Option[Long]],
+          optGroupToId = any[Option[Long]],
+          optEmailTemplateId = eqTo(Some(id))
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
+
         when(fixture.templateDaoMock.delete(id)).thenReturn(toFuture(1))
 
         val result = wait(fixture.service.delete(id)(admin).run)

@@ -24,6 +24,8 @@ case class User(
 
 
 object User {
+  val nameSingular = "user"
+
   /**
     * User's role.
     */

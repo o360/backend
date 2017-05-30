@@ -17,4 +17,11 @@ case class Project(
   description: Option[String],
   groupAuditor: NamedEntity,
   templates: Seq[TemplateBinding]
-)
+) {
+  def toNamedEntity = NamedEntity(id, name)
+}
+
+object Project {
+  val namePlural = "projects"
+  val nameSingular = "project"
+}

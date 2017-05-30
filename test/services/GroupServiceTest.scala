@@ -1,12 +1,13 @@
 package services
 
 import models.ListWithTotal
-import models.dao.{GroupDao, UserGroupDao}
+import models.dao.{GroupDao, ProjectDao, ProjectRelationDao, UserGroupDao}
 import models.group.Group
+import models.project.{Project, Relation}
 import org.davidbild.tristate.Tristate
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
-import testutils.fixture.{GroupFixture, UserFixture}
+import testutils.fixture.{GroupFixture, ProjectFixture, UserFixture}
 import testutils.generator.{GroupGenerator, TristateGenerator}
 import utils.errors.{ConflictError, NotFoundError}
 import utils.listmeta.ListMeta
@@ -14,20 +15,24 @@ import utils.listmeta.ListMeta
 /**
   * Test for group service.
   */
-class GroupServiceTest extends BaseServiceTest with GroupGenerator with GroupFixture with TristateGenerator {
+class GroupServiceTest extends BaseServiceTest with GroupGenerator with GroupFixture with TristateGenerator with ProjectFixture {
 
   private val admin = UserFixture.admin
 
   private case class TestFixture(
     groupDaoMock: GroupDao,
     userGroupDaoMock: UserGroupDao,
+    projectDao: ProjectDao,
+    relationDao: ProjectRelationDao,
     service: GroupService)
 
   private def getFixture = {
     val daoMock = mock[GroupDao]
     val userGroupDaoMock = mock[UserGroupDao]
-    val service = new GroupService(daoMock, userGroupDaoMock)
-    TestFixture(daoMock, userGroupDaoMock, service)
+    val projectDao = mock[ProjectDao]
+    val relationDao = mock[ProjectRelationDao]
+    val service = new GroupService(daoMock, userGroupDaoMock, relationDao, projectDao)
+    TestFixture(daoMock, userGroupDaoMock, projectDao, relationDao, service)
   }
 
   "getById" should {
@@ -204,13 +209,56 @@ class GroupServiceTest extends BaseServiceTest with GroupGenerator with GroupFix
       }
     }
 
+    "return conflict if can't delete" in {
+      val fixture = getFixture
+      val group = Groups(2)
+      when(fixture.groupDaoMock.findById(group.id)).thenReturn(toFuture(Some(group)))
+      when(fixture.projectDao.getList(
+        optId = any[Option[Long]],
+        optEventId = any[Option[Long]],
+        optGroupFromIds = any[Option[Seq[Long]]],
+        optFormId = any[Option[Long]],
+        optGroupAuditorId = eqTo(Some(group.id)),
+        optEmailTemplateId = any[Option[Long]]
+      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Projects.take(1))))
+      when(fixture.relationDao.getList(
+        optId = any[Option[Long]],
+        optProjectId = any[Option[Long]],
+        optKind = any[Option[Relation.Kind]],
+        optFormId = any[Option[Long]],
+        optGroupFromId = any[Option[Long]],
+        optGroupToId = any[Option[Long]],
+        optEmailTemplateId = any[Option[Long]]
+      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
+
+      val result = wait(fixture.service.delete(group.id)(admin).run)
+
+      result mustBe 'left
+      result.swap.toOption.get mustBe a[ConflictError]
+    }
+
     "delete group from db" in {
       val fixture = getFixture
       val group = Groups(2)
       when(fixture.groupDaoMock.findById(group.id)).thenReturn(toFuture(Some(group)))
-      when(fixture.groupDaoMock.findChildrenIds(group.id)).thenReturn(toFuture(Nil))
+      when(fixture.projectDao.getList(
+        optId = any[Option[Long]],
+        optEventId = any[Option[Long]],
+        optGroupFromIds = any[Option[Seq[Long]]],
+        optFormId = any[Option[Long]],
+        optGroupAuditorId = eqTo(Some(group.id)),
+        optEmailTemplateId = any[Option[Long]]
+      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Project](0, Nil)))
+      when(fixture.relationDao.getList(
+        optId = any[Option[Long]],
+        optProjectId = any[Option[Long]],
+        optKind = any[Option[Relation.Kind]],
+        optFormId = any[Option[Long]],
+        optGroupFromId = any[Option[Long]],
+        optGroupToId = any[Option[Long]],
+        optEmailTemplateId = any[Option[Long]]
+      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
       when(fixture.groupDaoMock.delete(group.id)).thenReturn(toFuture(1))
-      when(fixture.userGroupDaoMock.exists(groupId = eqTo(Some(group.id)), userId = any[Option[Long]])).thenReturn(toFuture(false))
       val result = wait(fixture.service.delete(group.id)(admin).run)
 
       result mustBe 'right

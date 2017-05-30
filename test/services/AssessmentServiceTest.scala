@@ -123,7 +123,11 @@ class AssessmentServiceTest
       when(fixture.relationDao.getList(
         optId = any[Option[Long]],
         optProjectId = eqTo(Some(projectId)),
-        optKind = any[Option[Relation.Kind]]
+        optKind = any[Option[Relation.Kind]],
+        optFormId = any[Option[Long]],
+        optGroupFromId = any[Option[Long]],
+        optGroupToId = any[Option[Long]],
+        optEmailTemplateId = any[Option[Long]]
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal(2, relations)))
 
@@ -346,7 +350,11 @@ class AssessmentServiceTest
       when(fixture.relationDao.getList(
         optId = any[Option[Long]],
         optProjectId = eqTo(Some(projectId)),
-        optKind = eqTo(Some(Relation.Kind.Survey))
+        optKind = eqTo(Some(Relation.Kind.Survey)),
+        optFormId = any[Option[Long]],
+        optGroupFromId = any[Option[Long]],
+        optGroupToId = any[Option[Long]],
+        optEmailTemplateId = any[Option[Long]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
 
       val result = wait(fixture.service.submit(event.id, projectId, assessment)(user).run)
@@ -398,7 +406,11 @@ class AssessmentServiceTest
       when(fixture.relationDao.getList(
         optId = any[Option[Long]],
         optProjectId = eqTo(Some(projectId)),
-        optKind = eqTo(Some(Relation.Kind.Survey))
+        optKind = eqTo(Some(Relation.Kind.Survey)),
+        optFormId = any[Option[Long]],
+        optGroupFromId = any[Option[Long]],
+        optGroupToId = any[Option[Long]],
+        optEmailTemplateId = any[Option[Long]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Relation](1, Seq(relation))))
 
       when(fixture.formService.getOrCreateFreezedForm(event.id, relation.form.id))
@@ -453,7 +465,11 @@ class AssessmentServiceTest
       when(fixture.relationDao.getList(
         optId = any[Option[Long]],
         optProjectId = eqTo(Some(projectId)),
-        optKind = eqTo(Some(Relation.Kind.Survey))
+        optKind = eqTo(Some(Relation.Kind.Survey)),
+        optFormId = any[Option[Long]],
+        optGroupFromId = any[Option[Long]],
+        optGroupToId = any[Option[Long]],
+        optEmailTemplateId = any[Option[Long]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Relation](1, Seq(relation))))
 
       when(fixture.formService.getOrCreateFreezedForm(event.id, relation.form.id))

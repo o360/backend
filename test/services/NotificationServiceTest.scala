@@ -100,7 +100,9 @@ class NotificationServiceTest
         optId = any[Option[Long]],
         optEventId = eqTo(Some(event.id)),
         optGroupFromIds = any[Option[Seq[Long]]],
-        optFormId = any[Option[Long]]
+        optFormId = any[Option[Long]],
+        optGroupAuditorId = any[Option[Long]],
+        optEmailTemplateId = any[Option[Long]]
       )(any[ListMeta]))
       .thenReturn(toFuture(ListWithTotal[Project](0, Nil)))
 
@@ -142,7 +144,9 @@ class NotificationServiceTest
         optId = any[Option[Long]],
         optEventId = eqTo(Some(event.id)),
         optGroupFromIds = any[Option[Seq[Long]]],
-        optFormId = any[Option[Long]]
+        optFormId = any[Option[Long]],
+        optGroupAuditorId = any[Option[Long]],
+        optEmailTemplateId = any[Option[Long]]
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal(1, Seq(project))))
 
@@ -151,7 +155,11 @@ class NotificationServiceTest
       when(fixture.relationDao.getList(
         optId = any[Option[Long]],
         optProjectId = eqTo(Some(project.id)),
-        optKind = any[Option[Relation.Kind]]
+        optKind = any[Option[Relation.Kind]],
+        optFormId = any[Option[Long]],
+        optGroupFromId = any[Option[Long]],
+        optGroupToId = any[Option[Long]],
+        optEmailTemplateId = any[Option[Long]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
 
       when(fixture.userService.listByGroupId(
@@ -212,7 +220,9 @@ class NotificationServiceTest
         optId = any[Option[Long]],
         optEventId = eqTo(Some(event.id)),
         optGroupFromIds = any[Option[Seq[Long]]],
-        optFormId = any[Option[Long]]
+        optFormId = any[Option[Long]],
+        optGroupAuditorId = any[Option[Long]],
+        optEmailTemplateId = any[Option[Long]]
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal(1, Seq(project))))
 
@@ -221,7 +231,11 @@ class NotificationServiceTest
       when(fixture.relationDao.getList(
         optId = any[Option[Long]],
         optProjectId = eqTo(Some(project.id)),
-        optKind = any[Option[Relation.Kind]]
+        optKind = any[Option[Relation.Kind]],
+        optFormId = any[Option[Long]],
+        optGroupFromId = any[Option[Long]],
+        optGroupToId = any[Option[Long]],
+        optEmailTemplateId = any[Option[Long]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Seq(relation))))
 
       when(fixture.userService.listByGroupId(
