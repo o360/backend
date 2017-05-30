@@ -11,11 +11,11 @@ trait GroupFixture extends FixtureHelper {
   self: FixtureSupport =>
 
   val Groups = Seq(
-    GroupModel(1, None, "1"),
-    GroupModel(2, None, "2"),
-    GroupModel(3, Some(2), "2-1"),
-    GroupModel(4, Some(2), "2-2"),
-    GroupModel(5, Some(4), "2-2-1")
+    GroupModel(1, None, "1", hasChildren = false),
+    GroupModel(2, None, "2", hasChildren = true),
+    GroupModel(3, Some(2), "2-1", hasChildren = false),
+    GroupModel(4, Some(2), "2-2", hasChildren = true),
+    GroupModel(5, Some(4), "2-2-1", hasChildren = false)
   )
 
   addFixtureOperation {
