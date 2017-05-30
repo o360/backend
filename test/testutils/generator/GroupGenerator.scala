@@ -14,6 +14,7 @@ trait GroupGenerator {
       id <- Arbitrary.arbitrary[Long]
       parentId <- Arbitrary.arbitrary[Option[Long]]
       name <- Arbitrary.arbitrary[String]
-    } yield Group(id, parentId, name)
+      hasChildren <- Arbitrary.arbitrary[Boolean]
+    } yield Group(id, parentId, name, hasChildren)
   }
 }

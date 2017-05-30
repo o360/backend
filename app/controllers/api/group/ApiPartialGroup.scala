@@ -14,7 +14,8 @@ case class ApiPartialGroup(
   def toModel(id: Long) = Group(
     id,
     parentId,
-    name
+    name,
+    hasChildren = false
   )
 }
 
