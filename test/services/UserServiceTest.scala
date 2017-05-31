@@ -100,14 +100,8 @@ class UserServiceTest
         wait(fixture.service.createIfNotExist(profile))
         verify(fixture.userDaoMock, times(1)).findByProvider(profile.loginInfo.providerID, profile.loginInfo.providerKey)
 
-        val user = UserModel(
-          0,
-          profile.fullName,
-          profile.email,
-          profile.gender,
-          UserModel.Role.User,
-          UserModel.Status.New
-        )
+        val user = UserModel.fromSocialProfile(profile)
+
         verify(fixture.userDaoMock, times(1)).create(user, profile.loginInfo.providerID, profile.loginInfo.providerKey)
         verifyNoMoreInteractions(fixture.userDaoMock)
       }

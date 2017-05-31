@@ -2,11 +2,13 @@ package controllers.api.event
 
 import java.sql.Timestamp
 
-import controllers.api.TimestampFormat._
+import controllers.api.ApiTimestamp._
 import models.event.Event
+import models.user.User
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
+import utils.TimestampConverter
 
 /**
   * Partial api model for event.
@@ -23,11 +25,11 @@ case class ApiPartialEvent(
     *
     * @param id target id
     */
-  def toModel(id: Long = 0) = Event(
+  def toModel(id: Long = 0)(implicit account: User) = Event(
     id,
     description,
-    start,
-    end,
+    TimestampConverter.toUtc(start, account.timezone),
+    TimestampConverter.toUtc(end, account.timezone),
     canRevote,
     notifications.map(_.toModel)
   )

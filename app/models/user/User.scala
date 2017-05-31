@@ -1,17 +1,20 @@
 package models.user
 
+import java.time.ZoneOffset
+
 import com.mohiva.play.silhouette.api.Identity
 import silhouette.CustomSocialProfile
 
 /**
   * User model.
   *
-  * @param id     DB ID
-  * @param name   full name
-  * @param email  email
-  * @param gender gender
-  * @param role   role
-  * @param status status
+  * @param id       DB ID
+  * @param name     full name
+  * @param email    email
+  * @param gender   gender
+  * @param role     role
+  * @param status   status
+  * @param timezone timezone
   */
 case class User(
   id: Long,
@@ -19,7 +22,8 @@ case class User(
   email: Option[String],
   gender: Option[User.Gender],
   role: User.Role,
-  status: User.Status
+  status: User.Status,
+  timezone: ZoneOffset
 ) extends Identity
 
 
@@ -79,7 +83,8 @@ object User {
       socialProfile.email,
       socialProfile.gender,
       User.Role.User,
-      User.Status.New
+      User.Status.New,
+      ZoneOffset.UTC
     )
   }
 }
