@@ -1,5 +1,6 @@
 package models.dao
 
+import java.time.ZoneOffset
 import javax.inject.Inject
 
 import models.ListWithTotal
@@ -8,9 +9,11 @@ import org.davidbild.tristate.Tristate
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.api.libs.concurrent.Execution.Implicits._
 import slick.driver.JdbcProfile
+import utils.Logger
 import utils.listmeta.ListMeta
 
 import scala.concurrent.Future
+import scala.util.Try
 
 /**
   * Component for 'user_login' table.
@@ -56,7 +59,7 @@ trait UserMetaComponent {
 /**
   * Component for 'account' table.
   */
-trait UserComponent {
+trait UserComponent extends Logger {
   self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import driver.api._
@@ -101,6 +104,7 @@ trait UserComponent {
     gender: Option[User.Gender],
     role: User.Role,
     status: User.Status,
+    timezone: String,
     isDeleted: Boolean
   ) {
     def toModel = User(
@@ -109,7 +113,11 @@ trait UserComponent {
       email,
       gender,
       role,
-      status
+      status,
+      Try(ZoneOffset.of(timezone)).getOrElse {
+        log.error(s"User $id has incorrect timezone $timezone, UTC used instead")
+        ZoneOffset.UTC
+      }
     )
   }
 
@@ -121,6 +129,7 @@ trait UserComponent {
       user.gender,
       user.role,
       user.status,
+      user.timezone.getId,
       isDeleted = false
     )
   }
@@ -133,9 +142,10 @@ trait UserComponent {
     def gender = column[Option[User.Gender]]("gender")
     def role = column[User.Role]("role")
     def status = column[User.Status]("status")
+    def timezone = column[String]("timezone")
     def isDeleted = column[Boolean]("is_deleted")
 
-    def * = (id, name, email, gender, role, status, isDeleted) <> ((DbUser.apply _).tupled, DbUser.unapply)
+    def * = (id, name, email, gender, role, status, timezone, isDeleted) <> ((DbUser.apply _).tupled, DbUser.unapply)
   }
 
   val Users = TableQuery[UserTable]

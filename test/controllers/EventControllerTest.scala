@@ -110,7 +110,7 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
           event.start,
           event.end,
           event.canRevote,
-          event.notifications.map(ApiEvent.NotificationTime(_))
+          event.notifications.map(ApiEvent.NotificationTime(_)(admin))
 
         )
         val request = authenticated(
@@ -143,7 +143,7 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
           event.start,
           event.end,
           event.canRevote,
-          event.notifications.map(ApiEvent.NotificationTime(_))
+          event.notifications.map(ApiEvent.NotificationTime(_)(admin))
 
         )
 
