@@ -48,7 +48,8 @@ class ProjectDaoTest extends BaseDaoTest with ProjectFixture with ProjectGenerat
   "create" should {
     "create project" in {
       forAll(Gen.oneOf(Projects)) { (project: Project) =>
-        val created = wait(dao.create(project))
+        val withUniqName = project.copy(name = java.util.UUID.randomUUID.toString)
+        val created = wait(dao.create(withUniqName))
 
         val projectFromDb = wait(dao.findById(created.id))
         projectFromDb mustBe defined
@@ -60,7 +61,8 @@ class ProjectDaoTest extends BaseDaoTest with ProjectFixture with ProjectGenerat
   "delete" should {
     "delete project" in {
       forAll(Gen.oneOf(Projects)) { (project: Project) =>
-        val created = wait(dao.create(project))
+        val withUniqName = project.copy(name = java.util.UUID.randomUUID.toString)
+        val created = wait(dao.create(withUniqName))
 
         val rowsDeleted = wait(dao.delete(created.id))
 
@@ -72,10 +74,11 @@ class ProjectDaoTest extends BaseDaoTest with ProjectFixture with ProjectGenerat
   }
   "update" should {
     "update project" in {
-      val newProjectId = wait(dao.create(Projects(0))).id
+      val newProjectId = wait(dao.create(Projects(0).copy(name = java.util.UUID.randomUUID.toString))).id
 
       forAll(Gen.oneOf(Projects)) { (project: Project) =>
-        val projectWithId = project.copy(id = newProjectId)
+        val projectWithId = project.copy(id = newProjectId, name = java.util.UUID.randomUUID.toString)
+
 
         wait(dao.update(projectWithId))
 
