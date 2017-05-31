@@ -1,10 +1,11 @@
 package models.event
 
 import java.sql.Timestamp
+import java.time.ZoneOffset
 
 import models.NamedEntity
 import models.notification.Notification
-import utils.TimestampFormatter
+import utils.TimestampConverter
 
 /**
   * Event model.
@@ -24,7 +25,7 @@ case class Event(
   canRevote: Boolean,
   notifications: Seq[Event.NotificationTime]
 ) {
-  private val currentTime = new Timestamp(System.currentTimeMillis)
+  private val currentTime = TimestampConverter.now
 
   /**
     * Status of event.
@@ -37,10 +38,10 @@ case class Event(
   /**
     * Event text representation.
     */
-  val caption = s"Event ${description.map(_ + " ").getOrElse("")}" +
-    s"(${TimestampFormatter.format(start)} - ${TimestampFormatter.format(end)})"
+  def caption(zone: ZoneOffset): String = s"Event ${description.map(_ + " ").getOrElse("")}" +
+    s"(${TimestampConverter.toPrettyString(start, zone)} - ${TimestampConverter.toPrettyString(end, zone)})"
 
-  def toNamedEntity = NamedEntity(id, caption)
+  def toNamedEntity(zone: ZoneOffset) = NamedEntity(id, caption(zone))
 }
 
 object Event {

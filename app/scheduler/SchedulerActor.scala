@@ -4,10 +4,9 @@ import java.sql.Timestamp
 import javax.inject.{Inject, Singleton}
 
 import akka.actor.Actor
-import play.api.Configuration
 import play.api.libs.concurrent.Execution.Implicits._
 import services.{NotificationService, UploadService}
-import utils.{Config, Logger}
+import utils.{Config, Logger, TimestampConverter}
 
 import scala.concurrent.Future
 import scala.util.control.NonFatal
@@ -28,7 +27,7 @@ class SchedulerActor @Inject()(
     case SchedulerActor.Tick =>
       log.trace("scheduler tick")
 
-      val now = new Timestamp(System.currentTimeMillis)
+      val now = TimestampConverter.now
       val from = new Timestamp(now.getTime - interval)
 
       logFutureError(notificationService.sendEventsNotifications(from, now))

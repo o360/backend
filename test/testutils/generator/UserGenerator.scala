@@ -1,5 +1,7 @@
 package testutils.generator
 
+import java.time.ZoneOffset
+
 import models.user.{User, UserShort}
 import org.scalacheck.{Arbitrary, Gen}
 
@@ -27,7 +29,7 @@ trait UserGenerator {
       gender <- Arbitrary.arbitrary[Option[User.Gender]]
       role <- Arbitrary.arbitrary[User.Role]
       status <- Arbitrary.arbitrary[User.Status]
-    } yield User(0, name, email, gender, role, status)
+    } yield User(0, name, email, gender, role, status, ZoneOffset.UTC)
   }
 
   implicit val userShortArb = Arbitrary {

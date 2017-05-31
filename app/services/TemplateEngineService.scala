@@ -5,6 +5,7 @@ import javax.inject.Singleton
 
 import models.event.Event
 import models.user.User
+import utils.TimestampConverter
 
 import scala.util.matching.Regex.Match
 
@@ -34,12 +35,10 @@ class TemplateEngineService {
     recipient: User,
     event: Event
   ): Map[String, String] = {
-    val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-
     Map(
       "user_name" -> recipient.name.getOrElse(""),
-      "event_start" -> event.start.toLocalDateTime.format(dateTimeFormatter),
-      "event_end" -> event.end.toLocalDateTime.format(dateTimeFormatter),
+      "event_start" -> TimestampConverter.toPrettyString(event.start, recipient.timezone),
+      "event_end" -> TimestampConverter.toPrettyString(event.end, recipient.timezone),
       "event_description" -> event.description.getOrElse("")
     )
   }

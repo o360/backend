@@ -5,9 +5,10 @@ import java.sql.Timestamp
 import controllers.api.{EnumFormat, EnumFormatHelper, Response}
 import models.event.Event
 import play.api.libs.json.Json
-import controllers.api.TimestampFormat._
+import controllers.api.ApiTimestamp._
 import controllers.api.notification.{ApiNotificationKind, ApiNotificationRecipient}
 import models.user.User
+import utils.TimestampConverter
 
 /**
   * Api model for event.
@@ -32,12 +33,12 @@ object ApiEvent {
       case User.Role.Admin => Some(e.notifications.map(NotificationTime(_)))
       case User.Role.User => None
     }
-    
+
     ApiEvent(
       e.id,
       e.description,
-      e.start,
-      e.end,
+      TimestampConverter.fromUtc(e.start, account.timezone),
+      TimestampConverter.fromUtc(e.end, account.timezone),
       e.canRevote,
       notifications,
       EventStatus(e.status)
@@ -58,8 +59,8 @@ object ApiEvent {
     /**
       * Converts api model to model.
       */
-    def toModel: Event.NotificationTime = Event.NotificationTime(
-      time,
+    def toModel(implicit account: User): Event.NotificationTime = Event.NotificationTime(
+      TimestampConverter.toUtc(time, account.timezone),
       kind.value,
       recipient.value
     )
@@ -69,8 +70,8 @@ object ApiEvent {
     /**
       * Creates api model from model.
       */
-    def apply(n: Event.NotificationTime): NotificationTime = NotificationTime(
-      n.time,
+    def apply(n: Event.NotificationTime)(implicit account: User): NotificationTime = NotificationTime(
+      TimestampConverter.fromUtc(n.time, account.timezone),
       ApiNotificationKind(n.kind),
       ApiNotificationRecipient(n.recipient)
     )

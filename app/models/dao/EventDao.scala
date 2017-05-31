@@ -9,6 +9,7 @@ import models.notification.Notification
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.api.libs.concurrent.Execution.Implicits._
 import slick.driver.JdbcProfile
+import utils.TimestampConverter
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
 
@@ -170,7 +171,7 @@ class EventDao @Inject()(
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Event]] = {
 
     def statusFilter(event: EventTable) = optStatus.map { status =>
-      val currentTime = new Timestamp(System.currentTimeMillis)
+      val currentTime = TimestampConverter.now
       status match {
         case Event.Status.NotStarted => event.start > currentTime
         case Event.Status.InProgress => event.start <= currentTime && event.end > currentTime
@@ -281,8 +282,9 @@ class EventDao @Inject()(
   }
 
   /**
-    * @param eventId
-    * @return
+    * Deletes event from DB.
+    *
+    * @param eventId ID of event.
     */
   def delete(eventId: Long): Future[Int] = db.run {
     Events.filter(_.id === eventId).delete

@@ -151,7 +151,7 @@ class UploadService @Inject()(
           userFolderId <- getOrCreateUserFolder(user)
         } yield {
           models.groupBy(_.event).foreach { case (event, eventModels) =>
-            val eventFolderId = googleDriveService.createFolder(userFolderId, event.caption)
+            val eventFolderId = googleDriveService.createFolder(userFolderId, event.caption(user.timezone))
 
             eventModels.foreach { case UploadModel(_, project, batchUpdate) =>
               val spreadSheetId = googleDriveService.createSpreadsheet(eventFolderId, project.name)
