@@ -48,7 +48,7 @@ class TemplateEngineServiceTest extends BaseServiceTest with UserGenerator with 
   "getContext" should {
     "return valid context" in {
       forAll { (user: User, event: Event) =>
-        val result = service.getContext(user, event)
+        val result = service.getContext(user, Some(event))
 
         result must not be empty
         result("user_name") mustBe user.name.getOrElse("")

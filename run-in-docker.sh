@@ -22,6 +22,10 @@ echo "drive_service_key.json NOT FOUND"
 exit 1
 fi
 
+if [ ! -f user_approved.html ]; then
+echo "user_approved.html NOT FOUND"
+fi
+
 sbt clean coverage test
 sbt coverageReport
 sbt flywayMigrate
@@ -44,4 +48,5 @@ docker run -d --name private-bw-assessment-api --restart=always -p 9000:9000 \
     -e MAIL_SEND_FROM=${MAIL_SEND_FROM} \
     -e SCHEDULER_ENABLED=true \
     -v $(pwd)/drive_service_key.json:/opt/docker/conf/drive_service_key.json \
+    -v $(pwd)/user_approved.html:/opt/docker/templates/user_approved.html \
     bw-assessment/api:latest

@@ -159,7 +159,7 @@ class NotificationServiceTest
       val renderedSubject = "subject"
       val renderedBody = "body"
 
-      when(fixture.templateEngineService.getContext(user, event)).thenReturn(context)
+      when(fixture.templateEngineService.getContext(user, Some(event))).thenReturn(context)
       when(fixture.templateEngineService.render(template.subject, context)).thenReturn(renderedSubject)
       when(fixture.templateEngineService.render(template.body, context)).thenReturn(renderedBody)
 
@@ -230,7 +230,7 @@ class NotificationServiceTest
       val renderedSubject = "subject"
       val renderedBody = "body"
 
-      when(fixture.templateEngineService.getContext(user, event)).thenReturn(context)
+      when(fixture.templateEngineService.getContext(user, Some(event))).thenReturn(context)
       when(fixture.templateEngineService.render(template.subject, context)).thenReturn(renderedSubject)
       when(fixture.templateEngineService.render(template.body, context)).thenReturn(renderedBody)
 
