@@ -4,7 +4,7 @@ import java.sql.Timestamp
 
 import models.{ListWithTotal, NamedEntity}
 import models.dao.{EventDao, ProjectDao, ProjectRelationDao, TemplateDao}
-import models.event.Event
+import models.event.{Event, EventJob}
 import models.notification.Notification
 import models.project.{Project, Relation, TemplateBinding}
 import org.mockito.ArgumentMatchers.any
@@ -54,28 +54,24 @@ class NotificationServiceTest
     Fixture(eventDao, projectDao, relationDao, templateDao, userService, mailService, templateEngineService, service)
   }
 
-  private val from = new Timestamp(0)
-  private val between = new Timestamp(100)
-  private val to = new Timestamp(Long.MaxValue)
+  private val notificationFixture = Event.NotificationTime(new Timestamp(123), Notification.Kind.Begin, Notification.Recipient.Respondent)
+  private val jobFixture = EventJob.SendNotification(0, 1, notificationFixture, EventJob.Status.New)
 
-  "sendEventsNotifications" should {
+  "execute" should {
     "do nothing if there is no events" in {
       val fixture = getFixture
 
+
       when(fixture.eventDao.getList(
-        optId = any[Option[Long]],
+        optId = eqTo(Some(jobFixture.eventId)),
         optStatus = any[Option[Event.Status]],
         optProjectId = any[Option[Long]],
-        optNotificationFrom = eqTo(Some(from)),
-        optNotificationTo = eqTo(Some(to)),
         optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]],
-        optEndFrom = any[Option[Timestamp]],
-        optEndTimeTo = any[Option[Timestamp]]
+        optGroupFromIds = any[Option[Seq[Long]]]
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
 
-      wait(fixture.service.sendEventsNotifications(from, to))
+      wait(fixture.service.execute(jobFixture))
       succeed
     }
 
@@ -84,15 +80,11 @@ class NotificationServiceTest
       val event = Events(0)
 
       when(fixture.eventDao.getList(
-        optId = any[Option[Long]],
+        optId = eqTo(Some(jobFixture.eventId)),
         optStatus = any[Option[Event.Status]],
         optProjectId = any[Option[Long]],
-        optNotificationFrom = eqTo(Some(from)),
-        optNotificationTo = eqTo(Some(to)),
         optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]],
-        optEndFrom = any[Option[Timestamp]],
-        optEndTimeTo = any[Option[Timestamp]]
+        optGroupFromIds = any[Option[Seq[Long]]]
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal(1, Seq(event))))
 
@@ -106,37 +98,30 @@ class NotificationServiceTest
       )(any[ListMeta]))
       .thenReturn(toFuture(ListWithTotal[Project](0, Nil)))
 
-      wait(fixture.service.sendEventsNotifications(from, to))
+      wait(fixture.service.execute(jobFixture))
       succeed
     }
 
     "send emails to auditor" in {
       val fixture = getFixture
-      val event = Events(0).copy(
-        notifications = Seq(Event.NotificationTime(
-          between,
-          Notification.Kind.Begin,
-          Notification.Recipient.Auditor
-        )))
+      val notification = notificationFixture.copy(recipient = Notification.Recipient.Auditor)
+      val event = Events(0).copy(notifications = Seq(notification))
       val project = Projects(0).copy(
         templates = Seq(TemplateBinding(
           NamedEntity(1, "template name"),
-          Notification.Kind.Begin,
-          Notification.Recipient.Auditor
+          notification.kind,
+          notification.recipient
         )))
       val template = Templates(0)
       val user = Users(0)
+      val job = jobFixture.copy(notification = notification)
 
       when(fixture.eventDao.getList(
-        optId = any[Option[Long]],
+        optId = eqTo(Some(job.eventId)),
         optStatus = any[Option[Event.Status]],
         optProjectId = any[Option[Long]],
-        optNotificationFrom = eqTo(Some(from)),
-        optNotificationTo = eqTo(Some(to)),
         optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]],
-        optEndFrom = any[Option[Timestamp]],
-        optEndTimeTo = any[Option[Timestamp]]
+        optGroupFromIds = any[Option[Seq[Long]]]
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal(1, Seq(event))))
 
@@ -176,43 +161,37 @@ class NotificationServiceTest
       when(fixture.templateEngineService.render(template.subject, context)).thenReturn(renderedSubject)
       when(fixture.templateEngineService.render(template.body, context)).thenReturn(renderedBody)
 
-      wait(fixture.service.sendEventsNotifications(from, to))
+      wait(fixture.service.execute(job))
       verify(fixture.mailService, times(1)).send(renderedSubject, user, renderedBody)
     }
 
     "send emails to respondent" in {
       val fixture = getFixture
-      val event = Events(0).copy(
-        notifications = Seq(Event.NotificationTime(
-          between,
-          Notification.Kind.Begin,
-          Notification.Recipient.Respondent
-        )))
+      val notification = notificationFixture.copy(recipient = Notification.Recipient.Respondent)
+
+      val event = Events(0).copy(notifications = Seq(notification))
       val project = Projects(0).copy(
         templates = Seq(TemplateBinding(
           NamedEntity(1, "template name"),
-          Notification.Kind.Begin,
-          Notification.Recipient.Respondent
+          notification.kind,
+          notification.recipient
         )))
       val template = Templates(0)
       val user = Users(0)
       val relation = ProjectRelations(0).copy(
         templates = Seq(TemplateBinding(
           NamedEntity(1, "template name"),
-          Notification.Kind.Begin,
-          Notification.Recipient.Respondent
+          notification.kind,
+          notification.recipient
         )))
+      val job = jobFixture.copy(notification = notification)
 
       when(fixture.eventDao.getList(
-        optId = any[Option[Long]],
+        optId = eqTo(Some(job.eventId)),
         optStatus = any[Option[Event.Status]],
         optProjectId = any[Option[Long]],
-        optNotificationFrom = eqTo(Some(from)),
-        optNotificationTo = eqTo(Some(to)),
         optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]],
-        optEndFrom = any[Option[Timestamp]],
-        optEndTimeTo = any[Option[Timestamp]]
+        optGroupFromIds = any[Option[Seq[Long]]]
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal(1, Seq(event))))
 
@@ -252,7 +231,7 @@ class NotificationServiceTest
       when(fixture.templateEngineService.render(template.subject, context)).thenReturn(renderedSubject)
       when(fixture.templateEngineService.render(template.body, context)).thenReturn(renderedBody)
 
-      wait(fixture.service.sendEventsNotifications(from, to))
+      wait(fixture.service.execute(job))
       verify(fixture.mailService, times(2)).send(renderedSubject, user, renderedBody)
     }
   }

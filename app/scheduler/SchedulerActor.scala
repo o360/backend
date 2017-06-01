@@ -5,11 +5,8 @@ import javax.inject.{Inject, Singleton}
 
 import akka.actor.Actor
 import play.api.libs.concurrent.Execution.Implicits._
-import services.{NotificationService, UploadService}
+import services.EventJobService
 import utils.{Config, Logger, TimestampConverter}
-
-import scala.concurrent.Future
-import scala.util.control.NonFatal
 
 /**
   * Scheduler actor.
@@ -17,36 +14,21 @@ import scala.util.control.NonFatal
 @Singleton
 class SchedulerActor @Inject()(
   protected val config: Config,
-  protected val notificationService: NotificationService,
-  protected val uploadService: UploadService
+  protected val eventJobService: EventJobService
 ) extends Actor with Logger {
 
-  private val interval = config.schedulerSettings.intervalMilliseconds
+  private val maxAge = config.schedulerSettings.maxAgeMilliseconds
 
   def receive: Receive = {
     case SchedulerActor.Tick =>
       log.trace("scheduler tick")
 
       val now = TimestampConverter.now
-      val from = new Timestamp(now.getTime - interval)
+      val from = new Timestamp(now.getTime - maxAge)
 
-      logFutureError(notificationService.sendEventsNotifications(from, now))
-
-      logFutureError(uploadReports(from, now))
-  }
-
-  private def logFutureError(f: Future[_]) = f.onFailure {
-    case NonFatal(e) => log.error("scheduler", e)
-  }
-
-  /**
-    * Generates reports and uploads them to google drive.
-    */
-  private def uploadReports(from: Timestamp, to: Timestamp) = {
-    for {
-      uploadModels <- uploadService.getGroupedUploadModels(from, to)
-      _ <- uploadService.upload(uploadModels)
-    } yield ()
+      eventJobService.get(from, now).map { jobs =>
+        eventJobService.execute(jobs)
+      }
   }
 }
 

@@ -22,17 +22,8 @@ class EventDaoTest
   "get" should {
     "return events by specific criteria" in {
       forAll { (status: Option[Event.Status], notificationFrom: Option[Timestamp], notificationTo: Option[Timestamp]) =>
-        val events = wait(dao.getList(
-          optStatus = status,
-          optNotificationFrom = notificationFrom,
-          optNotificationTo = notificationTo
-        ))
-        val expectedEvents =
-          Events.filter(u =>
-            status.forall(_ == u.status) &&
-              ((notificationFrom.isEmpty && notificationTo.isEmpty) || u.notifications.exists(nt =>
-                notificationFrom.forall(_.before(nt.time) && notificationTo.forall(_.after(nt.time)))
-              )))
+        val events = wait(dao.getList(optStatus = status))
+        val expectedEvents = Events.filter(u => status.forall(_ == u.status))
         events.total mustBe expectedEvents.length
         events.data must contain theSameElementsAs expectedEvents
       }

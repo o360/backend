@@ -4,7 +4,7 @@ import java.sql.Timestamp
 import javax.inject.{Inject, Singleton}
 
 import models.ListWithTotal
-import models.event.Event
+import models.event.{Event, EventJob}
 import models.notification.Notification
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.api.libs.concurrent.Execution.Implicits._
@@ -162,12 +162,8 @@ class EventDao @Inject()(
     optId: Option[Long] = None,
     optStatus: Option[Event.Status] = None,
     optProjectId: Option[Long] = None,
-    optNotificationFrom: Option[Timestamp] = None,
-    optNotificationTo: Option[Timestamp] = None,
     optFormId: Option[Long] = None,
-    optGroupFromIds: Option[Seq[Long]] = None,
-    optEndFrom: Option[Timestamp] = None,
-    optEndTimeTo: Option[Timestamp] = None
+    optGroupFromIds: Option[Seq[Long]] = None
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Event]] = {
 
     def statusFilter(event: EventTable) = optStatus.map { status =>
@@ -183,16 +179,6 @@ class EventDao @Inject()(
       EventProjects
         .filter(x => x.eventId === event.id && x.projectId === projectId)
         .exists
-    }
-
-    def notificationFilter(event: EventTable) = (optNotificationFrom, optNotificationTo) match {
-      case (Some(from), Some(to)) =>
-        Some(EventNotifications.filter(n => n.time >= from && n.time <= to && n.eventId === event.id).exists)
-      case (Some(from), None) =>
-        Some(EventNotifications.filter(n => n.time >= from && n.eventId === event.id).exists)
-      case (None, Some(to)) =>
-        Some(EventNotifications.filter(n => n.time >= to && n.eventId === event.id).exists)
-      case (None, None) => None
     }
 
     def formFilter(event: EventTable) = optFormId.map { formId =>
@@ -217,11 +203,8 @@ class EventDao @Inject()(
           optId.map(event.id === _),
           statusFilter(event),
           projectFilter(event),
-          notificationFilter(event),
           formFilter(event),
-          groupFromFilter(event),
-          optEndFrom.map(event.end >= _),
-          optEndTimeTo.map(event.end < _)
+          groupFromFilter(event)
         )
       }
 
