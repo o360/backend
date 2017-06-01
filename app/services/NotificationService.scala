@@ -4,7 +4,7 @@ import java.sql.Timestamp
 import javax.inject.{Inject, Singleton}
 
 import models.dao.{EventDao, ProjectDao, ProjectRelationDao, TemplateDao}
-import models.event.Event
+import models.event.{Event, EventJob}
 import models.notification.Notification
 import models.project.{Project, Relation, TemplateBinding}
 import models.template.Template
@@ -27,22 +27,19 @@ class NotificationService @Inject()(
 ) {
 
   /**
-    * Sends emails for event notifications between from and to.
-    *
-    * @param from time from
-    * @param to   time to
+    * Executes send notification job.
     */
-  def sendEventsNotifications(from: Timestamp, to: Timestamp): Future[Unit] = {
+  def execute(job: EventJob.SendNotification): Future[Unit] = {
     for {
-      events <- eventDao.getList(optNotificationFrom = Some(from), optNotificationTo = Some(to))
-      _ <- Future.sequence(events.data.map(sendEventNotifications(_, from, to)))
+      events <- eventDao.getList(optId = Some(job.eventId))
+      _ <- Future.sequence(events.data.map(sendEventNotifications(_, job)))
     } yield ()
   }
 
   /**
     * Send all emails related to event.
     */
-  private def sendEventNotifications(event: Event, from: Timestamp, to: Timestamp) = {
+  private def sendEventNotifications(event: Event, job: EventJob.SendNotification) = {
 
     /**
       * Sends emails to all users of group.
@@ -127,7 +124,7 @@ class NotificationService @Inject()(
       */
     def getActiveTemplates(templates: Seq[TemplateBinding]) = {
       for {
-        notification <- event.notifications if notification.time.after(from) && notification.time.before(to)
+        notification <- event.notifications if notification == job.notification
         template <- templates
         if notification.kind == template.kind && notification.recipient == template.recipient
       } yield template

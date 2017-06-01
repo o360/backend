@@ -5,11 +5,11 @@ import javax.inject.{Inject, Singleton}
 import models.dao.{EventDao, GroupDao}
 import models.event.Event
 import models.user.User
+import play.api.libs.concurrent.Execution.Implicits._
 import services.authorization.EventSda
-import utils.errors.{BadRequestError, ExceptionHandler, NotFoundError}
+import utils.errors.{BadRequestError, NotFoundError}
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
-import play.api.libs.concurrent.Execution.Implicits._
 
 /**
   * Event service.
@@ -17,7 +17,8 @@ import play.api.libs.concurrent.Execution.Implicits._
 @Singleton
 class EventService @Inject()(
   protected val eventDao: EventDao,
-  protected val groupDao: GroupDao
+  protected val groupDao: GroupDao,
+  protected val eventJobService: EventJobService
 ) extends ServiceResults[Event] {
 
   /**
@@ -68,6 +69,7 @@ class EventService @Inject()(
     for {
       _ <- validateEvent(event)
       created <- eventDao.create(event).lift
+      _ <- eventJobService.createJobs(created).lift
     } yield created
   }
 
@@ -83,6 +85,7 @@ class EventService @Inject()(
       _ <- EventSda.canUpdate(original, draft).liftLeft
 
       updated <- eventDao.update(draft).lift
+      _ <- eventJobService.createJobs(updated).lift
     } yield updated
   }
 

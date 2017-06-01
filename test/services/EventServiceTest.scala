@@ -24,13 +24,15 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
   private case class TestFixture(
     eventDaoMock: EventDao,
     groupDao: GroupDao,
+    eventJobService: EventJobService,
     service: EventService)
 
   private def getFixture = {
     val daoMock = mock[EventDao]
     val groupDao = mock[GroupDao]
-    val service = new EventService(daoMock, groupDao)
-    TestFixture(daoMock, groupDao, service)
+    val eventJobService = mock[EventJobService]
+    val service = new EventService(daoMock, groupDao, eventJobService)
+    TestFixture(daoMock, groupDao, eventJobService, service)
   }
 
   "getById" should {
@@ -77,12 +79,8 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
           optId = any[Option[Long]],
           optStatus = eqTo(status),
           optProjectId = eqTo(projectId),
-          optNotificationFrom = any[Option[Timestamp]],
-          optNotificationTo = any[Option[Timestamp]],
           optFormId = any[Option[Long]],
-          optGroupFromIds = eqTo(None),
-          optEndFrom = any[Option[Timestamp]],
-          optEndTimeTo = any[Option[Timestamp]]
+          optGroupFromIds = eqTo(None)
         )(eqTo(ListMeta.default)))
           .thenReturn(toFuture(ListWithTotal(total, events)))
         val result = wait(fixture.service.list(status, projectId)(admin, ListMeta.default).run)
@@ -106,12 +104,8 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
           optId = any[Option[Long]],
           optStatus = eqTo(status),
           optProjectId = eqTo(projectId),
-          optNotificationFrom = any[Option[Timestamp]],
-          optNotificationTo = any[Option[Timestamp]],
           optFormId = any[Option[Long]],
-          optGroupFromIds = eqTo(Some(userGroups)),
-          optEndFrom = any[Option[Timestamp]],
-          optEndTimeTo = any[Option[Timestamp]]
+          optGroupFromIds = eqTo(Some(userGroups))
         )(eqTo(ListMeta.default)))
           .thenReturn(toFuture(ListWithTotal(total, events)))
         when(fixture.groupDao.findGroupIdsByUserId(user.id)).thenReturn(toFuture(userGroups))
@@ -143,6 +137,7 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
 
       val fixture = getFixture
       when(fixture.eventDaoMock.create(event.copy(id = 0))).thenReturn(toFuture(event))
+      when(fixture.eventJobService.createJobs(event)).thenReturn(toFuture(()))
       val result = wait(fixture.service.create(event.copy(id = 0))(admin).run)
 
       result mustBe 'right
@@ -184,6 +179,7 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
       val fixture = getFixture
       when(fixture.eventDaoMock.findById(event.id)).thenReturn(toFuture(Some(event)))
       when(fixture.eventDaoMock.update(event)).thenReturn(toFuture(event))
+      when(fixture.eventJobService.createJobs(event)).thenReturn(toFuture(()))
       val result = wait(fixture.service.update(event)(admin).run)
 
       result mustBe 'right

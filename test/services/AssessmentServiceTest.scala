@@ -65,12 +65,8 @@ class AssessmentServiceTest
         optId = eqTo(Some(event.id)),
         optStatus = any[Option[Event.Status]],
         optProjectId = eqTo(Some(projectId)),
-        optNotificationFrom = any[Option[Timestamp]],
-        optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = eqTo(Some(userGroupsIds)),
-        optEndFrom = any[Option[Timestamp]],
-        optEndTimeTo = any[Option[Timestamp]]
+        optGroupFromIds = eqTo(Some(userGroupsIds))
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
 
@@ -111,12 +107,8 @@ class AssessmentServiceTest
         optId = eqTo(Some(event.id)),
         optStatus = any[Option[Event.Status]],
         optProjectId = eqTo(Some(projectId)),
-        optNotificationFrom = any[Option[Timestamp]],
-        optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = eqTo(Some(userGroupsIds)),
-        optEndFrom = any[Option[Timestamp]],
-        optEndTimeTo = any[Option[Timestamp]]
+        optGroupFromIds = eqTo(Some(userGroupsIds))
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal[Event](1, Seq(event))))
 
@@ -171,12 +163,8 @@ class AssessmentServiceTest
         optId = eqTo(Some(event.id)),
         optStatus = any[Option[Event.Status]],
         optProjectId = eqTo(Some(projectId)),
-        optNotificationFrom = any[Option[Timestamp]],
-        optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = eqTo(Some(userGroupsIds)),
-        optEndFrom = any[Option[Timestamp]],
-        optEndTimeTo = any[Option[Timestamp]]
+        optGroupFromIds = eqTo(Some(userGroupsIds))
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
 
@@ -202,12 +190,8 @@ class AssessmentServiceTest
         optId = eqTo(Some(event.id)),
         optStatus = any[Option[Event.Status]],
         optProjectId = eqTo(Some(projectId)),
-        optNotificationFrom = any[Option[Timestamp]],
-        optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = eqTo(Some(userGroupsIds)),
-        optEndFrom = any[Option[Timestamp]],
-        optEndTimeTo = any[Option[Timestamp]]
+        optGroupFromIds = eqTo(Some(userGroupsIds))
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal(1, Seq(event))))
 
@@ -236,12 +220,8 @@ class AssessmentServiceTest
         optId = eqTo(Some(event.id)),
         optStatus = any[Option[Event.Status]],
         optProjectId = eqTo(Some(projectId)),
-        optNotificationFrom = any[Option[Timestamp]],
-        optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = eqTo(Some(userGroupsIds)),
-        optEndFrom = any[Option[Timestamp]],
-        optEndTimeTo = any[Option[Timestamp]]
+        optGroupFromIds = eqTo(Some(userGroupsIds))
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal(1, Seq(event))))
 
@@ -295,12 +275,8 @@ class AssessmentServiceTest
           optId = eqTo(Some(event.id)),
           optStatus = any[Option[Event.Status]],
           optProjectId = eqTo(Some(projectId)),
-          optNotificationFrom = any[Option[Timestamp]],
-          optNotificationTo = any[Option[Timestamp]],
           optFormId = any[Option[Long]],
-          optGroupFromIds = eqTo(Some(userGroupsIds)),
-          optEndFrom = any[Option[Timestamp]],
-          optEndTimeTo = any[Option[Timestamp]]
+          optGroupFromIds = eqTo(Some(userGroupsIds))
         )(any[ListMeta]))
           .thenReturn(toFuture(ListWithTotal(1, Seq(event))))
 
@@ -332,12 +308,8 @@ class AssessmentServiceTest
         optId = eqTo(Some(event.id)),
         optStatus = any[Option[Event.Status]],
         optProjectId = eqTo(Some(projectId)),
-        optNotificationFrom = any[Option[Timestamp]],
-        optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = eqTo(Some(userGroupsIds)),
-        optEndFrom = any[Option[Timestamp]],
-        optEndTimeTo = any[Option[Timestamp]]
+        optGroupFromIds = eqTo(Some(userGroupsIds))
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal(1, Seq(event))))
 
@@ -388,12 +360,8 @@ class AssessmentServiceTest
         optId = eqTo(Some(event.id)),
         optStatus = any[Option[Event.Status]],
         optProjectId = eqTo(Some(projectId)),
-        optNotificationFrom = any[Option[Timestamp]],
-        optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = eqTo(Some(userGroupsIds)),
-        optEndFrom = any[Option[Timestamp]],
-        optEndTimeTo = any[Option[Timestamp]]
+        optGroupFromIds = eqTo(Some(userGroupsIds))
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal(1, Seq(event))))
 
@@ -447,12 +415,8 @@ class AssessmentServiceTest
         optId = eqTo(Some(event.id)),
         optStatus = any[Option[Event.Status]],
         optProjectId = eqTo(Some(projectId)),
-        optNotificationFrom = any[Option[Timestamp]],
-        optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = eqTo(Some(userGroupsIds)),
-        optEndFrom = any[Option[Timestamp]],
-        optEndTimeTo = any[Option[Timestamp]]
+        optGroupFromIds = eqTo(Some(userGroupsIds))
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal(1, Seq(event))))
 

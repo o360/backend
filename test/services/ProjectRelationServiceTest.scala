@@ -121,12 +121,8 @@ class ProjectRelationServiceTest
         optId = any[Option[Long]],
         optStatus = eqTo(Some(Event.Status.InProgress)),
         optProjectId = eqTo(Some(relation.project.id)),
-        optNotificationFrom = any[Option[Timestamp]],
-        optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]],
-        optEndFrom = any[Option[Timestamp]],
-        optEndTimeTo = any[Option[Timestamp]]
+        optGroupFromIds = any[Option[Seq[Long]]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       when(fixture.formService.getById(relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
@@ -145,12 +141,8 @@ class ProjectRelationServiceTest
         optId = any[Option[Long]],
         optStatus = eqTo(Some(Event.Status.InProgress)),
         optProjectId = eqTo(Some(relation.project.id)),
-        optNotificationFrom = any[Option[Timestamp]],
-        optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]],
-        optEndFrom = any[Option[Timestamp]],
-        optEndTimeTo = any[Option[Timestamp]]
+        optGroupFromIds = any[Option[Seq[Long]]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](1, Nil)))
       val result = wait(fixture.service.create(relation)(admin).run)
 
@@ -170,12 +162,8 @@ class ProjectRelationServiceTest
         optId = any[Option[Long]],
         optStatus = eqTo(Some(Event.Status.InProgress)),
         optProjectId = eqTo(Some(relation.project.id)),
-        optNotificationFrom = any[Option[Timestamp]],
-        optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]],
-        optEndFrom = any[Option[Timestamp]],
-        optEndTimeTo = any[Option[Timestamp]]
+        optGroupFromIds = any[Option[Seq[Long]]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       when(fixture.formService.getById(relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
@@ -197,12 +185,8 @@ class ProjectRelationServiceTest
         optId = any[Option[Long]],
         optStatus = eqTo(Some(Event.Status.InProgress)),
         optProjectId = eqTo(Some(relation.project.id)),
-        optNotificationFrom = any[Option[Timestamp]],
-        optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]],
-        optEndFrom = any[Option[Timestamp]],
-        optEndTimeTo = any[Option[Timestamp]]
+        optGroupFromIds = any[Option[Seq[Long]]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       when(fixture.formService.getById(relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
@@ -247,12 +231,8 @@ class ProjectRelationServiceTest
         optId = any[Option[Long]],
         optStatus = eqTo(Some(Event.Status.InProgress)),
         optProjectId = eqTo(Some(relation.project.id)),
-        optNotificationFrom = any[Option[Timestamp]],
-        optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]],
-        optEndFrom = any[Option[Timestamp]],
-        optEndTimeTo = any[Option[Timestamp]]
+        optGroupFromIds = any[Option[Seq[Long]]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       val result = wait(fixture.service.update(relation)(admin).run)
 
@@ -273,12 +253,8 @@ class ProjectRelationServiceTest
         optId = any[Option[Long]],
         optStatus = eqTo(Some(Event.Status.InProgress)),
         optProjectId = eqTo(Some(relation.project.id)),
-        optNotificationFrom = any[Option[Timestamp]],
-        optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]],
-        optEndFrom = any[Option[Timestamp]],
-        optEndTimeTo = any[Option[Timestamp]]
+        optGroupFromIds = any[Option[Seq[Long]]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       when(fixture.formService.getById(relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
@@ -298,12 +274,8 @@ class ProjectRelationServiceTest
         optId = any[Option[Long]],
         optStatus = eqTo(Some(Event.Status.InProgress)),
         optProjectId = eqTo(Some(relation.project.id)),
-        optNotificationFrom = any[Option[Timestamp]],
-        optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]],
-        optEndFrom = any[Option[Timestamp]],
-        optEndTimeTo = any[Option[Timestamp]]
+        optGroupFromIds = any[Option[Seq[Long]]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](1, Nil)))
       val result = wait(fixture.service.update(relation)(admin).run)
 
@@ -324,12 +296,8 @@ class ProjectRelationServiceTest
         optId = any[Option[Long]],
         optStatus = eqTo(Some(Event.Status.InProgress)),
         optProjectId = eqTo(Some(relation.project.id)),
-        optNotificationFrom = any[Option[Timestamp]],
-        optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]],
-        optEndFrom = any[Option[Timestamp]],
-        optEndTimeTo = any[Option[Timestamp]]
+        optGroupFromIds = any[Option[Seq[Long]]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       when(fixture.formService.getById(relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
@@ -352,12 +320,8 @@ class ProjectRelationServiceTest
         optId = any[Option[Long]],
         optStatus = eqTo(Some(Event.Status.InProgress)),
         optProjectId = eqTo(Some(relation.project.id)),
-        optNotificationFrom = any[Option[Timestamp]],
-        optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]],
-        optEndFrom = any[Option[Timestamp]],
-        optEndTimeTo = any[Option[Timestamp]]
+        optGroupFromIds = any[Option[Seq[Long]]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       when(fixture.formService.getById(relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
