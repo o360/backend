@@ -37,7 +37,7 @@ class ProjectService @Inject()(
   /**
     * Returns projects list.
     */
-  def getList(eventId: Option[Long])(implicit account: User, meta: ListMeta): ListResult = {
+  def getList(eventId: Option[Long], groupId: Option[Long])(implicit account: User, meta: ListMeta): ListResult = {
 
     val groupFromFilter = account.role match {
       case User.Role.Admin => None.toFuture
@@ -49,7 +49,8 @@ class ProjectService @Inject()(
       projects <- projectDao.getList(
         optId = None,
         optEventId = eventId,
-        optGroupFromIds = groupFromIds
+        optGroupFromIds = groupFromIds,
+        optAnyRelatedGroupId = groupId
       ).lift
     } yield projects
   }

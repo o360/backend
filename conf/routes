@@ -518,7 +518,7 @@ GET           /projects/:id                            controllers.ProjectContro
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /projects                                controllers.ProjectController.getList(eventId: Option[Long])
+GET           /projects                                controllers.ProjectController.getList(eventId: Option[Long], groupId: Option[Long])
 
 ###
 # summary: Creates project

@@ -88,7 +88,8 @@ class UploadServiceTest extends BaseServiceTest with EventFixture with ProjectFi
       when(fixture.projectDao.getList(
         optId = any[Option[Long]],
         optEventId = eqTo(Some(event.id)),
-        optGroupFromIds = any[Option[Seq[Long]]]
+        optGroupFromIds = any[Option[Seq[Long]]],
+        optAnyRelatedGroupId = any[Option[Long]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Seq(project))))
       when(fixture.relationDao.getList(
         optId = any[Option[Long]],

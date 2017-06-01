@@ -71,6 +71,7 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
     "return list of projects from db for admin" in {
       forAll { (
       eventId: Option[Long],
+      groupId: Option[Long],
       projects: Seq[Project],
       total: Int
       ) =>
@@ -78,10 +79,11 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
         when(fixture.projectDaoMock.getList(
           optId = any[Option[Long]],
           optEventId = eqTo(eventId),
-          optGroupFromIds = any[Option[Seq[Long]]]
+          optGroupFromIds = any[Option[Seq[Long]]],
+          optAnyRelatedGroupId = eqTo(groupId)
         )(eqTo(ListMeta.default)))
           .thenReturn(toFuture(ListWithTotal(total, projects)))
-        val result = wait(fixture.service.getList(eventId)(admin, ListMeta.default).run)
+        val result = wait(fixture.service.getList(eventId, groupId)(admin, ListMeta.default).run)
 
         result mustBe 'right
         result.toOption.get mustBe ListWithTotal(total, projects)
@@ -93,6 +95,7 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
       forAll { (
       eventId: Option[Long],
       userGroups: Seq[Long],
+      groupId: Option[Long],
       projects: Seq[Project],
       total: Int
       ) =>
@@ -100,12 +103,13 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
         when(fixture.projectDaoMock.getList(
           optId = any[Option[Long]],
           optEventId = eqTo(eventId),
-          optGroupFromIds = eqTo(Some(userGroups))
+          optGroupFromIds = eqTo(Some(userGroups)),
+          optAnyRelatedGroupId = eqTo(groupId)
         )(eqTo(ListMeta.default)))
           .thenReturn(toFuture(ListWithTotal(total, projects)))
         when(fixture.groupDao.findGroupIdsByUserId(user.id)).thenReturn(toFuture(userGroups))
 
-        val result = wait(fixture.service.getList(eventId)(user, ListMeta.default).run)
+        val result = wait(fixture.service.getList(eventId, groupId)(user, ListMeta.default).run)
 
         result mustBe 'right
         result.toOption.get mustBe ListWithTotal(total, projects)
