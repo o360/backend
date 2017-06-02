@@ -12,6 +12,9 @@ object EventSda {
     * Returns some error if update forbidden.
     */
   def canUpdate(original: Event, draft: Event): Option[AuthorizationError] = {
+    if (original.status == Event.Status.Completed) {
+      Some(AuthorizationError.CompletedEventUpdating)
+    } else {
       val rules = getValidationRules(original, draft)
       ValidationRule.validate(rules) match {
         case None => None
@@ -19,7 +22,7 @@ object EventSda {
           val logMessage = s"original: $original; draft: $draft"
           Some(AuthorizationError.FieldUpdate(errorMessage, "event", logMessage))
       }
-
+    }
   }
 
   /**

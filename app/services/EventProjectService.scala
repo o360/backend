@@ -34,7 +34,7 @@ class EventProjectService @Inject()(
       event <- eventService.getById(eventId)
 
       _ <- ensure(event.status != Event.Status.InProgress) {
-        AuthorizationError.EventUpdating
+        AuthorizationError.ProjectsInEventUpdating
       }
     } yield ()
   }
