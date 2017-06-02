@@ -869,6 +869,26 @@ PUT           /events/:id                           controllers.EventController.
 DELETE        /events/:id                           controllers.EventController.delete(id: Long)
 
 ###
+# summary: Clones event
+# tags:
+#   - Event
+# responses:
+#   200:
+#       description: Cloned event
+#       schema:
+#           $ref: '#/definitions/controllers.api.event.ApiEvent'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST          /events/:id/clone                       controllers.EventController.cloneEvent(id: Long)
+
+###
 # summary: Adds project to event
 # tags:
 #   - Event

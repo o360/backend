@@ -178,4 +178,21 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
       }
     }
   }
+
+  "POST /events/id/clone" should {
+    "clone event" in  {
+      forAll { (id: Long, event: Event) =>
+        val env = fakeEnvironment(admin)
+        val fixture = getFixture(env)
+        when(fixture.eventServiceMock.cloneEvent(id)(admin))
+          .thenReturn(EitherT.eitherT(toFuture(\/-(event): ApplicationError \/ Event)))
+        val request = authenticated(FakeRequest(), env)
+
+        val response = fixture.controller.cloneEvent(id)(request)
+        status(response) mustBe OK
+        val eventJson = contentAsJson(response)
+        eventJson mustBe Json.toJson(ApiEvent(event)(UserFixture.admin))
+      }
+    }
+  }
 }

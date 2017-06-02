@@ -1,15 +1,19 @@
 package services
 
+import java.sql.Timestamp
 import javax.inject.{Inject, Singleton}
 
-import models.dao.{EventDao, GroupDao}
+import models.dao.{EventDao, EventProjectDao, GroupDao, ProjectDao}
 import models.event.Event
 import models.user.User
+import play.api.libs.concurrent.Execution.Implicits._
 import services.authorization.EventSda
-import utils.errors.{BadRequestError, ExceptionHandler, NotFoundError}
+import utils.TimestampConverter
+import utils.errors.{BadRequestError, NotFoundError}
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
-import play.api.libs.concurrent.Execution.Implicits._
+
+import scala.concurrent.Future
 
 /**
   * Event service.
@@ -17,7 +21,9 @@ import play.api.libs.concurrent.Execution.Implicits._
 @Singleton
 class EventService @Inject()(
   protected val eventDao: EventDao,
-  protected val groupDao: GroupDao
+  protected val groupDao: GroupDao,
+  protected val projectDao: ProjectDao,
+  protected val eventProjectDao: EventProjectDao
 ) extends ServiceResults[Event] {
 
   /**
@@ -97,6 +103,47 @@ class EventService @Inject()(
 
       _ <- eventDao.delete(id).lift
     } yield ()
+  }
+
+  /**
+    * Clones event with projects and notifications.
+    */
+  def cloneEvent(id: Long)(implicit account: User): SingleResult = {
+
+    /**
+      * Moves all event dates to the future.
+      */
+    def shiftDates(event: Event): Event = {
+      val newStart = Timestamp.valueOf(
+        TimestampConverter
+          .now
+          .toLocalDateTime
+          .plusDays(2)
+          .withNano(0)
+      )
+
+      val difference = newStart.getTime - event.start.getTime
+
+      def shift(timestamp: Timestamp): Timestamp = {
+        val newValue = new Timestamp(timestamp.getTime + difference)
+        if (newValue.before(newStart)) newStart
+        else newValue
+      }
+
+      val notifications = event.notifications.map(n => n.copy(time = shift(n.time)))
+      event.copy(start = newStart, end = shift(event.end), notifications = notifications)
+    }
+
+    for {
+      event <- getById(id)
+      withShiftedDates = shiftDates(event)
+
+      createdEvent <- create(withShiftedDates)
+
+      projects <- projectDao.getList(optEventId = Some(event.id)).lift
+      projectsIds = projects.data.map(_.id)
+      _ <- Future.sequence(projectsIds.map(eventProjectDao.add(createdEvent.id, _))).lift
+    } yield createdEvent
   }
 
   private def validateEvent(event: Event): UnitResult = {
