@@ -102,7 +102,8 @@ class NotificationServiceTest
         optGroupFromIds = any[Option[Seq[Long]]],
         optFormId = any[Option[Long]],
         optGroupAuditorId = any[Option[Long]],
-        optEmailTemplateId = any[Option[Long]]
+        optEmailTemplateId = any[Option[Long]],
+        optAnyRelatedGroupId = any[Option[Long]]
       )(any[ListMeta]))
       .thenReturn(toFuture(ListWithTotal[Project](0, Nil)))
 
@@ -146,7 +147,8 @@ class NotificationServiceTest
         optGroupFromIds = any[Option[Seq[Long]]],
         optFormId = any[Option[Long]],
         optGroupAuditorId = any[Option[Long]],
-        optEmailTemplateId = any[Option[Long]]
+        optEmailTemplateId = any[Option[Long]],
+        optAnyRelatedGroupId = any[Option[Long]]
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal(1, Seq(project))))
 
@@ -222,7 +224,8 @@ class NotificationServiceTest
         optGroupFromIds = any[Option[Seq[Long]]],
         optFormId = any[Option[Long]],
         optGroupAuditorId = any[Option[Long]],
-        optEmailTemplateId = any[Option[Long]]
+        optEmailTemplateId = any[Option[Long]],
+        optAnyRelatedGroupId = any[Option[Long]]
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal(1, Seq(project))))
 
