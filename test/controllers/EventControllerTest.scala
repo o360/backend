@@ -107,8 +107,8 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
 
         val partialEvent = ApiPartialEvent(
           event.description,
-          event.start,
-          event.end,
+          event.start.toLocalDateTime,
+          event.end.toLocalDateTime,
           event.canRevote,
           event.notifications.map(ApiEvent.NotificationTime(_)(admin))
 
@@ -140,8 +140,8 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
 
         val partialEvent = ApiPartialEvent(
           event.description,
-          event.start,
-          event.end,
+          event.start.toLocalDateTime,
+          event.end.toLocalDateTime,
           event.canRevote,
           event.notifications.map(ApiEvent.NotificationTime(_)(admin))
 
