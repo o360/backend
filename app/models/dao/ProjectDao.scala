@@ -88,7 +88,8 @@ class ProjectDao @Inject()(
   def getList(
     optId: Option[Long] = None,
     optEventId: Option[Long] = None,
-    optGroupFromIds: Option[Seq[Long]] = None
+    optGroupFromIds: Option[Seq[Long]] = None,
+    optFormId: Option[Long] = None
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Project]] = {
 
     def sortMapping(project: ProjectTable): PartialFunction[Symbol, Rep[_]] = {
@@ -105,12 +106,17 @@ class ProjectDao @Inject()(
       project.id in Relations.filter(_.groupFromId.inSet(groupFromIds)).map(_.projectId)
     }
 
+    def formFilter(project: ProjectTable) = optFormId.map { formId =>
+      project.id in Relations.filter(_.formId === formId).map(_.projectId)
+    }
+
     val baseQuery = Projects
       .applyFilter { x =>
         Seq(
           optId.map(x.id === _),
           eventFilter(x),
-          groupFromFilter(x)
+          groupFromFilter(x),
+          formFilter(x)
         )
       }
 

@@ -3,9 +3,10 @@ package services
 import java.sql.Timestamp
 
 import models.ListWithTotal
-import models.dao.{EventDao, FormDao, GroupDao}
+import models.dao.{EventDao, FormDao, GroupDao, ProjectDao}
 import models.event.Event
 import models.form.{Form, FormShort}
+import models.project.Project
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
 import testutils.fixture.{EventFixture, FormFixture, UserFixture}
@@ -24,14 +25,16 @@ class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixtur
     formDaoMock: FormDao,
     eventDao: EventDao,
     groupDao: GroupDao,
+    projectDao: ProjectDao,
     service: FormService)
 
   private def getFixture = {
     val daoMock = mock[FormDao]
     val eventDao = mock[EventDao]
     val groupDao = mock[GroupDao]
-    val service = new FormService(daoMock, eventDao, groupDao)
-    TestFixture(daoMock, eventDao, groupDao, service)
+    val projectDao = mock[ProjectDao]
+    val service = new FormService(daoMock, eventDao, groupDao, projectDao)
+    TestFixture(daoMock, eventDao, groupDao, projectDao, service)
   }
 
   "getById" should {
@@ -125,7 +128,7 @@ class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixtur
       total: Int
       ) =>
         val fixture = getFixture
-        when(fixture.formDaoMock.getList(any[Option[Form.Kind]], any[Option[Long]])(eqTo(ListMeta.default)))
+        when(fixture.formDaoMock.getList(any[Option[Form.Kind]], any[Option[Long]], any[Boolean])(eqTo(ListMeta.default)))
           .thenReturn(toFuture(ListWithTotal(total, forms)))
         val result = wait(fixture.service.getList()(admin, ListMeta.default).run)
 
@@ -219,7 +222,8 @@ class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixtur
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       when(fixture.formDaoMock.getList(
         optKind = eqTo(Some(Form.Kind.Freezed)),
-        optFormTemplateId = eqTo(Some(form.id))
+        optFormTemplateId = eqTo(Some(form.id)),
+        includeDeleted = any[Boolean]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Seq(childForm))))
       when(fixture.formDaoMock.update(childForm.copy(name = form.name))).thenReturn(toFuture(childForm))
 
@@ -261,6 +265,12 @@ class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixtur
     "delete form from db" in {
       forAll { (form: Form) =>
         val fixture = getFixture
+        when(fixture.projectDao.getList(
+          any[Option[Long]],
+          any[Option[Long]],
+          any[Option[Seq[Long]]],
+          eqTo(Some(form.id))
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Project](0, Nil)))
         when(fixture.formDaoMock.findById(form.id)).thenReturn(toFuture(Some(form.copy(kind = Form.Kind.Active))))
         when(fixture.formDaoMock.delete(form.id)).thenReturn(toFuture(1))
 

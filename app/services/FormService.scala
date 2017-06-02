@@ -3,7 +3,7 @@ package services
 import javax.inject.{Inject, Singleton}
 
 import models.ListWithTotal
-import models.dao.{EventDao, FormDao, GroupDao}
+import models.dao.{EventDao, FormDao, GroupDao, ProjectDao}
 import models.event.Event
 import models.form.{Form, FormShort}
 import models.user.User
@@ -23,7 +23,8 @@ import play.api.libs.concurrent.Execution.Implicits._
 class FormService @Inject()(
   protected val formDao: FormDao,
   protected val eventDao: EventDao,
-  protected val groupDao: GroupDao
+  protected val groupDao: GroupDao,
+  protected val projectDao: ProjectDao
 ) extends ServiceResults[Form] {
 
 
@@ -90,7 +91,7 @@ class FormService @Inject()(
       elements <- validateElements(form.elements).lift
       createdForm <- formDao.create(form.toShort).lift
       createdElements <- formDao.createElements(createdForm.id, elements).lift
-    } yield createdForm.toModel(createdElements)
+    } yield createdForm.withElements(createdElements)
   }
 
   /**
@@ -145,7 +146,13 @@ class FormService @Inject()(
       _ <- ensure(original.kind != Form.Kind.Freezed) {
         ConflictError.Form.FormKind("delete freezed form")
       }
-      _ <- formDao.delete(id).lift(ExceptionHandler.sql)
+
+      projects <- projectDao.getList(optFormId = Some(id)).lift
+      _ <- ensure(projects.total == 0) {
+        ConflictError.Form.RelationExists
+      }
+
+      _ <- formDao.delete(id).lift
     } yield ()
   }
 

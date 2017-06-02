@@ -99,7 +99,8 @@ class NotificationServiceTest
       when(fixture.projectDao.getList(
         optId = any[Option[Long]],
         optEventId = eqTo(Some(event.id)),
-        optGroupFromIds = any[Option[Seq[Long]]]
+        optGroupFromIds = any[Option[Seq[Long]]],
+        optFormId = any[Option[Long]]
       )(any[ListMeta]))
       .thenReturn(toFuture(ListWithTotal[Project](0, Nil)))
 
@@ -140,7 +141,8 @@ class NotificationServiceTest
       when(fixture.projectDao.getList(
         optId = any[Option[Long]],
         optEventId = eqTo(Some(event.id)),
-        optGroupFromIds = any[Option[Seq[Long]]]
+        optGroupFromIds = any[Option[Seq[Long]]],
+        optFormId = any[Option[Long]]
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal(1, Seq(project))))
 
@@ -209,7 +211,8 @@ class NotificationServiceTest
       when(fixture.projectDao.getList(
         optId = any[Option[Long]],
         optEventId = eqTo(Some(event.id)),
-        optGroupFromIds = any[Option[Seq[Long]]]
+        optGroupFromIds = any[Option[Seq[Long]]],
+        optFormId = any[Option[Long]]
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal(1, Seq(project))))
 
