@@ -39,10 +39,25 @@ class FormController @Inject()(
   /**
     * Returns form template with elements.
     */
-  def getById(id: Long) = silhouette.SecuredAction(AllowedStatus.approved).async { implicit request =>
+  def getById(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
     toResult(Ok) {
       formService
         .getById(id)
+        .map(ApiForm(_))
+    }
+  }
+
+  /**
+    * Returns form template with elements for user.
+    */
+  def userGetById(
+    id: Long,
+    projectId: Long,
+    eventId: Long
+  ) = silhouette.SecuredAction(AllowedStatus.approved).async { implicit request =>
+    toResult(Ok){
+      formService
+        .userGetById(id, projectId, eventId)
         .map(ApiForm(_))
     }
   }

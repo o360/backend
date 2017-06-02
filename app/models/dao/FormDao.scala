@@ -335,4 +335,15 @@ class FormDao @Inject()(
   def setFreezedFormId(eventId: Long, templateFormId: Long, freezedFormId: Long): Future[Unit] = db.run {
     EventFormMappings += DbEventFormMapping(eventId, templateFormId, freezedFormId)
   }.map(_ => ())
+
+  /**
+    * Returns event ID for given freezed form ID.
+    */
+  def getEventIdByFreezedForm(freezedFormId: Long): Future[Option[Long]] = db.run {
+    EventFormMappings
+      .filter(_.formFreezedId === freezedFormId)
+      .map(_.eventId)
+      .result
+      .headOption
+  }
 }

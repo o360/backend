@@ -18,4 +18,6 @@ object AuthorizationError {
 
   case object EventUpdating
     extends AuthorizationError("AUTHORIZATION-EVENT", "Can't add or remove projects from in-progress event")
+
+  case class Form(id: Long) extends AuthorizationError("AUTHORIZATION-FORM-1", "Can't get form by ID.")
 }

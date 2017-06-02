@@ -3,33 +3,35 @@ package services
 import java.sql.Timestamp
 
 import models.ListWithTotal
-import models.dao.{EventDao, FormDao}
+import models.dao.{EventDao, FormDao, GroupDao}
 import models.event.Event
 import models.form.{Form, FormShort}
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
-import testutils.fixture.{FormFixture, UserFixture}
+import testutils.fixture.{EventFixture, FormFixture, UserFixture}
 import testutils.generator.FormGenerator
-import utils.errors.{ConflictError, NotFoundError}
+import utils.errors.{AuthorizationError, ConflictError, NotFoundError}
 import utils.listmeta.ListMeta
 
 /**
   * Test for form service.
   */
-class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixture {
+class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixture with EventFixture {
 
   private val admin = UserFixture.admin
 
   private case class TestFixture(
     formDaoMock: FormDao,
     eventDao: EventDao,
+    groupDao: GroupDao,
     service: FormService)
 
   private def getFixture = {
     val daoMock = mock[FormDao]
     val eventDao = mock[EventDao]
-    val service = new FormService(daoMock, eventDao)
-    TestFixture(daoMock, eventDao, service)
+    val groupDao = mock[GroupDao]
+    val service = new FormService(daoMock, eventDao, groupDao)
+    TestFixture(daoMock, eventDao, groupDao, service)
   }
 
   "getById" should {
@@ -60,6 +62,59 @@ class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixtur
         verify(fixture.formDaoMock, times(1)).findById(id)
         verifyNoMoreInteractions(fixture.formDaoMock)
       }
+    }
+  }
+
+  "userGetById" should {
+    "return error if can't get form" in {
+      val fixture = getFixture
+      val formId = 1
+      val eventId = 2
+      val projectId = 3
+      when(fixture.formDaoMock.findById(formId)).thenReturn(toFuture(Some(Forms(0))))
+      when(fixture.groupDao.findGroupIdsByUserId(admin.id)).thenReturn(toFuture(Nil))
+      when(fixture.eventDao.getList(
+        optId = eqTo(Some(eventId)),
+        optStatus = any[Option[Event.Status]],
+        optProjectId = eqTo(Some(projectId)),
+        optNotificationFrom = any[Option[Timestamp]],
+        optNotificationTo = any[Option[Timestamp]],
+        optFormId = any[Option[Long]],
+        optGroupFromIds = eqTo(Some(Nil)),
+        optEndFrom = any[Option[Timestamp]],
+        optEndTimeTo = any[Option[Timestamp]]
+      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
+
+      val result = wait(fixture.service.userGetById(formId, projectId, eventId)(admin).run)
+
+      result mustBe 'left
+      result.swap.toOption.get mustBe an[AuthorizationError]
+    }
+
+    "return form" in {
+      val fixture = getFixture
+      val formId = 1
+      val event = Events(0).copy(id = 2)
+      val projectId = 3
+      when(fixture.formDaoMock.findById(formId)).thenReturn(toFuture(Some(Forms(0))))
+      when(fixture.groupDao.findGroupIdsByUserId(admin.id)).thenReturn(toFuture(Nil))
+      when(fixture.eventDao.getList(
+        optId = eqTo(Some(event.id)),
+        optStatus = any[Option[Event.Status]],
+        optProjectId = eqTo(Some(projectId)),
+        optNotificationFrom = any[Option[Timestamp]],
+        optNotificationTo = any[Option[Timestamp]],
+        optFormId = any[Option[Long]],
+        optGroupFromIds = eqTo(Some(Nil)),
+        optEndFrom = any[Option[Timestamp]],
+        optEndTimeTo = any[Option[Timestamp]]
+      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](1, Seq(event))))
+      when(fixture.formDaoMock.getEventIdByFreezedForm(formId)).thenReturn(toFuture(Some(event.id)))
+
+      val result = wait(fixture.service.userGetById(formId, projectId, event.id)(admin).run)
+
+      result mustBe 'right
+      result.toOption.get mustBe Forms(0)
     }
   }
 
