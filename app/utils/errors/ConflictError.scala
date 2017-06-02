@@ -47,6 +47,7 @@ object ConflictError {
 
     case object RelationExists extends ConflictError("CONFLICT-GROUP-5", "Can't delete, relation exists")
 
+    case object DuplicateName extends ConflictError("CONFLICT-GROUP-6", "Duplicate name")
   }
   object User {
     case object Unapproved extends ConflictError("CONFLICT-USER-2", "Can't add unapproved user to group")
@@ -65,6 +66,8 @@ object ConflictError {
     case object ActiveEventExists extends ConflictError("CONFLICT-PROJECT-2", "Can't update, active events exists")
 
     case object EventExists extends ConflictError("CONFLICT-PROJECT-3", "Can't delete, events exists")
+
+    case object DuplicateName extends ConflictError("CONFLICT-PROJECT-4", "Duplicate name")
   }
 
   object Template {

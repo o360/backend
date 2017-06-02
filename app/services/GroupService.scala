@@ -8,7 +8,7 @@ import models.project.{Project, Relation}
 import models.user.User
 import org.davidbild.tristate.Tristate
 import play.api.libs.concurrent.Execution.Implicits._
-import utils.errors.{ConflictError, NotFoundError}
+import utils.errors.{ConflictError, ExceptionHandler, NotFoundError}
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
 
@@ -58,7 +58,7 @@ class GroupService @Inject()(
   def create(group: GroupModel)(implicit account: User): SingleResult = {
     for {
       _ <- validateParentId(group)
-      created <- groupDao.create(group).lift
+      created <- groupDao.create(group).lift(ExceptionHandler.sql)
     } yield created
   }
 
@@ -72,7 +72,7 @@ class GroupService @Inject()(
       _ <- getById(draft.id)
       _ <- validateParentId(draft)
 
-      updated <- groupDao.update(draft).lift
+      updated <- groupDao.update(draft).lift(ExceptionHandler.sql)
     } yield updated
   }
 

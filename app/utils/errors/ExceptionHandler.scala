@@ -16,7 +16,9 @@ object ExceptionHandler {
         "event_project_project_id_fk" -> ConflictError.Project.EventExists,
         "project_email_template_template_id_fk" -> ConflictError.Template.ProjectExists,
         "relation_email_template_template_id_fk" -> ConflictError.Template.RelationExists,
-        "relation_group_from_id_fk" -> ConflictError.Group.RelationExists
+        "relation_group_from_id_fk" -> ConflictError.Group.RelationExists,
+        "orgstructure_name_uindex" -> ConflictError.Group.DuplicateName,
+        "project_name_uindex" -> ConflictError.Project.DuplicateName
       )
 
       val message = e.getMessage
