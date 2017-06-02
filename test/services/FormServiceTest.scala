@@ -3,13 +3,13 @@ package services
 import java.sql.Timestamp
 
 import models.ListWithTotal
-import models.dao.{EventDao, FormDao, GroupDao, ProjectDao}
+import models.dao._
 import models.event.Event
 import models.form.{Form, FormShort}
-import models.project.Project
+import models.project.{Project, Relation}
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
-import testutils.fixture.{EventFixture, FormFixture, UserFixture}
+import testutils.fixture.{EventFixture, FormFixture, ProjectFixture, UserFixture}
 import testutils.generator.FormGenerator
 import utils.errors.{AuthorizationError, ConflictError, NotFoundError}
 import utils.listmeta.ListMeta
@@ -17,7 +17,7 @@ import utils.listmeta.ListMeta
 /**
   * Test for form service.
   */
-class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixture with EventFixture {
+class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixture with EventFixture with ProjectFixture {
 
   private val admin = UserFixture.admin
 
@@ -26,6 +26,7 @@ class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixtur
     eventDao: EventDao,
     groupDao: GroupDao,
     projectDao: ProjectDao,
+    relationDao: ProjectRelationDao,
     service: FormService)
 
   private def getFixture = {
@@ -33,8 +34,9 @@ class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixtur
     val eventDao = mock[EventDao]
     val groupDao = mock[GroupDao]
     val projectDao = mock[ProjectDao]
-    val service = new FormService(daoMock, eventDao, groupDao, projectDao)
-    TestFixture(daoMock, eventDao, groupDao, projectDao, service)
+    val relationDao = mock[ProjectRelationDao]
+    val service = new FormService(daoMock, eventDao, groupDao, projectDao,relationDao)
+    TestFixture(daoMock, eventDao, groupDao, projectDao, relationDao, service)
   }
 
   "getById" should {
@@ -262,16 +264,56 @@ class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixtur
       }
     }
 
+    "return conflict if relations exist" in {
+      forAll { (form: Form) =>
+        val fixture = getFixture
+        when(fixture.formDaoMock.findById(form.id)).thenReturn(toFuture(Some(form.copy(kind = Form.Kind.Active))))
+        when(fixture.projectDao.getList(
+          optId = any[Option[Long]],
+          optEventId = any[Option[Long]],
+          optGroupFromIds = any[Option[Seq[Long]]],
+          optFormId = eqTo(Some(form.id)),
+          optGroupAuditorId = any[Option[Long]],
+          optEmailTemplateId = any[Option[Long]]
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Projects.take(1))))
+        when(fixture.relationDao.getList(
+          optId = any[Option[Long]],
+          optProjectId = any[Option[Long]],
+          optKind = any[Option[Relation.Kind]],
+          optFormId = eqTo(Some(form.id)),
+          optGroupFromId = any[Option[Long]],
+          optGroupToId = any[Option[Long]],
+          optEmailTemplateId = any[Option[Long]]
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
+
+        val result = wait(fixture.service.delete(form.id)(admin).run)
+
+        result mustBe 'left
+        result.swap.toOption.get mustBe a[ConflictError]
+      }
+    }
+
     "delete form from db" in {
       forAll { (form: Form) =>
         val fixture = getFixture
-        when(fixture.projectDao.getList(
-          any[Option[Long]],
-          any[Option[Long]],
-          any[Option[Seq[Long]]],
-          eqTo(Some(form.id))
-        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Project](0, Nil)))
         when(fixture.formDaoMock.findById(form.id)).thenReturn(toFuture(Some(form.copy(kind = Form.Kind.Active))))
+        when(fixture.projectDao.getList(
+          optId = any[Option[Long]],
+          optEventId = any[Option[Long]],
+          optGroupFromIds = any[Option[Seq[Long]]],
+          optFormId = eqTo(Some(form.id)),
+          optGroupAuditorId = any[Option[Long]],
+          optEmailTemplateId = any[Option[Long]]
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Project](0, Nil)))
+        when(fixture.relationDao.getList(
+          optId = any[Option[Long]],
+          optProjectId = any[Option[Long]],
+          optKind = any[Option[Relation.Kind]],
+          optFormId = eqTo(Some(form.id)),
+          optGroupFromId = any[Option[Long]],
+          optGroupToId = any[Option[Long]],
+          optEmailTemplateId = any[Option[Long]]
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
         when(fixture.formDaoMock.delete(form.id)).thenReturn(toFuture(1))
 
         val result = wait(fixture.service.delete(form.id)(admin).run)

@@ -89,12 +89,18 @@ class UploadServiceTest extends BaseServiceTest with EventFixture with ProjectFi
         optId = any[Option[Long]],
         optEventId = eqTo(Some(event.id)),
         optGroupFromIds = any[Option[Seq[Long]]],
-        optFormId = any[Option[Long]]
+        optFormId = any[Option[Long]],
+        optGroupAuditorId = any[Option[Long]],
+        optEmailTemplateId = any[Option[Long]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Seq(project))))
       when(fixture.relationDao.getList(
         optId = any[Option[Long]],
         optProjectId = eqTo(Some(project.id)),
-        optKind = any[Option[Relation.Kind]]
+        optKind = any[Option[Relation.Kind]],
+        optFormId = any[Option[Long]],
+        optGroupFromId = any[Option[Long]],
+        optGroupToId = any[Option[Long]],
+        optEmailTemplateId = any[Option[Long]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Seq(relation))))
       when(fixture.reportService.getReport(event.id, project.id)).thenReturn(toFuture(Seq(report)))
       when(fixture.formService.getOrCreateFreezedForm(event.id, relation.form.id))

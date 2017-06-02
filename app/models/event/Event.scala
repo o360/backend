@@ -2,6 +2,7 @@ package models.event
 
 import java.sql.Timestamp
 
+import models.NamedEntity
 import models.notification.Notification
 import utils.TimestampFormatter
 
@@ -38,9 +39,13 @@ case class Event(
     */
   val caption = s"Event ${description.map(_ + " ").getOrElse("")}" +
     s"(${TimestampFormatter.format(start)} - ${TimestampFormatter.format(end)})"
+
+  def toNamedEntity = NamedEntity(id, caption)
 }
 
 object Event {
+  val namePlural = "events"
+
   /**
     * Event notification time.
     *

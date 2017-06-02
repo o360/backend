@@ -156,6 +156,8 @@ PUT           /users/:id                            controllers.UserController.u
 #       $ref: '#/responses/Forbidden'
 #   404:
 #       $ref: '#/responses/NotFound'
+#   409:
+#       $ref: '#/responses/Conflict'
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
@@ -465,6 +467,8 @@ PUT           /forms/:id                            controllers.FormController.u
 #       $ref: '#/responses/Forbidden'
 #   404:
 #       $ref: '#/responses/NotFound'
+#   409:
+#       $ref: '#/responses/Conflict'
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
@@ -604,6 +608,8 @@ PUT           /projects/:id                            controllers.ProjectContro
 #       $ref: '#/responses/Forbidden'
 #   404:
 #       $ref: '#/responses/NotFound'
+#   409:
+#       $ref: '#/responses/Conflict'
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
@@ -1026,6 +1032,8 @@ PUT           /templates/:id                              controllers.TemplateCo
 #       $ref: '#/responses/Forbidden'
 #   404:
 #       $ref: '#/responses/NotFound'
+#   409:
+#       $ref: '#/responses/Conflict'
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###

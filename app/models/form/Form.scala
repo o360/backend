@@ -22,6 +22,7 @@ case class Form(
 }
 
 object Form {
+  val nameSingular = "form"
 
   /**
     * Form element.

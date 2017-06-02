@@ -1,7 +1,8 @@
 package controllers.api
 
+import controllers.api.Response.Error.AdditionalInfo
 import models.ListWithTotal
-import play.api.libs.json.{JsArray, JsObject, Json, Writes}
+import play.api.libs.json._
 import utils.listmeta.ListMeta
 import utils.listmeta.pagination.Pagination.{WithPages, WithoutPages}
 
@@ -20,13 +21,47 @@ object Response {
     */
   case class Error(
     code: String,
-    message: String
+    message: String,
+    additionalInfo: Option[AdditionalInfo] = None
   ) extends Response
 
   object Error {
-    implicit val writes = Json.writes[Error]
-  }
 
+    /**
+      * Error additional info.
+      */
+    sealed trait AdditionalInfo {
+      /**
+        * Converts additional info to JsObject.
+        */
+      def toJson: JsObject
+    }
+
+    object AdditionalInfo {
+      /**
+        * List of conflicted dependencies.
+        */
+      case class ConflictDependencies(values: Map[String, Seq[ApiNamedEntity]]) extends AdditionalInfo {
+        def toJson: JsObject = JsObject(Seq("conflicts" -> JsObject(
+          values.mapValues(x => JsArray(x.map(Json.toJson(_))))
+        )))
+      }
+    }
+
+    implicit val writes = new Writes[Error] {
+      override def writes(o: Error): JsValue = {
+        val errorJs = JsObject(Seq(
+          "code" -> JsString(o.code),
+          "message" -> JsString(o.message)
+        ))
+
+        o.additionalInfo.map(_.toJson) match {
+          case Some(additionalJs) => errorJs ++ additionalJs
+          case None => errorJs
+        }
+      }
+    }
+  }
 
   /**
     * Generic list response model.

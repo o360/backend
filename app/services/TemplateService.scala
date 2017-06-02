@@ -2,13 +2,18 @@ package services
 
 import javax.inject.{Inject, Singleton}
 
-import models.dao.{EventDao, TemplateDao}
+import models.NamedEntity
+import models.dao.{EventDao, ProjectDao, ProjectRelationDao, TemplateDao}
 import models.notification.Notification
+import models.project.{Project, Relation}
 import models.template.Template
 import models.user.User
-import utils.errors.{ExceptionHandler, NotFoundError}
+import utils.errors.{ConflictError, ExceptionHandler, NotFoundError}
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
+import play.api.libs.concurrent.Execution.Implicits._
+
+import scala.concurrent.Future
 
 /**
   * Template service.
@@ -16,7 +21,9 @@ import utils.listmeta.ListMeta
 @Singleton
 class TemplateService @Inject()(
   protected val templateDao: TemplateDao,
-  protected val eventDao: EventDao
+  protected val eventDao: EventDao,
+  protected val projectDao: ProjectDao,
+  protected val relationDao: ProjectRelationDao
 ) extends ServiceResults[Template] {
 
   /**
@@ -66,9 +73,28 @@ class TemplateService @Inject()(
     * @param id template ID
     */
   def delete(id: Long)(implicit account: User): UnitResult = {
+
+    def getConflictedEntities: Future[Option[Map[String, Seq[NamedEntity]]]] = {
+      for {
+        projects <- projectDao.getList(optEmailTemplateId = Some(id))
+        relations <- relationDao.getList(optEmailTemplateId = Some(id))
+      } yield {
+        ConflictError.getConflictedEntitiesMap(
+          Project.namePlural -> projects.data.map(_.toNamedEntity),
+          Relation.namePlural -> relations.data.map(_.toNamedEntity)
+        )
+      }
+    }
+
     for {
       _ <- getById(id)
-      _ <- templateDao.delete(id).lift(ExceptionHandler.sql)
+
+      conflictedEntities <- getConflictedEntities.lift
+    _ <- ensure(conflictedEntities.isEmpty) {
+      ConflictError.General(Some(Template.nameSingular), conflictedEntities)
+    }
+
+      _ <- templateDao.delete(id).lift
     } yield ()
   }
 }

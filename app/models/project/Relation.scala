@@ -21,9 +21,15 @@ case class Relation(
   form: NamedEntity,
   kind: Relation.Kind,
   templates: Seq[TemplateBinding]
-)
+) {
+  def toNamedEntity = {
+    NamedEntity(id, s"${groupFrom.name.getOrElse("")} -> ${groupTo.flatMap(_.name).getOrElse("...")}")
+  }
+}
 
 object Relation {
+  val namePlural = "relations"
+
   /**
     * Kind of relation.
     */

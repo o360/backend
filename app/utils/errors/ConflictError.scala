@@ -1,17 +1,42 @@
 package utils.errors
 
+import models.NamedEntity
+
 /**
   * Conflict error.
   */
 abstract class ConflictError(
   code: String,
   message: String,
-  logMessage: Option[String] = None
-) extends ApplicationError(code, message, logMessage)
+  logMessage: Option[String] = None,
+  related: Option[Map[String, Seq[NamedEntity]]] = None
+) extends ApplicationError(code, message, logMessage) {
+  def getRelated = related
+}
 
 object ConflictError {
-  case class General(logMessage: String)
-    extends ConflictError("CONFLICT-GENERAL", "Integrity violation", Some(logMessage))
+
+  /**
+    * Returns map with conflicts. Map element is entity name -> pairs of id-name.
+    */
+  def getConflictedEntitiesMap(pairs: (String, Seq[NamedEntity])*): Option[Map[String, Seq[NamedEntity]]] = {
+    val nonEmptyPairs = pairs.filter(_._2.nonEmpty)
+
+    if (nonEmptyPairs.isEmpty) None
+    else Some(nonEmptyPairs.toMap)
+  }
+
+  case class General(
+    entityName: Option[String] = None,
+    conflicted: Option[Map[String, Seq[NamedEntity]]] = None,
+    logMessage: Option[String] = None,
+    errorText: Option[String] = None
+  ) extends ConflictError(
+    s"CONFLICT-${entityName.map(_.toUpperCase + "-").getOrElse("")}GENERAL",
+    errorText.getOrElse("Integrity violation"),
+    logMessage,
+    conflicted
+  )
 
   object Group {
     case class ParentId(id: Long)
@@ -24,9 +49,6 @@ object ConflictError {
 
   }
   object User {
-    case class GroupExists(id: Long)
-      extends ConflictError("CONFLICT-USER-1", s"Can't delete user id:$id. Group with this user exists")
-
     case object Unapproved extends ConflictError("CONFLICT-USER-2", "Can't add unapproved user to group")
   }
 
@@ -35,8 +57,6 @@ object ConflictError {
       extends ConflictError("CONFLICT-FORM-1", s"Missed values list in [$element]")
 
     case object ActiveEventExists extends ConflictError("CONFLICT-FORM-3", "Can't update, active events exists")
-
-    case object RelationExists extends ConflictError("CONFLICT-FORM-4", "Can't delete, relation exists")
 
     case class FormKind(action: String) extends ConflictError("CONFLICT-FORM-5", s"Can't $action.")
   }

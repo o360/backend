@@ -2,17 +2,17 @@ package services
 
 import javax.inject.{Inject, Singleton}
 
+import models.NamedEntity
 import models.dao.{EventDao, GroupDao, ProjectDao}
 import models.event.Event
 import models.project.Project
 import models.user.User
-import utils.errors.{ApplicationError, ConflictError, ExceptionHandler, NotFoundError}
+import play.api.libs.concurrent.Execution.Implicits._
+import utils.errors.{ConflictError, ExceptionHandler, NotFoundError}
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
-import play.api.libs.concurrent.Execution.Implicits._
 
-import scalaz.Scalaz._
-import scalaz._
+import scala.concurrent.Future
 
 /**
   * Project service.
@@ -87,9 +87,26 @@ class ProjectService @Inject()(
     * @param id project ID
     */
   def delete(id: Long)(implicit account: User): UnitResult = {
+
+    def getConflictedEntities: Future[Option[Map[String, Seq[NamedEntity]]]] = {
+      for {
+        events <- eventDao.getList(optProjectId = Some(id))
+      } yield {
+        ConflictError.getConflictedEntitiesMap(
+          Event.namePlural -> events.data.map(_.toNamedEntity)
+        )
+      }
+    }
+
     for {
       _ <- getById(id)
-     _ <- projectDao.delete(id).lift(ExceptionHandler.sql)
+
+    conflictedEntities <- getConflictedEntities.lift
+    _ <- ensure(conflictedEntities.isEmpty) {
+      ConflictError.General(Some(Project.nameSingular), conflictedEntities)
+    }
+
+     _ <- projectDao.delete(id).lift
     } yield ()
   }
 }

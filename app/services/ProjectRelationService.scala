@@ -93,7 +93,7 @@ class ProjectRelationService @Inject()(
     for {
       _ <- getById(id)
 
-      _ <- projectRelationDao.delete(id).lift(ExceptionHandler.sql)
+      _ <- projectRelationDao.delete(id).lift
     } yield ()
   }
 

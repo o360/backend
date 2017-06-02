@@ -5,6 +5,7 @@ import javax.inject.{Inject, Singleton}
 import com.mohiva.play.silhouette.api.LoginInfo
 import com.mohiva.play.silhouette.api.services.IdentityService
 import models.dao.{GroupDao, UserDao, UserGroupDao}
+import models.group.Group
 import models.user.{User => UserModel}
 import org.davidbild.tristate.Tristate
 import play.api.libs.concurrent.Execution.Implicits._
@@ -123,11 +124,21 @@ class UserService @Inject()(
     * @param account logged in user
     */
   def delete(id: Long)(implicit account: UserModel): UnitResult = {
+
+    def getConflictedEntities = {
+      for {
+        groups <- groupDao.getList(optUserId = Some(id))
+      } yield {
+        ConflictError.getConflictedEntitiesMap(Group.namePlural -> groups.data.map(_.toNamedEntity))
+      }
+    }
+
     for {
       _ <- getById(id)
 
-      _ <- ensure(!userGroupDao.exists(userId = Some(id))) {
-        ConflictError.User.GroupExists(id)
+      conflictedEntities <- getConflictedEntities.lift
+      _ <- ensure(conflictedEntities.isEmpty) {
+        ConflictError.General(Some(UserModel.nameSingular), conflictedEntities)
       }
 
       _ <- userDao.delete(id).lift

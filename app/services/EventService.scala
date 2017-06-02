@@ -95,7 +95,7 @@ class EventService @Inject()(
     for {
       _ <- getById(id)
 
-      _ <- eventDao.delete(id).lift(ExceptionHandler.sql)
+      _ <- eventDao.delete(id).lift
     } yield ()
   }
 

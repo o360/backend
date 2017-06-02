@@ -79,7 +79,9 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
           optId = any[Option[Long]],
           optEventId = eqTo(eventId),
           optGroupFromIds = any[Option[Seq[Long]]],
-          optFormId = any[Option[Long]]
+          optFormId = any[Option[Long]],
+          optGroupAuditorId = any[Option[Long]],
+          optEmailTemplateId = any[Option[Long]]
         )(eqTo(ListMeta.default)))
           .thenReturn(toFuture(ListWithTotal(total, projects)))
         val result = wait(fixture.service.getList(eventId)(admin, ListMeta.default).run)
@@ -102,7 +104,9 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
           optId = any[Option[Long]],
           optEventId = eqTo(eventId),
           optGroupFromIds = eqTo(Some(userGroups)),
-          optFormId = any[Option[Long]]
+          optFormId = any[Option[Long]],
+          optGroupAuditorId = any[Option[Long]],
+          optEmailTemplateId = any[Option[Long]]
         )(eqTo(ListMeta.default)))
           .thenReturn(toFuture(ListWithTotal(total, projects)))
         when(fixture.groupDao.findGroupIdsByUserId(user.id)).thenReturn(toFuture(userGroups))
@@ -231,9 +235,6 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
 
         result mustBe 'left
         result.swap.toOption.get mustBe a[NotFoundError]
-
-        verify(fixture.projectDaoMock, times(1)).findById(id)
-        verifyNoMoreInteractions(fixture.projectDaoMock)
       }
     }
 
@@ -241,6 +242,17 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
       forAll { (id: Long) =>
         val fixture = getFixture
         when(fixture.projectDaoMock.findById(id)).thenReturn(toFuture(Some(Projects(0))))
+        when(fixture.eventDaoMock.getList(
+          optId = any[Option[Long]],
+          optStatus = any[Option[Event.Status]],
+          optProjectId = eqTo(Some(id)),
+          optNotificationFrom = any[Option[Timestamp]],
+          optNotificationTo = any[Option[Timestamp]],
+          optFormId = any[Option[Long]],
+          optGroupFromIds = any[Option[Seq[Long]]],
+          optEndFrom = any[Option[Timestamp]],
+          optEndTimeTo = any[Option[Timestamp]]
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
         when(fixture.projectDaoMock.delete(id)).thenReturn(toFuture(1))
 
         val result = wait(fixture.service.delete(id)(admin).run)

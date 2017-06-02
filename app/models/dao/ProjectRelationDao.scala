@@ -109,12 +109,20 @@ class ProjectRelationDao @Inject()(
   def getList(
     optId: Option[Long] = None,
     optProjectId: Option[Long] = None,
-    optKind: Option[Relation.Kind] = None
+    optKind: Option[Relation.Kind] = None,
+    optFormId: Option[Long] = None,
+    optGroupFromId: Option[Long] = None,
+    optGroupToId: Option[Long] = None,
+    optEmailTemplateId: Option[Long] = None
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Relation]] = {
 
     def sortMapping(relation: RelationTable): PartialFunction[Symbol, Rep[_]] = {
       case 'id => relation.id
       case 'projectId => relation.projectId
+    }
+
+    def emailTemplateFilter(relation: RelationTable) = optEmailTemplateId.map { emailTemplateId =>
+      relation.id in RelationTemplates.filter(_.templateId === emailTemplateId).map(_.relationId)
     }
 
     val baseQuery = Relations
@@ -123,7 +131,11 @@ class ProjectRelationDao @Inject()(
           Seq(
             optId.map(x.id === _),
             optProjectId.map(x.projectId === _),
-            optKind.map(x.kind === _)
+            optKind.map(x.kind === _),
+            optFormId.map(x.formId === _),
+            optGroupFromId.map(x.groupFromId === _),
+            optGroupToId.map(groupTo => x.groupToId.fold(false: Rep[Boolean])(_ === groupTo)),
+            emailTemplateFilter(x)
           )
       }
 

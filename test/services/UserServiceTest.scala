@@ -3,12 +3,13 @@ package services
 import com.mohiva.play.silhouette.api.LoginInfo
 import models.ListWithTotal
 import models.dao.{GroupDao, UserGroupDao, UserDao => UserDAO}
+import models.group.Group
 import models.user.{User => UserModel}
 import org.davidbild.tristate.Tristate
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
 import silhouette.CustomSocialProfile
-import testutils.fixture.UserFixture
+import testutils.fixture.{GroupFixture, UserFixture}
 import testutils.generator.{SocialProfileGenerator, TristateGenerator, UserGenerator}
 import utils.errors.{AuthorizationError, ConflictError, NotFoundError}
 import utils.listmeta.ListMeta
@@ -18,7 +19,13 @@ import scala.concurrent.Future
 /**
   * Test for user service.
   */
-class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProfileGenerator with UserFixture with TristateGenerator {
+class UserServiceTest
+  extends BaseServiceTest
+    with UserGenerator
+    with SocialProfileGenerator
+    with UserFixture
+    with TristateGenerator
+    with GroupFixture {
 
   private val admin = UserFixture.admin
 
@@ -275,12 +282,15 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
         verifyNoMoreInteractions(fixture.userDaoMock)
       }
     }
-    "return conflict if user is any group" in {
+    "return conflict if user is in any group" in {
       forAll { (user: UserModel, id: Long) =>
         val fixture = getFixture
         when(fixture.userDaoMock.findById(id)).thenReturn(toFuture(Some(user.copy(id = id))))
-        when(fixture.userGroupDaoMock.exists(groupId = any[Option[Long]], userId = eqTo(Some(id))))
-          .thenReturn(toFuture(true))
+        when(fixture.groupDaoMock.getList(
+          optId = any[Option[Long]],
+          optParentId = any[Tristate[Long]],
+          optUserId = eqTo(Some(id))
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Groups.take(1))))
         val result = wait(fixture.service.delete(id)(admin).run)
 
         result mustBe 'left
@@ -292,7 +302,11 @@ class UserServiceTest extends BaseServiceTest with UserGenerator with SocialProf
       forAll { (user: UserModel, id: Long) =>
         val fixture = getFixture
         when(fixture.userDaoMock.findById(id)).thenReturn(toFuture(Some(user.copy(id = id))))
-        when(fixture.userGroupDaoMock.exists(groupId = any[Option[Long]], userId = eqTo(Some(id)))).thenReturn(toFuture(false))
+        when(fixture.groupDaoMock.getList(
+          optId = any[Option[Long]],
+          optParentId = any[Tristate[Long]],
+          optUserId = eqTo(Some(id))
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Group](0, Nil)))
         when(fixture.userDaoMock.delete(id)).thenReturn(toFuture(()))
         val result = wait(fixture.service.delete(id)(admin).run)
 

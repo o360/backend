@@ -1,5 +1,7 @@
 package models.group
 
+import models.NamedEntity
+
 /**
   * Group.
   *
@@ -13,4 +15,11 @@ case class Group(
   parentId: Option[Long],
   name: String,
   hasChildren: Boolean
-)
+) {
+  def toNamedEntity = NamedEntity(id, name)
+}
+
+object Group {
+  val namePlural = "groups"
+  val nameSingular = "group"
+}

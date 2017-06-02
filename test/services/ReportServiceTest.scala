@@ -68,7 +68,11 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
       when(fixture.relationDao.getList(
         optId = any[Option[Long]],
         optProjectId = eqTo(Some(projectId)),
-        optKind = any[Option[Relation.Kind]]
+        optKind = any[Option[Relation.Kind]],
+        optFormId = any[Option[Long]],
+        optGroupFromId = any[Option[Long]],
+        optGroupToId = any[Option[Long]],
+        optEmailTemplateId = any[Option[Long]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Seq(relation))))
 
       when(fixture.userService.getGroupIdToUsersMap(Seq(groupFromId, groupToId), true))

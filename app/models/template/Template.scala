@@ -20,3 +20,7 @@ case class Template(
   kind: Notification.Kind,
   recipient: Notification.Recipient
 )
+
+object Template {
+  val nameSingular = "template"
+}
