@@ -274,7 +274,8 @@ class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixtur
           optGroupFromIds = any[Option[Seq[Long]]],
           optFormId = eqTo(Some(form.id)),
           optGroupAuditorId = any[Option[Long]],
-          optEmailTemplateId = any[Option[Long]]
+          optEmailTemplateId = any[Option[Long]],
+          optAnyRelatedGroupId = any[Option[Long]]
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Projects.take(1))))
         when(fixture.relationDao.getList(
           optId = any[Option[Long]],
@@ -303,7 +304,8 @@ class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixtur
           optGroupFromIds = any[Option[Seq[Long]]],
           optFormId = eqTo(Some(form.id)),
           optGroupAuditorId = any[Option[Long]],
-          optEmailTemplateId = any[Option[Long]]
+          optEmailTemplateId = any[Option[Long]],
+          optAnyRelatedGroupId = any[Option[Long]]
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Project](0, Nil)))
         when(fixture.relationDao.getList(
           optId = any[Option[Long]],
