@@ -59,3 +59,6 @@
     specAsParameter:
       - type: string
         format: date-time
+  - type: java\.time\.ZoneOffset
+    specAsParameter:
+      - type: string

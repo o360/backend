@@ -1,0 +1,1 @@
+ALTER TABLE account ADD timezone VARCHAR(16) DEFAULT 'Z' NOT NULL;

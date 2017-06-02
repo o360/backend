@@ -93,7 +93,7 @@ class ProjectService @Inject()(
         events <- eventDao.getList(optProjectId = Some(id))
       } yield {
         ConflictError.getConflictedEntitiesMap(
-          Event.namePlural -> events.data.map(_.toNamedEntity)
+          Event.namePlural -> events.data.map(_.toNamedEntity(account.timezone))
         )
       }
     }

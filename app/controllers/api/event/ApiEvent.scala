@@ -1,13 +1,14 @@
 package controllers.api.event
 
 import java.sql.Timestamp
+import java.time.LocalDateTime
 
 import controllers.api.{EnumFormat, EnumFormatHelper, Response}
 import models.event.Event
 import play.api.libs.json.Json
-import controllers.api.TimestampFormat._
 import controllers.api.notification.{ApiNotificationKind, ApiNotificationRecipient}
 import models.user.User
+import utils.TimestampConverter
 
 /**
   * Api model for event.
@@ -15,8 +16,8 @@ import models.user.User
 case class ApiEvent(
   id: Long,
   description: Option[String],
-  start: Timestamp,
-  end: Timestamp,
+  start: LocalDateTime,
+  end: LocalDateTime,
   canRevote: Boolean,
   notifications: Option[Seq[ApiEvent.NotificationTime]],
   status: ApiEvent.EventStatus
@@ -32,12 +33,12 @@ object ApiEvent {
       case User.Role.Admin => Some(e.notifications.map(NotificationTime(_)))
       case User.Role.User => None
     }
-    
+
     ApiEvent(
       e.id,
       e.description,
-      e.start,
-      e.end,
+      TimestampConverter.fromUtc(e.start, account.timezone).toLocalDateTime,
+      TimestampConverter.fromUtc(e.end, account.timezone).toLocalDateTime,
       e.canRevote,
       notifications,
       EventStatus(e.status)
@@ -51,15 +52,15 @@ object ApiEvent {
     * Notification time api model.
     */
   case class NotificationTime(
-    time: Timestamp,
+    time: LocalDateTime,
     kind: ApiNotificationKind,
     recipient: ApiNotificationRecipient
   ){
     /**
       * Converts api model to model.
       */
-    def toModel: Event.NotificationTime = Event.NotificationTime(
-      time,
+    def toModel(implicit account: User): Event.NotificationTime = Event.NotificationTime(
+      TimestampConverter.toUtc(Timestamp.valueOf(time), account.timezone),
       kind.value,
       recipient.value
     )
@@ -69,8 +70,8 @@ object ApiEvent {
     /**
       * Creates api model from model.
       */
-    def apply(n: Event.NotificationTime): NotificationTime = NotificationTime(
-      n.time,
+    def apply(n: Event.NotificationTime)(implicit account: User): NotificationTime = NotificationTime(
+      TimestampConverter.fromUtc(n.time, account.timezone).toLocalDateTime,
       ApiNotificationKind(n.kind),
       ApiNotificationRecipient(n.recipient)
     )
