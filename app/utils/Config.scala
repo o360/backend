@@ -23,7 +23,8 @@ class Config @Inject()(protected val configuration: Configuration) {
   lazy val schedulerSettings: Config.Scheduler = {
     val isEnabled = configuration.getBoolean("scheduler.enabled")
     val interval = configuration.getMilliseconds("scheduler.interval").get
-    Config.Scheduler(isEnabled.contains(true), interval)
+    val maxAge = configuration.getMilliseconds("scheduler.max-age").get
+    Config.Scheduler(isEnabled.contains(true), interval, maxAge)
   }
 
   lazy val mailerSettings: Config.Mailer = {
@@ -43,7 +44,7 @@ object Config {
     scope: Option[String]
   )
 
-  case class Scheduler(enabled: Boolean, intervalMilliseconds: Long)
+  case class Scheduler(enabled: Boolean, intervalMilliseconds: Long, maxAgeMilliseconds: Long)
 
   case class Mailer(sendFrom: String)
 }

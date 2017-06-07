@@ -5,7 +5,7 @@ import javax.inject.{Inject, Singleton}
 
 import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetRequest
 import models.dao.{EventDao, ProjectDao, ProjectRelationDao, UserDao}
-import models.event.Event
+import models.event.{Event, EventJob}
 import models.form.Form
 import models.project.{Project, Relation}
 import models.user.User
@@ -31,13 +31,21 @@ class UploadService @Inject()(
   userDao: UserDao
 ) {
 
+
+  /**
+    * Executes upload job.
+    */
+  def execute(job: EventJob.Upload): Future[Unit] = {
+    for {
+      groupedUploadModels <- getGroupedUploadModels(job.eventId)
+      _ <- upload(groupedUploadModels)
+    } yield ()
+  }
+
   /**
     * Returns upload models grouped by user.
-    *
-    * @param from events end time from
-    * @param to   events end time to
     */
-  def getGroupedUploadModels(from: Timestamp, to: Timestamp): Future[Map[User, Seq[UploadModel]]] = {
+  def getGroupedUploadModels(eventId: Long): Future[Map[User, Seq[UploadModel]]] = {
 
 
     /**
@@ -122,7 +130,7 @@ class UploadService @Inject()(
 
 
     for {
-      events <- eventDao.getList(optEndFrom = Some(from), optEndTimeTo = Some(to))
+      events <- eventDao.getList(optId = Some(eventId))
       eventsWithProjects <- withProjects(events.data)
       uploadModels <- getUploadModels(eventsWithProjects)
       groupedUploadModels <- groupByAuditor(uploadModels)

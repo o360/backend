@@ -23,7 +23,8 @@ class EventService @Inject()(
   protected val eventDao: EventDao,
   protected val groupDao: GroupDao,
   protected val projectDao: ProjectDao,
-  protected val eventProjectDao: EventProjectDao
+  protected val eventProjectDao: EventProjectDao,
+  protected val eventJobService: EventJobService
 ) extends ServiceResults[Event] {
 
   /**
@@ -74,6 +75,7 @@ class EventService @Inject()(
     for {
       _ <- validateEvent(event)
       created <- eventDao.create(event).lift
+      _ <- eventJobService.createJobs(created).lift
     } yield created
   }
 
@@ -89,6 +91,7 @@ class EventService @Inject()(
       _ <- EventSda.canUpdate(original, draft).liftLeft
 
       updated <- eventDao.update(draft).lift
+      _ <- eventJobService.createJobs(updated).lift
     } yield updated
   }
 

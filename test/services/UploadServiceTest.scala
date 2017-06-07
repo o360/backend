@@ -4,7 +4,7 @@ import java.sql.Timestamp
 
 import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetRequest
 import models.dao.{EventDao, ProjectDao, ProjectRelationDao, UserDao}
-import models.event.Event
+import models.event.{Event, EventJob}
 import models.form.Form
 import models.project.Relation
 import models.report.{AggregatedReport, Report}
@@ -50,6 +50,8 @@ class UploadServiceTest extends BaseServiceTest with EventFixture with ProjectFi
     Fixture(eventDao, projectDao, reportService, spreadsheetService, formService, relationDao, userService, googleDriveService, userDao, service)
   }
 
+  private val jobFixture = EventJob.Upload(0, 1, new Timestamp(123), EventJob.Status.New)
+
   "getGroupedUploadModels" should {
     "return grouped upload models" in {
       val fixture = getFixture
@@ -75,15 +77,11 @@ class UploadServiceTest extends BaseServiceTest with EventFixture with ProjectFi
 
 
       when(fixture.eventDao.getList(
-        optId = any[Option[Long]],
+        optId = eqTo(Some(jobFixture.eventId)),
         optStatus = any[Option[Event.Status]],
         optProjectId = any[Option[Long]],
-        optNotificationFrom = any[Option[Timestamp]],
-        optNotificationTo = any[Option[Timestamp]],
         optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]],
-        optEndFrom = eqTo(Some(from)),
-        optEndTimeTo = eqTo(Some(to))
+        optGroupFromIds = any[Option[Seq[Long]]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Seq(event))))
       when(fixture.projectDao.getList(
         optId = any[Option[Long]],
@@ -112,7 +110,7 @@ class UploadServiceTest extends BaseServiceTest with EventFixture with ProjectFi
       when(fixture.userService.getGroupIdToUsersMap(Seq(project.groupAuditor.id), false))
         .thenReturn(toFuture(Map(project.groupAuditor.id -> Seq(user))))
 
-      val result = wait(fixture.service.getGroupedUploadModels(from, to))
+      val result = wait(fixture.service.getGroupedUploadModels(jobFixture.eventId))
       val expectedResult = Map(user -> Seq(UploadService.UploadModel(event, project, batchUpdate)))
 
       result mustBe expectedResult
