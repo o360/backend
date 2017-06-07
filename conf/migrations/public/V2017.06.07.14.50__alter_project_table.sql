@@ -1,0 +1,1 @@
+ALTER TABLE project ADD forms_on_same_page BOOLEAN DEFAULT FALSE NOT NULL;

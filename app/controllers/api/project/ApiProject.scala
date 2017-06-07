@@ -13,7 +13,8 @@ case class ApiProject(
   name: String,
   description: Option[String],
   groupAuditor: Option[ApiNamedEntity],
-  templates: Option[Seq[ApiTemplateBinding]]
+  templates: Option[Seq[ApiTemplateBinding]],
+  formsOnSamePage: Boolean
 ) extends Response
 
 object ApiProject {
@@ -33,7 +34,8 @@ object ApiProject {
       project.name,
       project.description,
       groupAuditor,
-      templates
+      templates,
+      project.formsOnSamePage
     )
   }
 }
