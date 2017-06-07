@@ -74,6 +74,12 @@ class EventService @Inject()(
   def create(event: Event)(implicit account: User): SingleResult = {
     for {
       _ <- validateEvent(event)
+
+      now = TimestampConverter.now
+      _ <- ensure(event.start.after(now) && event.end.after(now) && event.notifications.forall(_.time.after(now))) {
+        BadRequestError.Event.WrongDates
+      }
+
       created <- eventDao.create(event).lift
       _ <- eventJobService.createJobs(created).lift
     } yield created
@@ -89,6 +95,11 @@ class EventService @Inject()(
       original <- getById(draft.id)
       _ <- validateEvent(draft)
       _ <- EventSda.canUpdate(original, draft).liftLeft
+
+      now = TimestampConverter.now
+      _ <- ensure((original.status != Event.Status.NotStarted || draft.start.after(now)) && draft.end.after(now)) {
+        BadRequestError.Event.WrongDates
+      }
 
       updated <- eventDao.update(draft).lift
       _ <- eventJobService.createJobs(updated).lift
@@ -151,7 +162,7 @@ class EventService @Inject()(
 
   private def validateEvent(event: Event): UnitResult = {
     for {
-      _ <- ensure(!(event.start after event.end)) {
+      _ <- ensure(!event.start.after(event.end)) {
         BadRequestError.Event.StartAfterEnd
       }
 

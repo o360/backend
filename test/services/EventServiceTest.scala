@@ -138,7 +138,7 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
     }
 
     "create event in db" in {
-      val event = Events(0)
+      val event = Events(2)
 
       val fixture = getFixture
       when(fixture.eventDaoMock.create(event.copy(id = 0))).thenReturn(toFuture(event))
