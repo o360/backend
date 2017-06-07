@@ -116,6 +116,16 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
     }
   }
 
+  private def toApiPartialForm(form: Form) = ApiPartialForm(
+    form.name,
+    Some(form.elements.map { element =>
+      ApiPartialForm.Element(
+        ApiForm.ElementKind(element.kind),
+        element.caption,
+        element.required,
+        Some(element.values.map(value => ApiPartialForm.ElementValue(value.caption))))
+    }),form.showInAggregation)
+
   "PUT /forms" should {
     "update forms" in {
       forAll { (form: Form) =>
@@ -124,15 +134,7 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
         when(fixture.formServiceMock.update(form.copy(kind = Form.Kind.Active))(admin))
           .thenReturn(EitherT.eitherT(toFuture(\/-(form): ApplicationError \/ Form)))
 
-        val apiForm = ApiPartialForm(
-          form.name,
-          Some(form.elements.map { element =>
-            ApiPartialForm.Element(
-              ApiForm.ElementKind(element.kind),
-              element.caption,
-              element.required,
-              Some(element.values.map(value => ApiPartialForm.ElementValue(value.caption))))
-          }))
+        val apiForm = toApiPartialForm(form)
         val request = authenticated(
           FakeRequest("PUT", "/forms")
             .withBody[ApiPartialForm](apiForm)
@@ -158,15 +160,7 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
         when(fixture.formServiceMock.create(form.copy(kind = Form.Kind.Active)))
           .thenReturn(EitherT.eitherT(toFuture(\/-(form): ApplicationError \/ Form)))
 
-        val apiForm = ApiPartialForm(
-          form.name,
-          Some(form.elements.map { element =>
-            ApiPartialForm.Element(
-              ApiForm.ElementKind(element.kind),
-              element.caption,
-              element.required,
-              Some(element.values.map(value => ApiPartialForm.ElementValue(value.caption))))
-          }))
+        val apiForm = toApiPartialForm(form)
 
         val request = authenticated(
           FakeRequest("POST", "/forms")

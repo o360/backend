@@ -235,7 +235,7 @@ class AssessmentServiceTest
     }
 
     "return error if can't validate form" in {
-      val baseForm = Form(1, "", Seq(), Form.Kind.Freezed)
+      val baseForm = Form(1, "", Seq(), Form.Kind.Freezed, true)
       val invalidFormsWithAnswers = Seq(
         // Duplicate answers
         baseForm ->
@@ -296,7 +296,7 @@ class AssessmentServiceTest
       val event = Events(0)
       val projectId = 3
       val userGroupsIds = Seq(1L, 2, 3)
-      val form = Form(1, "", Seq(Form.Element(1, Form.ElementKind.TextField, "", true, Nil)), Form.Kind.Freezed)
+      val form = Form(1, "", Seq(Form.Element(1, Form.ElementKind.TextField, "", true, Nil)), Form.Kind.Freezed, true)
       val answer = Answer.Form(NamedEntity(form.id), Set(Answer.Element(1, Some("text"), None)))
       val assessment = Assessment(None, Seq(answer))
 
@@ -339,7 +339,7 @@ class AssessmentServiceTest
       val event = Events(0)
       val projectId = 3
       val userGroupsIds = Seq(1L, 2, 3)
-      val form = Form(1, "", Seq(Form.Element(1, Form.ElementKind.TextField, "", true, Nil)), Form.Kind.Freezed)
+      val form = Form(1, "", Seq(Form.Element(1, Form.ElementKind.TextField, "", true, Nil)), Form.Kind.Freezed, true)
       val answer = Answer.Form(NamedEntity(form.id), Set(Answer.Element(1, Some("text"), None)))
       val assessment = Assessment(None, Seq(answer))
       val relation = Relation(
@@ -394,7 +394,7 @@ class AssessmentServiceTest
       val event = Events(0)
       val projectId = 3
       val userGroupsIds = Seq(1L, 2, 3)
-      val form = Form(1, "", Seq(Form.Element(1, Form.ElementKind.TextField, "", true, Nil)), Form.Kind.Freezed)
+      val form = Form(1, "", Seq(Form.Element(1, Form.ElementKind.TextField, "", true, Nil)), Form.Kind.Freezed, true)
       val answer = Answer.Form(NamedEntity(form.id), Set(Answer.Element(1, Some("text"), None)))
       val assessment = Assessment(None, Seq(answer))
       val relation = Relation(

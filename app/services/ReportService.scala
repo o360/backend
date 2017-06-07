@@ -259,7 +259,7 @@ class ReportService @Inject()(
 
     import AggregatedReport._
 
-    val forms = report.forms.map { formReport =>
+    val forms = report.forms.filter(_.form.showInAggregation).map { formReport =>
       val elements = formReport.answers.map { answerReport =>
         val answers = answerReport.elementAnswers.map(_.answer)
         import Form.ElementKind._

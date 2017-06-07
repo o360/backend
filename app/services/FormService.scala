@@ -110,7 +110,7 @@ class FormService @Inject()(
 
       _ <- Future.sequence {
         childFreezedForms.data.map { childFreezedForm =>
-          formDao.update(childFreezedForm.copy(name = form.name))
+          formDao.update(childFreezedForm.copy(name = form.name, showInAggregation = form.showInAggregation))
         }
       }
     } yield ()

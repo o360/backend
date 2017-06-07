@@ -6,7 +6,8 @@ package models.form
 case class FormShort(
   id: Long,
   name: String,
-  kind: Form.Kind
+  kind: Form.Kind,
+  showInAggregation: Boolean
 ) {
 
   /**
@@ -18,6 +19,7 @@ case class FormShort(
     id,
     name,
     elements,
-    kind
+    kind,
+    showInAggregation
   )
 }

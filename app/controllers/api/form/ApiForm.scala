@@ -3,17 +3,20 @@ package controllers.api.form
 import controllers.api.{EnumFormat, EnumFormatHelper, Response}
 import models.form.{Form, FormShort}
 import play.api.libs.json._
+
 /**
   * Api form model.
   *
-  * @param id       ID
-  * @param name     name
-  * @param elements form elements
+  * @param id                ID
+  * @param name              name
+  * @param elements          form elements
+  * @param showInAggregation is form showed in aggregation report
   */
 case class ApiForm(
   id: Long,
   name: String,
-  elements: Seq[ApiForm.Element]
+  elements: Seq[ApiForm.Element],
+  showInAggregation: Boolean
 ) extends Response
 
 object ApiForm {
@@ -26,7 +29,8 @@ object ApiForm {
   def apply(form: Form): ApiForm = ApiForm(
     form.id,
     form.name,
-    form.elements.map(Element(_))
+    form.elements.map(Element(_)),
+    form.showInAggregation
   )
 
   /**
@@ -37,7 +41,8 @@ object ApiForm {
   def apply(form: FormShort): ApiForm = ApiForm(
     form.id,
     form.name,
-    Nil
+    Nil,
+    form.showInAggregation
   )
 
 

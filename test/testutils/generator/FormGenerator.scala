@@ -35,7 +35,8 @@ trait FormGenerator {
     for {
       name <- Arbitrary.arbitrary[String]
       kind <- Arbitrary.arbitrary[Form.Kind]
-    } yield FormShort(0, name, kind)
+      showInAggregation <- Arbitrary.arbitrary[Boolean]
+    } yield FormShort(0, name, kind, showInAggregation)
   }
 
   implicit val formArb = Arbitrary {

@@ -1,0 +1,1 @@
+ALTER TABLE form ADD show_in_aggregation BOOLEAN DEFAULT TRUE NOT NULL;
