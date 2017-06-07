@@ -180,7 +180,7 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
     }
 
     "update event in db" in {
-      val event = Events(0)
+      val event = Events(2)
       val fixture = getFixture
       when(fixture.eventDaoMock.findById(event.id)).thenReturn(toFuture(Some(event)))
       when(fixture.eventDaoMock.update(event)).thenReturn(toFuture(event))
