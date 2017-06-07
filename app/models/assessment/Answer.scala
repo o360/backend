@@ -30,11 +30,13 @@ object Answer {
             lazy val needValues = formElement.kind.needValues
             lazy val answerValuesMatchFormValues =
               answerElement.valuesIds.getOrElse(Nil).toSet.subsetOf(formElement.values.map(_.id).toSet)
+            lazy val validCheckboxAnswer = formElement.kind != FormTemplate.ElementKind.Checkbox ||
+              answerElement.text.exists(t => t == "true" || t == "false")
 
-            if (needValues && answerIsText) Some(invalidForm("Values element contains text answer"))
-            else if (!needValues && answerIsValues) Some(invalidForm("Text element contains values answer"))
+            if (!needValues && answerIsValues) Some(invalidForm("Text element contains values answer"))
             else if (needValues && !answerValuesMatchFormValues) Some(invalidForm("Values answer contains unknown valueId"))
             else if (!needValues && !answerIsText) Some(invalidForm("Text answer is missed"))
+            else if (!validCheckboxAnswer) Some(invalidForm("Wrong checkbox value"))
             else None
           case None => Some(invalidForm("Unknown answer elementId"))
         }
@@ -76,17 +78,22 @@ object Answer {
       */
     def getText(element: FormTemplate.Element): String = {
       import FormTemplate.ElementKind._
+
+      def getValuesText = {
+        def findCaption(id: Long) = element.values.find(_.id == id).map(_.caption)
+
+        valuesIds
+          .map(_
+            .map(findCaption)
+            .collect { case Some(v) => v }
+            .mkString(";\n")
+          ).getOrElse("")
+      }
+
       element.kind match {
         case TextArea | TextField | Checkbox => text.getOrElse("")
-        case CheckboxGroup | Radio | Select =>
-          def findCaption(id: Long) = element.values.find(_.id == id).map(_.caption)
-
-          valuesIds
-            .map(_
-              .map(findCaption)
-              .collect { case Some(v) => v }
-              .mkString(";\n")
-            ).getOrElse("")
+        case CheckboxGroup | Radio | Select => getValuesText
+        case LikeDislike => getValuesText + text.fold("")("\nComment: \"" + _ + "\"")
       }
     }
   }

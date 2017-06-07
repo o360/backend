@@ -243,9 +243,6 @@ class AssessmentServiceTest
         // Missed required answer
         baseForm.copy(elements = Seq(Form.Element(1, Form.ElementKind.TextArea, "", required = true, Nil))) ->
           Answer.Form(NamedEntity(1), Set()),
-        // Values elements contains text
-        baseForm.copy(elements = Seq(Form.Element(1, Form.ElementKind.Select, "", required = true, Nil))) ->
-          Answer.Form(NamedEntity(1), Set(Answer.Element(1, Some(""), None))),
         // Text element contains values answer
         baseForm.copy(elements = Seq(Form.Element(1, Form.ElementKind.TextArea, "", required = true, Nil))) ->
           Answer.Form(NamedEntity(1), Set(Answer.Element(1, None, Some(Seq(1))))),

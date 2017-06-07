@@ -91,7 +91,8 @@ object ApiForm {
       "checkbox" -> Checkbox,
       "checkboxgroup" -> CheckboxGroup,
       "radio" -> Radio,
-      "select" -> Select
+      "select" -> Select,
+      "likedislike" -> LikeDislike
     )
   }
 

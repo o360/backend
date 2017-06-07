@@ -28,6 +28,7 @@
           - "checkboxgroup"
           - "radio"
           - "select"
+          - "likedislike"
   - type: .*.ApiRelation\.Kind
     specAsParameter:
       - type: string
