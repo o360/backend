@@ -47,6 +47,14 @@ class GroupDaoTest
         groups.data must contain theSameElementsAs expectedGroups
       }
     }
+
+    "return groups filtered by name" in {
+      val name = "-"
+      val groups = wait(dao.getList(optName = Some(name))).data
+      val expectedGroups = Groups.filter(_.name.contains(name))
+
+      groups must contain theSameElementsAs expectedGroups
+    }
   }
 
   "findById" should {

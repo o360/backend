@@ -82,11 +82,13 @@ class GroupDao @Inject()(
     * @param optId       group ID
     * @param optParentId group parent ID
     * @param optUserId   only groups of the user
+    * @param optName     part of group name
     */
   def getList(
     optId: Option[Long] = None,
     optParentId: Tristate[Long] = Tristate.Unspecified,
-    optUserId: Option[Long] = None
+    optUserId: Option[Long] = None,
+    optName: Option[String] = None
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Group]] = {
     val query = Groups
       .applyFilter { x =>
@@ -97,7 +99,8 @@ class GroupDao @Inject()(
             case Tristate.Absent => Some(x.parentId.isEmpty)
             case Tristate.Unspecified => None
           },
-          optUserId.map(userId => x.id in UserGroups.filter(_.userId === userId).map(_.groupId))
+          optUserId.map(userId => x.id in UserGroups.filter(_.userId === userId).map(_.groupId)),
+          optName.map(like(x.name, _))
         )
       }
       .map { group =>
