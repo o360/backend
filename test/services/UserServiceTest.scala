@@ -33,14 +33,18 @@ class UserServiceTest
     userDaoMock: UserDAO,
     userGroupDaoMock: UserGroupDao,
     groupDaoMock: GroupDao,
+    mailService: MailService,
+    templateEngineService: TemplateEngineService,
     service: UserService)
 
   private def getFixture = {
     val daoMock = mock[UserDAO]
     val userGroupDaoMock = mock[UserGroupDao]
     val groupDaoMock = mock[GroupDao]
-    val service = new UserService(daoMock, userGroupDaoMock, groupDaoMock)
-    TestFixture(daoMock, userGroupDaoMock, groupDaoMock, service)
+    val mailService = mock[MailService]
+    val templateEngineService = mock[TemplateEngineService]
+    val service = new UserService(daoMock, userGroupDaoMock, groupDaoMock, mailService, templateEngineService)
+    TestFixture(daoMock, userGroupDaoMock, groupDaoMock, mailService, templateEngineService, service)
   }
 
   "retrieve" should {
@@ -247,8 +251,13 @@ class UserServiceTest
           role = UserModel.Role.Admin,
           status = UserModel.Status.Approved
         )
+        val template = "template"
+        val renderedTemplate = "rendered template"
         when(fixture.userDaoMock.findById(user.id)).thenReturn(Future.successful(Some(user)))
         when(fixture.userDaoMock.update(updatedUser)).thenReturn(toFuture(updatedUser))
+        when(fixture.templateEngineService.loadStaticTemplate("user_approved.html")).thenReturn(template)
+        when(fixture.templateEngineService.getContext(updatedUser, None)).thenReturn(Map("a" -> "b"))
+        when(fixture.templateEngineService.render(template, Map("a" -> "b"))).thenReturn(renderedTemplate)
 
         val result = wait(fixture.service.update(updatedUser)(admin).run)
 
@@ -257,6 +266,9 @@ class UserServiceTest
 
         verify(fixture.userDaoMock, times(1)).findById(user.id)
         verify(fixture.userDaoMock, times(1)).update(updatedUser)
+        if (user.status == UserModel.Status.New) {
+          verify(fixture.mailService, times(1)).send("Assessment system information", updatedUser, renderedTemplate)
+        }
         verifyNoMoreInteractions(fixture.userDaoMock)
       }
     }

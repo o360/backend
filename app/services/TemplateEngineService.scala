@@ -1,5 +1,6 @@
 package services
 
+import java.io.FileInputStream
 import java.time.format.DateTimeFormatter
 import javax.inject.Singleton
 
@@ -33,14 +34,22 @@ class TemplateEngineService {
     */
   def getContext(
     recipient: User,
-    event: Event
+    event: Option[Event]
   ): Map[String, String] = {
     Map(
       "user_name" -> recipient.name.getOrElse(""),
-      "event_start" -> TimestampConverter.toPrettyString(event.start, recipient.timezone),
-      "event_end" -> TimestampConverter.toPrettyString(event.end, recipient.timezone),
-      "event_description" -> event.description.getOrElse("")
+      "event_start" -> event.fold("")(e => TimestampConverter.toPrettyString(e.start, recipient.timezone)),
+      "event_end" -> event.fold("")(e => TimestampConverter.toPrettyString(e.end, recipient.timezone)),
+      "event_description" -> event.fold("")(_.description.getOrElse(""))
     )
+  }
+
+  /**
+    * Load template from templates folder.
+    */
+  def loadStaticTemplate(name: String): String = {
+    val stream = new FileInputStream(s"templates/$name")
+    scala.io.Source.fromInputStream(stream).getLines.mkString(System.lineSeparator)
   }
 }
 

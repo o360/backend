@@ -11,11 +11,13 @@ import org.davidbild.tristate.Tristate
 import play.api.libs.concurrent.Execution.Implicits._
 import services.authorization.UserSda
 import silhouette.CustomSocialProfile
+import utils.Logger
 import utils.errors.{ConflictError, NotFoundError}
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
 
 import scala.concurrent.Future
+import scala.util.control.NonFatal
 
 /**
   * User service.
@@ -24,9 +26,12 @@ import scala.concurrent.Future
 class UserService @Inject()(
   protected val userDao: UserDao,
   protected val userGroupDao: UserGroupDao,
-  protected val groupDao: GroupDao
+  protected val groupDao: GroupDao,
+  protected val mailService: MailService,
+  protected val templateEngineService: TemplateEngineService
 ) extends IdentityService[UserModel]
-  with ServiceResults[UserModel] {
+  with ServiceResults[UserModel]
+  with Logger {
 
   override def retrieve(loginInfo: LoginInfo): Future[Option[UserModel]] =
     userDao.findByProvider(loginInfo.providerID, loginInfo.providerKey)
@@ -114,7 +119,27 @@ class UserService @Inject()(
       _ <- UserSda.canUpdate(original, draft).liftLeft
 
       updated <- userDao.update(draft).lift
-    } yield updated
+    } yield {
+      if (original.status == UserModel.Status.New && updated.status == UserModel.Status.Approved) {
+        sendAppprovalEmail(updated)
+      }
+      updated
+    }
+  }
+
+  /**
+    * Sends email to user when user is approved.
+    */
+  private def sendAppprovalEmail(user: UserModel) = {
+    try {
+      val bodyTemplate = templateEngineService.loadStaticTemplate("user_approved.html")
+      val subject = "Assessment system information"
+      val context = templateEngineService.getContext(user, None)
+      val body = templateEngineService.render(bodyTemplate, context)
+      mailService.send(subject, user, body)
+    } catch {
+      case NonFatal(e) => log.error("Can't send email", e)
+    }
   }
 
   /**

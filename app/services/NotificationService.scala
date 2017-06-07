@@ -50,7 +50,7 @@ class NotificationService @Inject()(
     def sendToUsersInGroup(groupId: Long, template: Template) = {
       userService.listByGroupId(groupId, includeDeleted = false).run.map { users =>
         users.toOption.map(_.data).getOrElse(Nil).foreach { user =>
-          val context = templateEngineService.getContext(user, event)
+          val context = templateEngineService.getContext(user, Some(event))
           val body = templateEngineService.render(template.body, context)
           val subject = templateEngineService.render(template.subject, context)
 
