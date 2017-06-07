@@ -11,6 +11,7 @@ import models.report.{AggregatedReport, Report}
 import models.{ListWithTotal, NamedEntity}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito._
+import services.spreadsheet.SpreadsheetService
 import testutils.fixture.{EventFixture, FormFixture, ProjectFixture, UserFixture}
 import utils.errors.ApplicationError
 import utils.listmeta.ListMeta
