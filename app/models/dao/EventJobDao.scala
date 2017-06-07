@@ -55,6 +55,8 @@ trait EventJobComponent extends NotificationComponent {
           recipient.getOrElse(throw new NoSuchElementException(s"missed recipient in notification job for event $eventId"))
         )
         EventJob.SendNotification(id, eventId, notification, status)
+      case 2 =>
+        EventJob.CreateFreezedForms(id, eventId, time, status)
     }
   }
 
@@ -64,6 +66,8 @@ trait EventJobComponent extends NotificationComponent {
         DbEventJob(j.id, j.eventId, j.time, j.status, None, None, 0)
       case j: EventJob.SendNotification =>
         DbEventJob(j.id, j.eventId, j.time, j.status, Some(j.notification.kind), Some(j.notification.recipient), 1)
+      case j: EventJob.CreateFreezedForms =>
+        DbEventJob(j.id, j.eventId, j.time, j.status, None, None, 2)
     }
   }
 

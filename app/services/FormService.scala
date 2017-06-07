@@ -4,7 +4,7 @@ import javax.inject.{Inject, Singleton}
 
 import models.ListWithTotal
 import models.dao._
-import models.event.Event
+import models.event.{Event, EventJob}
 import models.form.{Form, FormShort}
 import models.project.{Project, Relation}
 import models.user.User
@@ -190,6 +190,18 @@ class FormService @Inject()(
           } yield freezedForm
       }
     } yield freezedForm
+  }
+
+  /**
+    * Executes create freezed forms job.
+    */
+  def execute(job: EventJob.CreateFreezedForms): Future[Unit] = {
+    for {
+      forms <- formDao.getList(optEventId = Some(job.eventId))
+      _ <- Future.sequence {
+        forms.data.map(form => getOrCreateFreezedForm(job.eventId, form.id).run)
+      }
+    } yield ()
   }
 
   /**
