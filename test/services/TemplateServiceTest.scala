@@ -154,7 +154,8 @@ class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with Te
           optGroupFromIds = any[Option[Seq[Long]]],
           optFormId = any[Option[Long]],
           optGroupAuditorId = any[Option[Long]],
-          optEmailTemplateId = eqTo(Some(id))
+          optEmailTemplateId = eqTo(Some(id)),
+          optAnyRelatedGroupId = any[Option[Long]]
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Projects.take(1))))
         when(fixture.relationDao.getList(
           optId = any[Option[Long]],
@@ -184,7 +185,8 @@ class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with Te
           optGroupFromIds = any[Option[Seq[Long]]],
           optFormId = any[Option[Long]],
           optGroupAuditorId = any[Option[Long]],
-          optEmailTemplateId = eqTo(Some(id))
+          optEmailTemplateId = eqTo(Some(id)),
+          optAnyRelatedGroupId = any[Option[Long]]
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Project](0, Nil)))
         when(fixture.relationDao.getList(
           optId = any[Option[Long]],

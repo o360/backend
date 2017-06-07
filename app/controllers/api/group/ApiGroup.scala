@@ -10,7 +10,8 @@ import play.api.libs.json.Json
 case class ApiGroup(
   id: Long,
   parentId: Option[Long],
-  name: String
+  name: String,
+  hasChildren: Boolean
 ) extends Response
 
 object ApiGroup {
@@ -19,6 +20,7 @@ object ApiGroup {
   def apply(group: Group): ApiGroup = ApiGroup(
     group.id,
     group.parentId,
-    group.name
+    group.name,
+    group.hasChildren
   )
 }

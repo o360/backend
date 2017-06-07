@@ -24,7 +24,7 @@ trait AnswerComponent {
   case class DbFormAnswer(
     id: Long,
     eventId: Long,
-    projectId: Long,
+    projectId: Option[Long],
     userFromId: Long,
     userToId: Option[Long],
     formId: Long
@@ -39,7 +39,7 @@ trait AnswerComponent {
 
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def eventId = column[Long]("event_id")
-    def projectId = column[Long]("project_id")
+    def projectId = column[Option[Long]]("project_id")
     def userFromId = column[Long]("user_from_id")
     def userToId = column[Option[Long]]("user_to_id")
     def formId = column[Long]("form_id")
@@ -190,7 +190,7 @@ class AnswerDao @Inject()(
     val actions = for {
       _ <- deleteExistedAnswer
       answerId <- FormAnswers.returning(FormAnswers.map(_.id)) +=
-        DbFormAnswer(0, eventId, projectId, fromUserId, toUserId, answer.form.id)
+        DbFormAnswer(0, eventId, Some(projectId), fromUserId, toUserId, answer.form.id)
 
       _ <- DBIO.seq(answer.answers.toSeq.map(insertAnswerElementAction(answerId, _)): _*)
     } yield ()

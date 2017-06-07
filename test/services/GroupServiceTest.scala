@@ -219,7 +219,8 @@ class GroupServiceTest extends BaseServiceTest with GroupGenerator with GroupFix
         optGroupFromIds = any[Option[Seq[Long]]],
         optFormId = any[Option[Long]],
         optGroupAuditorId = eqTo(Some(group.id)),
-        optEmailTemplateId = any[Option[Long]]
+        optEmailTemplateId = any[Option[Long]],
+        optAnyRelatedGroupId = any[Option[Long]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Projects.take(1))))
       when(fixture.relationDao.getList(
         optId = any[Option[Long]],
@@ -247,7 +248,8 @@ class GroupServiceTest extends BaseServiceTest with GroupGenerator with GroupFix
         optGroupFromIds = any[Option[Seq[Long]]],
         optFormId = any[Option[Long]],
         optGroupAuditorId = eqTo(Some(group.id)),
-        optEmailTemplateId = any[Option[Long]]
+        optEmailTemplateId = any[Option[Long]],
+        optAnyRelatedGroupId = any[Option[Long]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Project](0, Nil)))
       when(fixture.relationDao.getList(
         optId = any[Option[Long]],

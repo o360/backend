@@ -2,6 +2,7 @@ package services
 
 import javax.inject.{Inject, Singleton}
 
+import models.NamedEntity
 import models.dao.{EventDao, GroupDao, ProjectDao}
 import models.event.Event
 import models.project.Project
@@ -10,6 +11,8 @@ import play.api.libs.concurrent.Execution.Implicits._
 import utils.errors.{ConflictError, ExceptionHandler, NotFoundError}
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
+
+import scala.concurrent.Future
 
 /**
   * Project service.
@@ -34,7 +37,7 @@ class ProjectService @Inject()(
   /**
     * Returns projects list.
     */
-  def getList(eventId: Option[Long])(implicit account: User, meta: ListMeta): ListResult = {
+  def getList(eventId: Option[Long], groupId: Option[Long])(implicit account: User, meta: ListMeta): ListResult = {
 
     val groupFromFilter = account.role match {
       case User.Role.Admin => None.toFuture
@@ -46,7 +49,8 @@ class ProjectService @Inject()(
       projects <- projectDao.getList(
         optId = None,
         optEventId = eventId,
-        optGroupFromIds = groupFromIds
+        optGroupFromIds = groupFromIds,
+        optAnyRelatedGroupId = groupId
       ).lift
     } yield projects
   }
@@ -85,7 +89,7 @@ class ProjectService @Inject()(
     */
   def delete(id: Long)(implicit account: User): UnitResult = {
 
-    def getConflictedEntities = {
+    def getConflictedEntities: Future[Option[Map[String, Seq[NamedEntity]]]] = {
       for {
         events <- eventDao.getList(optProjectId = Some(id))
       } yield {

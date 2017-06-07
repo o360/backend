@@ -543,7 +543,7 @@ GET           /projects/:id                            controllers.ProjectContro
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /projects                                controllers.ProjectController.getList(eventId: Option[Long])
+GET           /projects                                controllers.ProjectController.getList(eventId: Option[Long], groupId: Option[Long])
 
 ###
 # summary: Creates project
@@ -867,6 +867,26 @@ PUT           /events/:id                           controllers.EventController.
 #       $ref: '#/responses/InternalServerError'
 ###
 DELETE        /events/:id                           controllers.EventController.delete(id: Long)
+
+###
+# summary: Clones event
+# tags:
+#   - Event
+# responses:
+#   200:
+#       description: Cloned event
+#       schema:
+#           $ref: '#/definitions/controllers.api.event.ApiEvent'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST          /events/:id/clone                       controllers.EventController.cloneEvent(id: Long)
 
 ###
 # summary: Adds project to event

@@ -34,7 +34,7 @@ object Response {
       /**
         * Converts additional info to JsObject.
         */
-      def toJs: JsObject
+      def toJson: JsObject
     }
 
     object AdditionalInfo {
@@ -42,7 +42,7 @@ object Response {
         * List of conflicted dependencies.
         */
       case class ConflictDependencies(values: Map[String, Seq[ApiNamedEntity]]) extends AdditionalInfo {
-        def toJs: JsObject = JsObject(Seq("conflicts" -> JsObject(
+        def toJson: JsObject = JsObject(Seq("conflicts" -> JsObject(
           values.mapValues(x => JsArray(x.map(Json.toJson(_))))
         )))
       }
@@ -55,7 +55,7 @@ object Response {
           "message" -> JsString(o.message)
         ))
 
-        o.additionalInfo.map(_.toJs) match {
+        o.additionalInfo.map(_.toJson) match {
           case Some(additionalJs) => errorJs ++ additionalJs
           case None => errorJs
         }

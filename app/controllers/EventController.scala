@@ -86,4 +86,15 @@ class EventController @Inject()(
       _ => NoContent
     )
   }
+
+  /**
+    * Clones event.
+    */
+  def cloneEvent(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
+    toResult(Ok){
+      eventService
+        .cloneEvent(id)
+        .map(ApiEvent(_))
+    }
+  }
 }

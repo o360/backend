@@ -2,6 +2,7 @@ package services
 
 import javax.inject.{Inject, Singleton}
 
+import models.NamedEntity
 import models.dao.{EventDao, ProjectDao, ProjectRelationDao, TemplateDao}
 import models.notification.Notification
 import models.project.{Project, Relation}
@@ -11,6 +12,8 @@ import utils.errors.{ConflictError, ExceptionHandler, NotFoundError}
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
 import play.api.libs.concurrent.Execution.Implicits._
+
+import scala.concurrent.Future
 
 /**
   * Template service.
@@ -71,7 +74,7 @@ class TemplateService @Inject()(
     */
   def delete(id: Long)(implicit account: User): UnitResult = {
 
-    def getConflictedEntities = {
+    def getConflictedEntities: Future[Option[Map[String, Seq[NamedEntity]]]] = {
       for {
         projects <- projectDao.getList(optEmailTemplateId = Some(id))
         relations <- relationDao.getList(optEmailTemplateId = Some(id))

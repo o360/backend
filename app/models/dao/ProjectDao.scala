@@ -91,7 +91,8 @@ class ProjectDao @Inject()(
     optGroupFromIds: Option[Seq[Long]] = None,
     optFormId: Option[Long] = None,
     optGroupAuditorId: Option[Long] = None,
-    optEmailTemplateId: Option[Long] = None
+    optEmailTemplateId: Option[Long] = None,
+    optAnyRelatedGroupId: Option[Long] = None
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Project]] = {
 
     def sortMapping(project: ProjectTable): PartialFunction[Symbol, Rep[_]] = {
@@ -116,6 +117,13 @@ class ProjectDao @Inject()(
       project.id in Relations.filter(_.formId === formId).map(_.projectId)
     }
 
+    def anyRelatedGroupFilter(project: ProjectTable) = optAnyRelatedGroupId.map { anyRelatedGroup =>
+      project.groupAuditorId === anyRelatedGroup ||
+        (project.id in Relations
+          .filter(x => x.groupToId === anyRelatedGroup || x.groupFromId === anyRelatedGroup)
+          .map(_.projectId))
+    }
+
     val baseQuery = Projects
       .applyFilter { x =>
         Seq(
@@ -124,7 +132,8 @@ class ProjectDao @Inject()(
           groupFromFilter(x),
           formFilter(x),
           optGroupAuditorId.map(x.groupAuditorId === _),
-          emailTemplateFilter(x)
+          emailTemplateFilter(x),
+          anyRelatedGroupFilter(x)
         )
       }
 

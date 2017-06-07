@@ -75,16 +75,17 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
     "return projects list from service" in {
       forAll { (
       eventId: Option[Long],
+      groupId: Option[Long],
       total: Int,
       projects: Seq[Project]
       ) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.projectServiceMock.getList(eventId)(admin, ListMeta.default))
+        when(fixture.projectServiceMock.getList(eventId, groupId)(admin, ListMeta.default))
           .thenReturn(EitherT.eitherT(toFuture(\/-(ListWithTotal(total, projects)): ApplicationError \/ ListWithTotal[Project])))
         val request = authenticated(FakeRequest(), env)
 
-        val response = fixture.controller.getList(eventId)(request)
+        val response = fixture.controller.getList(eventId, groupId)(request)
 
         status(response) mustBe OK
         val projectsJson = contentAsJson(response)

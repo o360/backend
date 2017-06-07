@@ -3,8 +3,9 @@ package services
 import java.sql.{SQLException, Timestamp}
 
 import models.ListWithTotal
-import models.dao.{EventDao, GroupDao}
+import models.dao.{EventDao, EventProjectDao, GroupDao, ProjectDao}
 import models.event.Event
+import models.project.Project
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
 import testutils.fixture.{EventFixture, UserFixture}
@@ -24,15 +25,19 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
   private case class TestFixture(
     eventDaoMock: EventDao,
     groupDao: GroupDao,
+    projectDao: ProjectDao,
+    eventProjectDao: EventProjectDao,
     eventJobService: EventJobService,
     service: EventService)
 
   private def getFixture = {
     val daoMock = mock[EventDao]
     val groupDao = mock[GroupDao]
+    val projectDao = mock[ProjectDao]
+    val eventProjectDao = mock[EventProjectDao]
     val eventJobService = mock[EventJobService]
-    val service = new EventService(daoMock, groupDao, eventJobService)
-    TestFixture(daoMock, groupDao, eventJobService, service)
+    val service = new EventService(daoMock, groupDao, projectDao, eventProjectDao, eventJobService)
+    TestFixture(daoMock, groupDao, projectDao, eventProjectDao, eventJobService, service)
   }
 
   "getById" should {
@@ -212,6 +217,43 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
 
         result mustBe 'right
       }
+    }
+  }
+
+  "cloneEvent" should {
+    "return not found if event not found" in {
+      forAll { (eventId: Long) =>
+        val fixture = getFixture
+        when(fixture.eventDaoMock.findById(eventId)).thenReturn(toFuture(None))
+        val result = wait(fixture.service.cloneEvent(eventId)(admin).run)
+
+        result mustBe 'left
+        result.swap.toOption.get mustBe a[NotFoundError]
+      }
+    }
+
+    "clone event" in {
+      val event = Events(1)
+      val createdEvent = event.copy(id = 2)
+
+      val fixture = getFixture
+      when(fixture.eventDaoMock.findById(event.id)).thenReturn(toFuture(Some(event)))
+      when(fixture.eventDaoMock.create(any[Event])).thenReturn(toFuture(createdEvent))
+      when(fixture.projectDao.getList(
+        optId = any[Option[Long]],
+        optEventId = eqTo(Some(createdEvent.id)),
+        optGroupFromIds = any[Option[Seq[Long]]],
+        optFormId = any[Option[Long]],
+        optGroupAuditorId = any[Option[Long]],
+        optEmailTemplateId = any[Option[Long]],
+        optAnyRelatedGroupId = any[Option[Long]]
+      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Project](0, Nil)))
+      when(fixture.eventJobService.createJobs(createdEvent)).thenReturn(toFuture(()))
+
+      val result = wait(fixture.service.cloneEvent(event.id)(admin).run)
+
+      result mustBe 'right
+      result.toOption.get mustBe createdEvent
     }
   }
 }
