@@ -8,6 +8,7 @@ import models.event.Event
 import models.user.User
 import utils.TimestampConverter
 
+import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
 
 
@@ -24,7 +25,7 @@ class TemplateEngineService {
     */
   def render(template: String, context: Map[String, String]): String = {
 
-    def getReplacement(m: Match) = context.get(m.group(1)).map(_.toString).getOrElse("")
+    def getReplacement(m: Match) = Regex.quoteReplacement(context.get(m.group(1)).map(_.toString).getOrElse(""))
 
     templateRegex.replaceAllIn(template, getReplacement _)
   }
