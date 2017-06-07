@@ -13,6 +13,7 @@ import services.UploadService.UploadModel
 
 import scala.concurrent.Future
 import play.api.libs.concurrent.Execution.Implicits._
+import services.spreadsheet.SpreadsheetService
 import utils.implicits.FutureLifting._
 
 /**
@@ -91,7 +92,7 @@ class UploadService @Inject()(
               val rightName = right.assessedUser.flatMap(_.name)
               (leftName, rightName) match {
                 case (None, None) => false
-                case (Some(l), Some(r)) => l > r
+                case (Some(l), Some(r)) => l < r
                 case (Some(_), None) => true
                 case (None, Some(_)) => false
               }

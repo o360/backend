@@ -229,7 +229,7 @@ class ReportService @Inject()(
           f""""$text" - $percent%3.2f%%"""
         }
 
-      captionsToPercents.mkString("; ")
+      captionsToPercents.mkString(";\n")
     }
 
     /**
@@ -254,7 +254,7 @@ class ReportService @Inject()(
           f""""$caption" - $percent%3.2f%%"""
         }
 
-      captionsToPercents.mkString("; ")
+      captionsToPercents.mkString(";\n")
     }
 
     import AggregatedReport._

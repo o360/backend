@@ -73,7 +73,6 @@ trait DaoHelper {
         case Seq() => query
         case Sorting.Field(field, direction) +: tail =>
           getSortedQuery(tail).sortBy { x =>
-            val pff = mapping(x)
             ColumnOrdered(
               column = mapping(x)(field),
               ord = direction match {

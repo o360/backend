@@ -85,7 +85,7 @@ object Answer {
             .map(_
               .map(findCaption)
               .collect { case Some(v) => v }
-              .mkString(", ")
+              .mkString(";\n")
             ).getOrElse("")
       }
     }
