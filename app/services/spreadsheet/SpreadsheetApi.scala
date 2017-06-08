@@ -18,10 +18,6 @@ object SpreadsheetApi {
     */
   def getRequests(actions: Seq[Action], sheetId: Int, freezedColumnsAmount: Int = 0): Seq[Request] = {
 
-    val regionActions = actions.collect { case r: RegionAction => r }
-    val maxColumn = regionActions.map(_.region.bottomRight.x).max
-    val maxRow = regionActions.map(_.region.bottomRight.y).max
-
     val updateCellsRequest = {
 
       val coordinateToColor: Map[Point, Element.Color] = actions
@@ -36,6 +32,10 @@ object SpreadsheetApi {
       val rows = setTextActions.groupBy(_.coordinate.y)
       if (rows.isEmpty) None
       else {
+        val regionActions = actions.collect { case r: RegionAction => r }
+        val maxColumn = regionActions.map(_.region.bottomRight.x).max
+        val maxRow = regionActions.map(_.region.bottomRight.y).max
+
         val rowsModels = (0 to maxRow).map { rowIndex =>
           val cells = rows.getOrElse(rowIndex, Nil).groupBy(_.coordinate.x).mapValues(_.head.cell)
           val cellsModels = (0 to maxColumn).map { cellIndex =>

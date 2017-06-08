@@ -148,7 +148,7 @@ object Element {
       * Colors each even inner element.
       */
     def colorIfEven(color: Color): Container = this.copy(
-      elements = elements.zipWithIndex.map { case (el, index) =>
+      elements = elements.filter(el => el.width > 0 || el.height > 0).zipWithIndex.map { case (el, index) =>
         el.copyWithColor(if (index % 2 == 0) None else Some(color))
       }
     )
