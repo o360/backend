@@ -70,7 +70,7 @@ class GroupDaoTest
   "create" should {
     "create group" in {
       forAll(groupArbitrary.arbitrary, Gen.option(Gen.choose(-1L, 5L))) { (group: GroupModel, parentId: Option[Long]) =>
-        val g = group.copy(parentId = parentId, hasChildren = false)
+        val g = group.copy(parentId = parentId, hasChildren = false, name = java.util.UUID.randomUUID.toString)
         whenever(g.parentId.isEmpty || wait(dao.findById(g.parentId.get)).nonEmpty) {
           val createdGroup = wait(dao.create(g))
           val groupById = wait(dao.findById(createdGroup.id))

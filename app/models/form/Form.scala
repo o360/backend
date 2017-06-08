@@ -56,6 +56,7 @@ object Form {
     case object CheckboxGroup extends ElementKind(true)
     case object Radio extends ElementKind(true)
     case object Select extends ElementKind(true)
+    case object LikeDislike extends ElementKind(true)
   }
 
   /**

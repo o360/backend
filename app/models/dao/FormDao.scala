@@ -72,7 +72,8 @@ trait FormComponent {
       2 -> Checkbox,
       3 -> CheckboxGroup,
       4 -> Radio,
-      5 -> Select
+      5 -> Select,
+      6 -> LikeDislike
     )
   }
   implicit lazy val kindColumnType = MappedColumnType.base[Form.ElementKind, Byte](

@@ -266,7 +266,7 @@ class ReportService @Inject()(
         val result = answerReport.formElement.kind match {
           case TextArea | TextField => aggregateAnswersCount(answers)
           case Checkbox => aggregateEachTextPercent(answers)
-          case CheckboxGroup | Radio | Select => aggregateEachValuePercent(answers, formReport.form)
+          case CheckboxGroup | Radio | Select | LikeDislike => aggregateEachValuePercent(answers, formReport.form)
         }
         FormElementAnswer(answerReport.formElement, result)
       }

@@ -60,6 +60,8 @@ object ConflictError {
     case object ActiveEventExists extends ConflictError("CONFLICT-FORM-3", "Can't update, active events exists")
 
     case class FormKind(action: String) extends ConflictError("CONFLICT-FORM-5", s"Can't $action.")
+
+    case object MissedValuesInLikeDislike extends ConflictError("CONFLICT-FORM-6", "Wrong values for likedislike element")
   }
 
   object Project {

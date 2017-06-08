@@ -202,11 +202,15 @@ class FormService @Inject()(
       val needValues = element.kind.needValues
       val isEmptyValues = element.values.isEmpty
       val needToRemoveValues = !needValues && !isEmptyValues
+      val validLikeDislike = element.kind != Form.ElementKind.LikeDislike ||
+        element.values.map(_.caption).toSet == Set("like", "dislike")
 
       if (needValues && isEmptyValues) {
         ConflictError.Form.ElementValuesMissed(s"${element.kind}: ${element.caption}").left
       } else if (needToRemoveValues) {
         element.copy(values = Nil).right
+      } else if (!validLikeDislike) {
+        ConflictError.Form.MissedValuesInLikeDislike.left
       } else {
         element.right
       }
