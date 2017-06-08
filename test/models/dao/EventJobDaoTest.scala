@@ -26,8 +26,8 @@ class EventJobDaoTest extends BaseDaoTest with EventJobFixture with EventJobGene
 
     "fitler jobs by time" in {
       val firstJob = EventJobs(0)
-      val timeFrom = new Timestamp(firstJob.time.getTime - 5)
-      val timeTo = new Timestamp(firstJob.time.getTime + 5)
+      val timeFrom = new Timestamp(firstJob.time.getTime - 1)
+      val timeTo = new Timestamp(firstJob.time.getTime + 1)
       val result = wait(dao.getJobs(timeFrom, timeTo, firstJob.status))
 
       result.length mustBe 1
@@ -42,8 +42,8 @@ class EventJobDaoTest extends BaseDaoTest with EventJobFixture with EventJobGene
         val preparedJob = job.copyWith(eventId = eventId)
         wait(dao.createJob(preparedJob))
 
-        val timeFrom = new Timestamp(preparedJob.time.getTime - 5)
-        val timeTo = new Timestamp(preparedJob.time.getTime + 5)
+        val timeFrom = new Timestamp(preparedJob.time.getTime - 1)
+        val timeTo = new Timestamp(preparedJob.time.getTime + 1)
 
         val fromDb = wait(dao.getJobs(timeFrom, timeTo, preparedJob.status))
 
@@ -59,8 +59,8 @@ class EventJobDaoTest extends BaseDaoTest with EventJobFixture with EventJobGene
       forAll { (status: EventJob.Status) =>
         wait(dao.updateStatus(job.id, status))
 
-        val timeFrom = new Timestamp(job.time.getTime - 5)
-        val timeTo = new Timestamp(job.time.getTime + 5)
+        val timeFrom = new Timestamp(job.time.getTime - 1)
+        val timeTo = new Timestamp(job.time.getTime + 1)
 
         val fromDb = wait(dao.getJobs(timeFrom, timeTo, status))
 

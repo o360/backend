@@ -4,7 +4,7 @@ import java.sql.Timestamp
 
 import models.ListWithTotal
 import models.dao._
-import models.event.Event
+import models.event.{Event, EventJob}
 import models.form.{Form, FormShort}
 import models.project.{Project, Relation}
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
@@ -122,7 +122,12 @@ class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixtur
       total: Int
       ) =>
         val fixture = getFixture
-        when(fixture.formDaoMock.getList(any[Option[Form.Kind]], any[Option[Long]], any[Boolean])(eqTo(ListMeta.default)))
+        when(fixture.formDaoMock.getList(
+          optKind = any[Option[Form.Kind]],
+          optFormTemplateId = any[Option[Long]],
+          optEventId = any[Option[Long]],
+          includeDeleted = any[Boolean]
+        )(eqTo(ListMeta.default)))
           .thenReturn(toFuture(ListWithTotal(total, forms)))
         val result = wait(fixture.service.getList()(admin, ListMeta.default).run)
 
@@ -209,10 +214,10 @@ class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixtur
       when(fixture.formDaoMock.getList(
         optKind = eqTo(Some(Form.Kind.Freezed)),
         optFormTemplateId = eqTo(Some(form.id)),
+        optEventId = any[Option[Long]],
         includeDeleted = any[Boolean]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Seq(childForm))))
       when(fixture.formDaoMock.update(childForm.copy(name = form.name))).thenReturn(toFuture(childForm))
-
 
       val result = wait(fixture.service.update(form)(admin).run)
 
@@ -366,6 +371,28 @@ class FormServiceTest extends BaseServiceTest with FormGenerator with FormFixtur
 
       result mustBe 'right
       result.toOption.get mustBe freezedForm
+    }
+  }
+
+  "execute" should {
+    "execute create freezed forms job" in {
+      val fixture = getFixture
+      val job = EventJob.CreateFreezedForms(1, 2, new Timestamp(123), EventJob.Status.New)
+
+      val form = Forms(0)
+      when(fixture.formDaoMock.getList(
+        optKind = any[Option[Form.Kind]],
+        optFormTemplateId = any[Option[Long]],
+        optEventId = eqTo(Some(job.eventId)),
+        includeDeleted = any[Boolean]
+      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Seq(form.toShort))))
+      when(fixture.formDaoMock.getFreezedFormId(job.eventId, form.id))
+        .thenReturn(toFuture(Some(form.id)))
+      when(fixture.formDaoMock.findById(form.id)).thenReturn(toFuture(Some(form)))
+
+      wait(fixture.service.execute(job))
+
+      succeed
     }
   }
 }

@@ -72,4 +72,12 @@ object EventJob {
       copy(id = id, eventId = eventId, status = status)
     override def time: Timestamp = notification.time
   }
+
+  /**
+    * Create freezed forms for event.
+    */
+  case class CreateFreezedForms(id: Long, eventId: Long, time: Timestamp, status: Status) extends EventJob {
+    override def copyWith(id: Long = id, eventId: Long = eventId, status: EventJob.Status = status): EventJob =
+      copy(id = id, eventId = eventId, status = status)
+  }
 }

@@ -195,6 +195,8 @@ class FormDao @Inject()(
 ) extends HasDatabaseConfigProvider[JdbcProfile]
   with FormComponent
   with EventFormMappingComponent
+  with ProjectRelationComponent
+  with EventProjectComponent
   with DaoHelper {
 
   import driver.api._
@@ -207,10 +209,17 @@ class FormDao @Inject()(
   def getList(
     optKind: Option[Form.Kind] = None,
     optFormTemplateId: Option[Long] = None,
+    optEventId: Option[Long] = None,
     includeDeleted: Boolean = false
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[FormShort]] = {
 
     def deletedFilter(form: FormTable) = if (includeDeleted) None else Some(!form.isDeleted)
+
+    def eventFilter(form: FormTable) = optEventId.map { eventId =>
+      val projectIds = EventProjects.filter(_.eventId === eventId).map(_.projectId)
+      val formIds = Relations.filter(_.projectId.in(projectIds)).map(_.formId)
+      form.id.in(formIds)
+    }
 
     val query = Forms
       .applyFilter { form =>
@@ -219,7 +228,8 @@ class FormDao @Inject()(
           optFormTemplateId.map { formTemplateId =>
             form.id in EventFormMappings.filter(_.formTemplateId === formTemplateId).map(_.formFreezedId)
           },
-          deletedFilter(form)
+          deletedFilter(form),
+          eventFilter(form)
         )
       }
 
