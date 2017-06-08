@@ -26,6 +26,9 @@ object BadRequestError {
 
     case object NotUniqueNotifications
       extends BadRequestError("BAD-REQUEST-EVENT-2", "Duplicate notifications")
+
+    case object WrongDates
+      extends BadRequestError("BAD-REQUEST-EVENT-3", "Can't use past dates in event")
   }
 
   object Relation {
