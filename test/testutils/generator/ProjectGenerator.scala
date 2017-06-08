@@ -15,6 +15,7 @@ trait ProjectGenerator extends TemplateBindingGenerator {
       description <- Arbitrary.arbitrary[Option[String]]
       groupAuditor <- Arbitrary.arbitrary[Long]
       templates <- Arbitrary.arbitrary[Seq[TemplateBinding]]
-    } yield Project(0, name, description, NamedEntity(groupAuditor), templates)
+      formsOnSamePage <- Arbitrary.arbitrary[Boolean]
+    } yield Project(0, name, description, NamedEntity(groupAuditor), templates, formsOnSamePage)
   }
 }

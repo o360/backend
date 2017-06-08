@@ -97,6 +97,15 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
     }
   }
 
+  def toPartialProject(project: Project) = ApiPartialProject(
+    project.name,
+    project.description,
+    project.groupAuditor.id,
+    project.templates.map(t =>
+      ApiPartialTemplateBinding(t.template.id, ApiNotificationKind(t.kind), ApiNotificationRecipient(t.recipient))),
+    project.formsOnSamePage
+  )
+
   "PUT /projects" should {
     "update projects" in {
       forAll { (project: Project) =>
@@ -105,13 +114,7 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
         when(fixture.projectServiceMock.update(project)(admin))
           .thenReturn(EitherT.eitherT(toFuture(\/-(project): ApplicationError \/ Project)))
 
-        val partialProject = ApiPartialProject(
-          project.name,
-          project.description,
-          project.groupAuditor.id,
-          project.templates.map(t =>
-            ApiPartialTemplateBinding(t.template.id, ApiNotificationKind(t.kind), ApiNotificationRecipient(t.recipient)))
-        )
+        val partialProject = toPartialProject(project)
         val request = authenticated(
           FakeRequest("PUT", "/projects")
             .withBody[ApiPartialProject](partialProject)
@@ -137,13 +140,7 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
         when(fixture.projectServiceMock.create(project.copy(id = 0))(admin))
           .thenReturn(EitherT.eitherT(toFuture(\/-(project): ApplicationError \/ Project)))
 
-        val partialProject = ApiPartialProject(
-          project.name,
-          project.description,
-          project.groupAuditor.id,
-          project.templates.map(t =>
-            ApiPartialTemplateBinding(t.template.id, ApiNotificationKind(t.kind), ApiNotificationRecipient(t.recipient)))
-        )
+        val partialProject = toPartialProject(project)
         val request = authenticated(
           FakeRequest("POST", "/projects")
             .withBody[ApiPartialProject](partialProject)

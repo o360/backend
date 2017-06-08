@@ -21,23 +21,25 @@ trait ProjectFixture extends FixtureHelper with GroupFixture with TemplateFixtur
         TemplateBinding(NamedEntity(1, "firstname"), Notification.Kind.Begin, Notification.Recipient.Respondent),
         TemplateBinding(NamedEntity(2, "secondname"), Notification.Kind.End, Notification.Recipient.Respondent),
         TemplateBinding(NamedEntity(2, "secondname"), Notification.Kind.End, Notification.Recipient.Auditor)
-      )
+      ),
+      formsOnSamePage = true
     ),
     Project(
       2,
       "second",
       None,
       NamedEntity(1, Groups.find(_.id == 1).get.name),
-      Nil
+      Nil,
+      formsOnSamePage = false
     )
   )
 
   addFixtureOperation {
     sequenceOf(
       insertInto("project")
-        .columns("id", "name", "description", "group_auditor_id")
-        .scalaValues(1, "first", "description", 3)
-        .scalaValues(2, "second", null, 1)
+        .columns("id", "name", "description", "group_auditor_id", "forms_on_same_page")
+        .scalaValues(1, "first", "description", 3, true)
+        .scalaValues(2, "second", null, 1, false)
         .build,
       insertInto("project_email_template")
         .columns("project_id", "template_id", "kind", "recipient_kind")
