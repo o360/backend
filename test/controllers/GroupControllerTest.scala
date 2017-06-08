@@ -76,16 +76,17 @@ class GroupControllerTest extends BaseControllerTest with GroupGenerator with Tr
       forAll { (
       parentId: Tristate[Long],
       userId: Option[Long],
+      name: Option[String],
       total: Int,
       groups: Seq[Group]
       ) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.groupServiceMock.list(parentId, userId)(admin, ListMeta.default))
+        when(fixture.groupServiceMock.list(parentId, userId, name)(admin, ListMeta.default))
           .thenReturn(EitherT.eitherT(toFuture(\/-(ListWithTotal(total, groups)): ApplicationError \/ ListWithTotal[Group])))
         val request = authenticated(FakeRequest(), env)
 
-        val response = fixture.controller.getList(parentId, userId)(request)
+        val response = fixture.controller.getList(parentId, userId, name)(request)
 
         status(response) mustBe OK
         val groupsJson = contentAsJson(response)
@@ -99,7 +100,7 @@ class GroupControllerTest extends BaseControllerTest with GroupGenerator with Tr
       val env = fakeEnvironment(admin.copy(role = User.Role.User))
       val fixture = getFixture(env)
       val request = authenticated(FakeRequest(), env)
-      val response = fixture.controller.getList(Tristate.Unspecified, None).apply(request)
+      val response = fixture.controller.getList(Tristate.Unspecified, None, None).apply(request)
 
       status(response) mustBe FORBIDDEN
     }

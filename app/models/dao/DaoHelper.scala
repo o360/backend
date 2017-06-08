@@ -115,6 +115,17 @@ trait DaoHelper {
     }
   }
 
+  /**
+    * Like function with value escaping.
+    *
+    * @param column column to compare
+    * @param value  value to compare
+    */
+  def like(column: Rep[String], value: String): Rep[Boolean] = {
+    val escapedValue = value.replace("%", "\\%") // postgres specific % escape
+    column.like(s"%$escapedValue%")
+  }
+
   implicit class SequenceExtension[A](val sequence: Seq[A]) {
 
     /**

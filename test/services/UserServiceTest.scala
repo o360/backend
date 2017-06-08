@@ -295,7 +295,8 @@ class UserServiceTest
         when(fixture.groupDaoMock.getList(
           optId = any[Option[Long]],
           optParentId = any[Tristate[Long]],
-          optUserId = eqTo(Some(id))
+          optUserId = eqTo(Some(id)),
+          optName = any[Option[String]]
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Groups.take(1))))
         val result = wait(fixture.service.delete(id)(admin).run)
 
@@ -311,7 +312,8 @@ class UserServiceTest
         when(fixture.groupDaoMock.getList(
           optId = any[Option[Long]],
           optParentId = any[Tristate[Long]],
-          optUserId = eqTo(Some(id))
+          optUserId = eqTo(Some(id)),
+          optName = any[Option[String]]
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Group](0, Nil)))
         when(fixture.userDaoMock.delete(id)).thenReturn(toFuture(()))
         val result = wait(fixture.service.delete(id)(admin).run)

@@ -38,15 +38,18 @@ class GroupService @Inject()(
     *
     * @param parentId parent ID
     * @param userId   only groups of user
+    * @param name     part of group name
     */
   def list(
     parentId: Tristate[Long],
-    userId: Option[Long]
+    userId: Option[Long],
+    name: Option[String]
   )(implicit account: User, meta: ListMeta): ListResult = {
     groupDao.getList(
       optId = None,
       optParentId = parentId,
-      optUserId = userId
+      optUserId = userId,
+      optName = name
     ).lift
   }
 

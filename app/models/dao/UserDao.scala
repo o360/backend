@@ -199,8 +199,7 @@ class UserDao @Inject()(
     }
 
     def filterName(user: UserTable) = optName.map { name =>
-      val escapedName = name.replace("%", "\\%") // postgres specific % escape
-      user.name.fold(false: Rep[Boolean])(_.like(s"%$escapedName%"))
+      user.name.fold(false: Rep[Boolean])(like(_, name))
     }
 
     def deletedFilter(user: UserTable) = if (includeDeleted) None else Some(!user.isDeleted)

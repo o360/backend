@@ -220,7 +220,7 @@ GET           /groups/:id                           controllers.GroupController.
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /groups                               controllers.GroupController.getList(parentId: org.davidbild.tristate.Tristate[Long], userId: Option[Long])
+GET           /groups                               controllers.GroupController.getList(parentId: org.davidbild.tristate.Tristate[Long], userId: Option[Long], name: Option[String])
 
 ###
 # summary: Creates group
