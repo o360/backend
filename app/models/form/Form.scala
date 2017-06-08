@@ -3,22 +3,24 @@ package models.form
 /**
   * Form template model.
   *
-  * @param id       DB ID
-  * @param name     form name
-  * @param elements form elements
-  * @param kind     kind of the form
+  * @param id                DB ID
+  * @param name              form name
+  * @param elements          form elements
+  * @param kind              kind of the form
+  * @param showInAggregation if form showed in aggregated report
   */
 case class Form(
   id: Long,
   name: String,
   elements: Seq[Form.Element],
-  kind: Form.Kind
+  kind: Form.Kind,
+  showInAggregation: Boolean
 ) {
 
   /**
     * Returns short form.
     */
-  def toShort = FormShort(id, name, kind)
+  def toShort = FormShort(id, name, kind, showInAggregation)
 }
 
 object Form {

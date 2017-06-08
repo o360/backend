@@ -11,19 +11,22 @@ import play.api.libs.json._
 /**
   * Api partial form model.
   *
-  * @param name     name
-  * @param elements form elements
+  * @param name              name
+  * @param elements          form elements
+  * @param showInAggregation is form showed in aggregation report
   */
 case class ApiPartialForm(
   name: String,
-  elements: Option[Seq[ApiPartialForm.Element]]
+  elements: Option[Seq[ApiPartialForm.Element]],
+  showInAggregation: Boolean
 ) {
 
   def toModel(id: Long = 0) = Form(
     id,
     name,
     elements.getOrElse(Nil).map(_.toModel),
-    Form.Kind.Active
+    Form.Kind.Active,
+    showInAggregation
   )
 }
 
@@ -41,8 +44,9 @@ object ApiPartialForm {
 
   implicit val formReads: Reads[ApiPartialForm] = (
     (__ \ "name").read[String](maxLength[String](1024)) and
-      (__ \ "elements").readNullable[Seq[ApiPartialForm.Element]]
-    ) (ApiPartialForm(_, _))
+      (__ \ "elements").readNullable[Seq[ApiPartialForm.Element]] and
+      (__ \ "showInAggregation").read[Boolean]
+    ) (ApiPartialForm(_, _, _))
 
   /**
     * Form element api model.
