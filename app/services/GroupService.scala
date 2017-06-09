@@ -92,10 +92,12 @@ class GroupService @Inject()(
         relationsWithGroupFrom <- relationDao.getList(optGroupFromId = Some(id))
         relationsWithGroupTo <- relationDao.getList(optGroupToId = Some(id))
       } yield {
-        val relations = (relationsWithGroupFrom.data ++ relationsWithGroupTo.data).distinct
+        val allProjects =
+          (projects.data.map(_.toNamedEntity) ++
+            relationsWithGroupFrom.data.map(_.project) ++
+            relationsWithGroupTo.data.map(_.project)).distinct
         ConflictError.getConflictedEntitiesMap(
-          Project.namePlural -> projects.data.map(_.toNamedEntity),
-          Relation.namePlural -> relations.map(_.toNamedEntity)
+          Project.namePlural -> allProjects
         )
       }
     }
