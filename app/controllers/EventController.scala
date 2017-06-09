@@ -26,7 +26,7 @@ class EventController @Inject()(
   /**
     * Returns event by ID.
     */
-  def getById(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
+  def getById(id: Long) = silhouette.SecuredAction(AllowedStatus.approved).async { implicit request =>
     toResult(Ok) {
       eventService
         .getById(id)
