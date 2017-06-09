@@ -16,6 +16,7 @@ libraryDependencies ++= Seq(
   "org.scalaz" %% "scalaz-core" % "7.2.10",
   "com.google.apis" % "google-api-services-sheets" % "v4-rev473-1.22.0",
   "com.google.apis" % "google-api-services-drive" % "v3-rev74-1.22.0",
+  "org.flywaydb" % "flyway-core" % "4.1.2",
     filters
 )
 
@@ -23,7 +24,6 @@ libraryDependencies ++= Seq(
   "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0",
   "org.scalacheck" %% "scalacheck" % "1.13.4",
   "com.h2database" % "h2" % "1.4.194",
-  "org.flywaydb" % "flyway-core" % "4.1.2",
   "org.mockito" % "mockito-core" % "2.7.19",
   "com.ninja-squad" % "DbSetup" % "2.1.0",
   "com.mohiva" %% "play-silhouette-testkit" % "4.0.0"

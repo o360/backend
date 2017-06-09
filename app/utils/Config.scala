@@ -33,6 +33,13 @@ class Config @Inject()(protected val configuration: Configuration) {
   }
 
   lazy val cryptoSecret: String = configuration.getString("play.crypto.secret").get
+
+  lazy val dbSettings: Config.DbSetting = {
+    val url = configuration.getString("slick.dbs.default.db.url").get
+    val user = configuration.getString("slick.dbs.default.db.user").get
+    val password = configuration.getString("slick.dbs.default.db.password").get
+    Config.DbSetting(url, user, password)
+  }
 }
 
 object Config {
@@ -47,4 +54,6 @@ object Config {
   case class Scheduler(enabled: Boolean, intervalMilliseconds: Long, maxAgeMilliseconds: Long)
 
   case class Mailer(sendFrom: String)
+
+  case class DbSetting(url: String, user: String, password: String)
 }
