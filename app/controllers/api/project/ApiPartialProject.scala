@@ -14,7 +14,8 @@ case class ApiPartialProject(
   description: Option[String],
   groupAuditorId: Long,
   templates: Seq[ApiPartialTemplateBinding],
-  formsOnSamePage: Boolean
+  formsOnSamePage: Boolean,
+  canRevote: Boolean
 ) {
 
   def toModel(id: Long = 0) = Project(
@@ -23,7 +24,8 @@ case class ApiPartialProject(
     description,
     NamedEntity(groupAuditorId),
     templates.map(_.toModel),
-    formsOnSamePage
+    formsOnSamePage,
+    canRevote
   )
 }
 
@@ -34,6 +36,7 @@ object ApiPartialProject {
       (__ \ "description").readNullable[String](maxLength[String](1024)) and
       (__ \ "groupAuditorId").read[Long] and
       (__ \ "templates").read[Seq[ApiPartialTemplateBinding]] and
-      (__ \ "formsOnSamePage").read[Boolean]
-    ) (ApiPartialProject(_, _, _, _, _))
+      (__ \ "formsOnSamePage").read[Boolean] and
+      (__ \ "canRevote").read[Boolean]
+    ) (ApiPartialProject(_, _, _, _, _, _))
 }

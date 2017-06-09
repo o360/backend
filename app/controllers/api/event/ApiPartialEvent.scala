@@ -17,7 +17,6 @@ case class ApiPartialEvent(
   description: Option[String],
   start: LocalDateTime,
   end: LocalDateTime,
-  canRevote: Boolean,
   notifications: Seq[ApiEvent.NotificationTime]
 ) {
   /**
@@ -30,7 +29,6 @@ case class ApiPartialEvent(
     description,
     TimestampConverter.toUtc(Timestamp.valueOf(start), account.timezone),
     TimestampConverter.toUtc(Timestamp.valueOf(end), account.timezone),
-    canRevote,
     notifications.map(_.toModel)
   )
 }
@@ -40,7 +38,6 @@ object ApiPartialEvent {
     (__ \ "description").readNullable[String](maxLength(1024)) and
       (__ \ "start").read[LocalDateTime] and
       (__ \ "end").read[LocalDateTime] and
-      (__ \ "canRevote").read[Boolean] and
       (__ \ "notifications").read[Seq[ApiEvent.NotificationTime]]
     ) (ApiPartialEvent.apply _)
 }

@@ -1,0 +1,2 @@
+ALTER TABLE event DROP can_revote;
+ALTER TABLE project ADD can_revote BOOLEAN DEFAULT TRUE NOT NULL;

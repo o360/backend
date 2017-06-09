@@ -3,7 +3,7 @@ package services
 import java.sql.Timestamp
 
 import models.assessment.{Answer, Assessment}
-import models.dao.{AnswerDao, EventDao, GroupDao, ProjectRelationDao}
+import models.dao._
 import models.event.Event
 import models.form.Form
 import models.project.Relation
@@ -37,6 +37,7 @@ class AssessmentServiceTest
     eventDao: EventDao,
     relationDao: ProjectRelationDao,
     answerDao: AnswerDao,
+    projectDao: ProjectDao,
     service: AssessmentService
   )
 
@@ -47,8 +48,9 @@ class AssessmentServiceTest
     val eventDao = mock[EventDao]
     val relationDao = mock[ProjectRelationDao]
     val answerDao = mock[AnswerDao]
-    val service = new AssessmentService(formService, userService, groupDao, eventDao, relationDao, answerDao)
-    Fixture(formService, userService, groupDao, eventDao, relationDao, answerDao, service)
+    val projectDao = mock[ProjectDao]
+    val service = new AssessmentService(formService, userService, groupDao, eventDao, relationDao, answerDao,projectDao)
+    Fixture(formService, userService, groupDao, eventDao, relationDao, answerDao, projectDao, service)
   }
 
   "getList" should {
@@ -178,8 +180,8 @@ class AssessmentServiceTest
       val fixture = getFixture
 
       val user = UserFixture.user
-      val event = Events(0).copy(canRevote = false)
-      val projectId = 3
+      val event = Events(0)
+      val project = Projects(0).copy(id = 3, canRevote = false)
       val userGroupsIds = Seq(1L, 2, 3)
       val formId = 1
       val answer = Answer.Form(NamedEntity(formId), Set())
@@ -189,16 +191,18 @@ class AssessmentServiceTest
       when(fixture.eventDao.getList(
         optId = eqTo(Some(event.id)),
         optStatus = any[Option[Event.Status]],
-        optProjectId = eqTo(Some(projectId)),
+        optProjectId = eqTo(Some(project.id)),
         optFormId = any[Option[Long]],
         optGroupFromIds = eqTo(Some(userGroupsIds))
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal(1, Seq(event))))
 
-      when(fixture.answerDao.getAnswer(event.id, projectId, user.id, None, formId))
+      when(fixture.projectDao.findById(project.id)).thenReturn(toFuture(Some(project)))
+
+      when(fixture.answerDao.getAnswer(event.id, project.id, user.id, None, formId))
         .thenReturn(toFuture(Some(answer)))
 
-      val result = wait(fixture.service.submit(event.id, projectId, assessment)(user).run)
+      val result = wait(fixture.service.submit(event.id, project.id, assessment)(user).run)
 
       result mustBe 'left
       result.swap.toOption.get mustBe a[ConflictError]
@@ -209,7 +213,7 @@ class AssessmentServiceTest
 
       val user = UserFixture.user
       val event = Events(0)
-      val projectId = 3
+      val project = Projects(0).copy(id = 3)
       val userGroupsIds = Seq(1L, 2, 3)
       val formId = 1
       val answer = Answer.Form(NamedEntity(formId), Set())
@@ -219,16 +223,18 @@ class AssessmentServiceTest
       when(fixture.eventDao.getList(
         optId = eqTo(Some(event.id)),
         optStatus = any[Option[Event.Status]],
-        optProjectId = eqTo(Some(projectId)),
+        optProjectId = eqTo(Some(project.id)),
         optFormId = any[Option[Long]],
         optGroupFromIds = eqTo(Some(userGroupsIds))
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal(1, Seq(event))))
 
-      when(fixture.answerDao.getAnswer(event.id, projectId, user.id, Some(user.id), formId))
+      when(fixture.projectDao.findById(project.id)).thenReturn(toFuture(Some(project)))
+
+      when(fixture.answerDao.getAnswer(event.id, project.id, user.id, Some(user.id), formId))
         .thenReturn(toFuture(None))
 
-      val result = wait(fixture.service.submit(event.id, projectId, assessment)(user).run)
+      val result = wait(fixture.service.submit(event.id, project.id, assessment)(user).run)
 
       result mustBe 'left
       result.swap.toOption.get mustBe a[BadRequestError]
@@ -262,7 +268,7 @@ class AssessmentServiceTest
 
         val user = UserFixture.user
         val event = Events(0)
-        val projectId = 3
+        val project = Projects(0).copy(id = 3)
         val userGroupsIds = Seq(1L, 2, 3)
         val formId = answer.form.id
         val assessment = Assessment(None, Seq(answer))
@@ -271,19 +277,21 @@ class AssessmentServiceTest
         when(fixture.eventDao.getList(
           optId = eqTo(Some(event.id)),
           optStatus = any[Option[Event.Status]],
-          optProjectId = eqTo(Some(projectId)),
+          optProjectId = eqTo(Some(project.id)),
           optFormId = any[Option[Long]],
           optGroupFromIds = eqTo(Some(userGroupsIds))
         )(any[ListMeta]))
           .thenReturn(toFuture(ListWithTotal(1, Seq(event))))
 
-        when(fixture.answerDao.getAnswer(event.id, projectId, user.id, None, formId))
+        when(fixture.projectDao.findById(project.id)).thenReturn(toFuture(Some(project)))
+
+        when(fixture.answerDao.getAnswer(event.id, project.id, user.id, None, formId))
           .thenReturn(toFuture(None))
 
         when(fixture.formService.getById(formId))
           .thenReturn(EitherT.eitherT(toFuture(\/-(form): ApplicationError \/ Form)))
 
-        val result = wait(fixture.service.submit(event.id, projectId, assessment)(user).run)
+        val result = wait(fixture.service.submit(event.id, project.id, assessment)(user).run)
 
         result mustBe 'left
       }
@@ -294,7 +302,7 @@ class AssessmentServiceTest
 
       val user = UserFixture.user
       val event = Events(0)
-      val projectId = 3
+      val project = Projects(0).copy(id = 3)
       val userGroupsIds = Seq(1L, 2, 3)
       val form = Form(1, "", Seq(Form.Element(1, Form.ElementKind.TextField, "", true, Nil)), Form.Kind.Freezed, true)
       val answer = Answer.Form(NamedEntity(form.id), Set(Answer.Element(1, Some("text"), None)))
@@ -304,13 +312,15 @@ class AssessmentServiceTest
       when(fixture.eventDao.getList(
         optId = eqTo(Some(event.id)),
         optStatus = any[Option[Event.Status]],
-        optProjectId = eqTo(Some(projectId)),
+        optProjectId = eqTo(Some(project.id)),
         optFormId = any[Option[Long]],
         optGroupFromIds = eqTo(Some(userGroupsIds))
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal(1, Seq(event))))
 
-      when(fixture.answerDao.getAnswer(event.id, projectId, user.id, None, form.id))
+      when(fixture.projectDao.findById(project.id)).thenReturn(toFuture(Some(project)))
+
+      when(fixture.answerDao.getAnswer(event.id, project.id, user.id, None, form.id))
         .thenReturn(toFuture(None))
 
       when(fixture.formService.getById(form.id))
@@ -318,7 +328,7 @@ class AssessmentServiceTest
 
       when(fixture.relationDao.getList(
         optId = any[Option[Long]],
-        optProjectId = eqTo(Some(projectId)),
+        optProjectId = eqTo(Some(project.id)),
         optKind = eqTo(Some(Relation.Kind.Survey)),
         optFormId = any[Option[Long]],
         optGroupFromId = any[Option[Long]],
@@ -326,7 +336,7 @@ class AssessmentServiceTest
         optEmailTemplateId = any[Option[Long]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
 
-      val result = wait(fixture.service.submit(event.id, projectId, assessment)(user).run)
+      val result = wait(fixture.service.submit(event.id, project.id, assessment)(user).run)
 
       result mustBe 'left
       result.swap.toOption.get mustBe a[ConflictError.Assessment.WrongParameters.type]
@@ -337,7 +347,7 @@ class AssessmentServiceTest
 
       val user = UserFixture.user
       val event = Events(0)
-      val projectId = 3
+      val project = Projects(0).copy(id = 3)
       val userGroupsIds = Seq(1L, 2, 3)
       val form = Form(1, "", Seq(Form.Element(1, Form.ElementKind.TextField, "", true, Nil)), Form.Kind.Freezed, true)
       val answer = Answer.Form(NamedEntity(form.id), Set(Answer.Element(1, Some("text"), None)))
@@ -356,13 +366,15 @@ class AssessmentServiceTest
       when(fixture.eventDao.getList(
         optId = eqTo(Some(event.id)),
         optStatus = any[Option[Event.Status]],
-        optProjectId = eqTo(Some(projectId)),
+        optProjectId = eqTo(Some(project.id)),
         optFormId = any[Option[Long]],
         optGroupFromIds = eqTo(Some(userGroupsIds))
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal(1, Seq(event))))
 
-      when(fixture.answerDao.getAnswer(event.id, projectId, user.id, None, form.id))
+      when(fixture.projectDao.findById(project.id)).thenReturn(toFuture(Some(project)))
+
+      when(fixture.answerDao.getAnswer(event.id, project.id, user.id, None, form.id))
         .thenReturn(toFuture(None))
 
       when(fixture.formService.getById(form.id))
@@ -370,7 +382,7 @@ class AssessmentServiceTest
 
       when(fixture.relationDao.getList(
         optId = any[Option[Long]],
-        optProjectId = eqTo(Some(projectId)),
+        optProjectId = eqTo(Some(project.id)),
         optKind = eqTo(Some(Relation.Kind.Survey)),
         optFormId = any[Option[Long]],
         optGroupFromId = any[Option[Long]],
@@ -381,7 +393,7 @@ class AssessmentServiceTest
       when(fixture.formService.getOrCreateFreezedForm(event.id, relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(\/-(form): ApplicationError \/ Form)))
 
-      val result = wait(fixture.service.submit(event.id, projectId, assessment)(user).run)
+      val result = wait(fixture.service.submit(event.id, project.id, assessment)(user).run)
 
       result mustBe 'left
       result.swap.toOption.get mustBe a[ConflictError.Assessment.WrongParameters.type]
@@ -392,7 +404,7 @@ class AssessmentServiceTest
 
       val user = UserFixture.user
       val event = Events(0)
-      val projectId = 3
+      val project = Projects(0).copy(id = 3)
       val userGroupsIds = Seq(1L, 2, 3)
       val form = Form(1, "", Seq(Form.Element(1, Form.ElementKind.TextField, "", true, Nil)), Form.Kind.Freezed, true)
       val answer = Answer.Form(NamedEntity(form.id), Set(Answer.Element(1, Some("text"), None)))
@@ -411,13 +423,15 @@ class AssessmentServiceTest
       when(fixture.eventDao.getList(
         optId = eqTo(Some(event.id)),
         optStatus = any[Option[Event.Status]],
-        optProjectId = eqTo(Some(projectId)),
+        optProjectId = eqTo(Some(project.id)),
         optFormId = any[Option[Long]],
         optGroupFromIds = eqTo(Some(userGroupsIds))
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal(1, Seq(event))))
 
-      when(fixture.answerDao.getAnswer(event.id, projectId, user.id, None, form.id))
+      when(fixture.projectDao.findById(project.id)).thenReturn(toFuture(Some(project)))
+
+      when(fixture.answerDao.getAnswer(event.id, project.id, user.id, None, form.id))
         .thenReturn(toFuture(None))
 
       when(fixture.formService.getById(form.id))
@@ -425,7 +439,7 @@ class AssessmentServiceTest
 
       when(fixture.relationDao.getList(
         optId = any[Option[Long]],
-        optProjectId = eqTo(Some(projectId)),
+        optProjectId = eqTo(Some(project.id)),
         optKind = eqTo(Some(Relation.Kind.Survey)),
         optFormId = any[Option[Long]],
         optGroupFromId = any[Option[Long]],
@@ -436,10 +450,10 @@ class AssessmentServiceTest
       when(fixture.formService.getOrCreateFreezedForm(event.id, relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(\/-(form): ApplicationError \/ Form)))
 
-      when(fixture.answerDao.saveAnswer(event.id, projectId, user.id, None, answer))
+      when(fixture.answerDao.saveAnswer(event.id, project.id, user.id, None, answer))
         .thenReturn(toFuture(answer))
 
-      val result = wait(fixture.service.submit(event.id, projectId, assessment)(user).run)
+      val result = wait(fixture.service.submit(event.id, project.id, assessment)(user).run)
 
       result mustBe 'right
     }

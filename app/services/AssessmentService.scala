@@ -4,7 +4,7 @@ import javax.inject.{Inject, Singleton}
 
 import models.{ListWithTotal, NamedEntity}
 import models.assessment.{Answer, Assessment}
-import models.dao.{AnswerDao, EventDao, GroupDao, ProjectRelationDao}
+import models.dao._
 import models.event.Event
 import models.form.Form
 import models.project.Relation
@@ -27,7 +27,8 @@ class AssessmentService @Inject()(
   protected val groupDao: GroupDao,
   protected val eventDao: EventDao,
   protected val relationDao: ProjectRelationDao,
-  protected val answerDao: AnswerDao
+  protected val answerDao: AnswerDao,
+  protected val projectDao: ProjectDao
 ) extends ServiceResults[Assessment] {
 
   /**
@@ -229,8 +230,14 @@ class AssessmentService @Inject()(
       }
       event = events.data.head
 
+      project <- projectDao.findById(projectId).lift
+
+      _ <- ensure(project.nonEmpty) {
+        NotFoundError.Assessment(eventId, projectId, account.id)
+      }
+
       existedAnswer <- answerDao.getAnswer(eventId, projectId, account.id, userToId, answer.form.id).lift
-      _ <- ensure(existedAnswer.isEmpty || event.canRevote) {
+      _ <- ensure(existedAnswer.isEmpty || project.get.canRevote) {
         ConflictError.Assessment.CantRevote
       }
 

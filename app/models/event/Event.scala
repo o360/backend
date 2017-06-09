@@ -14,7 +14,6 @@ import utils.TimestampConverter
   * @param description   description
   * @param start         start date-time
   * @param end           end date-time
-  * @param canRevote     if true, user can revote
   * @param notifications collection of notification types along with time and recipient type
   */
 case class Event(
@@ -22,7 +21,6 @@ case class Event(
   description: Option[String],
   start: Timestamp,
   end: Timestamp,
-  canRevote: Boolean,
   notifications: Seq[Event.NotificationTime]
 ) {
   private val currentTime = TimestampConverter.now

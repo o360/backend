@@ -19,7 +19,6 @@ trait EventFixture extends FixtureHelper {
       Some("description"),
       Timestamp.valueOf(LocalDateTime.of(2017, 1, 2, 12, 30)),
       Timestamp.valueOf(LocalDateTime.of(2017, 1, 5, 12, 30)),
-      canRevote = true,
       Seq(
         Event.NotificationTime(
           Timestamp.valueOf(LocalDateTime.of(2017, 1, 2, 12, 0)),
@@ -43,7 +42,6 @@ trait EventFixture extends FixtureHelper {
       Some("completed"),
       new Timestamp(0),
       new Timestamp(500),
-      canRevote = false,
       Nil
     ),
     Event(
@@ -51,7 +49,6 @@ trait EventFixture extends FixtureHelper {
       Some("notStarted"),
       new Timestamp(Long.MaxValue - 500),
       new Timestamp(Long.MaxValue),
-      canRevote = false,
       Nil
     ),
     Event(
@@ -59,7 +56,6 @@ trait EventFixture extends FixtureHelper {
       Some("inProgress"),
       new Timestamp(0),
       new Timestamp(Long.MaxValue),
-      canRevote = false,
       Nil
     )
   )
@@ -67,11 +63,11 @@ trait EventFixture extends FixtureHelper {
   addFixtureOperation {
     sequenceOf(
       insertInto("event")
-        .columns("id", "start_time", "end_time", "description", "can_revote")
-        .scalaValues(1, Events(0).start, Events(0).end, "description", true)
-        .scalaValues(2, Events(1).start, Events(1).end, "completed", false)
-        .scalaValues(3, Events(2).start, Events(2).end, "notStarted", false)
-        .scalaValues(4, Events(3).start, Events(3).end, "inProgress", false)
+        .columns("id", "start_time", "end_time", "description")
+        .scalaValues(1, Events(0).start, Events(0).end, "description")
+        .scalaValues(2, Events(1).start, Events(1).end, "completed")
+        .scalaValues(3, Events(2).start, Events(2).end, "notStarted")
+        .scalaValues(4, Events(3).start, Events(3).end, "inProgress")
         .build,
       insertInto("event_notification")
         .columns("id", "event_id", "time", "kind", "recipient_kind")

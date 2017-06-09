@@ -109,9 +109,7 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
           event.description,
           event.start.toLocalDateTime,
           event.end.toLocalDateTime,
-          event.canRevote,
           event.notifications.map(ApiEvent.NotificationTime(_)(admin))
-
         )
         val request = authenticated(
           FakeRequest("PUT", "/events")
@@ -142,7 +140,6 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
           event.description,
           event.start.toLocalDateTime,
           event.end.toLocalDateTime,
-          event.canRevote,
           event.notifications.map(ApiEvent.NotificationTime(_)(admin))
 
         )

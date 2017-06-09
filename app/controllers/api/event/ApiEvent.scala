@@ -18,7 +18,6 @@ case class ApiEvent(
   description: Option[String],
   start: LocalDateTime,
   end: LocalDateTime,
-  canRevote: Boolean,
   notifications: Option[Seq[ApiEvent.NotificationTime]],
   status: ApiEvent.EventStatus
 ) extends Response
@@ -39,7 +38,6 @@ object ApiEvent {
       e.description,
       TimestampConverter.fromUtc(e.start, account.timezone).toLocalDateTime,
       TimestampConverter.fromUtc(e.end, account.timezone).toLocalDateTime,
-      e.canRevote,
       notifications,
       EventStatus(e.status)
     )
