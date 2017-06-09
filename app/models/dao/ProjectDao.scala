@@ -28,7 +28,8 @@ trait ProjectComponent {
     name: String,
     description: Option[String],
     groupAuditorId: Long,
-    formsOnSamePage: Boolean
+    formsOnSamePage: Boolean,
+    canRevote: Boolean
   ) {
 
     def toModel(groupAuditorName: String, templates: Seq[TemplateBinding]) = Project(
@@ -37,7 +38,8 @@ trait ProjectComponent {
       description,
       NamedEntity(groupAuditorId, groupAuditorName),
       templates,
-      formsOnSamePage
+      formsOnSamePage,
+      canRevote
     )
   }
 
@@ -47,7 +49,8 @@ trait ProjectComponent {
       p.name,
       p.description,
       p.groupAuditor.id,
-      p.formsOnSamePage
+      p.formsOnSamePage,
+      p.canRevote
     )
   }
 
@@ -58,8 +61,9 @@ trait ProjectComponent {
     def description = column[Option[String]]("description")
     def groupAuditorId = column[Long]("group_auditor_id")
     def formsOnSamePage = column[Boolean]("forms_on_same_page")
+    def canRevote = column[Boolean]("can_revote")
 
-    def * = (id, name, description, groupAuditorId, formsOnSamePage) <> ((DbProject.apply _).tupled, DbProject.unapply)
+    def * = (id, name, description, groupAuditorId, formsOnSamePage, canRevote) <> ((DbProject.apply _).tupled, DbProject.unapply)
   }
 
   val Projects = TableQuery[ProjectTable]

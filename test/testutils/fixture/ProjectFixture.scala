@@ -22,7 +22,8 @@ trait ProjectFixture extends FixtureHelper with GroupFixture with TemplateFixtur
         TemplateBinding(NamedEntity(2, "secondname"), Notification.Kind.End, Notification.Recipient.Respondent),
         TemplateBinding(NamedEntity(2, "secondname"), Notification.Kind.End, Notification.Recipient.Auditor)
       ),
-      formsOnSamePage = true
+      formsOnSamePage = true,
+      canRevote = true
     ),
     Project(
       2,
@@ -30,16 +31,17 @@ trait ProjectFixture extends FixtureHelper with GroupFixture with TemplateFixtur
       None,
       NamedEntity(1, Groups.find(_.id == 1).get.name),
       Nil,
-      formsOnSamePage = false
+      formsOnSamePage = false,
+      canRevote = false
     )
   )
 
   addFixtureOperation {
     sequenceOf(
       insertInto("project")
-        .columns("id", "name", "description", "group_auditor_id", "forms_on_same_page")
-        .scalaValues(1, "first", "description", 3, true)
-        .scalaValues(2, "second", null, 1, false)
+        .columns("id", "name", "description", "group_auditor_id", "forms_on_same_page", "can_revote")
+        .scalaValues(1, "first", "description", 3, true, true)
+        .scalaValues(2, "second", null, 1, false, false)
         .build,
       insertInto("project_email_template")
         .columns("project_id", "template_id", "kind", "recipient_kind")

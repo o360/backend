@@ -11,6 +11,7 @@ import models.NamedEntity
   * @param groupAuditor    group-auditor
   * @param templates       project-wide email templates
   * @param formsOnSamePage is all forms displayed on same assessment page
+  * @param canRevote       if true user can revote
   */
 case class Project(
   id: Long,
@@ -18,7 +19,8 @@ case class Project(
   description: Option[String],
   groupAuditor: NamedEntity,
   templates: Seq[TemplateBinding],
-  formsOnSamePage: Boolean
+  formsOnSamePage: Boolean,
+  canRevote: Boolean
 ) {
   def toNamedEntity = NamedEntity(id, name)
 }

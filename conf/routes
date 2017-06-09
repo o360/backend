@@ -774,7 +774,7 @@ GET           /events/:id                           controllers.EventController.
 #     in: query
 #     type: string
 #     pattern: '^-?\w+(,-?\w+)*$'
-#     description: 'Available fields: id, start, end, description, canRevote. Format: field1,-field2,...'
+#     description: 'Available fields: id, start, end, description. Format: field1,-field2,...'
 #   - $ref: '#/parameters/pageSize'
 #   - $ref: '#/parameters/pageNumber'
 # responses:

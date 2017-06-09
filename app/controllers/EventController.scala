@@ -21,7 +21,7 @@ class EventController @Inject()(
   eventService: EventService
 ) extends BaseController with ListActions {
 
-  implicit val sortingFields = Sorting.AvailableFields('id, 'start, 'end, 'description, 'canRevote)
+  implicit val sortingFields = Sorting.AvailableFields('id, 'start, 'end, 'description)
 
   /**
     * Returns event by ID.

@@ -32,9 +32,8 @@ trait EventGenerator extends NotificationGenerator {
       description <- Arbitrary.arbitrary[Option[String]]
       start <- Arbitrary.arbitrary[Timestamp]
       end <- Arbitrary.arbitrary[Timestamp]
-      canRevote <- Arbitrary.arbitrary[Boolean]
       notifications <- Arbitrary.arbitrary[Seq[Event.NotificationTime]]
 
-    } yield Event(0, description, start, end, canRevote, notifications)
+    } yield Event(0, description, start, end, notifications)
   }
 }

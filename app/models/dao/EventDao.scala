@@ -63,8 +63,7 @@ trait EventComponent extends NotificationComponent {
     id: Long,
     description: Option[String],
     start: Timestamp,
-    end: Timestamp,
-    canRevote: Boolean
+    end: Timestamp
   )
 
   object DbEvent {
@@ -72,8 +71,7 @@ trait EventComponent extends NotificationComponent {
       event.id,
       event.description,
       event.start,
-      event.end,
-      event.canRevote
+      event.end
     )
   }
 
@@ -83,9 +81,8 @@ trait EventComponent extends NotificationComponent {
     def description = column[Option[String]]("description")
     def start = column[Timestamp]("start_time")
     def end = column[Timestamp]("end_time")
-    def canRevote = column[Boolean]("can_revote")
 
-    def * = (id, description, start, end, canRevote) <> ((DbEvent.apply _).tupled, DbEvent.unapply)
+    def * = (id, description, start, end) <> ((DbEvent.apply _).tupled, DbEvent.unapply)
   }
 
   val Events = TableQuery[EventTable]
@@ -215,7 +212,6 @@ class EventDao @Inject()(
       case 'start => event.start
       case 'end => event.end
       case 'description => event.description
-      case 'canRevote => event.canRevote
     }
 
     val resultQuery = baseQuery
@@ -233,7 +229,7 @@ class EventDao @Inject()(
         .map { case (event, notificationsWithEvent) =>
           val notifications = notificationsWithEvent
             .collect { case (_, Some(n)) => Event.NotificationTime(n.time, n.kind, n.recipient) }
-          Event(event.id, event.description, event.start, event.end, event.canRevote, notifications)
+          Event(event.id, event.description, event.start, event.end, notifications)
         }
 
       ListWithTotal(count, data)
