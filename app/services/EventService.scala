@@ -128,7 +128,7 @@ class EventService @Inject()(
       * Moves all event dates to the future.
       */
     def shiftDates(event: Event): Event = {
-      val newStart = Timestamp.valueOf(
+      val newStartDate = Timestamp.valueOf(
         TimestampConverter
           .now
           .toLocalDateTime
@@ -136,16 +136,16 @@ class EventService @Inject()(
           .withNano(0)
       )
 
-      val difference = newStart.getTime - event.start.getTime
+      val difference = newStartDate.getTime - event.start.getTime
 
       def shift(timestamp: Timestamp): Timestamp = {
         val newValue = new Timestamp(timestamp.getTime + difference)
-        if (newValue.before(newStart)) newStart
+        if (newValue.before(newStartDate)) newStartDate
         else newValue
       }
 
       val notifications = event.notifications.map(n => n.copy(time = shift(n.time)))
-      event.copy(start = newStart, end = shift(event.end), notifications = notifications)
+      event.copy(start = newStartDate, end = shift(event.end), notifications = notifications)
     }
 
     for {
