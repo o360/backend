@@ -8,6 +8,7 @@ import org.davidbild.tristate.Tristate
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.api.libs.concurrent.Execution.Implicits._
 import slick.driver.JdbcProfile
+import utils.Transliteration
 import utils.listmeta.ListMeta
 
 import scala.concurrent.Future
@@ -90,6 +91,12 @@ class GroupDao @Inject()(
     optUserId: Option[Long] = None,
     optName: Option[String] = None
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Group]] = {
+
+    def filterName(group: GroupTable) = optName.map { name =>
+      val transliterated = Transliteration.transliterate(name)
+      like(group.name, name, ignoreCase = true) || like(group.name, transliterated, ignoreCase = true)
+    }
+
     val query = Groups
       .applyFilter { x =>
         Seq(
@@ -100,7 +107,7 @@ class GroupDao @Inject()(
             case Tristate.Unspecified => None
           },
           optUserId.map(userId => x.id in UserGroups.filter(_.userId === userId).map(_.groupId)),
-          optName.map(like(x.name, _, ignoreCase = true))
+          filterName(x)
         )
       }
       .map { group =>
