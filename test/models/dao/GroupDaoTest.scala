@@ -51,7 +51,7 @@ class GroupDaoTest
     "return groups filtered by name" in {
       val name = "-"
       val groups = wait(dao.getList(optName = Some(name))).data
-      val expectedGroups = Groups.filter(_.name.contains(name))
+      val expectedGroups = Groups.filter(_.name.toLowerCase.contains(name.toLowerCase))
 
       groups must contain theSameElementsAs expectedGroups
     }
