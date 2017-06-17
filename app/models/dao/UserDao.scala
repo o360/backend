@@ -9,7 +9,7 @@ import org.davidbild.tristate.Tristate
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.api.libs.concurrent.Execution.Implicits._
 import slick.driver.JdbcProfile
-import utils.Logger
+import utils.{Logger, Transliteration}
 import utils.listmeta.ListMeta
 
 import scala.concurrent.Future
@@ -199,7 +199,10 @@ class UserDao @Inject()(
     }
 
     def filterName(user: UserTable) = optName.map { name =>
-      user.name.fold(false: Rep[Boolean])(like(_, name, ignoreCase = true))
+      user.name.fold(false: Rep[Boolean]) { nameColumn =>
+        val transliterated = Transliteration.transliterate(name)
+        like(nameColumn, name, ignoreCase = true) || like(nameColumn, transliterated, ignoreCase = true)
+      }
     }
 
     def deletedFilter(user: UserTable) = if (includeDeleted) None else Some(!user.isDeleted)
