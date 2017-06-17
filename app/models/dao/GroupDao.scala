@@ -100,7 +100,7 @@ class GroupDao @Inject()(
             case Tristate.Unspecified => None
           },
           optUserId.map(userId => x.id in UserGroups.filter(_.userId === userId).map(_.groupId)),
-          optName.map(like(x.name, _))
+          optName.map(like(x.name, _, ignoreCase = true))
         )
       }
       .map { group =>

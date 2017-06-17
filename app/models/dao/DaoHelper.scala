@@ -121,9 +121,12 @@ trait DaoHelper {
     * @param column column to compare
     * @param value  value to compare
     */
-  def like(column: Rep[String], value: String): Rep[Boolean] = {
+  def like(column: Rep[String], value: String, ignoreCase: Boolean = false): Rep[Boolean] = {
     val escapedValue = value.replace("%", "\\%") // postgres specific % escape
-    column.like(s"%$escapedValue%")
+    val condition = s"%$escapedValue%"
+
+    if (ignoreCase) column.toLowerCase.like(condition.toLowerCase)
+    else column.like(condition)
   }
 
   implicit class SequenceExtension[A](val sequence: Seq[A]) {

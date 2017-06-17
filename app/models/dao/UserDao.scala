@@ -199,7 +199,7 @@ class UserDao @Inject()(
     }
 
     def filterName(user: UserTable) = optName.map { name =>
-      user.name.fold(false: Rep[Boolean])(like(_, name))
+      user.name.fold(false: Rep[Boolean])(like(_, name, ignoreCase = true))
     }
 
     def deletedFilter(user: UserTable) = if (includeDeleted) None else Some(!user.isDeleted)
