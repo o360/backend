@@ -80,10 +80,11 @@ class GroupServiceTest extends BaseServiceTest with GroupGenerator with GroupFix
           optId = any[Option[Long]],
           optParentId = eqTo(parentId),
           optUserId = eqTo(userId),
-          optName = eqTo(name)
+          optName = eqTo(name),
+          optLevels = any[Option[Seq[Int]]]
         )(eqTo(ListMeta.default)))
           .thenReturn(toFuture(ListWithTotal(total, groups)))
-        val result = wait(fixture.service.list(parentId, userId, name)(admin, ListMeta.default).run)
+        val result = wait(fixture.service.list(parentId, userId, name, None)(admin, ListMeta.default).run)
 
         result mustBe 'right
         result.toOption.get mustBe ListWithTotal(total, groups)
@@ -92,7 +93,8 @@ class GroupServiceTest extends BaseServiceTest with GroupGenerator with GroupFix
           optId = any[Option[Long]],
           optParentId = eqTo(parentId),
           optUserId = eqTo(userId),
-          optName = eqTo(name)
+          optName = eqTo(name),
+          optLevels = any[Option[Seq[Int]]]
         )(eqTo(ListMeta.default))
       }
     }

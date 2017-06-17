@@ -296,7 +296,8 @@ class UserServiceTest
           optId = any[Option[Long]],
           optParentId = any[Tristate[Long]],
           optUserId = eqTo(Some(id)),
-          optName = any[Option[String]]
+          optName = any[Option[String]],
+          optLevels = any[Option[Seq[Int]]]
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Groups.take(1))))
         val result = wait(fixture.service.delete(id)(admin).run)
 
@@ -313,7 +314,8 @@ class UserServiceTest
           optId = any[Option[Long]],
           optParentId = any[Tristate[Long]],
           optUserId = eqTo(Some(id)),
-          optName = any[Option[String]]
+          optName = any[Option[String]],
+          optLevels = any[Option[Seq[Int]]]
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Group](0, Nil)))
         when(fixture.userDaoMock.delete(id)).thenReturn(toFuture(()))
         val result = wait(fixture.service.delete(id)(admin).run)

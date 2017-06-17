@@ -70,7 +70,7 @@ class GroupDaoTest
   "create" should {
     "create group" in {
       forAll(groupArbitrary.arbitrary, Gen.option(Gen.choose(-1L, 5L))) { (group: GroupModel, parentId: Option[Long]) =>
-        val g = group.copy(parentId = parentId, hasChildren = false, name = java.util.UUID.randomUUID.toString)
+        val g = group.copy(parentId = parentId, hasChildren = false, name = java.util.UUID.randomUUID.toString, level = 0)
         whenever(g.parentId.isEmpty || wait(dao.findById(g.parentId.get)).nonEmpty) {
           val createdGroup = wait(dao.create(g))
           val groupById = wait(dao.findById(createdGroup.id))
@@ -86,7 +86,7 @@ class GroupDaoTest
     "update group" in {
       val newGroupId = wait(dao.create(Groups(0).copy(name = java.util.UUID.randomUUID.toString))).id
       forAll(groupArbitrary.arbitrary, Gen.option(Gen.choose(-1L, 5L))) { (group: GroupModel, parentId: Option[Long]) =>
-        val g = group.copy(id = newGroupId, parentId = parentId, name = java.util.UUID.randomUUID.toString, hasChildren = false)
+        val g = group.copy(id = newGroupId, parentId = parentId, name = java.util.UUID.randomUUID.toString, hasChildren = false, level = 0)
         whenever(g.parentId.isEmpty || wait(dao.findById(g.parentId.get)).nonEmpty) {
           wait(dao.update(g))
           val updatedGroup = wait(dao.findById(newGroupId))

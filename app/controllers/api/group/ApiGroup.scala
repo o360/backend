@@ -11,7 +11,8 @@ case class ApiGroup(
   id: Long,
   parentId: Option[Long],
   name: String,
-  hasChildren: Boolean
+  hasChildren: Boolean,
+  level: Int
 ) extends Response
 
 object ApiGroup {
@@ -21,6 +22,7 @@ object ApiGroup {
     group.id,
     group.parentId,
     group.name,
-    group.hasChildren
+    group.hasChildren,
+    group.level
   )
 }

@@ -26,11 +26,12 @@ trait GroupComponent {
     parentId: Option[Long],
     name: String
   ) {
-    def toModel(hasChildren: Boolean) = Group(
+    def toModel(hasChildren: Boolean, level: Int) = Group(
       id,
       parentId,
       name,
-      hasChildren
+      hasChildren,
+      level
     )
   }
 
@@ -51,7 +52,17 @@ trait GroupComponent {
     def * = (id, parentId, name) <> ((DbGroup.apply _).tupled, DbGroup.unapply)
   }
 
+  class GroupLevelView(tag: Tag) extends Table[(Long, Int)](tag, "orgstructure_level_view") {
+
+    def group_id = column[Long]("group_id")
+    def level = column[Int]("lvl")
+
+    def * = (group_id, level)
+  }
+
   val Groups = TableQuery[GroupTable]
+
+  val GroupLevels = TableQuery[GroupLevelView]
 }
 
 /**
@@ -74,7 +85,8 @@ class GroupDao @Inject()(
     * @return group model with ID
     */
   def create(group: Group): Future[Group] = {
-    db.run(Groups.returning(Groups.map(_.id)) += DbGroup.fromModel(group)).map(id => group.copy(id = id))
+    db.run(Groups.returning(Groups.map(_.id)) += DbGroup.fromModel(group))
+      .flatMap(findById).map(_.getOrElse(throw new NoSuchElementException("group not found")))
   }
 
   /**
@@ -89,7 +101,8 @@ class GroupDao @Inject()(
     optId: Option[Long] = None,
     optParentId: Tristate[Long] = Tristate.Unspecified,
     optUserId: Option[Long] = None,
-    optName: Option[String] = None
+    optName: Option[String] = None,
+    optLevels: Option[Seq[Int]] = None
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Group]] = {
 
     def filterName(group: GroupTable) = optName.map { name =>
@@ -97,32 +110,39 @@ class GroupDao @Inject()(
       like(group.name, name, ignoreCase = true) || like(group.name, transliterated, ignoreCase = true)
     }
 
+    def filterLevels(levelView: GroupLevelView) = optLevels.map { levels =>
+      levels.foldLeft(false: Rep[Boolean])(_ || levelView.level === _)
+    }
+
     val query = Groups
-      .applyFilter { x =>
+      .join(GroupLevels).on(_.id === _.group_id)
+      .applyFilter { case (group, levelView) =>
         Seq(
-          optId.map(x.id === _),
+          optId.map(group.id === _),
           optParentId match {
-            case Tristate.Present(parentId) => Some(x.parentId.fold(false: Rep[Boolean])(_ === parentId))
-            case Tristate.Absent => Some(x.parentId.isEmpty)
+            case Tristate.Present(parentId) => Some(group.parentId.fold(false: Rep[Boolean])(_ === parentId))
+            case Tristate.Absent => Some(group.parentId.isEmpty)
             case Tristate.Unspecified => None
           },
-          optUserId.map(userId => x.id in UserGroups.filter(_.userId === userId).map(_.groupId)),
-          filterName(x)
+          optUserId.map(userId => group.id in UserGroups.filter(_.userId === userId).map(_.groupId)),
+          filterName(group),
+          filterLevels(levelView)
         )
       }
-      .map { group =>
+      .map { case (group, levelView) =>
         val hasChildren = Groups.filter(_.parentId === group.id).exists
-        (group, hasChildren)
+        (group, hasChildren, levelView.level)
       }
 
     runListQuery(query) {
-      case (group, _) => {
+      case (group, _, level) => {
         case 'id => group.id
         case 'name => group.name
+        case 'level => level
       }
     }
     .map { case ListWithTotal(total, data) =>
-      ListWithTotal(total, data.map { case (group, hasChildren) => group.toModel(hasChildren) })
+      ListWithTotal(total, data.map { case (group, hasChildren, level) => group.toModel(hasChildren, level) })
     }
   }
 

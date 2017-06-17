@@ -32,7 +32,7 @@ trait BaseDaoTest
   private val dbSetupDestination = new DriverManagerDestination(dbUrl, dbUser, dbPass)
 
   override def beforeEach(): Unit = {
-    flyway.setLocations("migrations")
+    flyway.setLocations("migrations/common", "migrations/h2")
     flyway.setDataSource(dbUrl, dbUser, dbPass)
     flyway.clean()
     flyway.migrate()

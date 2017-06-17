@@ -15,7 +15,8 @@ case class ApiPartialGroup(
     id,
     parentId,
     name,
-    hasChildren = false
+    hasChildren = false,
+    level = 0
   )
 }
 
