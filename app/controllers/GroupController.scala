@@ -41,11 +41,12 @@ class GroupController @Inject()(
   def getList(
     parentId: Tristate[Long],
     userId: Option[Long],
-    name: Option[String]
+    name: Option[String],
+    levels: Option[String]
   ) = (silhouette.SecuredAction(AllowedRole.admin) andThen ListAction).async { implicit request =>
     toResult(Ok) {
       groupService
-        .list(parentId, userId, name)
+        .list(parentId, userId, name, levels)
         .map {
           groups => Response.List(groups) {
             group => ApiGroup(group)

@@ -31,7 +31,7 @@ libraryDependencies ++= Seq(
 
 routesImport ++= Seq("controllers.api.TristateQueryBinder._")
 
-flywayLocations := Seq("migrations")
+flywayLocations := Seq("migrations/common", "migrations/postgres")
 flywayUrl := sys.env.getOrElse("DATABASE_URL", "")
 flywayUser := sys.env.getOrElse("DATABASE_USER", "")
 flywayPassword := sys.env.getOrElse("DATABASE_PASSWORD", "")

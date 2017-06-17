@@ -189,6 +189,11 @@ GET           /groups/:id                           controllers.GroupController.
 #   - Group
 # parameters:
 #   - in: query
+#     name: levels
+#     type: string
+#     description: comma separated list of available levels, e.g. 0,1,2
+#     required: false
+#   - in: query
 #     name: parentId
 #     schema:
 #     type: integer
@@ -220,7 +225,7 @@ GET           /groups/:id                           controllers.GroupController.
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /groups                               controllers.GroupController.getList(parentId: org.davidbild.tristate.Tristate[Long], userId: Option[Long], name: Option[String])
+GET           /groups                               controllers.GroupController.getList(parentId: org.davidbild.tristate.Tristate[Long], userId: Option[Long], name: Option[String], levels: Option[String])
 
 ###
 # summary: Creates group

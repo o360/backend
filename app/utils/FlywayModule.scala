@@ -28,7 +28,7 @@ class FlywayInitializer @Inject()(
     try {
       val dbSettings = config.dbSettings
       val flyway = new Flyway()
-      flyway.setLocations("migrations")
+      flyway.setLocations("migrations/common", "migrations/postgres")
       flyway.setDataSource(dbSettings.url, dbSettings.user, dbSettings.password)
       flyway.setOutOfOrder(true)
       flyway.migrate()

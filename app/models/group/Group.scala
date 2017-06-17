@@ -14,7 +14,8 @@ case class Group(
   id: Long,
   parentId: Option[Long],
   name: String,
-  hasChildren: Boolean
+  hasChildren: Boolean,
+  level: Int
 ) {
   def toNamedEntity = NamedEntity(id, name)
 }

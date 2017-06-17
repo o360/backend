@@ -77,16 +77,17 @@ class GroupControllerTest extends BaseControllerTest with GroupGenerator with Tr
       parentId: Tristate[Long],
       userId: Option[Long],
       name: Option[String],
+      levels: Option[String],
       total: Int,
       groups: Seq[Group]
       ) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.groupServiceMock.list(parentId, userId, name)(admin, ListMeta.default))
+        when(fixture.groupServiceMock.list(parentId, userId, name, levels)(admin, ListMeta.default))
           .thenReturn(EitherT.eitherT(toFuture(\/-(ListWithTotal(total, groups)): ApplicationError \/ ListWithTotal[Group])))
         val request = authenticated(FakeRequest(), env)
 
-        val response = fixture.controller.getList(parentId, userId, name)(request)
+        val response = fixture.controller.getList(parentId, userId, name, levels)(request)
 
         status(response) mustBe OK
         val groupsJson = contentAsJson(response)
@@ -100,7 +101,7 @@ class GroupControllerTest extends BaseControllerTest with GroupGenerator with Tr
       val env = fakeEnvironment(admin.copy(role = User.Role.User))
       val fixture = getFixture(env)
       val request = authenticated(FakeRequest(), env)
-      val response = fixture.controller.getList(Tristate.Unspecified, None, None).apply(request)
+      val response = fixture.controller.getList(Tristate.Unspecified, None, None, None).apply(request)
 
       status(response) mustBe FORBIDDEN
     }
@@ -111,7 +112,7 @@ class GroupControllerTest extends BaseControllerTest with GroupGenerator with Tr
       forAll { (group: Group) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.groupServiceMock.update(group.copy(hasChildren = false))(admin))
+        when(fixture.groupServiceMock.update(group.copy(hasChildren = false, level = 0))(admin))
           .thenReturn(EitherT.eitherT(toFuture(\/-(group): ApplicationError \/ Group)))
 
         val partialGroup = ApiPartialGroup(group.parentId, group.name)
@@ -137,7 +138,7 @@ class GroupControllerTest extends BaseControllerTest with GroupGenerator with Tr
       forAll { (group: Group) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.groupServiceMock.create(group.copy(id = 0, hasChildren = false))(admin))
+        when(fixture.groupServiceMock.create(group.copy(id = 0, hasChildren = false, level = 0))(admin))
           .thenReturn(EitherT.eitherT(toFuture(\/-(group): ApplicationError \/ Group)))
 
         val partialGroup = ApiPartialGroup(group.parentId, group.name)

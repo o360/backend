@@ -12,6 +12,8 @@ import utils.errors.{ConflictError, ExceptionHandler, NotFoundError}
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
 
+import scala.util.Try
+
 /**
   * Group service.
   */
@@ -43,13 +45,20 @@ class GroupService @Inject()(
   def list(
     parentId: Tristate[Long],
     userId: Option[Long],
-    name: Option[String]
+    name: Option[String],
+    levels: Option[String]
   )(implicit account: User, meta: ListMeta): ListResult = {
+
+    val levelsParsed = levels.flatMap { l =>
+      Try(l.split(",")).map(_.toSeq.map(_.toInt)).toOption
+    }
+
     groupDao.getList(
       optId = None,
       optParentId = parentId,
       optUserId = userId,
-      optName = name
+      optName = name,
+      optLevels = levelsParsed
     ).lift
   }
 
