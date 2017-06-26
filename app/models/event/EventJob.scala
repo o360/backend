@@ -54,6 +54,11 @@ object EventJob {
       * Job cancelled.
       */
     case object Cancelled extends Status
+
+    /**
+      * Job is in progress.
+      */
+    case object InProgress extends Status
   }
 
   /**
