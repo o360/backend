@@ -64,25 +64,35 @@ object Action {
     * @param element    element to create actions for
     * @param coordinate starting point, placement on spreadsheet
     */
-  def getActions(element: Element, coordinate: Point): Seq[Action] = element match {
-    case NoElement => Nil
-    case cell: Cell => cell.getActions(coordinate)
-    case container: Container =>
+  def getActions(element: Element, coordinate: Point): Seq[Action] = {
+    def getContainerActions(container: Container) = {
 
-      def getActionsForInnerElements(elements: Seq[Element], current: Point): Seq[Action] = elements match {
-        case Seq() => Nil
-        case innerElement +: tail =>
-          val newCoordinate = container.direction match {
-            case Container.Direction.TopToDown => current.copy(y = current.y + innerElement.height)
-            case Container.Direction.LeftToRight => current.copy(x = current.x + innerElement.width)
-          }
+      def getActionsForInnerElements(elements: Seq[Element], current: Point): Seq[Action] = {
 
-          getActions(innerElement, current) ++ getActionsForInnerElements(tail, newCoordinate)
+        def getNewCoordinate(el: Element) = container.direction match {
+          case Container.Direction.TopToDown => current.copy(y = current.y + el.height)
+          case Container.Direction.LeftToRight => current.copy(x = current.x + el.width)
+        }
+
+        elements match {
+          case Seq() => Nil
+          case innerElement +: tail =>
+            val newCoordinate = getNewCoordinate(innerElement)
+
+            getActions(innerElement, current) ++ getActionsForInnerElements(tail, newCoordinate)
+        }
       }
 
       val containerActions = container.getActions(coordinate)
       val innerElementsActions = getActionsForInnerElements(container.elements, coordinate)
 
       innerElementsActions ++ containerActions
+    }
+
+    element match {
+      case NoElement => Nil
+      case cell: Cell => cell.getActions(coordinate)
+      case container: Container => getContainerActions(container)
+    }
   }
 }

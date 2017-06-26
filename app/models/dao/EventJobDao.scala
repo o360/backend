@@ -104,13 +104,14 @@ class EventJobDao @Inject()(
     */
   def createJob(job: EventJob): Future[Unit] = {
     val dbJob = DbEventJob.fromModel(job)
-    val existedJobQuery = EventJobs.filter { x =>
-      x.eventId === dbJob.eventId &&
-        x.time === dbJob.time &&
-        dbJob.kind.fold(x.kind.isEmpty)(k => x.kind.fold(false: Rep[Boolean])(_ === k)) &&
-        dbJob.recipient.fold(x.kind.isEmpty)(r => x.recipient.fold(false: Rep[Boolean])(_ === r)) &&
-        x.jobType === dbJob.jobType
-    }
+    val existedJobQuery = EventJobs
+      .filter { x =>
+        x.eventId === dbJob.eventId &&
+          x.time === dbJob.time &&
+          dbJob.kind.fold(x.kind.isEmpty)(k => x.kind.fold(false: Rep[Boolean])(_ === k)) &&
+          dbJob.recipient.fold(x.kind.isEmpty)(r => x.recipient.fold(false: Rep[Boolean])(_ === r)) &&
+          x.jobType === dbJob.jobType
+      }
       .map(_.id)
       .result
       .headOption

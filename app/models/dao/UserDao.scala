@@ -200,8 +200,9 @@ class UserDao @Inject()(
 
     def filterName(user: UserTable) = optName.map { name =>
       user.name.fold(false: Rep[Boolean]) { nameColumn =>
-        val transliterated = Transliteration.transliterate(name)
-        like(nameColumn, name, ignoreCase = true) || like(nameColumn, transliterated, ignoreCase = true)
+        val transliteratedName = Transliteration.transliterate(name)
+        val nameLike = like(nameColumn, _: String, true)
+        nameLike(name) || nameLike(transliteratedName)
       }
     }
 

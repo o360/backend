@@ -65,7 +65,8 @@ object SpreadsheetApi {
 
       createMergeActions.map { createMergeAction =>
         new Request()
-          .setMergeCells(new MergeCellsRequest()
+          .setMergeCells(
+            new MergeCellsRequest()
             .setRange(getGridRange(createMergeAction.region, sheetId, includeRight = true))
             .setMergeType("MERGE_ALL")
           )

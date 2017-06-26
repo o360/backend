@@ -52,8 +52,14 @@ class EventJobService @Inject()(
       Future.sequence {
         seq.map(el => splitter(el).map((el, _)))
       }.map { result =>
-        val positive = result.filter(_._2).map(_._1)
-        val negative = result.filter(!_._2).map(_._1)
+        val positive = result
+          .filter { case (_, condition) => condition }
+          .map { case (el, _) => el }
+
+        val negative = result
+          .filter {case (_, condition) => !condition }
+          .map { case (el, _) => el }
+
         (positive, negative)
       }
     }

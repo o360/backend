@@ -53,7 +53,11 @@ object Transliteration {
     def helper(rest: String, acc: String = ""): String =
       if (rest.isEmpty) acc
       else {
-        rules.filter(rule => rest.startsWith(rule._1)).sortBy(- _._1.length).headOption match {
+        rules
+          .filter { case (from, _) =>
+            rest.startsWith(from)
+          }.sortBy { case (from, _) => -from.length }
+          .headOption match {
           case Some((from, to)) => helper(rest.drop(math.max(from.length, 1)), acc + to)
           case None => helper(rest.tail, acc + rest.head)
         }

@@ -106,8 +106,9 @@ class GroupDao @Inject()(
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Group]] = {
 
     def filterName(group: GroupTable) = optName.map { name =>
-      val transliterated = Transliteration.transliterate(name)
-      like(group.name, name, ignoreCase = true) || like(group.name, transliterated, ignoreCase = true)
+      val transliteratedName = Transliteration.transliterate(name)
+      val nameLike = like(group.name, _: String, true)
+      nameLike(name) || nameLike(transliteratedName)
     }
 
     def filterLevels(levelView: GroupLevelView) = optLevels.map { levels =>
