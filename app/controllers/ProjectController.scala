@@ -26,12 +26,12 @@ class ProjectController @Inject()(
   /**
     * Returns list of projects with relations.
     */
-  def getList(eventId: Option[Long], groupId: Option[Long]) =
+  def getList(eventId: Option[Long], groupId: Option[Long], onlyAvailable: Boolean) =
     (silhouette.SecuredAction(AllowedStatus.approved) andThen ListAction).async { implicit request =>
 
     toResult(Ok) {
       projectService
-        .getList(eventId, groupId)
+        .getList(eventId, groupId, onlyAvailable)
         .map { projects =>
           Response.List(projects)(ApiProject(_))
         }
