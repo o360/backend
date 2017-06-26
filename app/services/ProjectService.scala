@@ -37,12 +37,10 @@ class ProjectService @Inject()(
   /**
     * Returns projects list.
     */
-  def getList(eventId: Option[Long], groupId: Option[Long])(implicit account: User, meta: ListMeta): ListResult = {
+  def getList(eventId: Option[Long], groupId: Option[Long], onlyAvailable: Boolean)(implicit account: User, meta: ListMeta): ListResult = {
 
-    val groupFromFilter = account.role match {
-      case User.Role.Admin => None.toFuture
-      case User.Role.User => groupDao.findGroupIdsByUserId(account.id).map(Some(_))
-    }
+    val groupFromFilter = if (!onlyAvailable && account.role == User.Role.Admin) None.toFuture
+    else groupDao.findGroupIdsByUserId(account.id).map(Some(_))
 
     for {
       groupFromIds <- groupFromFilter.lift

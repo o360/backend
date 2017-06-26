@@ -86,7 +86,7 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
           optAnyRelatedGroupId = eqTo(groupId)
         )(eqTo(ListMeta.default)))
           .thenReturn(toFuture(ListWithTotal(total, projects)))
-        val result = wait(fixture.service.getList(eventId, groupId)(admin, ListMeta.default).run)
+        val result = wait(fixture.service.getList(eventId, groupId, false)(admin, ListMeta.default).run)
 
         result mustBe 'right
         result.toOption.get mustBe ListWithTotal(total, projects)
@@ -115,7 +115,7 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
           .thenReturn(toFuture(ListWithTotal(total, projects)))
         when(fixture.groupDao.findGroupIdsByUserId(user.id)).thenReturn(toFuture(userGroups))
 
-        val result = wait(fixture.service.getList(eventId, groupId)(user, ListMeta.default).run)
+        val result = wait(fixture.service.getList(eventId, groupId, true)(user, ListMeta.default).run)
 
         result mustBe 'right
         result.toOption.get mustBe ListWithTotal(total, projects)
