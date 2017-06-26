@@ -84,7 +84,7 @@ class EventJobService @Inject()(
     for {
       jobs <- eventJobDao.getJobs(from, to, EventJob.Status.New)
       (actualJobs, cancelledJobs) <- split(jobs, isStillActual)
-      _ <- cancel(cancelledJobs)
+      _ <- updateStatus(cancelledJobs, EventJob.Status.Cancelled)
     } yield actualJobs
   }
 
@@ -107,14 +107,15 @@ class EventJobService @Inject()(
           eventJobDao.updateStatus(job.id, EventJob.Status.Failure)
       }
     }
-
-    jobs.foreach(executeJob)
+    updateStatus(jobs, EventJob.Status.InProgress).map { _ =>
+      jobs.foreach(executeJob)
+    }
   }
 
   /**
-    * Cancels given jobs.
+    * Updates status in jobs.
     */
-  def cancel(jobs: Seq[EventJob]): Future[Unit] = {
-    Future.sequence(jobs.map(x => eventJobDao.updateStatus(x.id, EventJob.Status.Cancelled))).map(_ => ())
+  def updateStatus(jobs: Seq[EventJob], status: EventJob.Status): Future[Unit] = {
+    Future.sequence(jobs.map(x => eventJobDao.updateStatus(x.id, status))).map(_ => ())
   }
 }

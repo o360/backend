@@ -25,11 +25,13 @@ trait EventJobComponent extends NotificationComponent {
       case EventJob.Status.Success => 1
       case EventJob.Status.Failure => 2
       case EventJob.Status.Cancelled => 3
+      case EventJob.Status.InProgress => 4
     }, {
       case 0 => EventJob.Status.New
       case 1 => EventJob.Status.Success
       case 2 => EventJob.Status.Failure
       case 3 => EventJob.Status.Cancelled
+      case 4 => EventJob.Status.InProgress
     }
   )
 
