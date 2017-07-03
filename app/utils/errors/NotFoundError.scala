@@ -26,5 +26,5 @@ object NotFoundError {
   case class Assessment(eventId: Long, projectId: Long, accountId: Long)
     extends NotFoundError(
       "NOTFOUND-ASSESSMENT",
-      s"There is now assessment objects for event: $eventId; project: $projectId; user: $accountId")
+      s"There is no assessment objects for event: $eventId; project: $projectId; user: $accountId")
 }

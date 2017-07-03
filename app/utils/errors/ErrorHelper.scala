@@ -1,6 +1,6 @@
 package utils.errors
 
-import controllers.api.ApiNamedEntity
+import controllers.api.{ApiNamedEntity, Response}
 import controllers.api.Response.Error
 import play.api.libs.json.Json
 import play.api.mvc.Result
@@ -25,19 +25,8 @@ object ErrorHelper extends Logger {
       case _: AuthorizationError => Forbidden
       case _: ConflictError => Conflict
     }
-    val additionalInfo = error match {
-      case e: ConflictError =>
-        e.getRelated.map { relatedEntities =>
-          Error.AdditionalInfo.ConflictDependencies(relatedEntities.mapValues(_.map(ApiNamedEntity(_))))
-        }
-      case _ => None
-    }
 
-    val errorResponse = Error(
-      code = error.getCode,
-      message = error.getMessage,
-      additionalInfo = additionalInfo
-    )
+    val errorResponse = getApiError(error)
 
     val logMessage = error.getLogMessage
     if(logMessage.isDefined) {
@@ -45,6 +34,25 @@ object ErrorHelper extends Logger {
     }
 
     statusCode(Json.toJson(errorResponse))
+  }
+
+  private def getApiError(error: ApplicationError): Error = {
+    val additionalInfo = error match {
+      case e: BadRequestError.Assessment.WithUserFormInfo =>
+        Some(Error.AdditionalInfo.UserFormInfo(e.userId, e.formId))
+      case e: ConflictError =>
+        e.getRelated.map { relatedEntities =>
+          Error.AdditionalInfo.ConflictDependencies(relatedEntities.mapValues(_.map(ApiNamedEntity(_))))
+        }
+      case _ => None
+    }
+
+    Error(
+      code = error.getCode,
+      message = error.getMessage,
+      additionalInfo = additionalInfo,
+      inner = error.getInnerErrors.map(_.map(getApiError))
+    )
   }
 
 }

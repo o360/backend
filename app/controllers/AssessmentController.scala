@@ -40,9 +40,18 @@ class AssessmentController @Inject()(
   def submit(eventId: Long, projectId: Long) =
     silhouette.SecuredAction(AllowedStatus.approved).async(parse.json[ApiPartialAssessment]) { implicit request =>
       val model = request.body.toModel
-      assessmentService.submit(eventId, projectId, model).fold(
+      assessmentService.bulkSubmit(eventId, projectId, Seq(model)).fold(
         error => toResult(error),
         _ => NoContent
       )
   }
+
+  def bulkSubmit(eventId: Long, projectId: Long) =
+    silhouette.SecuredAction(AllowedStatus.approved).async(parse.json[Seq[ApiPartialAssessment]]) { implicit request =>
+      val model = request.body.map(_.toModel)
+      assessmentService.bulkSubmit(eventId, projectId, model).fold(
+        error => toResult(error),
+        _ => NoContent
+      )
+    }
 }

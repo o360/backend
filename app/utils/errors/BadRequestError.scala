@@ -5,8 +5,9 @@ package utils.errors
   */
 abstract class BadRequestError(
   code: String,
-  message: String
-) extends ApplicationError(code, message)
+  message: String,
+  inner: Option[Seq[ApplicationError]] = None
+) extends ApplicationError(code, message, inner = inner)
 
 
 object BadRequestError {
@@ -48,5 +49,11 @@ object BadRequestError {
     case object RequiredAnswersMissed extends BadRequestError("BAD-REQUEST-ASSESSMENT-2", "Required answers missed")
 
     case object SelfVoting extends BadRequestError("BAD-REQUEST-ASSESSMENT-3", "Self voting forbidden")
+
+    case class Composite(errors: Seq[ApplicationError])
+      extends BadRequestError("BAD-REQUEST-ASSESSMENT-4", "See inner errors", Some(errors))
+
+    case class WithUserFormInfo(error: ApplicationError, userId: Option[Long], formId: Long)
+      extends BadRequestError(error.getCode, error.getMessage, error.getInnerErrors)
   }
 }

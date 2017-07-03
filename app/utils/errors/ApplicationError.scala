@@ -6,8 +6,14 @@ package utils.errors
   * @param code       error code
   * @param message    error message
   * @param logMessage log message
+  * @param inner      inner errors
   */
-abstract class ApplicationError(code: String, message: String, logMessage: Option[String] = None) {
+abstract class ApplicationError(
+  code: String,
+  message: String,
+  logMessage: Option[String] = None,
+  inner: Option[Seq[ApplicationError]] = None
+) {
   /**
     * Returns error code.
     */
@@ -22,6 +28,11 @@ abstract class ApplicationError(code: String, message: String, logMessage: Optio
     * Returns log message.
     */
   def getLogMessage = logMessage
+
+  /**
+    * Returns inner errors.
+    */
+  def getInnerErrors = inner
 }
 
 
