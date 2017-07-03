@@ -1112,6 +1112,30 @@ POST          /templates/:id/clone                      controllers.TemplateCont
 GET           /assessments                              controllers.AssessmentController.getList(eventId: Long, projectId: Long)
 
 ###
+# summary: Bulk submits answers
+# tags:
+#   - Assessment
+# parameters:
+#   - name: body
+#     schema:
+#       type: array
+#       items:
+#           $ref: '#/definitions/controllers.api.assessment.ApiPartialAssessment'
+# responses:
+#   200:
+#       description: Template created
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST          /assessments/bulk                         controllers.AssessmentController.bulkSubmit(eventId: Long, projectId: Long)
+
+###
 # summary: Submits answers
 # tags:
 #   - Assessment

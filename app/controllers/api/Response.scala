@@ -22,7 +22,8 @@ object Response {
   case class Error(
     code: String,
     message: String,
-    additionalInfo: Option[AdditionalInfo] = None
+    additionalInfo: Option[AdditionalInfo] = None,
+    inner: Option[Seq[Error]] = None
   ) extends Response
 
   object Error {
@@ -46,19 +47,31 @@ object Response {
           values.mapValues(x => JsArray(x.map(Json.toJson(_))))
         )))
       }
+
+      case class UserFormInfo(userId: Option[Long], formId: Long) extends AdditionalInfo {
+        def toJson: JsObject = JsObject(Seq(
+          "userId" -> Json.toJson(userId),
+          "formId" -> Json.toJson(formId)
+        ))
+      }
     }
 
     implicit val writes = new Writes[Error] {
       override def writes(o: Error): JsValue = {
-        val errorJs = JsObject(Seq(
+        var errorJs = JsObject(Seq(
           "code" -> JsString(o.code),
           "message" -> JsString(o.message)
         ))
 
-        o.additionalInfo.map(_.toJson) match {
-          case Some(additionalJs) => errorJs ++ additionalJs
-          case None => errorJs
+        o.additionalInfo.map(_.toJson).foreach(errorJs ++= _)
+
+        o.inner.foreach { innerErrors =>
+          errorJs ++= JsObject(Seq(
+            "inner" -> JsArray(innerErrors.map(Json.toJson(_)(this)))
+          ))
         }
+
+        errorJs
       }
     }
   }

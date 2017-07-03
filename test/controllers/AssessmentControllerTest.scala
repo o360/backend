@@ -69,7 +69,7 @@ class AssessmentControllerTest extends BaseControllerTest {
       val fixture = getFixture(env)
 
       val assessment = Assessment(Some(UserShort(1)), Seq(Answer.Form(NamedEntity(1), Set())))
-      when(fixture.assessmentServiceMock.submit(1, 2, assessment)(admin))
+      when(fixture.assessmentServiceMock.bulkSubmit(1, 2, Seq(assessment))(admin))
         .thenReturn(EitherT.eitherT(toFuture(\/-(()): ApplicationError \/ Unit)))
 
       val partialAssessment = ApiPartialAssessment(Some(1), ApiPartialFormAnswer(1, Seq()))

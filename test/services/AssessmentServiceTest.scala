@@ -13,6 +13,7 @@ import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito._
 import org.scalacheck.Gen
 import testutils.fixture._
+import utils.errors.BadRequestError.Assessment.WithUserFormInfo
 import utils.errors.{ApplicationError, BadRequestError, ConflictError, NotFoundError}
 import utils.listmeta.ListMeta
 
@@ -170,10 +171,10 @@ class AssessmentServiceTest
       )(any[ListMeta]))
         .thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
 
-      val result = wait(fixture.service.submit(event.id, projectId, assessment)(user).run)
+      val result = wait(fixture.service.bulkSubmit(event.id, projectId, Seq(assessment))(user).run)
 
       result mustBe 'left
-      result.swap.toOption.get mustBe a[NotFoundError]
+      result.swap.toOption.get.getInnerErrors.get.head mustBe a[WithUserFormInfo]
     }
 
     "return error if cant revote" in {
@@ -202,10 +203,10 @@ class AssessmentServiceTest
       when(fixture.answerDao.getAnswer(event.id, project.id, user.id, None, formId))
         .thenReturn(toFuture(Some(answer)))
 
-      val result = wait(fixture.service.submit(event.id, project.id, assessment)(user).run)
+      val result = wait(fixture.service.bulkSubmit(event.id, project.id, Seq(assessment))(user).run)
 
       result mustBe 'left
-      result.swap.toOption.get mustBe a[ConflictError]
+      result.swap.toOption.get.getInnerErrors.get.head mustBe a[WithUserFormInfo]
     }
 
     "return error if selfvoting" in {
@@ -234,7 +235,7 @@ class AssessmentServiceTest
       when(fixture.answerDao.getAnswer(event.id, project.id, user.id, Some(user.id), formId))
         .thenReturn(toFuture(None))
 
-      val result = wait(fixture.service.submit(event.id, project.id, assessment)(user).run)
+      val result = wait(fixture.service.bulkSubmit(event.id, project.id, Seq(assessment))(user).run)
 
       result mustBe 'left
       result.swap.toOption.get mustBe a[BadRequestError]
@@ -291,7 +292,7 @@ class AssessmentServiceTest
         when(fixture.formService.getById(formId))
           .thenReturn(EitherT.eitherT(toFuture(\/-(form): ApplicationError \/ Form)))
 
-        val result = wait(fixture.service.submit(event.id, project.id, assessment)(user).run)
+        val result = wait(fixture.service.bulkSubmit(event.id, project.id, Seq(assessment))(user).run)
 
         result mustBe 'left
       }
@@ -336,10 +337,10 @@ class AssessmentServiceTest
         optEmailTemplateId = any[Option[Long]]
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
 
-      val result = wait(fixture.service.submit(event.id, project.id, assessment)(user).run)
+      val result = wait(fixture.service.bulkSubmit(event.id, project.id, Seq(assessment))(user).run)
 
       result mustBe 'left
-      result.swap.toOption.get mustBe a[ConflictError.Assessment.WrongParameters.type]
+      result.swap.toOption.get.getInnerErrors.get.head mustBe a[WithUserFormInfo]
     }
 
     "return error if user not in from groups" in {
@@ -394,10 +395,10 @@ class AssessmentServiceTest
       when(fixture.formService.getOrCreateFreezedForm(event.id, relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(\/-(form): ApplicationError \/ Form)))
 
-      val result = wait(fixture.service.submit(event.id, project.id, assessment)(user).run)
+      val result = wait(fixture.service.bulkSubmit(event.id, project.id, Seq(assessment))(user).run)
 
       result mustBe 'left
-      result.swap.toOption.get mustBe a[ConflictError.Assessment.WrongParameters.type]
+      result.swap.toOption.get.getInnerErrors.get.head mustBe a[WithUserFormInfo]
     }
 
     "save answer in db" in {
@@ -455,7 +456,7 @@ class AssessmentServiceTest
       when(fixture.answerDao.saveAnswer(event.id, project.id, user.id, None, answer))
         .thenReturn(toFuture(answer))
 
-      val result = wait(fixture.service.submit(event.id, project.id, assessment)(user).run)
+      val result = wait(fixture.service.bulkSubmit(event.id, project.id, Seq(assessment))(user).run)
 
       result mustBe 'right
     }
