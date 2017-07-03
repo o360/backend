@@ -28,7 +28,8 @@ trait ProjectRelationGenerator extends TemplateBindingGenerator {
       groupTo.map(NamedEntity(_)),
       NamedEntity(formId),
       kind,
-      templates
+      templates,
+      hasInProgressEvents = false
     )
   }
 }

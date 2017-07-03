@@ -23,7 +23,8 @@ case class ApiPartialRelation(
     groupToId.map(NamedEntity(_)),
     NamedEntity(formId),
     kind.value,
-    templates.map(_.toModel)
+    templates.map(_.toModel),
+    hasInProgressEvents = false
   )
 }
 

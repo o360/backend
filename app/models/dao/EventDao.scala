@@ -120,6 +120,15 @@ trait EventComponent extends NotificationComponent {
   }
 
   val EventNotifications = TableQuery[EventNotificationTable]
+
+  def statusFilter(event: EventTable, status: Event.Status) = {
+    val currentTime = TimestampConverter.now
+    status match {
+      case Event.Status.NotStarted => event.start > currentTime
+      case Event.Status.InProgress => event.start <= currentTime && event.end > currentTime
+      case Event.Status.Completed => event.end <= currentTime
+    }
+  }
 }
 
 
@@ -163,15 +172,6 @@ class EventDao @Inject()(
     optGroupFromIds: Option[Seq[Long]] = None
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Event]] = {
 
-    def statusFilter(event: EventTable) = optStatus.map { status =>
-      val currentTime = TimestampConverter.now
-      status match {
-        case Event.Status.NotStarted => event.start > currentTime
-        case Event.Status.InProgress => event.start <= currentTime && event.end > currentTime
-        case Event.Status.Completed => event.end <= currentTime
-      }
-    }
-
     def projectFilter(event: EventTable) = optProjectId.map { projectId =>
       EventProjects
         .filter(x => x.eventId === event.id && x.projectId === projectId)
@@ -198,7 +198,7 @@ class EventDao @Inject()(
       .applyFilter { event =>
         Seq(
           optId.map(event.id === _),
-          statusFilter(event),
+          optStatus.map(statusFilter(event, _)),
           projectFilter(event),
           formFilter(event),
           groupFromFilter(event)

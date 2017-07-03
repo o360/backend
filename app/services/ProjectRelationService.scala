@@ -91,7 +91,16 @@ class ProjectRelationService @Inject()(
     */
   def delete(id: Long)(implicit account: User): UnitResult = {
     for {
-      _ <- getById(id)
+      relation <- getById(id)
+
+      activeEvents <- eventDao.getList(
+        optStatus = Some(Event.Status.InProgress),
+        optProjectId = Some(relation.project.id)
+      ).lift
+
+      _ <- ensure(activeEvents.total == 0) {
+        ConflictError.Project.ActiveEventExists
+      }
 
       _ <- projectRelationDao.delete(id).lift
     } yield ()

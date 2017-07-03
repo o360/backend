@@ -25,7 +25,8 @@ case class ApiPartialProject(
     NamedEntity(groupAuditorId),
     templates.map(_.toModel),
     formsOnSamePage,
-    canRevote
+    canRevote,
+    hasInProgressEvents = false
   )
 }
 

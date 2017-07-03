@@ -20,7 +20,8 @@ case class Project(
   groupAuditor: NamedEntity,
   templates: Seq[TemplateBinding],
   formsOnSamePage: Boolean,
-  canRevote: Boolean
+  canRevote: Boolean,
+  hasInProgressEvents: Boolean
 ) {
   def toNamedEntity = NamedEntity(id, name)
 }

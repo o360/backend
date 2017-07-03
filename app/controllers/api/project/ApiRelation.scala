@@ -14,7 +14,8 @@ case class ApiRelation(
   groupTo: Option[ApiNamedEntity],
   form: ApiNamedEntity,
   kind: ApiRelation.Kind,
-  templates: Seq[ApiTemplateBinding]
+  templates: Seq[ApiTemplateBinding],
+  hasInProgressEvents: Boolean
 ) extends Response
 
 object ApiRelation {
@@ -25,7 +26,8 @@ object ApiRelation {
     r.groupTo.map(ApiNamedEntity(_)),
     ApiNamedEntity(r.form),
     Kind(r.kind),
-    r.templates.map(ApiTemplateBinding(_))
+    r.templates.map(ApiTemplateBinding(_)),
+    r.hasInProgressEvents
   )
 
   case class Kind(value: Relation.Kind) extends EnumFormat[Relation.Kind]
