@@ -2,6 +2,7 @@ package models.dao
 
 import javax.inject.{Inject, Singleton}
 
+import models.event.Event
 import models.{ListWithTotal, NamedEntity}
 import models.project.{Relation, TemplateBinding}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
@@ -38,7 +39,8 @@ trait ProjectRelationComponent {
       groupFromName: String,
       groupToName: Option[String],
       formName: String,
-      templates: Seq[TemplateBinding]
+      templates: Seq[TemplateBinding],
+      isEventsExists: Boolean
     ) = Relation(
       id,
       NamedEntity(projectId, projectName),
@@ -46,7 +48,8 @@ trait ProjectRelationComponent {
       groupToId.map(NamedEntity(_, groupToName.getOrElse(""))),
       NamedEntity(formId, formName),
       kind,
-      templates
+      templates,
+      isEventsExists
     )
   }
 
@@ -97,6 +100,8 @@ class ProjectRelationDao @Inject()(
   with GroupComponent
   with FormComponent
   with ProjectComponent
+  with EventProjectComponent
+  with EventComponent
   with TemplateBindingComponent
   with TemplateComponent
   with DaoHelper {
@@ -153,21 +158,28 @@ class ProjectRelationDao @Inject()(
       .joinLeft(templatesQuery).on { case (((((relation, _), _), _), _), (template, _)) =>
         relation.id === template.relationId
       }
-      .applySorting(meta.sorting) { case (((((relation, _), _), _), _), _) => sortMapping(relation) } // sort one page (order not preserved after join)
+        .map { case (((((relation, groupFrom), form), project), groupTo), templateOpt) =>
+          val eventsIds = EventProjects.filter(_.projectId === project.id).map(_.eventId)
+          val isEventsExists = Events
+            .filter(event => event.id.in(eventsIds) && statusFilter(event, Event.Status.InProgress))
+            .exists
+          ((relation, groupFrom, form, project, groupTo, isEventsExists), templateOpt)
+        }
+      .applySorting(meta.sorting) { case ((relation, _, _, _, _, _), _) => sortMapping(relation) } // sort one page (order not preserved after join)
 
     for {
       count <- db.run(countQuery.result)
       flatResult <- if (count > 0) db.run(resultQuery.result) else Nil.toFuture
     } yield {
       val data = flatResult
-        .groupByWithOrder { case (((((relation, groupFrom), form), project), groupTo), _) =>
-          (relation, groupFrom, form, project, groupTo)
+        .groupByWithOrder { case ((relation, groupFrom, form, project, groupTo, isEventsExists), _) =>
+          (relation, groupFrom, form, project, groupTo, isEventsExists)
         }
-        .map { case ((relation, groupFrom, form, project, groupTo), flatTemplates) =>
+        .map { case ((relation, groupFrom, form, project, groupTo, isEventsExists), flatTemplates) =>
           val templates = flatTemplates
             .collect { case (_, Some((templateBinding, template))) => templateBinding.toModel(template.name) }
 
-          relation.toModel(project.name, groupFrom.name, groupTo.map(_.name), form.name, templates)
+          relation.toModel(project.name, groupFrom.name, groupTo.map(_.name), form.name, templates, isEventsExists)
         }
       ListWithTotal(count, data)
     }

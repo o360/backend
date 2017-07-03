@@ -23,7 +23,8 @@ trait ProjectFixture extends FixtureHelper with GroupFixture with TemplateFixtur
         TemplateBinding(NamedEntity(2, "secondname"), Notification.Kind.End, Notification.Recipient.Auditor)
       ),
       formsOnSamePage = true,
-      canRevote = true
+      canRevote = true,
+      hasInProgressEvents = false
     ),
     Project(
       2,
@@ -32,7 +33,8 @@ trait ProjectFixture extends FixtureHelper with GroupFixture with TemplateFixtur
       NamedEntity(1, Groups.find(_.id == 1).get.name),
       Nil,
       formsOnSamePage = false,
-      canRevote = false
+      canRevote = false,
+      hasInProgressEvents = false
     )
   )
 

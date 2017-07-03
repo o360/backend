@@ -28,7 +28,8 @@ trait ProjectRelationFixture
         TemplateBinding(NamedEntity(1, "firstname"), Notification.Kind.Begin, Notification.Recipient.Respondent),
         TemplateBinding(NamedEntity(2, "secondname"), Notification.Kind.End, Notification.Recipient.Respondent),
         TemplateBinding(NamedEntity(2, "secondname"), Notification.Kind.End, Notification.Recipient.Auditor)
-      )
+      ),
+      hasInProgressEvents = false
     ),
     Relation(
       id = 2,
@@ -37,7 +38,8 @@ trait ProjectRelationFixture
       groupTo = None,
       form = NamedEntity(2, Forms.find(_.id == 2).get.name),
       kind = Relation.Kind.Survey,
-      templates = Nil
+      templates = Nil,
+      hasInProgressEvents = false
     )
   )
 

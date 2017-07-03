@@ -20,7 +20,8 @@ case class Relation(
   groupTo: Option[NamedEntity],
   form: NamedEntity,
   kind: Relation.Kind,
-  templates: Seq[TemplateBinding]
+  templates: Seq[TemplateBinding],
+  hasInProgressEvents: Boolean
 ) {
   def toNamedEntity = {
     NamedEntity(id, s"${groupFrom.name.getOrElse("")} -> ${groupTo.flatMap(_.name).getOrElse("...")}")

@@ -2,6 +2,7 @@ package models.dao
 
 import javax.inject.{Inject, Singleton}
 
+import models.event.Event
 import models.{ListWithTotal, NamedEntity}
 import models.project.{Project, TemplateBinding}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
@@ -32,14 +33,15 @@ trait ProjectComponent {
     canRevote: Boolean
   ) {
 
-    def toModel(groupAuditorName: String, templates: Seq[TemplateBinding]) = Project(
+    def toModel(groupAuditorName: String, templates: Seq[TemplateBinding], hasInProgressEvent: Boolean) = Project(
       id,
       name,
       description,
       NamedEntity(groupAuditorId, groupAuditorName),
       templates,
       formsOnSamePage,
-      canRevote
+      canRevote,
+      hasInProgressEvent
     )
   }
 
@@ -84,6 +86,7 @@ class ProjectDao @Inject()(
   with TemplateBindingComponent
   with TemplateComponent
   with ProjectRelationComponent
+  with EventComponent
   with DaoHelper {
 
   import driver.api._
@@ -154,19 +157,26 @@ class ProjectDao @Inject()(
       .applyPagination(meta.pagination)
       .join(Groups).on(_.groupAuditorId === _.id)
       .joinLeft(templatesQuery).on { case ((project, _), (template, _)) => project.id === template.projectId }
-      .applySorting(meta.sorting) { case ((project, _), _) => sortMapping(project) } // sort one page (order not preserved after join)
+      .map { case ((project, auditorGroup), templateOpt) =>
+        val eventsIds = EventProjects.filter(_.projectId === project.id).map(_.eventId)
+        val isEventsExists = Events
+          .filter(event => event.id.in(eventsIds) && statusFilter(event, Event.Status.InProgress))
+          .exists
+        ((project, auditorGroup, isEventsExists), templateOpt)
+      }
+      .applySorting(meta.sorting) { case ((project, _, _), _) => sortMapping(project) } // sort one page (order not preserved after join)
 
     for {
       count <- db.run(countQuery.result)
       result <- if (count > 0) db.run(resultQuery.result) else Nil.toFuture
     } yield {
       val data = result
-        .groupByWithOrder { case ((project, auditorGroup), _) => (project, auditorGroup) }
-        .map { case ((project, auditorGroup), flatTemplates) =>
+        .groupByWithOrder { case ((project, auditorGroup, isEventsExists), _) => (project, auditorGroup, isEventsExists) }
+        .map { case ((project, auditorGroup, isEventsExists), flatTemplates) =>
           val templates = flatTemplates
             .collect { case (_, Some((templateBinding, template))) => templateBinding.toModel(template.name) }
 
-          project.toModel(auditorGroup.name, templates)
+          project.toModel(auditorGroup.name, templates, isEventsExists)
         }
       ListWithTotal(count, data)
     }

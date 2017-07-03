@@ -359,7 +359,8 @@ class AssessmentServiceTest
         groupTo = Some(NamedEntity(4)),
         form = NamedEntity(5),
         kind = Relation.Kind.Classic,
-        templates = Nil
+        templates = Nil,
+        hasInProgressEvents = false
       )
 
       when(fixture.groupDao.findGroupIdsByUserId(user.id)).thenReturn(toFuture(userGroupsIds))
@@ -416,7 +417,8 @@ class AssessmentServiceTest
         groupTo = None,
         form = NamedEntity(5),
         kind = Relation.Kind.Classic,
-        templates = Nil
+        templates = Nil,
+        hasInProgressEvents = false
       )
 
       when(fixture.groupDao.findGroupIdsByUserId(user.id)).thenReturn(toFuture(userGroupsIds))
