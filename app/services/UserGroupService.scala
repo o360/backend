@@ -7,8 +7,11 @@ import models.user.User
 import utils.errors.ConflictError
 import utils.implicits.FutureLifting._
 
+import scala.concurrent.Future
+import scalaz.-\/
 import scalaz.Scalaz._
 
+import play.api.libs.concurrent.Execution.Implicits._
 
 /**
   * User group service.
@@ -19,6 +22,8 @@ class UserGroupService @Inject()(
   protected val groupService: GroupService,
   protected val userGroupDao: UserGroupDao
 ) extends ServiceResults[Unit] {
+
+  type GroupUser = (Long, Long)
 
   /**
     * Checks whether user and group available.
@@ -64,6 +69,41 @@ class UserGroupService @Inject()(
     for {
       _ <- validateUserGroup(groupId, userId)
       _ <- userGroupDao.remove(groupId, userId).lift
+    } yield ()
+  }
+
+  def bulkAdd(groupUsers: Seq[GroupUser])(implicit account: User): UnitResult = {
+    bulkAction(groupUsers, {
+      case (groupId, userId) =>
+        userGroupDao.exists(Some(groupId), Some(userId)).flatMap { isAlreadyExists =>
+          if (!isAlreadyExists) {
+            userGroupDao.add(groupId, userId)
+          } else ().toFuture
+        }
+    })
+  }
+
+  def bulkRemove(groupUsers: Seq[GroupUser])(implicit account: User): UnitResult = {
+    bulkAction(groupUsers, {
+      case (groupId, userId) => userGroupDao.remove(groupId, userId)
+    })
+  }
+
+  private def bulkAction(groupUsers: Seq[GroupUser], action: GroupUser => Future[Unit])(implicit account: User): UnitResult = {
+    for {
+      maybeErrors <- Future.sequence {
+        groupUsers.map { case (groupId, userId) =>
+          validateUserGroup(groupId, userId).run
+        }
+      }.lift
+      maybeError = maybeErrors.collect {
+        case -\/(error) => error
+      }.headOption
+      _ <- maybeError.liftLeft
+
+      _ <- Future.sequence {
+        groupUsers.map(action)
+      }.lift
     } yield ()
   }
 }

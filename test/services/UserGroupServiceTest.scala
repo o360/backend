@@ -167,5 +167,42 @@ class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with U
       }
     }
   }
+
+  "bulkAdd" should {
+    "bulk add users to groups" in {
+      forAll { (groupId: Long, userId: Long) =>
+        val fixture = getFixture
+        when(fixture.userServiceMock.getById(userId)(admin))
+          .thenReturn(EitherT.eitherT(toFuture(\/-(admin):  ApplicationError \/ User)))
+        when(fixture.groupServiceMock.getById(groupId)(admin))
+          .thenReturn(EitherT.eitherT(toFuture(\/-(Groups(0)):  ApplicationError \/ Group)))
+        when(fixture.userGroupDaoMock.exists(groupId = eqTo(Some(groupId)), userId = eqTo(Some(userId))))
+          .thenReturn(toFuture(false))
+        when(fixture.userGroupDaoMock.add(groupId, userId)).thenReturn(toFuture(()))
+        val result = wait(fixture.service.bulkAdd(Seq((groupId, userId)))(admin).run)
+
+        result mustBe 'right
+        verify(fixture.userGroupDaoMock, times(1)).exists(groupId = Some(groupId), userId = Some(userId))
+        verify(fixture.userGroupDaoMock, times(1)).add(groupId, userId)
+      }
+    }
+  }
+
+  "bulkRemove" should {
+    "bulk remove users from groups" in {
+      forAll { (groupId: Long, userId: Long) =>
+        val fixture = getFixture
+        when(fixture.userServiceMock.getById(userId)(admin))
+          .thenReturn(EitherT.eitherT(toFuture(\/-(admin):  ApplicationError \/ User)))
+        when(fixture.groupServiceMock.getById(groupId)(admin))
+          .thenReturn(EitherT.eitherT(toFuture(\/-(Groups(0)):  ApplicationError \/ Group)))
+        when(fixture.userGroupDaoMock.remove(groupId, userId)).thenReturn(toFuture(()))
+        val result = wait(fixture.service.bulkRemove(Seq((groupId, userId)))(admin).run)
+
+        result mustBe 'right
+        verify(fixture.userGroupDaoMock, times(1)).remove(groupId, userId)
+      }
+    }
+  }
 }
 
