@@ -2,6 +2,7 @@ package controllers
 
 import com.mohiva.play.silhouette.api.Silhouette
 import com.mohiva.play.silhouette.test.FakeEnvironment
+import controllers.api.group.ApiUserGroup
 import org.mockito.Mockito._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -84,6 +85,86 @@ class UserGroupControllerTest extends BaseControllerTest with TristateGenerator 
 
         val request = authenticated(FakeRequest(), env)
         val response = fixture.controller.remove(groupId, userId).apply(request)
+        status(response) mustBe NO_CONTENT
+      }
+    }
+  }
+
+  "POST /groups-users/add" should {
+    "return error if error happend" in {
+      forAll { groupsUsers: Seq[(Long, Long)] =>
+        val env = fakeEnvironment(admin)
+        val fixture = getFixture(env)
+        when(fixture.userGroupServiceMock.bulkAdd(groupsUsers)(admin))
+          .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Group(123)): ApplicationError \/ Unit)))
+
+        val request = authenticated(
+          FakeRequest("POST", "/groups-users/add")
+            .withBody[Seq[ApiUserGroup]](groupsUsers.map(x => ApiUserGroup(x._1, x._2)))
+            .withHeaders(CONTENT_TYPE -> "application/json"),
+          env
+        )
+
+        val response = fixture.controller.bulkAdd.apply(request)
+        status(response) mustBe NOT_FOUND
+      }
+    }
+
+    "return 204 in success case" in {
+      forAll { groupsUsers: Seq[(Long, Long)] =>
+        val env = fakeEnvironment(admin)
+        val fixture = getFixture(env)
+        when(fixture.userGroupServiceMock.bulkAdd(groupsUsers)(admin))
+          .thenReturn(EitherT.eitherT(toFuture(\/-(()): ApplicationError \/ Unit)))
+
+        val request = authenticated(
+          FakeRequest("POST", "/groups-users/add")
+            .withBody[Seq[ApiUserGroup]](groupsUsers.map(x => ApiUserGroup(x._1, x._2)))
+            .withHeaders(CONTENT_TYPE -> "application/json"),
+          env
+        )
+
+        val response = fixture.controller.bulkAdd.apply(request)
+        status(response) mustBe NO_CONTENT
+      }
+    }
+  }
+
+  "POST /groups-users/remove" should {
+    "return error if error happend" in {
+      forAll { groupsUsers: Seq[(Long, Long)] =>
+        val env = fakeEnvironment(admin)
+        val fixture = getFixture(env)
+        when(fixture.userGroupServiceMock.bulkRemove(groupsUsers)(admin))
+          .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Group(123)): ApplicationError \/ Unit)))
+
+        val request = authenticated(
+          FakeRequest("POST", "/groups-users/remove")
+            .withBody[Seq[ApiUserGroup]](groupsUsers.map(x => ApiUserGroup(x._1, x._2)))
+            .withHeaders(CONTENT_TYPE -> "application/json"),
+          env
+        )
+
+        val response = fixture.controller.bulkRemove.apply(request)
+        status(response) mustBe NOT_FOUND
+      }
+    }
+
+    "return 204 in success case" in {
+      forAll { groupsUsers: Seq[(Long, Long)] =>
+        val env = fakeEnvironment(admin)
+        val fixture = getFixture(env)
+        when(fixture.userGroupServiceMock.bulkRemove(groupsUsers)(admin))
+          .thenReturn(EitherT.eitherT(toFuture(\/-(()): ApplicationError \/ Unit)))
+
+        val request = authenticated(
+          FakeRequest("POST", "/groups-users/remove")
+            .withBody[Seq[ApiUserGroup]](groupsUsers.map(x => ApiUserGroup(x._1, x._2)))
+            .withHeaders(CONTENT_TYPE -> "application/json"),
+          env
+        )
+
+        val response = fixture.controller.bulkRemove.apply(request)
         status(response) mustBe NO_CONTENT
       }
     }

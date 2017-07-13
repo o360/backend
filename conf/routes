@@ -334,6 +334,55 @@ POST          /groups/:groupId/users/:userId        controllers.UserGroupControl
 DELETE        /groups/:groupId/users/:userId        controllers.UserGroupController.remove(groupId: Long, userId: Long)
 
 ###
+# summary: Bulk adds users to groups
+# tags:
+#   - Group
+# parameters:
+#   - name: body
+#     schema:
+#       type: array
+#       items:
+#           $ref: '#/definitions/controllers.api.group.ApiUserGroup'
+# responses:
+#   204:
+#       description: Users added to groups successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST          /groups-users/add                      controllers.UserGroupController.bulkAdd
+
+###
+# summary: Bulk removes users from groups
+# tags:
+#   - Group
+# parameters:
+#   - name: body
+#     schema:
+#       type: array
+#       items:
+#           $ref: '#/definitions/controllers.api.group.ApiUserGroup'
+# responses:
+#   204:
+#       description: Users removed from groups successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST           /groups-users/remove                   controllers.UserGroupController.bulkRemove
+
+
+###
 # summary: Returns form template with elements by ID for user
 # tags:
 #   - Form template
@@ -1123,7 +1172,7 @@ GET           /assessments                              controllers.AssessmentCo
 #           $ref: '#/definitions/controllers.api.assessment.ApiPartialAssessment'
 # responses:
 #   200:
-#       description: Template created
+#       description: Answers submited
 #   401:
 #       $ref: '#/responses/Unauthorized'
 #   403:
@@ -1145,7 +1194,7 @@ POST          /assessments/bulk                         controllers.AssessmentCo
 #       $ref: '#/definitions/controllers.api.assessment.ApiPartialAssessment'
 # responses:
 #   200:
-#       description: Template created
+#       description: Answer submited
 #   401:
 #       $ref: '#/responses/Unauthorized'
 #   403:
