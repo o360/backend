@@ -1,6 +1,6 @@
 package models.dao
 
-import java.time.ZoneOffset
+import java.time.{ZoneId, ZoneOffset}
 import javax.inject.Inject
 
 import models.ListWithTotal
@@ -114,7 +114,7 @@ trait UserComponent extends Logger {
       gender,
       role,
       status,
-      Try(ZoneOffset.of(timezone)).getOrElse {
+      Try(ZoneId.of(timezone)).getOrElse {
         log.error(s"User $id has incorrect timezone $timezone, UTC used instead")
         ZoneOffset.UTC
       }

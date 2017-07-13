@@ -1,7 +1,7 @@
 package models.event
 
 import java.sql.Timestamp
-import java.time.ZoneOffset
+import java.time.ZoneId
 
 import models.NamedEntity
 import models.notification.Notification
@@ -36,10 +36,10 @@ case class Event(
   /**
     * Event text representation.
     */
-  def caption(zone: ZoneOffset): String = s"Event ${description.map(_ + " ").getOrElse("")}" +
+  def caption(zone: ZoneId): String = s"Event ${description.map(_ + " ").getOrElse("")}" +
     s"(${TimestampConverter.toPrettyString(start, zone)} - ${TimestampConverter.toPrettyString(end, zone)})"
 
-  def toNamedEntity(zone: ZoneOffset) = NamedEntity(id, caption(zone))
+  def toNamedEntity(zone: ZoneId) = NamedEntity(id, caption(zone))
 }
 
 object Event {

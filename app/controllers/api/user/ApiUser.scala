@@ -1,6 +1,6 @@
 package controllers.api.user
 
-import java.time.{DateTimeException, ZoneOffset}
+import java.time.{DateTimeException, ZoneId}
 
 import controllers.api.{EnumFormat, EnumFormatHelper, Response}
 import models.user.User
@@ -26,7 +26,7 @@ case class ApiUser(
   gender: Option[ApiUser.ApiGender],
   role: ApiUser.ApiRole,
   status: ApiUser.ApiStatus,
-  timezone: ZoneOffset
+  timezone: ZoneId
 ) extends Response {
 
   def toModel = User(
@@ -42,17 +42,17 @@ case class ApiUser(
 
 object ApiUser {
 
-  private implicit val zoneOffsetFormat = new Format[ZoneOffset] {
-    def reads(json: JsValue): JsResult[ZoneOffset] = json match {
+  private implicit val zoneIdFormat = new Format[ZoneId] {
+    def reads(json: JsValue): JsResult[ZoneId] = json match {
       case JsString(str) =>
         try {
-          JsSuccess(ZoneOffset.of(str))
+          JsSuccess(ZoneId.of(str))
         } catch {
           case e: DateTimeException => JsError(e.getMessage)
         }
       case _ => JsError("string expected")
     }
-    def writes(o: ZoneOffset): JsValue = JsString(o.getId)
+    def writes(o: ZoneId): JsValue = JsString(o.getId)
   }
 
   private val reads: Reads[ApiUser] = (
@@ -62,7 +62,7 @@ object ApiUser {
       (__ \ "gender").readNullable[ApiUser.ApiGender] and
       (__ \ "role").read[ApiUser.ApiRole] and
       (__ \ "status").read[ApiUser.ApiStatus] and
-      (__ \ "timezone").read[ZoneOffset]
+      (__ \ "timezone").read[ZoneId]
     ) (ApiUser(_, _, _, _, _, _, _))
 
   implicit val format = Format(reads, Json.writes[ApiUser])
