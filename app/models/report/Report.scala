@@ -42,11 +42,13 @@ object Report {
   /**
     * Answer of single user.
     *
-    * @param fromUser user
-    * @param answer   answer
+    * @param fromUser    user
+    * @param answer      answer
+    * @param isAnonymous is user is hidden
     */
   case class FormElementAnswerReport(
     fromUser: User,
-    answer: Answer.Element
+    answer: Answer.Element,
+    isAnonymous: Boolean
   )
 }

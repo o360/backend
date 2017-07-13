@@ -24,6 +24,7 @@ trait ProjectFixture extends FixtureHelper with GroupFixture with TemplateFixtur
       ),
       formsOnSamePage = true,
       canRevote = true,
+      isAnonymous = true,
       hasInProgressEvents = false
     ),
     Project(
@@ -34,6 +35,7 @@ trait ProjectFixture extends FixtureHelper with GroupFixture with TemplateFixtur
       Nil,
       formsOnSamePage = false,
       canRevote = false,
+      isAnonymous = false,
       hasInProgressEvents = false
     )
   )
@@ -41,9 +43,9 @@ trait ProjectFixture extends FixtureHelper with GroupFixture with TemplateFixtur
   addFixtureOperation {
     sequenceOf(
       insertInto("project")
-        .columns("id", "name", "description", "group_auditor_id", "forms_on_same_page", "can_revote")
-        .scalaValues(1, "first", "description", 3, true, true)
-        .scalaValues(2, "second", null, 1, false, false)
+        .columns("id", "name", "description", "group_auditor_id", "forms_on_same_page", "can_revote", "is_anonymous")
+        .scalaValues(1, "first", "description", 3, true, true, true)
+        .scalaValues(2, "second", null, 1, false, false, false)
         .build,
       insertInto("project_email_template")
         .columns("project_id", "template_id", "kind", "recipient_kind")

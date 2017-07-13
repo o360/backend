@@ -15,7 +15,8 @@ case class ApiPartialProject(
   groupAuditorId: Long,
   templates: Seq[ApiPartialTemplateBinding],
   formsOnSamePage: Boolean,
-  canRevote: Boolean
+  canRevote: Boolean,
+  isAnonymous: Boolean
 ) {
 
   def toModel(id: Long = 0) = Project(
@@ -26,6 +27,7 @@ case class ApiPartialProject(
     templates.map(_.toModel),
     formsOnSamePage,
     canRevote,
+    isAnonymous,
     hasInProgressEvents = false
   )
 }
@@ -38,6 +40,7 @@ object ApiPartialProject {
       (__ \ "groupAuditorId").read[Long] and
       (__ \ "templates").read[Seq[ApiPartialTemplateBinding]] and
       (__ \ "formsOnSamePage").read[Boolean] and
-      (__ \ "canRevote").read[Boolean]
-    ) (ApiPartialProject(_, _, _, _, _, _))
+      (__ \ "canRevote").read[Boolean] and
+      (__ \ "isAnonymous").read[Boolean]
+    ) (ApiPartialProject(_, _, _, _, _, _, _))
 }

@@ -1,14 +1,14 @@
 package services
 
 import models.assessment.Answer
-import models.dao.{AnswerDao, ProjectRelationDao}
+import models.dao.{AnswerDao, ProjectDao, ProjectRelationDao}
 import models.form.Form
 import models.project.Relation
 import models.report.{AggregatedReport, Report}
 import models.{ListWithTotal, NamedEntity}
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
-import testutils.fixture.{FormFixture, UserFixture}
+import testutils.fixture.{FormFixture, ProjectFixture, UserFixture}
 import utils.errors.ApplicationError
 import utils.listmeta.ListMeta
 
@@ -17,7 +17,7 @@ import scalaz.{EitherT, \/, \/-}
 /**
   * Test for report service.
   */
-class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixture {
+class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixture with ProjectFixture {
 
 
   private case class Fixture(
@@ -25,6 +25,7 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
     relationDao: ProjectRelationDao,
     formService: FormService,
     answerDao: AnswerDao,
+    projectDao: ProjectDao,
     service: ReportService
   )
 
@@ -33,8 +34,9 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
     val relationDao = mock[ProjectRelationDao]
     val formService = mock[FormService]
     val answerDao = mock[AnswerDao]
-    val service = new ReportService(userService, relationDao, formService, answerDao)
-    Fixture(userService, relationDao, formService, answerDao, service)
+    val projectDao = mock[ProjectDao]
+    val service = new ReportService(userService, relationDao, formService, answerDao, projectDao)
+    Fixture(userService, relationDao, formService, answerDao, projectDao, service)
   }
 
   "getReport" should {
@@ -66,6 +68,8 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
         Set(Answer.Element(freezedForm.elements(0).id, Some("text"), None))
       )
 
+      when(fixture.projectDao.findById(projectId)).thenReturn(toFuture(Some(Projects(0))))
+
       when(fixture.relationDao.getList(
         optId = any[Option[Long]],
         optProjectId = eqTo(Some(projectId)),
@@ -94,7 +98,7 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
             freezedForm,
             Seq(
               Report.FormElementReport(freezedForm.elements(0),
-                Seq(Report.FormElementAnswerReport(userFrom, answer.answers.head))),
+                Seq(Report.FormElementAnswerReport(userFrom, answer.answers.head, true))),
               Report.FormElementReport(freezedForm.elements(1), Seq())
             )))))
 
@@ -127,7 +131,7 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
           Seq(Report.FormReport(
             form,
             elementsWithAnswers.map { case (element, answerElement) =>
-              Report.FormElementReport(element, Seq(Report.FormElementAnswerReport(userFrom, answerElement)))
+              Report.FormElementReport(element, Seq(Report.FormElementAnswerReport(userFrom, answerElement, false)))
             }
           )))
 

@@ -120,7 +120,12 @@ class SpreadsheetService @Inject()() {
 
     val manyToOne: Element = {
       def getSection(report: Report): Element = {
-        val fromUsers = report.forms.flatMap(_.answers.flatMap(_.elementAnswers.map(_.fromUser))).distinct
+        val nonAnonymous = report.forms.flatMap(_.answers.flatMap(_.elementAnswers.filterNot(_.isAnonymous).map(_.fromUser))).distinct
+        val anonymous = report.forms.flatMap(_.answers.flatMap(_.elementAnswers.filter(_.isAnonymous).map(_.fromUser))).distinct
+
+        val anonymousUserNameMapping = anonymous.map(_.id).zipWithIndex.toMap.mapValues(x => s"Anonymous #$x")
+
+        val fromUsers = nonAnonymous.map((_, false)) ++ anonymous.map((_, true))
         val forms = report.forms.map(_.form).distinct
 
         def getFormBody(form: Form) = {
@@ -131,7 +136,7 @@ class SpreadsheetService @Inject()() {
           } yield (answer.formElement.id, element.fromUser, element.answer.getText(answer.formElement))
           val formElementIds = form.elements.map(_.id)
 
-          val rows = fromUsers.map { fromUser =>
+          val rows = fromUsers.map { case (fromUser , _) =>
             val elementIdToAnswer: Map[Long, String] = answers
               .collect { case (eId, u, v) if u.id == fromUser.id => (eId, v) }.toMap
 
@@ -197,7 +202,10 @@ class SpreadsheetService @Inject()() {
                 Container(TopToDown)(
                   Cell("Name", format = Some(Cell.Format.bold)),
                   Container(TopToDown)(
-                    fromUsers.map(u => Cell(u.name.getOrElse(""))): _*
+                    fromUsers.map {
+                      case (u, true) => Cell(anonymousUserNameMapping.getOrElse(u.id, "Anonymous"))
+                      case (u, false) => Cell(u.name.getOrElse(""))
+                    }: _*
                   ).colorIfEven(Color.lightGray),
                   if (surveyAnswers.isEmpty) NoElement else Container(TopToDown)(
                     Cell.empty,
