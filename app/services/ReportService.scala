@@ -3,7 +3,7 @@ package services
 import javax.inject.{Inject, Singleton}
 
 import models.assessment.Answer
-import models.dao.{AnswerDao, ProjectRelationDao}
+import models.dao.{AnswerDao, ProjectDao, ProjectRelationDao}
 import models.form.Form
 import models.project.Relation
 import models.report._
@@ -24,7 +24,8 @@ class ReportService @Inject()(
   userService: UserService,
   relationDao: ProjectRelationDao,
   formService: FormService,
-  answerDao: AnswerDao
+  answerDao: AnswerDao,
+  projectDao: ProjectDao
 ) extends Logger {
 
   /**
@@ -41,7 +42,7 @@ class ReportService @Inject()(
       *
       * @param relations relations
       */
-    def createCombinations(relations: Seq[Relation]): Future[Seq[Combination]] = {
+    def createCombinations(relations: Seq[Relation], isAnonymous: Boolean): Future[Seq[Combination]] = {
       log.trace(s"\tcreating combinations for ${relations.map(r => s"from ${r.groupFrom.id} to ${r.groupTo.map(_.id)} form: ${r.form.id}")}")
 
       /**
@@ -87,7 +88,7 @@ class ReportService @Inject()(
             val form = templateIdToFreezedForm(relation.form.id)
 
             log.trace(s"\treturning Combination userFrom:${userFrom.id}, userTo:${userTo.map(_.id)}, form:${form.id}")
-            Combination(userFrom, userTo, form)
+            Combination(userFrom, userTo, form, isAnonymous)
           }
         }
       }
@@ -105,7 +106,11 @@ class ReportService @Inject()(
       * @param assessedUser             assessed user (userTo)
       * @param assessedUserCombinations combinations with assessed user
       */
-    def getReportForAssessedUser(assessedUser: Option[User], assessedUserCombinations: Seq[Combination]) = {
+    def getReportForAssessedUser(
+      assessedUser: Option[User],
+      assessedUserCombinations: Seq[Combination],
+      isAnonymous: Boolean
+    ) = {
       log.trace(s"creating report for assessed user:${assessedUser.map(_.id)}, combinations:${assessedUserCombinations.map(c => s"userFrom ${c.userFrom.id} userTo ${c.userTo.map(_.id)} form ${c.form.id}")}")
 
 
@@ -159,7 +164,7 @@ class ReportService @Inject()(
           val answers = formElementIdToUserAnswerMap
             .filter(_._1 == formElement.id)
             .map { case (_, (user, answer)) =>
-              FormElementAnswerReport(user, answer)
+              FormElementAnswerReport(user, answer, isAnonymous)
           }
           FormElementReport(formElement, answers)
         }
@@ -182,12 +187,14 @@ class ReportService @Inject()(
     }
 
     for {
+      maybeProject <- projectDao.findById(projectId)
+      project = maybeProject.getOrElse(throw new NoSuchElementException("Project not found"))
       relations <- relationDao.getList(optProjectId = Some(projectId))
-      combinations <- createCombinations(relations.data)
-      assesedUserToCombinations = combinations.groupBy(_.userTo)
+      combinations <- createCombinations(relations.data, project.isAnonymous)
+      assesedUserToCombinations = combinations.groupBy(x => (x.userTo, x.isAnonymous))
       reports <- Future.sequence {
         assesedUserToCombinations.map {
-          case (assessedUser, userCombinations) => getReportForAssessedUser(assessedUser, userCombinations)
+          case ((assessedUser, isAnonymous), userCombinations) => getReportForAssessedUser(assessedUser, userCombinations, isAnonymous)
         }
       }
     } yield {
@@ -288,10 +295,11 @@ object ReportService {
   /**
     * A combination of user from groupTo, user from groupFrom and form.    *
     *
-    * @param userTo   user from groupTo
-    * @param userFrom user from groupFrom
-    * @param form     freezed form
+    * @param userTo      user from groupTo
+    * @param userFrom    user from groupFrom
+    * @param form        freezed form
+    * @param isAnonymous is from user is hidden
     */
-  case class Combination(userFrom: User, userTo: Option[User], form: Form)
+  case class Combination(userFrom: User, userTo: Option[User], form: Form, isAnonymous: Boolean)
 
 }

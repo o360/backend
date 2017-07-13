@@ -106,7 +106,8 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
       ApiPartialTemplateBinding(t.template.id, ApiNotificationKind(t.kind), ApiNotificationRecipient(t.recipient))
     },
     project.formsOnSamePage,
-    project.canRevote
+    project.canRevote,
+    project.isAnonymous
   )
 
   "PUT /projects" should {

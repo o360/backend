@@ -21,6 +21,7 @@ case class Project(
   templates: Seq[TemplateBinding],
   formsOnSamePage: Boolean,
   canRevote: Boolean,
+  isAnonymous: Boolean,
   hasInProgressEvents: Boolean
 ) {
   def toNamedEntity = NamedEntity(id, name)

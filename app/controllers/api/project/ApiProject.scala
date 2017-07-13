@@ -16,6 +16,7 @@ case class ApiProject(
   templates: Option[Seq[ApiTemplateBinding]],
   formsOnSamePage: Boolean,
   canRevote: Boolean,
+  isAnonymous: Boolean,
   hasInProgressEvents: Boolean
 ) extends Response
 
@@ -39,6 +40,7 @@ object ApiProject {
       templates,
       project.formsOnSamePage,
       project.canRevote,
+      project.isAnonymous,
       project.hasInProgressEvents
     )
   }
