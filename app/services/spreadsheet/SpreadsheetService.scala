@@ -157,7 +157,7 @@ class SpreadsheetService @Inject()() {
           r <- reports if r.assessedUser.isEmpty
           form <- r.forms
           answer <- form.answers
-          element <- answer.elementAnswers if report.assessedUser.fold(false)(_.id == element.fromUser.id)
+          element <- answer.elementAnswers if !element.isAnonymous && report.assessedUser.fold(false)(_.id == element.fromUser.id)
         } yield (form.form, answer.formElement.id, element.answer.getText(answer.formElement))
 
         val surveyForms = surveyAnswers.map(_._1).distinct
@@ -168,7 +168,6 @@ class SpreadsheetService @Inject()() {
             .mapValues(_.head._3)
 
           val formElementIds = form.elements.map(_.id)
-
 
           Container(
             LeftToRight,

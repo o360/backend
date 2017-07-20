@@ -27,11 +27,13 @@ trait AnswerComponent {
     projectId: Option[Long],
     userFromId: Long,
     userToId: Option[Long],
-    formId: Long
+    formId: Long,
+    isAnonymous: Boolean
   ) {
     def toModel(answers: Seq[Answer.Element], formName: String) = Answer.Form(
       NamedEntity(formId, formName),
-      answers.toSet
+      answers.toSet,
+      isAnonymous
     )
   }
 
@@ -43,8 +45,9 @@ trait AnswerComponent {
     def userFromId = column[Long]("user_from_id")
     def userToId = column[Option[Long]]("user_to_id")
     def formId = column[Long]("form_id")
+    def isAnonymous = column[Boolean]("is_anonymous")
 
-    def * = (id, eventId, projectId, userFromId, userToId, formId) <> ((DbFormAnswer.apply _).tupled, DbFormAnswer.unapply)
+    def * = (id, eventId, projectId, userFromId, userToId, formId, isAnonymous) <> ((DbFormAnswer.apply _).tupled, DbFormAnswer.unapply)
   }
 
   val FormAnswers = TableQuery[FormAnswerTable]
@@ -167,7 +170,8 @@ class AnswerDao @Inject()(
     projectId: Long,
     fromUserId: Long,
     toUserId: Option[Long],
-    answer: Answer.Form
+    answer: Answer.Form,
+    isAnonymous: Boolean
   ): Future[Answer.Form] = {
     val deleteExistedAnswer = FormAnswers.filter { x =>
       x.eventId === eventId &&
@@ -190,7 +194,7 @@ class AnswerDao @Inject()(
     val actions = for {
       _ <- deleteExistedAnswer
       answerId <- FormAnswers.returning(FormAnswers.map(_.id)) +=
-        DbFormAnswer(0, eventId, Some(projectId), fromUserId, toUserId, answer.form.id)
+        DbFormAnswer(0, eventId, Some(projectId), fromUserId, toUserId, answer.form.id, isAnonymous)
 
       _ <- DBIO.seq(answer.answers.toSeq.map(insertAnswerElementAction(answerId, _)): _*)
     } yield ()

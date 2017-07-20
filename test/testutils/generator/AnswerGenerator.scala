@@ -21,6 +21,7 @@ trait AnswerGenerator {
     for {
       id <- Arbitrary.arbitrary[Long]
       answers <- Arbitrary.arbitrary[Set[Answer.Element]]
-    } yield Answer.Form(NamedEntity(id), answers)
+      isAnonymous <- Arbitrary.arbitrary[Boolean]
+    } yield Answer.Form(NamedEntity(id), answers, isAnonymous)
   }
 }

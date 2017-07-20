@@ -3,7 +3,7 @@ package services
 import javax.inject.{Inject, Singleton}
 
 import models.assessment.Answer
-import models.dao.{AnswerDao, ProjectDao, ProjectRelationDao}
+import models.dao.{AnswerDao, ProjectRelationDao}
 import models.form.Form
 import models.project.Relation
 import models.report._
@@ -11,7 +11,6 @@ import models.user.User
 import play.api.libs.concurrent.Execution.Implicits._
 import services.ReportService.Combination
 import utils.Logger
-import utils.implicits.FutureLifting._
 
 import scala.concurrent.Future
 
@@ -24,8 +23,7 @@ class ReportService @Inject()(
   userService: UserService,
   relationDao: ProjectRelationDao,
   formService: FormService,
-  answerDao: AnswerDao,
-  projectDao: ProjectDao
+  answerDao: AnswerDao
 ) extends Logger {
 
   /**
@@ -42,7 +40,7 @@ class ReportService @Inject()(
       *
       * @param relations relations
       */
-    def createCombinations(relations: Seq[Relation], isAnonymous: Boolean): Future[Seq[Combination]] = {
+    def createCombinations(relations: Seq[Relation]): Future[Seq[Combination]] = {
       log.trace(s"\tcreating combinations for ${relations.map(r => s"from ${r.groupFrom.id} to ${r.groupTo.map(_.id)} form: ${r.form.id}")}")
 
       /**
@@ -88,7 +86,7 @@ class ReportService @Inject()(
             val form = templateIdToFreezedForm(relation.form.id)
 
             log.trace(s"\treturning Combination userFrom:${userFrom.id}, userTo:${userTo.map(_.id)}, form:${form.id}")
-            Combination(userFrom, userTo, form, isAnonymous)
+            Combination(userFrom, userTo, form)
           }
         }
       }
@@ -106,13 +104,8 @@ class ReportService @Inject()(
       * @param assessedUser             assessed user (userTo)
       * @param assessedUserCombinations combinations with assessed user
       */
-    def getReportForAssessedUser(
-      assessedUser: Option[User],
-      assessedUserCombinations: Seq[Combination],
-      isAnonymous: Boolean
-    ) = {
+    def getReportForAssessedUser(assessedUser: Option[User], assessedUserCombinations: Seq[Combination]) = {
       log.trace(s"creating report for assessed user:${assessedUser.map(_.id)}, combinations:${assessedUserCombinations.map(c => s"userFrom ${c.userFrom.id} userTo ${c.userTo.map(_.id)} form ${c.form.id}")}")
-
 
       /**
         * Returns pairs of users with their answers.
@@ -154,7 +147,7 @@ class ReportService @Inject()(
               x._2
                 .answers
                 .map { answer =>
-                  (answer.elementId, (x._1, answer))
+                  (answer.elementId, (x._1, answer, x._2.isAnonymous))
                 }
             }
 
@@ -163,7 +156,7 @@ class ReportService @Inject()(
         val formAnswers = form.elements.map { formElement =>
           val answers = formElementIdToUserAnswerMap
             .filter(_._1 == formElement.id)
-            .map { case (_, (user, answer)) =>
+            .map { case (_, (user, answer, isAnonymous)) =>
               FormElementAnswerReport(user, answer, isAnonymous)
           }
           FormElementReport(formElement, answers)
@@ -187,14 +180,12 @@ class ReportService @Inject()(
     }
 
     for {
-      maybeProject <- projectDao.findById(projectId)
-      project = maybeProject.getOrElse(throw new NoSuchElementException("Project not found"))
       relations <- relationDao.getList(optProjectId = Some(projectId))
-      combinations <- createCombinations(relations.data, project.isAnonymous)
-      assesedUserToCombinations = combinations.groupBy(x => (x.userTo, x.isAnonymous))
+      combinations <- createCombinations(relations.data)
+      assesedUserToCombinations = combinations.groupBy(x => x.userTo)
       reports <- Future.sequence {
         assesedUserToCombinations.map {
-          case ((assessedUser, isAnonymous), userCombinations) => getReportForAssessedUser(assessedUser, userCombinations, isAnonymous)
+          case (assessedUser, userCombinations) => getReportForAssessedUser(assessedUser, userCombinations)
         }
       }
     } yield {
@@ -298,8 +289,7 @@ object ReportService {
     * @param userTo      user from groupTo
     * @param userFrom    user from groupFrom
     * @param form        freezed form
-    * @param isAnonymous is from user is hidden
     */
-  case class Combination(userFrom: User, userTo: Option[User], form: Form, isAnonymous: Boolean)
+  case class Combination(userFrom: User, userTo: Option[User], form: Form)
 
 }
