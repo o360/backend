@@ -23,7 +23,7 @@ object Assessment {
     */
   def apply(formsWithAnswers: Seq[(NamedEntity, Option[Answer.Form])], user: Option[User] = None): Assessment = {
     val forms = formsWithAnswers.map { case (form, answer) =>
-      answer.getOrElse(Answer.Form(form, Set()))
+      answer.getOrElse(Answer.Form(form, Set(), answer.fold(false)(_.isAnonymous)))
     }
     Assessment(user.map(UserShort.fromUser), forms)
   }

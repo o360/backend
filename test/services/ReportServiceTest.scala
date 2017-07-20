@@ -25,7 +25,6 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
     relationDao: ProjectRelationDao,
     formService: FormService,
     answerDao: AnswerDao,
-    projectDao: ProjectDao,
     service: ReportService
   )
 
@@ -34,9 +33,8 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
     val relationDao = mock[ProjectRelationDao]
     val formService = mock[FormService]
     val answerDao = mock[AnswerDao]
-    val projectDao = mock[ProjectDao]
-    val service = new ReportService(userService, relationDao, formService, answerDao, projectDao)
-    Fixture(userService, relationDao, formService, answerDao, projectDao, service)
+    val service = new ReportService(userService, relationDao, formService, answerDao)
+    Fixture(userService, relationDao, formService, answerDao, service)
   }
 
   "getReport" should {
@@ -68,8 +66,6 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
         Set(Answer.Element(freezedForm.elements(0).id, Some("text"), None))
       )
 
-      when(fixture.projectDao.findById(projectId)).thenReturn(toFuture(Some(Projects(0))))
-
       when(fixture.relationDao.getList(
         optId = any[Option[Long]],
         optProjectId = eqTo(Some(projectId)),
@@ -98,7 +94,7 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
             freezedForm,
             Seq(
               Report.FormElementReport(freezedForm.elements(0),
-                Seq(Report.FormElementAnswerReport(userFrom, answer.answers.head, true))),
+                Seq(Report.FormElementAnswerReport(userFrom, answer.answers.head, false))),
               Report.FormElementReport(freezedForm.elements(1), Seq())
             )))))
 

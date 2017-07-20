@@ -13,7 +13,8 @@ case class ApiPartialFormAnswer(
 ) {
   def toModel = Answer.Form(
     NamedEntity(formId),
-    answers.map(_.toModel).toSet
+    answers.map(_.toModel).toSet,
+    isAnonymous = false
   )
 }
 

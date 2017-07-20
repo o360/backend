@@ -12,10 +12,12 @@ object Answer {
     *
     * @param form    form ID with name
     * @param answers answers for elements.
+    * @param isAnonymous is answer anonymous
     */
   case class Form(
     form: NamedEntity,
-    answers: Set[Element]
+    answers: Set[Element],
+    isAnonymous: Boolean = false
   ) {
 
     /**

@@ -68,7 +68,7 @@ class AssessmentControllerTest extends BaseControllerTest {
       val env = fakeEnvironment(admin)
       val fixture = getFixture(env)
 
-      val assessment = Assessment(Some(UserShort(1)), Seq(Answer.Form(NamedEntity(1), Set())))
+      val assessment = Assessment(Some(UserShort(1)), Seq(Answer.Form(NamedEntity(1), Set(), false)))
       when(fixture.assessmentServiceMock.bulkSubmit(1, 2, Seq(assessment))(admin))
         .thenReturn(EitherT.eitherT(toFuture(\/-(()): ApplicationError \/ Unit)))
 

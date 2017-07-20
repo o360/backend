@@ -146,7 +146,7 @@ class AssessmentServiceTest
       result mustBe 'right
       result.toOption.get mustBe ListWithTotal(2, Seq(
         Assessment(None, Seq(answer)),
-        Assessment(Some(UserShort.fromUser(assessedUser)), Seq(Answer.Form(NamedEntity(Forms(0).id, Forms(0).name), Set())))
+        Assessment(Some(UserShort.fromUser(assessedUser)), Seq(Answer.Form(NamedEntity(Forms(0).id, Forms(0).name), Set(), false)))
       ))
     }
   }
@@ -453,7 +453,7 @@ class AssessmentServiceTest
       when(fixture.formService.getOrCreateFreezedForm(event.id, relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(\/-(form): ApplicationError \/ Form)))
 
-      when(fixture.answerDao.saveAnswer(event.id, project.id, user.id, None, answer))
+      when(fixture.answerDao.saveAnswer(event.id, project.id, user.id, None, answer, project.isAnonymous))
         .thenReturn(toFuture(answer))
 
       val result = wait(fixture.service.bulkSubmit(event.id, project.id, Seq(assessment))(user).run)
