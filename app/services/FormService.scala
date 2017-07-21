@@ -150,8 +150,7 @@ class FormService @Inject()(
         relations <- relationDao.getList(optFormId = Some(id))
       } yield {
         ConflictError.getConflictedEntitiesMap(
-          Project.namePlural -> projects.data.map(_.toNamedEntity),
-          Relation.namePlural -> relations.data.map(_.toNamedEntity)
+          Project.namePlural -> (projects.data.map(_.toNamedEntity) ++ relations.data.map(_.project)).distinct
         )
       }
     }
