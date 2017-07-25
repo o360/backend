@@ -252,10 +252,10 @@ class AssessmentServiceTest
           Answer.Form(NamedEntity(1), Set()),
         // Text element contains values answer
         baseForm.copy(elements = Seq(Form.Element(1, Form.ElementKind.TextArea, "", required = true, Nil))) ->
-          Answer.Form(NamedEntity(1), Set(Answer.Element(1, None, Some(Seq(1))))),
+          Answer.Form(NamedEntity(1), Set(Answer.Element(1, None, Some(Set(1))))),
         // Values answer contains unknown element
         baseForm.copy(elements = Seq(Form.Element(1, Form.ElementKind.Select, "", required = true, Seq(Form.ElementValue(3, ""))))) ->
-          Answer.Form(NamedEntity(1), Set(Answer.Element(1, None, Some(Seq(1))))),
+          Answer.Form(NamedEntity(1), Set(Answer.Element(1, None, Some(Set(1))))),
         // Text answer is missed
         baseForm.copy(elements = Seq(Form.Element(1, Form.ElementKind.TextArea, "", required = true, Nil))) ->
           Answer.Form(NamedEntity(1), Set(Answer.Element(1, None, None))),
@@ -453,7 +453,7 @@ class AssessmentServiceTest
       when(fixture.formService.getOrCreateFreezedForm(event.id, relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(\/-(form): ApplicationError \/ Form)))
 
-      when(fixture.answerDao.saveAnswer(event.id, project.id, user.id, None, answer, project.isAnonymous))
+      when(fixture.answerDao.saveAnswer(event.id, project.id, user.id, None, answer.copy(isAnonymous = project.isAnonymous)))
         .thenReturn(toFuture(answer))
 
       val result = wait(fixture.service.bulkSubmit(event.id, project.id, Seq(assessment))(user).run)

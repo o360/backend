@@ -1205,3 +1205,54 @@ POST          /assessments/bulk                         controllers.AssessmentCo
 #       $ref: '#/responses/InternalServerError'
 ###
 POST          /assessments                              controllers.AssessmentController.submit(eventId: Long, projectId: Long)
+
+###
+# summary: Returns list of events
+# tags:
+#   - Export
+# parameters:
+#   - name: sort
+#     in: query
+#     type: string
+#     pattern: '^-?\w+(,-?\w+)*$'
+#   - $ref: '#/parameters/pageSize'
+#   - $ref: '#/parameters/pageNumber'
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.export.ApiExportCode'
+# responses:
+#   200:
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.export.ApiShortEvent'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST          /export/events                            controllers.EventResultExportController.listEvents
+
+###
+# summary: Returns results of single event
+# tags:
+#   - Export
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.export.ApiExportCode'
+# responses:
+#   200:
+#       schema:
+#           $ref: '#/definitions/controllers.api.export.ApiEventExport'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST          /export/event                             controllers.EventResultExportController.export(eventId: Long)

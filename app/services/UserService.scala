@@ -84,7 +84,7 @@ class UserService @Inject()(
     name: Option[String]
   )(implicit account: UserModel, meta: ListMeta): ListResult = {
     userDao.getList(
-      optId = None,
+      optIds = None,
       optRole = role,
       optStatus = status,
       optGroupIds = groupId.map(Seq(_)),

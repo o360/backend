@@ -166,7 +166,7 @@ class UserServiceTest
       ) =>
         val fixture = getFixture
         when(fixture.userDaoMock.getList(
-          optId = any[Option[Long]],
+          optIds = any[Option[Seq[Long]]],
           optRole = eqTo(role),
           optStatus = eqTo(status),
           optGroupIds = eqTo(groupId.map(Seq(_))),
@@ -194,7 +194,7 @@ class UserServiceTest
         val fixture = getFixture
         when(fixture.groupDaoMock.findChildrenIds(groupId)).thenReturn(toFuture(childGroups))
         when(fixture.userDaoMock.getList(
-          optId = any[Option[Long]],
+          optIds = any[Option[Seq[Long]]],
           optRole = any[Option[UserModel.Role]],
           optStatus = any[Option[UserModel.Status]],
           optGroupIds = eqTo(Tristate.Present(childGroups :+ groupId)),
@@ -347,7 +347,7 @@ class UserServiceTest
         .thenReturn(toFuture(secondGroupChild))
 
       when(fixture.userDaoMock.getList(
-        optId = any[Option[Long]],
+        optIds = any[Option[Seq[Long]]],
         optRole = any[Option[UserModel.Role]],
         optStatus = any[Option[UserModel.Status]],
         optGroupIds = eqTo(Tristate.Present(firstGroupChild :+ 1L)),
@@ -355,7 +355,7 @@ class UserServiceTest
         includeDeleted = eqTo(includeDeleted)
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(2, usersOfFirstGroup)))
       when(fixture.userDaoMock.getList(
-        optId = any[Option[Long]],
+        optIds = any[Option[Seq[Long]]],
         optRole = any[Option[UserModel.Role]],
         optStatus = any[Option[UserModel.Status]],
         optGroupIds = eqTo(Tristate.Present(secondGroupChild :+ 2L)),

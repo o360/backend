@@ -70,7 +70,7 @@ object Answer {
   case class Element(
     elementId: Long,
     text: Option[String],
-    valuesIds: Option[Seq[Long]]
+    valuesIds: Option[Set[Long]]
   ) {
 
     /**

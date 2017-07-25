@@ -276,7 +276,7 @@ class AssessmentService @Inject()(
         case Success(answers) =>
           Future.sequence {
             answers.map { case (userToId, answer, isAnonymous) =>
-              answerDao.saveAnswer(eventId, projectId, account.id, userToId, answer, isAnonymous)
+              answerDao.saveAnswer(eventId, projectId, account.id, userToId, answer.copy(isAnonymous = isAnonymous))
             }
           }.map(_ => ().right)
         case Failure(errors) => BadRequestError.Assessment.Composite(errors).left.toFuture

@@ -9,15 +9,15 @@ import org.scalacheck.Arbitrary
   */
 trait AnswerGenerator {
 
-  implicit val answerElementArb = Arbitrary {
+  implicit val answerElementArb: Arbitrary[Answer.Element] = Arbitrary {
     for {
       elementId <- Arbitrary.arbitrary[Long]
       text <- Arbitrary.arbitrary[Option[String]]
       values <- Arbitrary.arbitrary[Option[Seq[Long]]]
-    } yield Answer.Element(elementId, text, values)
+    } yield Answer.Element(elementId, text, values.map(_.toSet))
   }
 
-  implicit val answerFormArb = Arbitrary {
+  implicit val answerFormArb: Arbitrary[Answer.Form] = Arbitrary {
     for {
       id <- Arbitrary.arbitrary[Long]
       answers <- Arbitrary.arbitrary[Set[Answer.Element]]

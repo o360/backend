@@ -10,7 +10,8 @@ if [[ \
 -z $GOOGLE_CLIENT_ID || \
 -z $GOOGLE_CLIENT_SECRET || \
 -z $APPLICATION_SECRET || \
--z $MAIL_SEND_FROM \
+-z $MAIL_SEND_FROM || \
+-z $EXPORT_SECRET || \
  ]];
 then
 echo "ENVIRONMENT VARIABLES ARE UNSET"
@@ -46,6 +47,7 @@ docker run -d --name private-bw-assessment-api --restart=always -p 9000:9000 \
     -e MAIL_USER=${MAIL_USER} \
     -e MAIL_PASSWORD=${MAIL_PASSWORD} \
     -e MAIL_SEND_FROM=${MAIL_SEND_FROM} \
+    -e EXPORT_SECRET=${EXPORT_SECRET} \
     -e SCHEDULER_ENABLED=true \
     -v $(pwd)/drive_service_key.json:/opt/docker/conf/drive_service_key.json \
     -v $(pwd)/user_approved.html:/opt/docker/templates/user_approved.html \
