@@ -169,21 +169,21 @@ class UserDao @Inject()(
     * Returns user by ID.
     */
   def findById(id: Long): Future[Option[User]] = {
-    getList(optId = Some(id)).map(_.data.headOption)
+    getList(optIds = Some(Seq(id))).map(_.data.headOption)
   }
 
 
   /**
     * Returns list of users, filtered by given criteria.
     *
-    * @param optId       user ID
+    * @param optIds      users IDs
     * @param optRole     user role
     * @param optStatus   user status
     * @param optGroupIds only users of the groups
     * @param optName     name containing string
     */
   def getList(
-    optId: Option[Long] = None,
+    optIds: Option[Seq[Long]] = None,
     optRole: Option[User.Role] = None,
     optStatus: Option[User.Status] = None,
     optGroupIds: Tristate[Seq[Long]] = Tristate.Unspecified,
@@ -211,7 +211,7 @@ class UserDao @Inject()(
     val query = Users
       .applyFilter { x =>
         Seq(
-          optId.map(x.id === _),
+          optIds.map(x.id.inSet(_)),
           optRole.map(x.role === _),
           optStatus.map(x.status === _),
           filterGroup(x),

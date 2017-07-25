@@ -40,6 +40,8 @@ class Config @Inject()(protected val configuration: Configuration) {
     val password = configuration.getString("slick.dbs.default.db.password").get
     Config.DbSetting(url, user, password)
   }
+
+  lazy val exportSecret: String = configuration.getString("export.secret").get
 }
 
 object Config {

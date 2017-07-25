@@ -26,7 +26,7 @@ class UserDaoTest
       role: Option[UserModel.Role],
       status: Option[UserModel.Status]
       ) =>
-        val users = wait(dao.getList(id, role, status))
+        val users = wait(dao.getList(id.map(Seq(_)), role, status))
         val expectedUsers =
           Users.filter(u => id.forall(_ == u.id) && role.forall(_ == u.role) && status.forall(_ == u.status))
         users.total mustBe expectedUsers.length

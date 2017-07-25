@@ -111,7 +111,7 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
         Form.Element(2, Form.ElementKind.Checkbox, "", false, Nil) ->
           Answer.Element(2, Some("true"), None),
         Form.Element(3, Form.ElementKind.Radio, "", false, Seq(Form.ElementValue(10, "radioval"))) ->
-          Answer.Element(3, None, Some(Seq(10)))
+          Answer.Element(3, None, Some(Set(10)))
       )
       val form = Forms(0).copy(id = 1, elements = elementsWithAnswers.map(_._1))
       val userTo = Users(1).copy(id = 2)

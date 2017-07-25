@@ -22,7 +22,7 @@ trait AnswerFixture extends FixtureHelper with EventFixture with ProjectFixture 
         Answer.Element(
           elementId = 2,
           text = None,
-          valuesIds = Some(Seq(1))
+          valuesIds = Some(Set(1))
         )
       ),
       isAnonymous = true

@@ -32,7 +32,7 @@ object ApiFormAnswer {
     def toModel = Answer.Element(
       elementId,
       text,
-      valuesIds
+      valuesIds.map(_.toSet)
     )
   }
 
@@ -46,7 +46,7 @@ object ApiFormAnswer {
     def apply(element: Answer.Element): ElementAnswer = ElementAnswer(
       element.elementId,
       element.text,
-      element.valuesIds
+      element.valuesIds.map(_.toSeq)
     )
   }
 }
