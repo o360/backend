@@ -224,7 +224,7 @@ class ReportService @Inject()(
         .toSeq
         .map { case (text, count) =>
           val percent = count * 100F / totalCount
-          f""""$text" - $percent%3.2f%%"""
+          f""""$text" - $count ($percent%3.2f%%)"""
         }
 
       captionsToPercents.mkString(";\n")
@@ -249,7 +249,7 @@ class ReportService @Inject()(
         .map { case (valueId, count) =>
           val caption = valueIdToCaption.getOrElse(valueId, valueId.toString)
           val percent = count * 100F / totalCount
-          f""""$caption" - $percent%3.2f%%"""
+          f""""$caption" - $count ($percent%3.2f%%)"""
         }
 
       captionsToPercents.mkString(";\n")

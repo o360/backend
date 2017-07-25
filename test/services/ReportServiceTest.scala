@@ -139,8 +139,8 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
           form,
           Seq(
             AggregatedReport.FormElementAnswer(form.elements(0), "total: 1"),
-            AggregatedReport.FormElementAnswer(form.elements(1), """"true" - 100.00%"""),
-            AggregatedReport.FormElementAnswer(form.elements(2), """"radioval" - 100.00%""")
+            AggregatedReport.FormElementAnswer(form.elements(1), """"true" - 1 (100.00%)"""),
+            AggregatedReport.FormElementAnswer(form.elements(2), """"radioval" - 1 (100.00%)""")
           ))))
 
       result mustBe expectedResult
