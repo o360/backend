@@ -8,19 +8,21 @@ package models.form
   * @param elements          form elements
   * @param kind              kind of the form
   * @param showInAggregation if form showed in aggregated report
+  * @param machineName       machine name
   */
 case class Form(
   id: Long,
   name: String,
   elements: Seq[Form.Element],
   kind: Form.Kind,
-  showInAggregation: Boolean
+  showInAggregation: Boolean,
+  machineName: String
 ) {
 
   /**
     * Returns short form.
     */
-  def toShort = FormShort(id, name, kind, showInAggregation)
+  def toShort = FormShort(id, name, kind, showInAggregation, machineName)
 }
 
 object Form {

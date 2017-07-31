@@ -181,7 +181,7 @@ class AssessmentService @Inject()(
     * @return none in success case, error otherwise
     */
   def bulkSubmit(eventId: Long, projectId: Long, assessments: Seq[Assessment])(implicit account: User): UnitResult = {
-    type UserAnswer = (Option[Long], Answer.Form, Boolean)
+    type UserAnswer = (Option[Long], Answer.Form, Boolean, String, String)
 
     def validateAssessment(assessment: Assessment): Future[Validation[ApplicationError, UserAnswer]] = {
       val invalidForm = BadRequestError.Assessment.InvalidForm(_)
@@ -252,7 +252,13 @@ class AssessmentService @Inject()(
         _ <- answer.validateUsing(form)(invalidForm, BadRequestError.Assessment.RequiredAnswersMissed).liftLeft
 
         _ <- if (existedAnswer.isEmpty) validateAssessment(userGroups) else ().lift
-      } yield (userToId, answer, project.getOrElse(throw new NoSuchElementException("Project not found")).isAnonymous)
+      } yield (
+        userToId,
+        answer,
+        project.getOrElse(throw new NoSuchElementException("Project not found")).isAnonymous,
+        project.getOrElse(throw new NoSuchElementException("Project not found")).machineName,
+        form.machineName
+      )
 
       result.fold(
         error => Failure(BadRequestError.Assessment.WithUserFormInfo(error, userToId, answer.form.id)),
@@ -275,8 +281,16 @@ class AssessmentService @Inject()(
       validationResult.flatMap {
         case Success(answers) =>
           Future.sequence {
-            answers.map { case (userToId, answer, isAnonymous) =>
-              answerDao.saveAnswer(eventId, projectId, account.id, userToId, answer.copy(isAnonymous = isAnonymous))
+            answers.map { case (userToId, answer, isAnonymous, projectMachineName, formMachineName) =>
+              answerDao.saveAnswer(
+                eventId,
+                projectId,
+                account.id,
+                userToId,
+                answer.copy(isAnonymous = isAnonymous),
+                projectMachineName,
+                formMachineName
+              )
             }
           }.map(_ => ().right)
         case Failure(errors) => BadRequestError.Assessment.Composite(errors).left.toFuture

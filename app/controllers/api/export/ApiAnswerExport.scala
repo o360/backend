@@ -11,7 +11,9 @@ case class ApiAnswerExport(
   userFrom: String,
   userTo: Option[String],
   answer: ApiFormAnswer,
-  isAnonymous: Boolean
+  isAnonymous: Boolean,
+  projectMachineName: String,
+  formMachineName: String
 )
 
 object ApiAnswerExport {
@@ -21,6 +23,8 @@ object ApiAnswerExport {
     a.userFrom,
     a.userTo.map(_.toString),
     ApiFormAnswer(a.answer),
-    a.isAnonymous
+    a.isAnonymous,
+    a.projectMachineName,
+    a.formMachineName
   )
 }

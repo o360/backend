@@ -242,7 +242,7 @@ class AssessmentServiceTest
     }
 
     "return error if can't validate form" in {
-      val baseForm = Form(1, "", Seq(), Form.Kind.Freezed, true)
+      val baseForm = Form(1, "", Seq(), Form.Kind.Freezed, true, "machine name")
       val invalidFormsWithAnswers = Seq(
         // Duplicate answers
         baseForm ->
@@ -305,7 +305,7 @@ class AssessmentServiceTest
       val event = Events(0)
       val project = Projects(0).copy(id = 3)
       val userGroupsIds = Seq(1L, 2, 3)
-      val form = Form(1, "", Seq(Form.Element(1, Form.ElementKind.TextField, "", true, Nil)), Form.Kind.Freezed, true)
+      val form = Form(1, "", Seq(Form.Element(1, Form.ElementKind.TextField, "", true, Nil)), Form.Kind.Freezed, true, "")
       val answer = Answer.Form(NamedEntity(form.id), Set(Answer.Element(1, Some("text"), None)))
       val assessment = Assessment(None, Seq(answer))
 
@@ -350,7 +350,7 @@ class AssessmentServiceTest
       val event = Events(0)
       val project = Projects(0).copy(id = 3)
       val userGroupsIds = Seq(1L, 2, 3)
-      val form = Form(1, "", Seq(Form.Element(1, Form.ElementKind.TextField, "", true, Nil)), Form.Kind.Freezed, true)
+      val form = Form(1, "", Seq(Form.Element(1, Form.ElementKind.TextField, "", true, Nil)), Form.Kind.Freezed, true, "")
       val answer = Answer.Form(NamedEntity(form.id), Set(Answer.Element(1, Some("text"), None)))
       val assessment = Assessment(None, Seq(answer))
       val relation = Relation(
@@ -408,7 +408,7 @@ class AssessmentServiceTest
       val event = Events(0)
       val project = Projects(0).copy(id = 3)
       val userGroupsIds = Seq(1L, 2, 3)
-      val form = Form(1, "", Seq(Form.Element(1, Form.ElementKind.TextField, "", true, Nil)), Form.Kind.Freezed, true)
+      val form = Form(1, "", Seq(Form.Element(1, Form.ElementKind.TextField, "", true, Nil)), Form.Kind.Freezed, true, "")
       val answer = Answer.Form(NamedEntity(form.id), Set(Answer.Element(1, Some("text"), None)))
       val assessment = Assessment(None, Seq(answer))
       val relation = Relation(
@@ -453,7 +453,15 @@ class AssessmentServiceTest
       when(fixture.formService.getOrCreateFreezedForm(event.id, relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(\/-(form): ApplicationError \/ Form)))
 
-      when(fixture.answerDao.saveAnswer(event.id, project.id, user.id, None, answer.copy(isAnonymous = project.isAnonymous)))
+      when(fixture.answerDao.saveAnswer(
+        event.id,
+        project.id,
+        user.id,
+        None,
+        answer.copy(isAnonymous = project.isAnonymous),
+        project.machineName,
+        form.machineName
+      ))
         .thenReturn(toFuture(answer))
 
       val result = wait(fixture.service.bulkSubmit(event.id, project.id, Seq(assessment))(user).run)

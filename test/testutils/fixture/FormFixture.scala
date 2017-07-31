@@ -39,7 +39,8 @@ trait FormFixture extends FixtureHelper {
         )
       ),
       Form.Kind.Active,
-      showInAggregation = true
+      showInAggregation = true,
+      machineName = "machine 1"
     )
     ,
     Form(
@@ -47,7 +48,8 @@ trait FormFixture extends FixtureHelper {
       "second",
       Nil,
       Form.Kind.Active,
-      showInAggregation = false
+      showInAggregation = false,
+      machineName = "machine 2"
     ),
     Form(
       3,
@@ -78,7 +80,8 @@ trait FormFixture extends FixtureHelper {
         )
       ),
       Form.Kind.Freezed,
-      showInAggregation = true
+      showInAggregation = true,
+      machineName = "machine 1"
     )
 
   )
@@ -88,10 +91,10 @@ trait FormFixture extends FixtureHelper {
   addFixtureOperation {
     sequenceOf(
       insertInto("form")
-        .columns("id", "name", "kind", "show_in_aggregation")
-        .scalaValues(1, "first", 0, true)
-        .scalaValues(2, "second", 0, false)
-        .scalaValues(3, "first", 1, true)
+        .columns("id", "name", "kind", "show_in_aggregation", "machine_name")
+        .scalaValues(1, "first", 0, true, "machine 1")
+        .scalaValues(2, "second", 0, false, "machine 2")
+        .scalaValues(3, "first", 1, true, "machine 1")
         .build,
       insertInto("form_element")
         .columns("id", "form_id", "kind", "caption", "required", "ord")

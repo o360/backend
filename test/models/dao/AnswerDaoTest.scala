@@ -32,11 +32,11 @@ class AnswerDaoTest extends BaseDaoTest with AnswerFixture with AnswerGenerator 
 
   "getAnswers" should {
     "return answers for event" in {
-      val result = wait(dao.getEventAnswers(1))
+      val result = wait(dao.getEventAnswers(1)).toSet
 
-      val expectedResult = Seq(
-        UserAnswer("", 1, Some(3), Answers(0)),
-        UserAnswer("", 1, None, Answers(1))
+      val expectedResult = Set(
+        UserAnswer("", 1, Some(3), Answers(0), "", ""),
+        UserAnswer("", 1, None, Answers(1), "", "")
       )
 
       result mustBe expectedResult
@@ -53,7 +53,7 @@ class AnswerDaoTest extends BaseDaoTest with AnswerFixture with AnswerGenerator 
           answers = answer.answers.map(_.copy(elementId = elementId, valuesIds = Some(elementValueIds.toSet))),
           form = NamedEntity(1))
 
-        val result = wait(dao.saveAnswer(1, 1, 1, None, preparedAnswer))
+        val result = wait(dao.saveAnswer(1, 1, 1, None, preparedAnswer, "", ""))
         val answerFromDb = wait(dao.getAnswer(1, 1, 1, None, 1))
 
         answerFromDb mustBe defined
