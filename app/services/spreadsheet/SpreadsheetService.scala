@@ -129,16 +129,16 @@ class SpreadsheetService @Inject()() {
         val forms = report.forms.map(_.form).distinct
 
         def getFormBody(form: Form) = {
-          val answers: Seq[(Long, User, String)] = for {
+          val answers: Seq[(Long, User, String, Boolean)] = for {
             form <- report.forms
             answer <- form.answers
             element <- answer.elementAnswers
-          } yield (answer.formElement.id, element.fromUser, element.answer.getText(answer.formElement))
+          } yield (answer.formElement.id, element.fromUser, element.answer.getText(answer.formElement), element.isAnonymous)
           val formElementIds = form.elements.map(_.id)
 
-          val rows = fromUsers.map { case (fromUser , _) =>
+          val rows = fromUsers.map { case (fromUser , isAnonUser) =>
             val elementIdToAnswer: Map[Long, String] = answers
-              .collect { case (eId, u, v) if u.id == fromUser.id => (eId, v) }.toMap
+              .collect { case (eId, u, v, a) if u.id == fromUser.id && a == isAnonUser => (eId, v) }.toMap
 
             val cells = formElementIds.map { elementId =>
               val cellValue = elementIdToAnswer.get(elementId)
