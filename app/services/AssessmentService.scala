@@ -102,8 +102,8 @@ class AssessmentService @Inject()(
             .flatMap { case (users, relation) =>
               users.map((_, relation))
             }
+            .filter { case (user, relation) => user.id != account.id || relation.canSelfVote }
             .groupBy { case (user, _) => user }
-            .filterKeys(_.id != account.id)
             .map { case (user, relationsWithUsers) =>
               val forms = relationsWithUsers
                 .map { case (_, relation) => relation.form }
@@ -195,6 +195,7 @@ class AssessmentService @Inject()(
 
         def validateRelation(relation: Relation): Future[Boolean] = {
           val groupFromIsOk = userGroups.contains(relation.groupFrom.id)
+          val selfVotingIsOk = !userToId.contains(account.id) || relation.canSelfVote
           val eitherT = for {
             groupToIsOk <- (relation.groupTo, userToId) match {
               case (Some(groupTo), Some(userId)) =>
@@ -203,7 +204,7 @@ class AssessmentService @Inject()(
               case _ => false.lift
             }
             freezedForm <- formService.getOrCreateFreezedForm(eventId, relation.form.id)
-          } yield groupFromIsOk && groupToIsOk && freezedForm.id == answer.form.id
+          } yield groupFromIsOk && groupToIsOk && freezedForm.id == answer.form.id && selfVotingIsOk
           eitherT.getOrElse(false)
         }
 
@@ -242,10 +243,6 @@ class AssessmentService @Inject()(
         existedAnswer <- answerDao.getAnswer(eventId, projectId, account.id, userToId, answer.form.id).lift
         _ <- ensure(existedAnswer.isEmpty || project.get.canRevote) {
           ConflictError.Assessment.CantRevote
-        }
-
-        _ <- ensure(!assessment.user.map(_.id).contains(account.id)) {
-          BadRequestError.Assessment.SelfVoting
         }
 
         form <- formService.getById(answer.form.id)

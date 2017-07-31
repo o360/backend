@@ -31,7 +31,8 @@ trait ProjectRelationComponent {
     groupFromId: Long,
     groupToId: Option[Long],
     formId: Long,
-    kind: Relation.Kind
+    kind: Relation.Kind,
+    canSelfVote: Boolean
   ) {
 
     def toModel(
@@ -49,7 +50,8 @@ trait ProjectRelationComponent {
       NamedEntity(formId, formName),
       kind,
       templates,
-      isEventsExists
+      isEventsExists,
+      canSelfVote
     )
   }
 
@@ -60,7 +62,8 @@ trait ProjectRelationComponent {
       r.groupFrom.id,
       r.groupTo.map(_.id),
       r.form.id,
-      r.kind
+      r.kind,
+      r.canSelfVote
     )
   }
 
@@ -82,8 +85,9 @@ trait ProjectRelationComponent {
     def groupToId = column[Option[Long]]("group_to_id")
     def formId = column[Long]("form_id")
     def kind = column[Relation.Kind]("kind")
+    def canSelfVote = column[Boolean]("can_self_vote")
 
-    def * = (id, projectId, groupFromId, groupToId, formId, kind) <> ((DbRelation.apply _).tupled, DbRelation.unapply)
+    def * = (id, projectId, groupFromId, groupToId, formId, kind, canSelfVote) <> ((DbRelation.apply _).tupled, DbRelation.unapply)
   }
 
   val Relations = TableQuery[RelationTable]

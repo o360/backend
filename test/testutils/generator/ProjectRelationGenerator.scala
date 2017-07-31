@@ -21,6 +21,7 @@ trait ProjectRelationGenerator extends TemplateBindingGenerator {
       formId <- Arbitrary.arbitrary[Long]
       kind <- Arbitrary.arbitrary[Relation.Kind]
       templates <- Arbitrary.arbitrary[Seq[TemplateBinding]]
+      canSelfVote <- Arbitrary.arbitrary[Boolean]
     } yield Relation(
       0,
       NamedEntity(projectId),
@@ -29,7 +30,8 @@ trait ProjectRelationGenerator extends TemplateBindingGenerator {
       NamedEntity(formId),
       kind,
       templates,
-      hasInProgressEvents = false
+      hasInProgressEvents = false,
+      canSelfVote
     )
   }
 }

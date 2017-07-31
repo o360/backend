@@ -112,15 +112,7 @@ class ProjectRelationControllerTest extends BaseControllerTest with ProjectRelat
         when(fixture.projectServiceMock.update(relation)(admin))
           .thenReturn(EitherT.eitherT(toFuture(\/-(relation): ApplicationError \/ Relation)))
 
-        val partialRelation = ApiPartialRelation(
-          relation.project.id,
-          relation.groupFrom.id,
-          relation.groupTo.map(_.id),
-          relation.form.id,
-          ApiRelation.Kind(relation.kind),
-          relation.templates.map(t =>
-            ApiPartialTemplateBinding(t.template.id, ApiNotificationKind(t.kind), ApiNotificationRecipient(t.recipient))
-        ))
+        val partialRelation = getPartialRelation(relation)
         val request = authenticated(
           FakeRequest("PUT", "/relations")
             .withBody[ApiPartialRelation](partialRelation)
@@ -138,6 +130,19 @@ class ProjectRelationControllerTest extends BaseControllerTest with ProjectRelat
     }
   }
 
+  private def getPartialRelation(relation: Relation) = {
+    ApiPartialRelation(
+      relation.project.id,
+      relation.groupFrom.id,
+      relation.groupTo.map(_.id),
+      relation.form.id,
+      ApiRelation.Kind(relation.kind),
+      relation.templates.map(t =>
+        ApiPartialTemplateBinding(t.template.id, ApiNotificationKind(t.kind), ApiNotificationRecipient(t.recipient))
+      ),
+      relation.canSelfVote
+    )
+  }
   "POST /relations" should {
     "create relations" in {
       forAll { (relation: Relation) =>
@@ -146,15 +151,7 @@ class ProjectRelationControllerTest extends BaseControllerTest with ProjectRelat
         when(fixture.projectServiceMock.create(relation.copy(id = 0))(admin))
           .thenReturn(EitherT.eitherT(toFuture(\/-(relation): ApplicationError \/ Relation)))
 
-        val partialRelation = ApiPartialRelation(
-          relation.project.id,
-          relation.groupFrom.id,
-          relation.groupTo.map(_.id),
-          relation.form.id,
-          ApiRelation.Kind(relation.kind),
-          relation.templates.map(t =>
-            ApiPartialTemplateBinding(t.template.id, ApiNotificationKind(t.kind), ApiNotificationRecipient(t.recipient))
-          ))
+        val partialRelation = getPartialRelation(relation)
 
         val request = authenticated(
           FakeRequest("POST", "/relations")

@@ -69,7 +69,8 @@ class UploadServiceTest extends BaseServiceTest with EventFixture with ProjectFi
         form = NamedEntity(7),
         kind = Relation.Kind.Classic,
         templates = Nil,
-        hasInProgressEvents = false
+        hasInProgressEvents = false,
+        canSelfVote = false
       )
       val freezedForm = Forms(0).copy(id = 8)
       val report = Report(None, Nil)
