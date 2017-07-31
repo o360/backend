@@ -35,13 +35,15 @@ trait FormComponent {
     name: String,
     kind: Form.Kind,
     isDeleted: Boolean,
-    showInAggregation: Boolean
+    showInAggregation: Boolean,
+    machineName: String
   ) {
     def toModel = FormShort(
       id,
       name,
       kind,
-      showInAggregation
+      showInAggregation,
+      machineName
     )
   }
 
@@ -51,7 +53,8 @@ trait FormComponent {
       form.name,
       form.kind,
       isDeleted = false,
-      form.showInAggregation
+      form.showInAggregation,
+      form.machineName
     )
   }
 
@@ -62,8 +65,9 @@ trait FormComponent {
     def kind = column[Form.Kind]("kind")
     def isDeleted = column[Boolean]("is_deleted")
     def showInAggregation = column[Boolean]("show_in_aggregation")
+    def machineName = column[String]("machine_name")
 
-    def * = (id, name, kind, isDeleted, showInAggregation) <> ((DbForm.apply _).tupled, DbForm.unapply)
+    def * = (id, name, kind, isDeleted, showInAggregation, machineName) <> ((DbForm.apply _).tupled, DbForm.unapply)
   }
 
   val Forms = TableQuery[FormTable]

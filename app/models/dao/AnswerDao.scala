@@ -29,7 +29,9 @@ trait AnswerComponent {
     userFromId: Long,
     userToId: Option[Long],
     formId: Long,
-    isAnonymous: Boolean
+    isAnonymous: Boolean,
+    projectMachineName: String,
+    formMachineName: String
   ) {
     def toModel(answers: Seq[Answer.Element], formName: String) = Answer.Form(
       NamedEntity(formId, formName),
@@ -42,7 +44,9 @@ trait AnswerComponent {
       "",
       userFromId,
       userToId,
-      toModel(answers, formName)
+      toModel(answers, formName),
+      projectMachineName,
+      formMachineName
     )
   }
 
@@ -55,8 +59,11 @@ trait AnswerComponent {
     def userToId = column[Option[Long]]("user_to_id")
     def formId = column[Long]("form_id")
     def isAnonymous = column[Boolean]("is_anonymous")
+    def projectMachineName = column[String]("project_machine_name")
+    def formMachineName = column[String]("form_machine_name")
 
-    def * = (id, eventId, projectId, userFromId, userToId, formId, isAnonymous) <> ((DbFormAnswer.apply _).tupled, DbFormAnswer.unapply)
+    def * = (id, eventId, projectId, userFromId, userToId, formId, isAnonymous,
+      projectMachineName, formMachineName) <> ((DbFormAnswer.apply _).tupled, DbFormAnswer.unapply)
   }
 
   val FormAnswers = TableQuery[FormAnswerTable]
@@ -218,7 +225,9 @@ class AnswerDao @Inject()(
     projectId: Long,
     fromUserId: Long,
     toUserId: Option[Long],
-    answer: Answer.Form
+    answer: Answer.Form,
+    projectMachineName: String,
+    formMachineName: String
   ): Future[Answer.Form] = {
     val deleteExistedAnswer = FormAnswers.filter { x =>
       x.eventId === eventId &&
@@ -241,7 +250,17 @@ class AnswerDao @Inject()(
     val actions = for {
       _ <- deleteExistedAnswer
       answerId <- FormAnswers.returning(FormAnswers.map(_.id)) +=
-        DbFormAnswer(0, eventId, Some(projectId), fromUserId, toUserId, answer.form.id, answer.isAnonymous)
+        DbFormAnswer(
+          0,
+          eventId,
+          Some(projectId),
+          fromUserId,
+          toUserId,
+          answer.form.id,
+          answer.isAnonymous,
+          projectMachineName,
+          formMachineName
+        )
 
       _ <- DBIO.seq(answer.answers.toSeq.map(insertAnswerElementAction(answerId, _)): _*)
     } yield ()

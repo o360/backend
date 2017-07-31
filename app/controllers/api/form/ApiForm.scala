@@ -6,17 +6,13 @@ import play.api.libs.json._
 
 /**
   * Api form model.
-  *
-  * @param id                ID
-  * @param name              name
-  * @param elements          form elements
-  * @param showInAggregation is form showed in aggregation report
   */
 case class ApiForm(
   id: Long,
   name: String,
   elements: Seq[ApiForm.Element],
-  showInAggregation: Boolean
+  showInAggregation: Boolean,
+  machineName: String
 ) extends Response
 
 object ApiForm {
@@ -30,7 +26,8 @@ object ApiForm {
     form.id,
     form.name,
     form.elements.map(Element(_)),
-    form.showInAggregation
+    form.showInAggregation,
+    form.machineName
   )
 
   /**
@@ -42,7 +39,8 @@ object ApiForm {
     form.id,
     form.name,
     Nil,
-    form.showInAggregation
+    form.showInAggregation,
+    form.machineName
   )
 
 

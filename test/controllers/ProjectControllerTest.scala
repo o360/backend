@@ -107,7 +107,8 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
     },
     project.formsOnSamePage,
     project.canRevote,
-    project.isAnonymous
+    project.isAnonymous,
+    Some(project.machineName)
   )
 
   "PUT /projects" should {

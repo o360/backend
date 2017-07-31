@@ -7,7 +7,8 @@ case class FormShort(
   id: Long,
   name: String,
   kind: Form.Kind,
-  showInAggregation: Boolean
+  showInAggregation: Boolean,
+  machineName: String
 ) {
 
   /**
@@ -20,6 +21,7 @@ case class FormShort(
     name,
     elements,
     kind,
-    showInAggregation
+    showInAggregation,
+    machineName
   )
 }

@@ -1,10 +1,13 @@
 package controllers.api.project
 
+import java.util.UUID
+
 import models.NamedEntity
 import models.project.Project
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
+import utils.MachineNameGenerator
 
 /**
   * Project partial API model.
@@ -16,7 +19,8 @@ case class ApiPartialProject(
   templates: Seq[ApiPartialTemplateBinding],
   formsOnSamePage: Boolean,
   canRevote: Boolean,
-  isAnonymous: Boolean
+  isAnonymous: Boolean,
+  machineName: Option[String]
 ) {
 
   def toModel(id: Long = 0) = Project(
@@ -28,7 +32,8 @@ case class ApiPartialProject(
     formsOnSamePage,
     canRevote,
     isAnonymous,
-    hasInProgressEvents = false
+    hasInProgressEvents = false,
+    machineName.getOrElse(MachineNameGenerator.generate)
   )
 }
 
@@ -41,6 +46,7 @@ object ApiPartialProject {
       (__ \ "templates").read[Seq[ApiPartialTemplateBinding]] and
       (__ \ "formsOnSamePage").read[Boolean] and
       (__ \ "canRevote").read[Boolean] and
-      (__ \ "isAnonymous").read[Boolean]
-    ) (ApiPartialProject(_, _, _, _, _, _, _))
+      (__ \ "isAnonymous").read[Boolean] and
+      (__ \ "machineName").readNullable[String]
+    ) (ApiPartialProject(_, _, _, _, _, _, _, _))
 }

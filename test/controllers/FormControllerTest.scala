@@ -124,7 +124,10 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
         element.caption,
         element.required,
         Some(element.values.map(value => ApiPartialForm.ElementValue(value.caption))))
-    }),form.showInAggregation)
+    }),
+    form.showInAggregation,
+    Some(form.machineName)
+  )
 
   "PUT /forms" should {
     "update forms" in {

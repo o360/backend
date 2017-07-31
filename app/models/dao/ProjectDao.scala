@@ -31,7 +31,8 @@ trait ProjectComponent {
     groupAuditorId: Long,
     formsOnSamePage: Boolean,
     canRevote: Boolean,
-    isAnonymous: Boolean
+    isAnonymous: Boolean,
+    machineName: String
   ) {
 
     def toModel(groupAuditorName: String, templates: Seq[TemplateBinding], hasInProgressEvent: Boolean) = Project(
@@ -43,7 +44,8 @@ trait ProjectComponent {
       formsOnSamePage,
       canRevote,
       isAnonymous,
-      hasInProgressEvent
+      hasInProgressEvent,
+      machineName
     )
   }
 
@@ -55,7 +57,8 @@ trait ProjectComponent {
       p.groupAuditor.id,
       p.formsOnSamePage,
       p.canRevote,
-      p.isAnonymous
+      p.isAnonymous,
+      p.machineName
     )
   }
 
@@ -68,8 +71,10 @@ trait ProjectComponent {
     def formsOnSamePage = column[Boolean]("forms_on_same_page")
     def canRevote = column[Boolean]("can_revote")
     def isAnonymous = column[Boolean]("is_anonymous")
+    def machineName = column[String]("machine_name")
 
-    def * = (id, name, description, groupAuditorId, formsOnSamePage, canRevote, isAnonymous) <> ((DbProject.apply _).tupled, DbProject.unapply)
+    def * = (id, name, description, groupAuditorId, formsOnSamePage, canRevote,
+      isAnonymous, machineName) <> ((DbProject.apply _).tupled, DbProject.unapply)
   }
 
   val Projects = TableQuery[ProjectTable]

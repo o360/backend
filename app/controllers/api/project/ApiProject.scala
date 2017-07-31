@@ -17,7 +17,8 @@ case class ApiProject(
   formsOnSamePage: Boolean,
   canRevote: Boolean,
   isAnonymous: Boolean,
-  hasInProgressEvents: Boolean
+  hasInProgressEvents: Boolean,
+  machineName: String
 ) extends Response
 
 object ApiProject {
@@ -41,7 +42,8 @@ object ApiProject {
       project.formsOnSamePage,
       project.canRevote,
       project.isAnonymous,
-      project.hasInProgressEvents
+      project.hasInProgressEvents,
+      project.machineName
     )
   }
 }
