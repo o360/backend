@@ -102,7 +102,7 @@ class ProjectRelationServiceTest
   "create" should {
     "return bad request if can't validate relations" in {
       val fixture = getFixture
-      val relation = Relation(1, NamedEntity(1), NamedEntity(1), None, NamedEntity(2), Relation.Kind.Classic, Nil, false)
+      val relation = Relation(1, NamedEntity(1), NamedEntity(1), None, NamedEntity(2), Relation.Kind.Classic, Nil, false, false)
 
       val result = wait(fixture.service.create(relation)(admin).run)
 
@@ -224,7 +224,7 @@ class ProjectRelationServiceTest
 
     "return bad request if can't validate relations" in {
       val fixture = getFixture
-      val relation = Relation(1, NamedEntity(1), NamedEntity(1), None, NamedEntity(2), Relation.Kind.Classic, Nil, false)
+      val relation = Relation(1, NamedEntity(1), NamedEntity(1), None, NamedEntity(2), Relation.Kind.Classic, Nil, false, false)
 
       when(fixture.relationDaoMock.findById(relation.id)).thenReturn(toFuture(Some(relation)))
       when(fixture.eventDaoMock.getList(

@@ -209,38 +209,6 @@ class AssessmentServiceTest
       result.swap.toOption.get.getInnerErrors.get.head mustBe a[WithUserFormInfo]
     }
 
-    "return error if selfvoting" in {
-      val fixture = getFixture
-
-      val user = UserFixture.user
-      val event = Events(0)
-      val project = Projects(0).copy(id = 3)
-      val userGroupsIds = Seq(1L, 2, 3)
-      val formId = 1
-      val answer = Answer.Form(NamedEntity(formId), Set())
-      val assessment = Assessment(Some(UserShort.fromUser(user)), Seq(answer))
-
-      when(fixture.groupDao.findGroupIdsByUserId(user.id)).thenReturn(toFuture(userGroupsIds))
-      when(fixture.eventDao.getList(
-        optId = eqTo(Some(event.id)),
-        optStatus = any[Option[Event.Status]],
-        optProjectId = eqTo(Some(project.id)),
-        optFormId = any[Option[Long]],
-        optGroupFromIds = eqTo(Some(userGroupsIds))
-      )(any[ListMeta]))
-        .thenReturn(toFuture(ListWithTotal(1, Seq(event))))
-
-      when(fixture.projectDao.findById(project.id)).thenReturn(toFuture(Some(project)))
-
-      when(fixture.answerDao.getAnswer(event.id, project.id, user.id, Some(user.id), formId))
-        .thenReturn(toFuture(None))
-
-      val result = wait(fixture.service.bulkSubmit(event.id, project.id, Seq(assessment))(user).run)
-
-      result mustBe 'left
-      result.swap.toOption.get mustBe a[BadRequestError]
-    }
-
     "return error if can't validate form" in {
       val baseForm = Form(1, "", Seq(), Form.Kind.Freezed, true, "machine name")
       val invalidFormsWithAnswers = Seq(
@@ -361,7 +329,8 @@ class AssessmentServiceTest
         form = NamedEntity(5),
         kind = Relation.Kind.Classic,
         templates = Nil,
-        hasInProgressEvents = false
+        hasInProgressEvents = false,
+        canSelfVote = false
       )
 
       when(fixture.groupDao.findGroupIdsByUserId(user.id)).thenReturn(toFuture(userGroupsIds))
@@ -419,7 +388,8 @@ class AssessmentServiceTest
         form = NamedEntity(5),
         kind = Relation.Kind.Classic,
         templates = Nil,
-        hasInProgressEvents = false
+        hasInProgressEvents = false,
+        canSelfVote = false
       )
 
       when(fixture.groupDao.findGroupIdsByUserId(user.id)).thenReturn(toFuture(userGroupsIds))

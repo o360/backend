@@ -58,7 +58,8 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
         form = NamedEntity(formTemplateId),
         kind = Relation.Kind.Classic,
         templates = Nil,
-        hasInProgressEvents = false
+        hasInProgressEvents = false,
+        canSelfVote = false
       )
 
       val answer = Answer.Form(

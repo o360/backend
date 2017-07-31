@@ -5,13 +5,14 @@ import models.NamedEntity
 /**
   * Relation inside project.
   *
-  * @param id        DB ID
-  * @param project   relation project
-  * @param groupFrom reviewer group
-  * @param groupTo   reviewed group
-  * @param form      form template
-  * @param kind      relation kind
-  * @param templates relation-wide email templates
+  * @param id          DB ID
+  * @param project     relation project
+  * @param groupFrom   reviewer group
+  * @param groupTo     reviewed group
+  * @param form        form template
+  * @param kind        relation kind
+  * @param templates   relation-wide email templates
+  * @param canSelfVote is user can selfvote
   */
 case class Relation(
   id: Long,
@@ -21,7 +22,8 @@ case class Relation(
   form: NamedEntity,
   kind: Relation.Kind,
   templates: Seq[TemplateBinding],
-  hasInProgressEvents: Boolean
+  hasInProgressEvents: Boolean,
+  canSelfVote: Boolean
 ) {
   def toNamedEntity = {
     NamedEntity(id, s"${groupFrom.name.getOrElse("")} -> ${groupTo.flatMap(_.name).getOrElse("...")}")
