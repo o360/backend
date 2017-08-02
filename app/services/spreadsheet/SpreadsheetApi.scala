@@ -6,8 +6,13 @@ import scala.collection.JavaConversions._
 import Action._
 import Element.{Cell, Point, Region}
 
+import scala.util.Try
+
 
 object SpreadsheetApi {
+
+  private val spreadsheetDefaultWidth = 26
+  private val spreadsheetDefaultHeight = 1000
 
   /**
     * Returns spreadsheet API requests.
@@ -17,6 +22,9 @@ object SpreadsheetApi {
     * @param freezedColumnsAmount amount of freezed columns
     */
   def getRequests(actions: Seq[Action], sheetId: Int, freezedColumnsAmount: Int = 0): Seq[Request] = {
+
+    val maxColumn = Try(actions.map(_.region.bottomRight.x).max).toOption.getOrElse(0)
+    val maxRow = Try(actions.map(_.region.bottomRight.y).max).toOption.getOrElse(0)
 
     val updateCellsRequest = {
 
@@ -32,11 +40,7 @@ object SpreadsheetApi {
       val rows = setTextActions.groupBy(_.coordinate.y)
       if (rows.isEmpty) None
       else {
-        val regionActions = actions.collect { case r: RegionAction => r }
-        val maxColumn = regionActions.map(_.region.bottomRight.x).max
-        val maxRow = regionActions.map(_.region.bottomRight.y).max
-
-        val rowsModels = (0 to maxRow).map { rowIndex =>
+          val rowsModels = (0 to maxRow).map { rowIndex =>
           val cells = rows.getOrElse(rowIndex, Nil).groupBy(_.coordinate.x).mapValues(_.head.cell)
           val cellsModels = (0 to maxColumn).map { cellIndex =>
             val color = coordinateToColor.get(Point(cellIndex, rowIndex))
@@ -104,7 +108,17 @@ object SpreadsheetApi {
       else Some(getFreezeColumnRequest(sheetId, freezedColumnsAmount))
     }
 
-    (updateCellsRequest ++ cellsMergeRequests ++ bordersRequests ++ freezedColummsRequest).toSeq
+    val spreadsheetSizeRequest = {
+      if (maxColumn >= spreadsheetDefaultWidth && maxRow >= spreadsheetDefaultHeight)
+        Some(getResizeSpreadsheetRequest(sheetId, maxColumn + 1, maxRow + 1))
+      else if (maxColumn >= spreadsheetDefaultWidth)
+        Some(getResizeSpreadsheetRequest(sheetId, width = maxColumn + 1))
+      else if (maxRow >= spreadsheetDefaultHeight)
+        Some(getResizeSpreadsheetRequest(sheetId, height = maxRow + 1))
+      else None
+    }
+
+    (updateCellsRequest ++ cellsMergeRequests ++ bordersRequests ++ freezedColummsRequest ++ spreadsheetSizeRequest).toSeq
   }
 
   /**
@@ -211,6 +225,34 @@ object SpreadsheetApi {
               .setGridProperties(
                 new GridProperties()
                   .setFrozenColumnCount(amount)
+              )
+          )
+      )
+  }
+
+  /**
+    * Resize sheet.
+    *
+    * @param sheetId ID of sheet
+    * @param width   desired width
+    * @param height  desired height
+    */
+  private def getResizeSpreadsheetRequest(
+    sheetId: Int,
+    width: Int = spreadsheetDefaultWidth,
+    height: Int = spreadsheetDefaultHeight
+  ) = {
+    new Request()
+      .setUpdateSheetProperties(
+        new UpdateSheetPropertiesRequest()
+          .setFields("gridProperties.rowCount,gridProperties.columnCount")
+          .setProperties(
+            new SheetProperties()
+              .setSheetId(sheetId)
+              .setGridProperties(
+                new GridProperties()
+                  .setColumnCount(width)
+                  .setRowCount(height)
               )
           )
       )
