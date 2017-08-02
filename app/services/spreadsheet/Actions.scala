@@ -5,21 +5,17 @@ import Element._
 /**
   * Action to apply on spreadsheet.
   */
-trait Action
-
-/**
-  * Action with region.
-  */
-trait RegionAction extends Action {
+trait Action {
   /**
     * Region for action to apply.
     */
   def region: Region
 }
+
 /**
   * Action with the point.
   */
-trait PointAction extends RegionAction {
+trait PointAction extends Action {
   /**
     * Point for action to apply.
     */
@@ -37,11 +33,11 @@ object Action {
   /**
     * Sets borders of region.
     */
-  case class SetBorder(region: Region, border: Border) extends RegionAction
+  case class SetBorder(region: Region, border: Border) extends Action
   /**
     * Sets background color of region.
     */
-  case class SetColor(region: Region, color: Color) extends RegionAction {
+  case class SetColor(region: Region, color: Color) extends Action {
     /**
       * Converts region to seq of individual cells.
       */
@@ -56,7 +52,7 @@ object Action {
   /**
     * Merges given region into single cell.
     */
-  case class SetMerge(region: Region) extends RegionAction
+  case class SetMerge(region: Region) extends Action
 
   /**
     * Returns actions for given element.
