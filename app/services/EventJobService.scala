@@ -5,11 +5,12 @@ import javax.inject.{Inject, Singleton}
 
 import models.dao.{EventDao, EventJobDao}
 import models.event.{Event, EventJob}
-
-import scala.concurrent.Future
 import play.api.libs.concurrent.Execution.Implicits._
+import utils.errors.NotFoundError
+import utils.implicits.FutureLifting._
 import utils.{Logger, TimestampConverter}
 
+import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
 /**
@@ -22,7 +23,21 @@ class EventJobService @Inject()(
   protected val notificationService: NotificationService,
   protected val uploadService: UploadService,
   protected val formService: FormService
-) extends Logger {
+) extends Logger with ServiceResults[EventJob] {
+
+  def runFailedJob(id: Long): UnitResult = {
+    for {
+      job <- eventJobDao.find(id).liftRight {
+        NotFoundError.EventJob(id)
+      }
+
+      _ <- ensure(job.status == EventJob.Status.Failure) {
+        NotFoundError.EventJob(id)
+      }
+
+      _ = execute(Seq(job))
+    } yield ()
+  }
 
   /**
     * Creates jobs for event.

@@ -148,4 +148,17 @@ class EventJobDao @Inject()(
 
     db.run(query)
   }
+
+  /**
+    * Returns event job by ID.
+    */
+  def find(id: Long): Future[Option[EventJob]] = {
+    db.run {
+      EventJobs
+        .filter(_.id === id)
+        .result
+        .map(_.headOption.map(_.toModel))
+    }
+  }
+
 }
