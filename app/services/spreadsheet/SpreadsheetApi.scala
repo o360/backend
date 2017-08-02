@@ -118,7 +118,7 @@ object SpreadsheetApi {
       else None
     }
 
-    (updateCellsRequest ++ cellsMergeRequests ++ bordersRequests ++ freezedColummsRequest ++ spreadsheetSizeRequest).toSeq
+    (spreadsheetSizeRequest ++ updateCellsRequest ++ cellsMergeRequests ++ bordersRequests ++ freezedColummsRequest).toSeq
   }
 
   /**
