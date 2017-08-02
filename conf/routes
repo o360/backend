@@ -1256,3 +1256,17 @@ POST          /export/events                            controllers.EventResultE
 #       $ref: '#/responses/InternalServerError'
 ###
 POST          /export/event                             controllers.EventResultExportController.export(eventId: Long)
+
+###
+# summary: Restarts failed event job
+# tags:
+#   - System
+# responses:
+#   204:
+#       description: Job is restarting
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST          /system/jobs/restart/:jobId                controllers.EventJobController.restart(jobId: Long)
