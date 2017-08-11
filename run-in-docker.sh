@@ -27,6 +27,10 @@ if [ ! -f user_approved.html ]; then
 echo "user_approved.html NOT FOUND"
 fi
 
+if [ ! -f user_invited.html ]; then
+echo "user_invited.html NOT FOUND"
+fi
+
 sbt clean coverage test
 sbt coverageReport
 sbt flywayMigrate
@@ -51,4 +55,5 @@ docker run -d --name private-bw-assessment-api --restart=always -p 9000:9000 \
     -e SCHEDULER_ENABLED=true \
     -v $(pwd)/drive_service_key.json:/opt/docker/conf/drive_service_key.json \
     -v $(pwd)/user_approved.html:/opt/docker/templates/user_approved.html \
+    -v $(pwd)/user_invited.html:/opt/docker/templates/user_invited.html \
     bw-assessment/api:latest

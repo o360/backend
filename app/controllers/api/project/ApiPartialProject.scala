@@ -7,7 +7,7 @@ import models.project.Project
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
-import utils.MachineNameGenerator
+import utils.RandomGenerator
 
 /**
   * Project partial API model.
@@ -33,7 +33,7 @@ case class ApiPartialProject(
     canRevote,
     isAnonymous,
     hasInProgressEvents = false,
-    machineName.getOrElse(MachineNameGenerator.generate)
+    machineName.getOrElse(RandomGenerator.generateMachineName)
   )
 }
 

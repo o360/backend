@@ -41,6 +41,7 @@ docker run -d --name bw-assessment-api --restart=always -p 9000:9000 \
     -e SCHEDULER_ENABLED=true \
     -v $(pwd)/drive_service_key.json:/opt/docker/conf/drive_service_key.json \
     -v $(pwd)/user_approved.html:/opt/docker/templates/user_approved.html \
+    -v $(pwd)/user_invited.html:/opt/docker/templates/user_invited.html \
     bw-assessment/api:latest
 ```
 > It is possible to directly replace application.conf file with preconfigured one instead of using 
@@ -78,6 +79,8 @@ See *Set up environment* for details
     path inside container: `/opt/docker/conf/drive_service_key.json;`
     * *user_approved.html* - email template for approved user email;
     path inside container: `/opt/docker/templates/user_approved.html`
+    * *user_invited.html* - email template for user invite email;
+    path inside container: `/opt/docker/templates/user_invited.html`
 
 ### Setup Google account
 1. Go to https://console.developers.google.com/ and create a project.

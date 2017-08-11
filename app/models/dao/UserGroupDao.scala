@@ -64,9 +64,15 @@ class UserGroupDao @Inject()(
     * @param groupId group ID
     * @param userId  user ID
     */
-  def add(groupId: Long, userId: Long): Future[Unit] = db.run {
-    UserGroups += DbUserGroup(userId, groupId)
-  }.map(_ => ())
+  def add(groupId: Long, userId: Long): Future[Unit] = {
+    val actions = for {
+      exists <- UserGroups.filter(x => x.groupId === groupId && x.userId === userId).exists.result
+      _ <- if (exists) DBIO.successful(()) else UserGroups += DbUserGroup(userId, groupId)
+    } yield ()
+    db.run {
+      actions.transactionally
+    }.map(_ => ())
+  }
 
 
   /**

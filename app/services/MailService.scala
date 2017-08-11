@@ -32,19 +32,33 @@ class MailService @Inject()(
     subject: String,
     to: User,
     text: String
-  ) = {
+  ): Unit = {
     val name = to.name.getOrElse(throw new NoSuchElementException(s"name not defined, id ${to.id}"))
     val address = to.email.getOrElse(throw new NoSuchElementException(s"email not defined, id ${to.id}"))
 
+    send(subject, name, address, text)
+  }
+
+  /**
+    * Sends email.
+    */
+  def send(
+    subject: String,
+    name: String,
+    address: String,
+    text: String
+  ): Unit = {
+
     val email = Email(
-      subject,
-      sendFromEmail,
-      Seq(s"$name <$address>"),
-      bodyHtml = Some(text)
+        subject,
+        sendFromEmail,
+        Seq(s"$name <$address>"),
+        bodyHtml = Some(text)
     )
+    log.trace(s"sending email $email")
     try {
       val eid = mailerClient.send(email)
-      log.info(s"[email] message $eid sent to $to")
+      log.info(s"[email] message $eid sent to $address")
     } catch {
       case e: EmailException =>
         log.error("[email] sending failure", e)

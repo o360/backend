@@ -175,12 +175,6 @@ class UserDao @Inject()(
 
   /**
     * Returns list of users, filtered by given criteria.
-    *
-    * @param optIds      users IDs
-    * @param optRole     user role
-    * @param optStatus   user status
-    * @param optGroupIds only users of the groups
-    * @param optName     name containing string
     */
   def getList(
     optIds: Option[Seq[Long]] = None,
@@ -188,6 +182,7 @@ class UserDao @Inject()(
     optStatus: Option[User.Status] = None,
     optGroupIds: Tristate[Seq[Long]] = Tristate.Unspecified,
     optName: Option[String] = None,
+    optEmail: Option[String] = None,
     includeDeleted: Boolean = false
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[User]] = {
 
@@ -216,6 +211,7 @@ class UserDao @Inject()(
           optStatus.map(x.status === _),
           filterGroup(x),
           filterName(x),
+          optEmail.map(email => x.email.fold(false: Rep[Boolean])(_ === email)),
           deletedFilter(x)
         )
       }

@@ -9,14 +9,10 @@ import org.scalacheck.{Arbitrary, Gen}
 /**
   * Event generator for scalacheck.
   */
-trait EventGenerator extends NotificationGenerator {
+trait EventGenerator extends NotificationGenerator with TimestampGenerator {
 
   implicit val eventStatusArb = Arbitrary[Event.Status] {
     Gen.oneOf(Event.Status.NotStarted, Event.Status.InProgress, Event.Status.Completed)
-  }
-
-  implicit val timestampArb = Arbitrary {
-    Gen.choose(0L, 253402300799L).map(new Timestamp(_)) // max year - 9999
   }
 
   implicit val notificationTimeArb = Arbitrary {

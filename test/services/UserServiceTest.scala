@@ -171,6 +171,7 @@ class UserServiceTest
           optStatus = eqTo(status),
           optGroupIds = eqTo(groupId.map(Seq(_))),
           optName = eqTo(name),
+          optEmail = any[Option[String]],
           includeDeleted = any[Boolean]
         )(eqTo(ListMeta.default)))
           .thenReturn(toFuture(ListWithTotal(total, users)))
@@ -199,6 +200,7 @@ class UserServiceTest
           optStatus = any[Option[UserModel.Status]],
           optGroupIds = eqTo(Tristate.Present(childGroups :+ groupId)),
           optName = any[Option[String]],
+          optEmail = any[Option[String]],
           includeDeleted = eqTo(includeDeleted)
         )(eqTo(ListMeta.default))).thenReturn(toFuture(ListWithTotal(total, users)))
 
@@ -352,6 +354,7 @@ class UserServiceTest
         optStatus = any[Option[UserModel.Status]],
         optGroupIds = eqTo(Tristate.Present(firstGroupChild :+ 1L)),
         optName = any[Option[String]],
+        optEmail = any[Option[String]],
         includeDeleted = eqTo(includeDeleted)
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(2, usersOfFirstGroup)))
       when(fixture.userDaoMock.getList(
@@ -360,6 +363,7 @@ class UserServiceTest
         optStatus = any[Option[UserModel.Status]],
         optGroupIds = eqTo(Tristate.Present(secondGroupChild :+ 2L)),
         optName = any[Option[String]],
+        optEmail = any[Option[String]],
         includeDeleted = eqTo(includeDeleted)
       )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(2, usersOfSecondGroup)))
 
