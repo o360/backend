@@ -9,12 +9,13 @@ import play.api.libs.json.Json
   */
 case class ApiPartialFormAnswer(
   formId: Long,
-  answers: Seq[ApiFormAnswer.ElementAnswer]
+  answers: Seq[ApiFormAnswer.ElementAnswer],
+  isAnonymous: Boolean
 ) {
   def toModel = Answer.Form(
     NamedEntity(formId),
     answers.map(_.toModel).toSet,
-    isAnonymous = false
+    isAnonymous
   )
 }
 

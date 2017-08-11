@@ -11,7 +11,8 @@ import play.api.libs.json._
   */
 case class ApiFormAnswer(
   form: ApiNamedEntity,
-  answers: Seq[ApiFormAnswer.ElementAnswer]
+  answers: Seq[ApiFormAnswer.ElementAnswer],
+  isAnonymous: Boolean
 ) extends Response
 
 object ApiFormAnswer {
@@ -21,7 +22,8 @@ object ApiFormAnswer {
 
   def apply(answer: Answer.Form): ApiFormAnswer = ApiFormAnswer(
     ApiNamedEntity(answer.form),
-    answer.answers.toSeq.map(ElementAnswer(_))
+    answer.answers.toSeq.map(ElementAnswer(_)),
+    answer.isAnonymous
   )
 
   case class ElementAnswer(
