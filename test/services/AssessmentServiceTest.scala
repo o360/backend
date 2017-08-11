@@ -428,7 +428,7 @@ class AssessmentServiceTest
         project.id,
         user.id,
         None,
-        answer.copy(isAnonymous = project.isAnonymous),
+        answer.copy(isAnonymous = project.isAnonymous && answer.isAnonymous),
         project.machineName,
         form.machineName
       ))

@@ -284,7 +284,7 @@ class AssessmentService @Inject()(
                 projectId,
                 account.id,
                 userToId,
-                answer.copy(isAnonymous = isAnonymous),
+                answer.copy(isAnonymous = isAnonymous && answer.isAnonymous),
                 projectMachineName,
                 formMachineName
               )
