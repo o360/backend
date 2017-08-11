@@ -1,0 +1,87 @@
+package services
+
+import javax.inject.{Inject, Singleton}
+
+import models.dao.{GroupDao, InviteDao, UserDao, UserGroupDao}
+import models.invite.Invite
+import models.user.User
+import play.api.libs.concurrent.Execution.Implicits._
+import utils.errors.{ApplicationError, ConflictError, NotFoundError}
+import utils.implicits.FutureLifting._
+import utils.listmeta.ListMeta
+import utils.{RandomGenerator, TimestampConverter}
+
+import scala.concurrent.Future
+
+/**
+  * Invite service.
+  */
+@Singleton
+class InviteService @Inject()(
+  userDao: UserDao,
+  groupDao: GroupDao,
+  inviteDao: InviteDao,
+  userGroupDao: UserGroupDao,
+  mailService: MailService,
+  templateEngineService: TemplateEngineService
+) extends ServiceResults[Invite] {
+
+  private def validateInvite(invite: Invite): Future[Option[ApplicationError]] = {
+    for {
+      users <- userDao.getList(optEmail = Some(invite.email))
+      groups <- Future.sequence(invite.groupIds.map(id => groupDao.findById(id).map((id, _))))
+    } yield {
+      val existedEmail = users.data.headOption.flatMap(_.email)
+      val notFoundGroupId = groups.collectFirst { case (id, None) => id }
+
+      (existedEmail, notFoundGroupId) match {
+        case (Some(email), _) => Some(ConflictError.Invite.UserAlreadyRegistered(email))
+        case (_, Some(groupId)) => Some(NotFoundError.Group(groupId))
+        case _ => None
+      }
+    }
+  }
+
+  private def prepareInvite(invite: Invite) = invite.copy(
+    code = RandomGenerator.generateInviteCode,
+    activationTime = None,
+    creationTime = TimestampConverter.now
+  )
+
+  def createInvites(invites: Seq[Invite]): UnitResult = {
+    def sendEmail(invite: Invite): Unit = {
+      val bodyTemplate = templateEngineService.loadStaticTemplate("user_invited.html")
+      val subject = "Assessment system invite"
+      val body = templateEngineService.render(bodyTemplate, Map("code" -> invite.code))
+      mailService.send(subject, invite.email, invite.email, body)
+    }
+
+    for {
+      validationResults <- Future.sequence(invites.map(validateInvite)).lift
+      _ <- validationResults.collectFirst { case (Some(error)) => error }.liftLeft
+
+      preparedInvites = invites.map(prepareInvite)
+      _ <- Future.sequence(preparedInvites.map(inviteDao.create)).lift
+      _ = preparedInvites.foreach(sendEmail)
+    } yield ()
+  }
+
+  def applyInvite(code: String)(implicit account: User): UnitResult = {
+    for {
+      invite <- inviteDao.findByCode(code).liftRight {
+        NotFoundError.Invite(code)
+      }
+      _ <- ensure(invite.activationTime.isEmpty) {
+        ConflictError.Invite.CodeAlreadyUsed
+      }
+      _ <- ensure(account.status == User.Status.New) {
+        ConflictError.Invite.UserAlreadyApproved
+      }
+      _ <- userDao.update(account.copy(status = User.Status.Approved)).lift
+      _ <- Future.sequence(invite.groupIds.map(userGroupDao.add(_, account.id))).lift
+      _ <- inviteDao.activate(code, TimestampConverter.now).lift
+    } yield ()
+  }
+
+  def getList(implicit meta: ListMeta = ListMeta.default): ListResult = inviteDao.getList.lift
+}

@@ -10,6 +10,7 @@ import models.event.Event
 import models.form.Form
 import models.user.User
 import play.api.libs.concurrent.Execution.Implicits._
+import utils.RandomGenerator
 
 import scala.concurrent.Future
 
@@ -44,7 +45,7 @@ class EventResultExportService @Inject()(
       case answer +: tail if answer.isAnonymous && usersMap.contains(answer.userFromId) =>
         answer.copy(userFrom = usersMap(answer.userFromId)) +: anonimyzeAnswers(tail, usersMap)
       case answer +: tail if answer.isAnonymous =>
-        anonimyzeAnswers(answers, usersMap + (answer.userFromId -> UUID.randomUUID().toString))
+        anonimyzeAnswers(answers, usersMap + (answer.userFromId -> RandomGenerator.generateAnonymousUserName))
       case answer +: tail =>
         answer.copy(userFrom = answer.userFromId.toString) +: anonimyzeAnswers(tail, usersMap)
     }

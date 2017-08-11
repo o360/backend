@@ -83,4 +83,12 @@ object ConflictError {
 
     case object CantRevote extends ConflictError("CONFLICT-ASSESSMENT-2", "Revoting is forbidden")
   }
+
+  object Invite {
+    case class UserAlreadyRegistered(email: String) extends ConflictError("CONFLICT-INVITE-1", s"User $email already registered")
+
+    case object UserAlreadyApproved extends ConflictError("CONFLICT-INVITE-2", s"User already approved")
+
+    case object CodeAlreadyUsed extends ConflictError("CONFLICT-INVITE-3", s"Code already used")
+  }
 }

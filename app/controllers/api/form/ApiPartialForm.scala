@@ -6,7 +6,7 @@ import models.form.Form
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
-import utils.MachineNameGenerator
+import utils.RandomGenerator
 
 
 /**
@@ -25,7 +25,7 @@ case class ApiPartialForm(
     elements.getOrElse(Nil).map(_.toModel),
     Form.Kind.Active,
     showInAggregation,
-    machineName.getOrElse(MachineNameGenerator.generate)
+    machineName.getOrElse(RandomGenerator.generateMachineName)
   )
 }
 
