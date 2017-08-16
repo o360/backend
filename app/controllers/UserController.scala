@@ -13,7 +13,6 @@ import utils.implicits.FutureLifting._
 import utils.listmeta.actions.ListActions
 import utils.listmeta.sorting.Sorting
 
-
 /**
   * User controller.
   */
@@ -49,9 +48,9 @@ class UserController @Inject()(
     toResult(Ok) {
       userService
         .list(role.map(_.value), status.map(_.value), groupId, name)
-        .map {
-          users => Response.List(users) {
-            user => ApiUser(user)
+        .map { users =>
+          Response.List(users) { user =>
+            ApiUser(user)
           }
         }
     }
@@ -73,9 +72,11 @@ class UserController @Inject()(
     * Deletes user.
     */
   def delete(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
-    userService.delete(id).fold(
-      error => toResult(error),
-      _ => NoContent
-    )
+    userService
+      .delete(id)
+      .fold(
+        error => toResult(error),
+        _ => NoContent
+      )
   }
 }

@@ -15,8 +15,7 @@ import play.api.libs.concurrent.Execution.Implicits._
 /**
   * Component for template table.
   */
-trait TemplateComponent extends NotificationComponent {
-  self: HasDatabaseConfigProvider[JdbcProfile] =>
+trait TemplateComponent extends NotificationComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import driver.api._
 
@@ -72,17 +71,16 @@ class TemplateDao @Inject()(
     optRecipient: Option[Notification.Recipient] = None
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Template]] = {
     val query = Templates
-      .applyFilter {
-        x =>
-          Seq(
-            optId.map(x.id === _),
-            optKind.map(x.kind === _),
-            optRecipient.map(x.recipient === _)
-          )
+      .applyFilter { x =>
+        Seq(
+          optId.map(x.id === _),
+          optKind.map(x.kind === _),
+          optRecipient.map(x.recipient === _)
+        )
       }
 
-    runListQuery(query) {
-      template => {
+    runListQuery(query) { template =>
+      {
         case 'id => template.id
         case 'name => template.name
         case 'kind => template.kind

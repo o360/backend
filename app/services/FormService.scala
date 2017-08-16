@@ -29,7 +29,6 @@ class FormService @Inject()(
   protected val relationDao: ProjectRelationDao
 ) extends ServiceResults[Form] {
 
-
   /**
     * Returns list of form templates without elements.
     *
@@ -65,11 +64,13 @@ class FormService @Inject()(
       form <- getById(formId)
 
       userGroups <- groupDao.findGroupIdsByUserId(account.id).lift
-      events <- eventDao.getList(
-        optId = Some(eventId),
-        optProjectId = Some(projectId),
-        optGroupFromIds = Some(userGroups)
-      ).lift
+      events <- eventDao
+        .getList(
+          optId = Some(eventId),
+          optProjectId = Some(projectId),
+          optGroupFromIds = Some(userGroups)
+        )
+        .lift
       _ <- ensure(events.total == 1) {
         AuthorizationError.Form(formId)
       }
@@ -105,15 +106,16 @@ class FormService @Inject()(
     */
   def update(form: Form)(implicit account: User): SingleResult = {
 
-    def updateChildFreezedForms() = for {
-      childFreezedForms <- formDao.getList(optKind = Some(Form.Kind.Freezed), optFormTemplateId = Some(form.id))
+    def updateChildFreezedForms() =
+      for {
+        childFreezedForms <- formDao.getList(optKind = Some(Form.Kind.Freezed), optFormTemplateId = Some(form.id))
 
-      _ <- Future.sequence {
-        childFreezedForms.data.map { childFreezedForm =>
-          formDao.update(childFreezedForm.copy(name = form.name, showInAggregation = form.showInAggregation))
+        _ <- Future.sequence {
+          childFreezedForms.data.map { childFreezedForm =>
+            formDao.update(childFreezedForm.copy(name = form.name, showInAggregation = form.showInAggregation))
+          }
         }
-      }
-    } yield ()
+      } yield ()
 
     for {
       original <- getById(form.id)
@@ -161,7 +163,7 @@ class FormService @Inject()(
         ConflictError.Form.FormKind("delete freezed form")
       }
 
-     conflictedEntities <- getConflictedEntities.lift
+      conflictedEntities <- getConflictedEntities.lift
       _ <- ensure(conflictedEntities.isEmpty) {
         ConflictError.General(Some(Form.nameSingular), conflictedEntities)
       }

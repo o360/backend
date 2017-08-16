@@ -14,7 +14,6 @@ import testutils.fixture.EventFixture
   */
 class EventJobServiceTest extends BaseServiceTest with EventFixture {
 
-
   private case class Fixture(
     eventJobDao: EventJobDao,
     eventDao: EventDao,
@@ -38,18 +37,21 @@ class EventJobServiceTest extends BaseServiceTest with EventFixture {
     "create jobs in DB" in {
       val fixture = getFixture
 
-      val event = Events(0).copy(notifications = Seq(
-        Event.NotificationTime(
-          Timestamp.valueOf(LocalDateTime.of(2040, 1, 2, 12, 0)),
-          Notification.Kind.PreBegin,
-          Notification.Recipient.Respondent
+      val event = Events(0).copy(
+        notifications = Seq(
+          Event.NotificationTime(
+            Timestamp.valueOf(LocalDateTime.of(2040, 1, 2, 12, 0)),
+            Notification.Kind.PreBegin,
+            Notification.Recipient.Respondent
+          ),
+          Event.NotificationTime(
+            Timestamp.valueOf(LocalDateTime.of(0, 1, 2, 12, 30)),
+            Notification.Kind.Begin,
+            Notification.Recipient.Respondent
+          )
         ),
-        Event.NotificationTime(
-          Timestamp.valueOf(LocalDateTime.of(0, 1, 2, 12, 30)),
-          Notification.Kind.Begin,
-          Notification.Recipient.Respondent
-        )),
-      end = Timestamp.valueOf(LocalDateTime.of(2040, 1, 2, 11, 4)))
+        end = Timestamp.valueOf(LocalDateTime.of(2040, 1, 2, 11, 4))
+      )
 
       val job1 = EventJob.Upload(0, event.id, event.end, EventJob.Status.New)
       val job2 = EventJob.SendNotification(0, event.id, event.notifications(0), EventJob.Status.New)

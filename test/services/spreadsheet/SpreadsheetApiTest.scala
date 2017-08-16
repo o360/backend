@@ -16,45 +16,52 @@ class SpreadsheetApiTest extends BaseServiceTest {
 
   "getRequests" should {
     "return requests for given actions" in {
-      val actionToRequestPredicate: Seq[(Seq[Action], Request => Boolean)] = Seq({
-        (
-          Seq(SetCellText(Point(0, 0), Cell("test", alignment = Some(Cell.Alignment.Center), format = Some(Cell.Format.bold)))),
-          request => {
-            val cell = request.getUpdateCells.getRows.head.getValues.head
-            cell.getUserEnteredValue.getStringValue == "test" &&
-            cell.getUserEnteredFormat.getHorizontalAlignment == Cell.Alignment.Center.value &&
-            cell.getUserEnteredFormat.getTextFormat.getBold == true
-          }
-        )
-      }, {
-        (
-          Seq(SetCellText(Point(0, 0), Cell("")), SetColor(Point(0, 0).toRegion, Color.lightGray)),
-          r => {
-            val color = r.getUpdateCells.getRows.head.getValues.head.getUserEnteredFormat.getBackgroundColor
-            color.getRed == Color.lightGray._1 / 255F &&
+      val actionToRequestPredicate: Seq[(Seq[Action], Request => Boolean)] = Seq(
+        {
+          (
+            Seq(
+              SetCellText(Point(0, 0),
+                          Cell("test", alignment = Some(Cell.Alignment.Center), format = Some(Cell.Format.bold)))),
+            request => {
+              val cell = request.getUpdateCells.getRows.head.getValues.head
+              cell.getUserEnteredValue.getStringValue == "test" &&
+              cell.getUserEnteredFormat.getHorizontalAlignment == Cell.Alignment.Center.value &&
+              cell.getUserEnteredFormat.getTextFormat.getBold == true
+            }
+          )
+        }, {
+          (
+            Seq(SetCellText(Point(0, 0), Cell("")), SetColor(Point(0, 0).toRegion, Color.lightGray)),
+            r => {
+              val color = r.getUpdateCells.getRows.head.getValues.head.getUserEnteredFormat.getBackgroundColor
+              color.getRed == Color.lightGray._1 / 255F &&
               color.getGreen == Color.lightGray._2 / 255F &&
               color.getBlue == Color.lightGray._3 / 255F
-          }
-        )
-      }, {
-        (
-          Seq(SetBorder(Region(Point(0, 0), Point(2, 2)), Border(Border.Style.SolidMedium, Border.Placement.ValueSet(Border.Placement.Bottom)))),
-          r => {
-            val borderProp = r.getUpdateBorders
-            borderProp.getRange.getStartColumnIndex == 0 &&
+            }
+          )
+        }, {
+          (
+            Seq(
+              SetBorder(Region(Point(0, 0), Point(2, 2)),
+                        Border(Border.Style.SolidMedium, Border.Placement.ValueSet(Border.Placement.Bottom)))),
+            r => {
+              val borderProp = r.getUpdateBorders
+              borderProp.getRange.getStartColumnIndex == 0 &&
               borderProp.getRange.getEndColumnIndex == 2 &&
               borderProp.getBottom.getStyle == Border.Style.SolidMedium.value
-          }
-        )
-      }, {
-        (Seq(SetMerge(Region(Point(0, 0), Point(5, 5)))), _.getMergeCells != null)
-      })
+            }
+          )
+        }, {
+          (Seq(SetMerge(Region(Point(0, 0), Point(5, 5)))), _.getMergeCells != null)
+        }
+      )
 
-      actionToRequestPredicate.foreach { case (actions, pred) =>
-        val requests = SpreadsheetApi.getRequests(actions, 1)
+      actionToRequestPredicate.foreach {
+        case (actions, pred) =>
+          val requests = SpreadsheetApi.getRequests(actions, 1)
 
-        def tryOrFalsePred(r: Request) = Try(pred(r)).getOrElse(false)
-        requests.exists(tryOrFalsePred) mustBe true
+          def tryOrFalsePred(r: Request) = Try(pred(r)).getOrElse(false)
+          requests.exists(tryOrFalsePred) mustBe true
       }
     }
 

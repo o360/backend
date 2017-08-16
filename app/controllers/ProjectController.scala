@@ -19,7 +19,8 @@ import utils.listmeta.sorting.Sorting
 class ProjectController @Inject()(
   protected val silhouette: Silhouette[DefaultEnv],
   protected val projectService: ProjectService
-) extends BaseController with ListActions {
+) extends BaseController
+  with ListActions {
 
   implicit val sortingFields = Sorting.AvailableFields('id, 'name, 'description)
 
@@ -28,15 +29,14 @@ class ProjectController @Inject()(
     */
   def getList(eventId: Option[Long], groupId: Option[Long], onlyAvailable: Boolean) =
     (silhouette.SecuredAction(AllowedStatus.approved) andThen ListAction).async { implicit request =>
-
-    toResult(Ok) {
-      projectService
-        .getList(eventId, groupId, onlyAvailable)
-        .map { projects =>
-          Response.List(projects)(ApiProject(_))
-        }
+      toResult(Ok) {
+        projectService
+          .getList(eventId, groupId, onlyAvailable)
+          .map { projects =>
+            Response.List(projects)(ApiProject(_))
+          }
+      }
     }
-  }
 
   /**
     * Returns project with relations.
@@ -64,22 +64,25 @@ class ProjectController @Inject()(
   /**
     * Updates project.
     */
-  def update(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async(parse.json[ApiPartialProject]) { implicit request =>
-    toResult(Ok) {
-      val project = request.body.toModel(id)
-      projectService
-        .update(project)
-        .map(ApiProject(_))
-    }
+  def update(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async(parse.json[ApiPartialProject]) {
+    implicit request =>
+      toResult(Ok) {
+        val project = request.body.toModel(id)
+        projectService
+          .update(project)
+          .map(ApiProject(_))
+      }
   }
 
   /**
     * Removes project.
     */
   def delete(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
-    projectService.delete(id).fold(
-      error => toResult(error),
-      _ => NoContent
-    )
+    projectService
+      .delete(id)
+      .fold(
+        error => toResult(error),
+        _ => NoContent
+      )
   }
 }

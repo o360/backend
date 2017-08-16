@@ -9,7 +9,6 @@ import utils.Config
 
 import scala.concurrent.duration._
 
-
 /**
   * Scheduler timer.
   */

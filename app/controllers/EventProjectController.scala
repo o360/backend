@@ -24,10 +24,12 @@ class EventProjectController @Inject()(
     * @param eventId   event ID
     */
   def create(projectId: Long, eventId: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
-    eventProjectService.add(projectId, eventId).fold(
-      error => toResult(error),
-      _ => NoContent
-    )
+    eventProjectService
+      .add(projectId, eventId)
+      .fold(
+        error => toResult(error),
+        _ => NoContent
+      )
   }
 
   /**
@@ -37,9 +39,11 @@ class EventProjectController @Inject()(
     * @param eventId   event ID
     */
   def delete(projectId: Long, eventId: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
-    eventProjectService.remove(projectId, eventId).fold(
-      error => toResult(error),
-      _ => NoContent
-    )
+    eventProjectService
+      .remove(projectId, eventId)
+      .fold(
+        error => toResult(error),
+        _ => NoContent
+      )
   }
 }

@@ -10,8 +10,7 @@ import models.notification.Notification
 /**
   * Event model fixture.
   */
-trait EventFixture extends FixtureHelper {
-  self: FixtureSupport =>
+trait EventFixture extends FixtureHelper { self: FixtureSupport =>
 
   val Events = Seq(
     Event(

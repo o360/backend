@@ -15,6 +15,7 @@ class FlywayModule extends AbstractModule {
     bind(classOf[FlywayInitializer]).asEagerSingleton()
   }
 }
+
 /**
   * Automatically applies migrations when application is in prod mode.
   */

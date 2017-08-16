@@ -14,8 +14,7 @@ import scala.concurrent.Future
 /**
   * Component for form_answer, form_element_answer and form_element_answer_value tables.
   */
-trait AnswerComponent {
-  self: HasDatabaseConfigProvider[JdbcProfile] =>
+trait AnswerComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import driver.api._
 
@@ -39,7 +38,6 @@ trait AnswerComponent {
       isAnonymous
     )
 
-
     def toUserAnswer(answers: Seq[Answer.Element], formName: String) = UserAnswer(
       "",
       userFromId,
@@ -62,8 +60,8 @@ trait AnswerComponent {
     def projectMachineName = column[String]("project_machine_name")
     def formMachineName = column[String]("form_machine_name")
 
-    def * = (id, eventId, projectId, userFromId, userToId, formId, isAnonymous,
-      projectMachineName, formMachineName) <> ((DbFormAnswer.apply _).tupled, DbFormAnswer.unapply)
+    def * =
+      (id, eventId, projectId, userFromId, userToId, formId, isAnonymous, projectMachineName, formMachineName) <> ((DbFormAnswer.apply _).tupled, DbFormAnswer.unapply)
   }
 
   val FormAnswers = TableQuery[FormAnswerTable]
@@ -104,12 +102,14 @@ trait AnswerComponent {
     valueId: Long
   )
 
-  class FormElementAnswerValueTable(tag: Tag) extends Table[DbFormElementAnswerValue](tag, "form_element_answer_value") {
+  class FormElementAnswerValueTable(tag: Tag)
+    extends Table[DbFormElementAnswerValue](tag, "form_element_answer_value") {
     def id = column[Long]("id", O.AutoInc, O.PrimaryKey)
     def answerElementId = column[Long]("answer_element_id")
     def formElementValueId = column[Long]("form_element_value_id")
 
-    def * = (id, answerElementId, formElementValueId) <> ((DbFormElementAnswerValue.apply _).tupled, DbFormElementAnswerValue.unapply)
+    def * =
+      (id, answerElementId, formElementValueId) <> ((DbFormElementAnswerValue.apply _).tupled, DbFormElementAnswerValue.unapply)
   }
 
   val FormElementAnswerValues = TableQuery[FormElementAnswerValueTable]
@@ -134,7 +134,6 @@ class AnswerDao @Inject()(
     case None => answer.userToId.isEmpty
   }
 
-
   /**
     * Returns list of answers for given event ID.
     */
@@ -142,33 +141,39 @@ class AnswerDao @Inject()(
 
     val query = FormAnswers
       .filter(_.eventId === eventId)
-      .join(Forms).on(_.formId === _.id)
+      .join(Forms)
+      .on(_.formId === _.id)
       .joinLeft {
         FormElementAnswers
           .joinLeft(FormElementAnswerValues)
           .on(_.id === _.answerElementId)
-      }.on { case ((answer, _), (element, _)) => answer.id === element.answerId }
+      }
+      .on { case ((answer, _), (element, _)) => answer.id === element.answerId }
 
     db.run(query.result).map { flatResults =>
       flatResults
-        .groupBy { case ((answer, form), _) =>
-          (answer, form)
+        .groupBy {
+          case ((answer, form), _) =>
+            (answer, form)
         }
-        .map { case ((answer, form), abc) =>
-          val elements = abc
-            .collect { case (_, Some(elementWithValues)) => elementWithValues }
-            .groupBy { case (element, _) => element }
-            .map { case (element, elementWithValues) =>
-              val values = elementWithValues
-                .collect { case (_, Some(value)) => value }
-                .map(_.valueId)
+        .map {
+          case ((answer, form), abc) =>
+            val elements = abc
+              .collect { case (_, Some(elementWithValues)) => elementWithValues }
+              .groupBy { case (element, _) => element }
+              .map {
+                case (element, elementWithValues) =>
+                  val values = elementWithValues
+                    .collect { case (_, Some(value)) => value }
+                    .map(_.valueId)
 
-              val valuesOpt = if (values.isEmpty) None else Some(values)
-              element.toModel(valuesOpt)
-            }
-            .toSeq
-          answer.toUserAnswer(elements, form.name)
-        }.toSeq
+                  val valuesOpt = if (values.isEmpty) None else Some(values)
+                  element.toModel(valuesOpt)
+              }
+              .toSeq
+            answer.toUserAnswer(elements, form.name)
+        }
+        .toSeq
     }
   }
 
@@ -183,36 +188,41 @@ class AnswerDao @Inject()(
     formId: Long
   ): Future[Option[Answer.Form]] = {
 
-    val query = FormAnswers.filter { answer =>
+    val query = FormAnswers
+      .filter { answer =>
         answer.eventId === eventId &&
         answer.projectId === projectId &&
         answer.userFromId === fromUserId &&
         userToFilter(answer, toUserId) &&
         answer.formId === formId
       }
-      .join(Forms).on(_.formId === _.id)
+      .join(Forms)
+      .on(_.formId === _.id)
       .take(1)
       .joinLeft {
         FormElementAnswers
           .joinLeft(FormElementAnswerValues)
           .on(_.id === _.answerElementId)
-      }.on { case ((answer, _), (element, _)) => answer.id === element.answerId }
+      }
+      .on { case ((answer, _), (element, _)) => answer.id === element.answerId }
 
     db.run(query.result).map { flatResults =>
-      flatResults.headOption.map { case ((answer, form), _) =>
-        val elements = flatResults
-          .collect { case (_, Some(elementWithValues)) => elementWithValues }
-          .groupBy { case (element, _) => element }
-          .map { case (element, elementWithValues) =>
-            val values = elementWithValues
-              .collect { case (_, Some(value)) => value }
-              .map(_.valueId)
+      flatResults.headOption.map {
+        case ((answer, form), _) =>
+          val elements = flatResults
+            .collect { case (_, Some(elementWithValues)) => elementWithValues }
+            .groupBy { case (element, _) => element }
+            .map {
+              case (element, elementWithValues) =>
+                val values = elementWithValues
+                  .collect { case (_, Some(value)) => value }
+                  .map(_.valueId)
 
-            val valuesOpt = if (values.isEmpty) None else Some(values)
-            element.toModel(valuesOpt)
-          }
-          .toSeq
-        answer.toModel(elements, form.name)
+                val valuesOpt = if (values.isEmpty) None else Some(values)
+                element.toModel(valuesOpt)
+            }
+            .toSeq
+          answer.toModel(elements, form.name)
       }
     }
   }
@@ -231,10 +241,10 @@ class AnswerDao @Inject()(
   ): Future[Answer.Form] = {
     val deleteExistedAnswer = FormAnswers.filter { x =>
       x.eventId === eventId &&
-        x.projectId === projectId &&
-        x.userFromId === fromUserId &&
-        userToFilter(x, toUserId) &&
-        x.formId === answer.form.id
+      x.projectId === projectId &&
+      x.userFromId === fromUserId &&
+      userToFilter(x, toUserId) &&
+      x.formId === answer.form.id
     }.delete
 
     def insertAnswerElementAction(answerId: Long, element: Answer.Element) = {

@@ -30,7 +30,8 @@ class TemplateService @Inject()(
     * Returns template by ID
     */
   def getById(id: Long)(implicit account: User): SingleResult = {
-    templateDao.findById(id)
+    templateDao
+      .findById(id)
       .liftRight {
         NotFoundError.Template(id)
       }
@@ -89,9 +90,9 @@ class TemplateService @Inject()(
       _ <- getById(id)
 
       conflictedEntities <- getConflictedEntities.lift
-    _ <- ensure(conflictedEntities.isEmpty) {
-      ConflictError.General(Some(Template.nameSingular), conflictedEntities)
-    }
+      _ <- ensure(conflictedEntities.isEmpty) {
+        ConflictError.General(Some(Template.nameSingular), conflictedEntities)
+      }
 
       _ <- templateDao.delete(id).lift
     } yield ()

@@ -16,13 +16,17 @@ import testutils.fixture.{EventFixture, FormFixture, ProjectFixture, UserFixture
 import utils.errors.ApplicationError
 import utils.listmeta.ListMeta
 
-import scalaz.{EitherT, \/, \/-}
+import scalaz.{\/, \/-, EitherT}
 
 /**
   * Test for upload service
   */
-class UploadServiceTest extends BaseServiceTest with EventFixture with ProjectFixture with FormFixture with UserFixture {
-
+class UploadServiceTest
+  extends BaseServiceTest
+  with EventFixture
+  with ProjectFixture
+  with FormFixture
+  with UserFixture {
 
   private case class Fixture(
     eventDao: EventDao,
@@ -47,8 +51,25 @@ class UploadServiceTest extends BaseServiceTest with EventFixture with ProjectFi
     val userService = mock[UserService]
     val googleDriveService = mock[GoogleDriveService]
     val userDao = mock[UserDao]
-    val service = new UploadService(eventDao, projectDao, reportService, spreadsheetService, formService, relationDao, userService, googleDriveService, userDao)
-    Fixture(eventDao, projectDao, reportService, spreadsheetService, formService, relationDao, userService, googleDriveService, userDao, service)
+    val service = new UploadService(eventDao,
+                                    projectDao,
+                                    reportService,
+                                    spreadsheetService,
+                                    formService,
+                                    relationDao,
+                                    userService,
+                                    googleDriveService,
+                                    userDao)
+    Fixture(eventDao,
+            projectDao,
+            reportService,
+            spreadsheetService,
+            formService,
+            relationDao,
+            userService,
+            googleDriveService,
+            userDao,
+            service)
   }
 
   private val jobFixture = EventJob.Upload(0, 1, new Timestamp(123), EventJob.Status.New)
@@ -78,32 +99,34 @@ class UploadServiceTest extends BaseServiceTest with EventFixture with ProjectFi
       val user = Users(0)
       val batchUpdate = new BatchUpdateSpreadsheetRequest()
 
-
-      when(fixture.eventDao.getList(
-        optId = eqTo(Some(jobFixture.eventId)),
-        optStatus = any[Option[Event.Status]],
-        optProjectId = any[Option[Long]],
-        optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]]
-      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Seq(event))))
-      when(fixture.projectDao.getList(
-        optId = any[Option[Long]],
-        optEventId = eqTo(Some(event.id)),
-        optGroupFromIds = any[Option[Seq[Long]]],
-        optFormId = any[Option[Long]],
-        optGroupAuditorId = any[Option[Long]],
-        optEmailTemplateId = any[Option[Long]],
-        optAnyRelatedGroupId = any[Option[Long]]
-      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Seq(project))))
-      when(fixture.relationDao.getList(
-        optId = any[Option[Long]],
-        optProjectId = eqTo(Some(project.id)),
-        optKind = any[Option[Relation.Kind]],
-        optFormId = any[Option[Long]],
-        optGroupFromId = any[Option[Long]],
-        optGroupToId = any[Option[Long]],
-        optEmailTemplateId = any[Option[Long]]
-      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Seq(relation))))
+      when(
+        fixture.eventDao.getList(
+          optId = eqTo(Some(jobFixture.eventId)),
+          optStatus = any[Option[Event.Status]],
+          optProjectId = any[Option[Long]],
+          optFormId = any[Option[Long]],
+          optGroupFromIds = any[Option[Seq[Long]]]
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Seq(event))))
+      when(
+        fixture.projectDao.getList(
+          optId = any[Option[Long]],
+          optEventId = eqTo(Some(event.id)),
+          optGroupFromIds = any[Option[Seq[Long]]],
+          optFormId = any[Option[Long]],
+          optGroupAuditorId = any[Option[Long]],
+          optEmailTemplateId = any[Option[Long]],
+          optAnyRelatedGroupId = any[Option[Long]]
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Seq(project))))
+      when(
+        fixture.relationDao.getList(
+          optId = any[Option[Long]],
+          optProjectId = eqTo(Some(project.id)),
+          optKind = any[Option[Relation.Kind]],
+          optFormId = any[Option[Long]],
+          optGroupFromId = any[Option[Long]],
+          optGroupToId = any[Option[Long]],
+          optEmailTemplateId = any[Option[Long]]
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Seq(relation))))
       when(fixture.reportService.getReport(event.id, project.id)).thenReturn(toFuture(Seq(report)))
       when(fixture.formService.getOrCreateFreezedForm(event.id, relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(\/-(freezedForm): ApplicationError \/ Form)))

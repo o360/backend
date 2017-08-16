@@ -17,11 +17,11 @@ import scala.reflect.ClassTag
   */
 trait BaseDaoTest
   extends PlaySpec
-    with GuiceOneAppPerSuite
-    with GeneratorDrivenPropertyChecks
-    with AsyncHelper
-    with FixtureSupport
-    with BeforeAndAfterEach {
+  with GuiceOneAppPerSuite
+  with GeneratorDrivenPropertyChecks
+  with AsyncHelper
+  with FixtureSupport
+  with BeforeAndAfterEach {
 
   private val dbUrl = ConfigFactory.load.getString("slick.dbs.default.db.url")
   private val dbUser = ConfigFactory.load.getString("slick.dbs.default.db.user")

@@ -10,10 +10,11 @@ case class NamedEntity(
   override def equals(obj: scala.Any): Boolean = {
     if (super.equals(obj)) true
     else if (obj == null) false
-    else obj match {
-      case that: NamedEntity => this.id == that.id
-      case _ => false
-    }
+    else
+      obj match {
+        case that: NamedEntity => this.id == that.id
+        case _ => false
+      }
   }
 
   override def hashCode(): Int = id.##

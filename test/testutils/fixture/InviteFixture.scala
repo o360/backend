@@ -8,8 +8,7 @@ import models.invite.Invite
 /**
   * Invite model fixture.
   */
-trait InviteFixture extends FixtureHelper with GroupFixture {
-  self: FixtureSupport =>
+trait InviteFixture extends FixtureHelper with GroupFixture { self: FixtureSupport =>
 
   val Invites = Seq(
     Invite(

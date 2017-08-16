@@ -24,7 +24,8 @@ class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with Te
     eventDaoMock: EventDao,
     projectDao: ProjectDao,
     relationDao: ProjectRelationDao,
-    service: TemplateService)
+    service: TemplateService
+  )
 
   private def getFixture = {
     val daoMock = mock[TemplateDao]
@@ -68,23 +69,25 @@ class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with Te
 
   "list" should {
     "return list of templates from db" in {
-      forAll { (
-      kind: Option[Notification.Kind],
-      recipient: Option[Notification.Recipient],
-      templates: Seq[Template],
-      total: Int
-      ) =>
-        val fixture = getFixture
-        when(fixture.templateDaoMock.getList(
-          optId = any[Option[Long]],
-          optKind = eqTo(kind),
-          optRecipient = eqTo(recipient)
-        )(eqTo(ListMeta.default)))
-          .thenReturn(toFuture(ListWithTotal(total, templates)))
-        val result = wait(fixture.service.getList(kind, recipient)(admin, ListMeta.default).run)
+      forAll {
+        (
+          kind: Option[Notification.Kind],
+          recipient: Option[Notification.Recipient],
+          templates: Seq[Template],
+          total: Int
+        ) =>
+          val fixture = getFixture
+          when(
+            fixture.templateDaoMock.getList(
+              optId = any[Option[Long]],
+              optKind = eqTo(kind),
+              optRecipient = eqTo(recipient)
+            )(eqTo(ListMeta.default)))
+            .thenReturn(toFuture(ListWithTotal(total, templates)))
+          val result = wait(fixture.service.getList(kind, recipient)(admin, ListMeta.default).run)
 
-        result mustBe 'right
-        result.toOption.get mustBe ListWithTotal(total, templates)
+          result mustBe 'right
+          result.toOption.get mustBe ListWithTotal(total, templates)
       }
     }
   }
@@ -148,24 +151,26 @@ class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with Te
       forAll { (id: Long) =>
         val fixture = getFixture
         when(fixture.templateDaoMock.findById(id)).thenReturn(toFuture(Some(Templates(0))))
-        when(fixture.projectDao.getList(
-          optId = any[Option[Long]],
-          optEventId = any[Option[Long]],
-          optGroupFromIds = any[Option[Seq[Long]]],
-          optFormId = any[Option[Long]],
-          optGroupAuditorId = any[Option[Long]],
-          optEmailTemplateId = eqTo(Some(id)),
-          optAnyRelatedGroupId = any[Option[Long]]
-        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Projects.take(1))))
-        when(fixture.relationDao.getList(
-          optId = any[Option[Long]],
-          optProjectId = any[Option[Long]],
-          optKind = any[Option[Relation.Kind]],
-          optFormId = any[Option[Long]],
-          optGroupFromId = any[Option[Long]],
-          optGroupToId = any[Option[Long]],
-          optEmailTemplateId = eqTo(Some(id))
-        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
+        when(
+          fixture.projectDao.getList(
+            optId = any[Option[Long]],
+            optEventId = any[Option[Long]],
+            optGroupFromIds = any[Option[Seq[Long]]],
+            optFormId = any[Option[Long]],
+            optGroupAuditorId = any[Option[Long]],
+            optEmailTemplateId = eqTo(Some(id)),
+            optAnyRelatedGroupId = any[Option[Long]]
+          )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Projects.take(1))))
+        when(
+          fixture.relationDao.getList(
+            optId = any[Option[Long]],
+            optProjectId = any[Option[Long]],
+            optKind = any[Option[Relation.Kind]],
+            optFormId = any[Option[Long]],
+            optGroupFromId = any[Option[Long]],
+            optGroupToId = any[Option[Long]],
+            optEmailTemplateId = eqTo(Some(id))
+          )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
 
         val result = wait(fixture.service.delete(id)(admin).run)
 
@@ -174,29 +179,30 @@ class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with Te
       }
     }
 
-
     "delete template from db" in {
       forAll { (id: Long) =>
         val fixture = getFixture
         when(fixture.templateDaoMock.findById(id)).thenReturn(toFuture(Some(Templates(0))))
-        when(fixture.projectDao.getList(
-          optId = any[Option[Long]],
-          optEventId = any[Option[Long]],
-          optGroupFromIds = any[Option[Seq[Long]]],
-          optFormId = any[Option[Long]],
-          optGroupAuditorId = any[Option[Long]],
-          optEmailTemplateId = eqTo(Some(id)),
-          optAnyRelatedGroupId = any[Option[Long]]
-        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Project](0, Nil)))
-        when(fixture.relationDao.getList(
-          optId = any[Option[Long]],
-          optProjectId = any[Option[Long]],
-          optKind = any[Option[Relation.Kind]],
-          optFormId = any[Option[Long]],
-          optGroupFromId = any[Option[Long]],
-          optGroupToId = any[Option[Long]],
-          optEmailTemplateId = eqTo(Some(id))
-        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
+        when(
+          fixture.projectDao.getList(
+            optId = any[Option[Long]],
+            optEventId = any[Option[Long]],
+            optGroupFromIds = any[Option[Seq[Long]]],
+            optFormId = any[Option[Long]],
+            optGroupAuditorId = any[Option[Long]],
+            optEmailTemplateId = eqTo(Some(id)),
+            optAnyRelatedGroupId = any[Option[Long]]
+          )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Project](0, Nil)))
+        when(
+          fixture.relationDao.getList(
+            optId = any[Option[Long]],
+            optProjectId = any[Option[Long]],
+            optKind = any[Option[Relation.Kind]],
+            optFormId = any[Option[Long]],
+            optGroupFromId = any[Option[Long]],
+            optGroupToId = any[Option[Long]],
+            optEmailTemplateId = eqTo(Some(id))
+          )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
 
         when(fixture.templateDaoMock.delete(id)).thenReturn(toFuture(1))
 

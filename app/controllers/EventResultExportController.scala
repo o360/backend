@@ -21,7 +21,8 @@ import utils.listmeta.sorting.Sorting
 class EventResultExportController @Inject()(
   config: Config,
   exportService: EventResultExportService
-) extends BaseController with ListActions {
+) extends BaseController
+  with ListActions {
 
   implicit val sortingFields = Sorting.AvailableFields('id, 'start, 'end, 'description)
 
@@ -34,7 +35,8 @@ class EventResultExportController @Inject()(
           Response.List(events) { event =>
             ApiShortEvent(event)
           }
-        }.map(toResult(_))
+        }
+        .map(toResult(_))
     }
   }
 
@@ -42,13 +44,16 @@ class EventResultExportController @Inject()(
     if (config.exportSecret != request.body.code) {
       Forbidden.toFuture
     } else {
-      exportService.exportAnswers(eventId)
-        .map { case (forms, users, answers) =>
-          val apiForms = forms.map(ApiForm(_))
-          val apiUsers = users.map(x => ApiShortUser(UserShort.fromUser(x)))
-          val apiAnswers = answers.map(ApiAnswerExport(_))
-          ApiEventExport(apiForms, apiUsers, apiAnswers)
-        }.map(toResult(_))
+      exportService
+        .exportAnswers(eventId)
+        .map {
+          case (forms, users, answers) =>
+            val apiForms = forms.map(ApiForm(_))
+            val apiUsers = users.map(x => ApiShortUser(UserShort.fromUser(x)))
+            val apiAnswers = answers.map(ApiAnswerExport(_))
+            ApiEventExport(apiForms, apiUsers, apiAnswers)
+        }
+        .map(toResult(_))
     }
   }
 }

@@ -29,7 +29,7 @@ object ErrorHelper extends Logger {
     val errorResponse = getApiError(error)
 
     val logMessage = error.getLogMessage
-    if(logMessage.isDefined) {
+    if (logMessage.isDefined) {
       log.debug(s"[${error.getCode}] ${error.getMessage} $logMessage")
     }
 

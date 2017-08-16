@@ -36,8 +36,9 @@ case class Event(
   /**
     * Event text representation.
     */
-  def caption(zone: ZoneId): String = s"Event ${description.map(_ + " ").getOrElse("")}" +
-    s"(${TimestampConverter.toPrettyString(start, zone)} - ${TimestampConverter.toPrettyString(end, zone)})"
+  def caption(zone: ZoneId): String =
+    s"Event ${description.map(_ + " ").getOrElse("")}" +
+      s"(${TimestampConverter.toPrettyString(start, zone)} - ${TimestampConverter.toPrettyString(end, zone)})"
 
   def toNamedEntity(zone: ZoneId) = NamedEntity(id, caption(zone))
 }
@@ -63,14 +64,17 @@ object Event {
     */
   sealed trait Status
   object Status {
+
     /**
       * Event starts in the future.
       */
     case object NotStarted extends Status
+
     /**
       * Event is in progress.
       */
     case object InProgress extends Status
+
     /**
       * Event completed.
       */

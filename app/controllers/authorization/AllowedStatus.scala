@@ -12,13 +12,15 @@ import scala.concurrent.Future
   */
 case class AllowedStatus(statuses: User.Status*) extends Authorization[User, JWTAuthenticator] {
   override def isAuthorized[B](
-    identity: User, authenticator: JWTAuthenticator
+    identity: User,
+    authenticator: JWTAuthenticator
   )(implicit request: Request[B]): Future[Boolean] = {
     Future.successful(statuses.contains(identity.status))
   }
 }
 
 case object AllowedStatus {
+
   /**
     * Allows access only to approved users.
     */

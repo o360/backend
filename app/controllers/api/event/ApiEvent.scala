@@ -53,7 +53,8 @@ object ApiEvent {
     time: LocalDateTime,
     kind: ApiNotificationKind,
     recipient: ApiNotificationRecipient
-  ){
+  ) {
+
     /**
       * Converts api model to model.
       */
@@ -65,6 +66,7 @@ object ApiEvent {
   }
 
   object NotificationTime {
+
     /**
       * Creates api model from model.
       */

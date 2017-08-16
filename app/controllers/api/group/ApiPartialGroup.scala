@@ -4,6 +4,7 @@ import models.group.Group
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
+
 /**
   * Request for group creating and updating.
   */
@@ -24,5 +25,5 @@ object ApiPartialGroup {
   implicit val reads: Reads[ApiPartialGroup] = (
     (__ \ "parentId").readNullable[Long] and
       (__ \ "name").read[String](maxLength[String](1024))
-    ) (ApiPartialGroup(_, _))
+  )(ApiPartialGroup(_, _))
 }

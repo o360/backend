@@ -5,7 +5,7 @@ import utils.errors.{ApplicationError, ExceptionHandler}
 
 import scala.concurrent.Future
 import scalaz.Scalaz._
-import scalaz.{EitherT, Monad, OptionT, \/}
+import scalaz.{\/, EitherT, Monad, OptionT}
 
 /**
   * Implicits for working with futures.
@@ -18,6 +18,7 @@ object FutureLifting {
   }
 
   implicit class AnyDecorator[A](a: A) {
+
     /**
       * Converts value to future.
       */
@@ -32,6 +33,7 @@ object FutureLifting {
   }
 
   implicit class FutureOptionDecorator[A](fo: Future[Option[A]]) {
+
     /**
       * Lifts option value to the right. If option is empty, lifts error to the left.
       *
@@ -43,6 +45,7 @@ object FutureLifting {
   }
 
   implicit class OptionErrorDecorator[E <: ApplicationError](o: Option[E]) {
+
     /**
       * Lifts option value to the left. If option is empty, lifts Unit to the right.
       */
@@ -52,6 +55,7 @@ object FutureLifting {
   }
 
   implicit class FutureDecorator[A](f: Future[A]) {
+
     /**
       * Lifts futures value to the right.
       */
@@ -82,6 +86,7 @@ object FutureLifting {
   }
 
   implicit class EitherDecorator[E <: ApplicationError, A](val either: E \/ A) {
+
     /**
       * Converts either to EitherT.
       */
@@ -110,4 +115,3 @@ object FutureLifting {
     EitherT.eitherT((condition ? ().right[ApplicationError] | error.left[Unit]).toFuture)
   }
 }
-

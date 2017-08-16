@@ -14,18 +14,16 @@ import testutils.AsyncHelper
 
 import play.api.libs.concurrent.Execution.Implicits._
 
-
 /**
   * Base trait for controllers test.
   *
   */
 trait BaseControllerTest
   extends PlaySpec
-    with GeneratorDrivenPropertyChecks
-    with GuiceOneAppPerSuite
-    with AsyncHelper
-    with MockitoSugar {
-
+  with GeneratorDrivenPropertyChecks
+  with GuiceOneAppPerSuite
+  with AsyncHelper
+  with MockitoSugar {
 
   /**
     * Returns silhouette with given environment.
@@ -48,7 +46,6 @@ trait BaseControllerTest
     */
   def fakeEnvironment(user: UserModel): FakeEnvironment[DefaultEnv] =
     FakeEnvironment[DefaultEnv](Seq(fakeLoginInfo -> user))
-
 
   /**
     * Adds authentication to request.

@@ -11,9 +11,7 @@ import utils.listmeta.ListMeta
 
 import scala.concurrent.Future
 
-
-trait FormComponent {
-  self: HasDatabaseConfigProvider[JdbcProfile] =>
+trait FormComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import driver.api._
 
@@ -131,8 +129,9 @@ trait FormComponent {
     def required = column[Boolean]("required")
     def order = column[Int]("ord")
 
-    def * = (id, formId, kind, caption, required, order) <>
-      ((DbFormElement.apply _).tupled, DbFormElement.unapply)
+    def * =
+      (id, formId, kind, caption, required, order) <>
+        ((DbFormElement.apply _).tupled, DbFormElement.unapply)
   }
 
   val FormElements = TableQuery[FormElementTable]
@@ -169,8 +168,7 @@ trait FormComponent {
 /**
   * Component for event_form_mapping table.
   */
-trait EventFormMappingComponent {
-  self: HasDatabaseConfigProvider[JdbcProfile] =>
+trait EventFormMappingComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import driver.api._
 
@@ -188,7 +186,8 @@ trait EventFormMappingComponent {
     def formTemplateId = column[Long]("form_template_id")
     def formFreezedId = column[Long]("form_freezed_id")
 
-    def * = (eventId, formTemplateId, formFreezedId) <> ((DbEventFormMapping.apply _).tupled, DbEventFormMapping.unapply)
+    def * =
+      (eventId, formTemplateId, formFreezedId) <> ((DbEventFormMapping.apply _).tupled, DbEventFormMapping.unapply)
   }
 
   val EventFormMappings = TableQuery[EventFormMappingTable]
@@ -241,8 +240,8 @@ class FormDao @Inject()(
         )
       }
 
-    runListQuery(query) {
-      form => {
+    runListQuery(query) { form =>
+      {
         case 'id => form.id
         case 'name => form.name
       }
@@ -271,26 +270,29 @@ class FormDao @Inject()(
           .on {
             case (element, value) => element.id === value.elementId
           }
-      }.on {
-      case (form, (element, _)) => form.id === element.formId
-    }
+      }
+      .on {
+        case (form, (element, _)) => form.id === element.formId
+      }
 
     db.run(query.result).map { flatResults =>
-      flatResults.headOption.map { case (form, _) =>
-        val elements = flatResults
-          .collect { case (_, Some(elementWithValues)) => elementWithValues }
-          .groupBy { case (element, _) => element }
-          .toSeq
-          .sortBy { case (element, _) => element.order }
-          .map { case (element, valuesWithElements) =>
-            val values = valuesWithElements
-              .collect { case (_, Some(value)) => value }
-              .sortBy(_.order)
-              .map(_.toModel)
+      flatResults.headOption.map {
+        case (form, _) =>
+          val elements = flatResults
+            .collect { case (_, Some(elementWithValues)) => elementWithValues }
+            .groupBy { case (element, _) => element }
+            .toSeq
+            .sortBy { case (element, _) => element.order }
+            .map {
+              case (element, valuesWithElements) =>
+                val values = valuesWithElements
+                  .collect { case (_, Some(value)) => value }
+                  .sortBy(_.order)
+                  .map(_.toModel)
 
-            element.toModel(values)
-          }
-        form.toModel.withElements(elements)
+                element.toModel(values)
+            }
+          form.toModel.withElements(elements)
       }
     }
   }
@@ -304,26 +306,26 @@ class FormDao @Inject()(
     */
   def createElements(formId: Long, elements: Seq[Form.Element]): Future[Seq[Form.Element]] = {
 
-    val dbModels = elements
-      .zipWithIndex
-      .map { case (element, index) =>
-        val values = element
-          .values
-          .zipWithIndex
-          .map { case (value, valueIndex) =>
-            DbFormElementValue(id = 0, elementId = 0, value.caption, valueIndex)
-          }
+    val dbModels = elements.zipWithIndex
+      .map {
+        case (element, index) =>
+          val values = element.values.zipWithIndex
+            .map {
+              case (value, valueIndex) =>
+                DbFormElementValue(id = 0, elementId = 0, value.caption, valueIndex)
+            }
 
-        (DbFormElement.fromModel(formId, element, index), values)
+          (DbFormElement.fromModel(formId, element, index), values)
       }
 
-    val results = dbModels.map { case (element, values) =>
-      val elementId = db.run(FormElements.returning(FormElements.map(_.id)) += element)
-      if (values.nonEmpty) {
-        elementId.flatMap { elementId: Long =>
-          db.run(FormElementValues ++= values.map(_.copy(elementId = elementId)))
-        }
-      } else elementId
+    val results = dbModels.map {
+      case (element, values) =>
+        val elementId = db.run(FormElements.returning(FormElements.map(_.id)) += element)
+        if (values.nonEmpty) {
+          elementId.flatMap { elementId: Long =>
+            db.run(FormElementValues ++= values.map(_.copy(elementId = elementId)))
+          }
+        } else elementId
     }
 
     for {
@@ -357,9 +359,11 @@ class FormDao @Inject()(
     * @param form form model
     * @return updated form
     */
-  def update(form: FormShort): Future[FormShort] = db.run {
-    Forms.filter(_.id === form.id).update(DbForm.fromModel(form))
-  }.map(_ => form)
+  def update(form: FormShort): Future[FormShort] =
+    db.run {
+        Forms.filter(_.id === form.id).update(DbForm.fromModel(form))
+      }
+      .map(_ => form)
 
   /**
     * Returns ID of freezed form.
@@ -382,9 +386,11 @@ class FormDao @Inject()(
     * @param templateFormId ID of template form
     * @param freezedFormId  ID of freezed form
     */
-  def setFreezedFormId(eventId: Long, templateFormId: Long, freezedFormId: Long): Future[Unit] = db.run {
-    EventFormMappings += DbEventFormMapping(eventId, templateFormId, freezedFormId)
-  }.map(_ => ())
+  def setFreezedFormId(eventId: Long, templateFormId: Long, freezedFormId: Long): Future[Unit] =
+    db.run {
+        EventFormMappings += DbEventFormMapping(eventId, templateFormId, freezedFormId)
+      }
+      .map(_ => ())
 
   /**
     * Returns event ID for given freezed form ID.

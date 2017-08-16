@@ -9,7 +9,6 @@ import models.user.User
 
 import scala.collection.JavaConversions._
 
-
 /**
   * Spreadsheet service.
   */
@@ -32,33 +31,35 @@ class SpreadsheetService @Inject()() {
     forms: Seq[Form]
   ): BatchUpdateSpreadsheetRequest = {
 
-    def getFormContainer(form: Form, answers: Element, headerColor: Color) = Container(
-      TopToDown,
-      border = Some(Border(Border.Style.SolidThick, Border.Placement.outer))
-    )(
-      Cell(
-        form.name,
-        border = Some(Border(Border.Style.Solid, Border.Placement.ValueSet(Border.Placement.Bottom))),
-        alignment = Some(Cell.Alignment.Center),
-        format = Some(Cell.Format.bold),
-        color = Some(headerColor),
-        mergeToRight = if (form.elements.length <= 1) None else Some(form.elements.length - 1)
-      ),
+    def getFormContainer(form: Form, answers: Element, headerColor: Color) =
       Container(
-        LeftToRight,
-        border = Some(Border(Border.Style.Solid, Border.Placement.ValueSet(
-          Border.Placement.InnerVertical,
-          Border.Placement.Bottom
-        )))
-      )(form.elements.map(element => Cell(element.caption, format = Some(Cell.Format.bold))): _*),
-      answers
-    )
+        TopToDown,
+        border = Some(Border(Border.Style.SolidThick, Border.Placement.outer))
+      )(
+        Cell(
+          form.name,
+          border = Some(Border(Border.Style.Solid, Border.Placement.ValueSet(Border.Placement.Bottom))),
+          alignment = Some(Cell.Alignment.Center),
+          format = Some(Cell.Format.bold),
+          color = Some(headerColor),
+          mergeToRight = if (form.elements.length <= 1) None else Some(form.elements.length - 1)
+        ),
+        Container(
+          LeftToRight,
+          border = Some(
+            Border(Border.Style.Solid,
+                   Border.Placement.ValueSet(
+                     Border.Placement.InnerVertical,
+                     Border.Placement.Bottom
+                   )))
+        )(form.elements.map(element => Cell(element.caption, format = Some(Cell.Format.bold))): _*),
+        answers
+      )
 
     val aggregation: Element = {
       def getFormBody(reports: Seq[AggregatedReport], form: Form) = {
         val formElementIds = form.elements.map(_.id)
         val rows = reports.map { report =>
-
           val elementIdToAnswer: Map[Long, String] = {
             for {
               form <- report.forms
@@ -103,7 +104,8 @@ class SpreadsheetService @Inject()() {
             }: _*
           )
         ),
-        Cell.empty, Cell.empty,
+        Cell.empty,
+        Cell.empty,
         if (surveyForms.nonEmpty && reportsForSurvey.nonEmpty)
           Container(LeftToRight)(
             Cell("Survey", format = Some(Cell.Format.bold), color = Some(Color.lightGreen)),
@@ -120,8 +122,10 @@ class SpreadsheetService @Inject()() {
 
     val manyToOne: Element = {
       def getSection(report: Report): Element = {
-        val nonAnonymous = report.forms.flatMap(_.answers.flatMap(_.elementAnswers.filterNot(_.isAnonymous).map(_.fromUser))).distinct
-        val anonymous = report.forms.flatMap(_.answers.flatMap(_.elementAnswers.filter(_.isAnonymous).map(_.fromUser))).distinct
+        val nonAnonymous =
+          report.forms.flatMap(_.answers.flatMap(_.elementAnswers.filterNot(_.isAnonymous).map(_.fromUser))).distinct
+        val anonymous =
+          report.forms.flatMap(_.answers.flatMap(_.elementAnswers.filter(_.isAnonymous).map(_.fromUser))).distinct
 
         val anonymousUserNameMapping = anonymous.map(_.id).zipWithIndex.toMap.mapValues(x => s"Anonymous #$x")
 
@@ -133,21 +137,24 @@ class SpreadsheetService @Inject()() {
             form <- report.forms
             answer <- form.answers
             element <- answer.elementAnswers
-          } yield (answer.formElement.id, element.fromUser, element.answer.getText(answer.formElement), element.isAnonymous)
+          } yield
+            (answer.formElement.id, element.fromUser, element.answer.getText(answer.formElement), element.isAnonymous)
           val formElementIds = form.elements.map(_.id)
 
-          val rows = fromUsers.map { case (fromUser , isAnonUser) =>
-            val elementIdToAnswer: Map[Long, String] = answers
-              .collect { case (eId, u, v, a) if u.id == fromUser.id && a == isAnonUser => (eId, v) }.toMap
+          val rows = fromUsers.map {
+            case (fromUser, isAnonUser) =>
+              val elementIdToAnswer: Map[Long, String] = answers.collect {
+                case (eId, u, v, a) if u.id == fromUser.id && a == isAnonUser => (eId, v)
+              }.toMap
 
-            val cells = formElementIds.map { elementId =>
-              val cellValue = elementIdToAnswer.get(elementId)
-              Cell(cellValue.getOrElse(""))
-            }
-            Container(
-              LeftToRight,
-              border = Some(Border(Border.Style.Solid, Border.Placement.ValueSet(Border.Placement.InnerVertical)))
-            )(cells: _*)
+              val cells = formElementIds.map { elementId =>
+                val cellValue = elementIdToAnswer.get(elementId)
+                Cell(cellValue.getOrElse(""))
+              }
+              Container(
+                LeftToRight,
+                border = Some(Border(Border.Style.Solid, Border.Placement.ValueSet(Border.Placement.InnerVertical)))
+              )(cells: _*)
           }
           Container(TopToDown)(rows: _*)
             .colorIfEven(Color.lightGray)
@@ -157,7 +164,8 @@ class SpreadsheetService @Inject()() {
           r <- reports if r.assessedUser.isEmpty
           form <- r.forms
           answer <- form.answers
-          element <- answer.elementAnswers if !element.isAnonymous && report.assessedUser.fold(false)(_.id == element.fromUser.id)
+          element <- answer.elementAnswers
+          if !element.isAnonymous && report.assessedUser.fold(false)(_.id == element.fromUser.id)
         } yield (form.form, answer.formElement.id, element.answer.getText(answer.formElement))
 
         val surveyForms = surveyAnswers.map(_._1).distinct
@@ -206,30 +214,33 @@ class SpreadsheetService @Inject()() {
                       case (u, false) => Cell(u.name.getOrElse(""))
                     }: _*
                   ).colorIfEven(Color.lightGray),
-                  if (surveyAnswers.isEmpty) NoElement else Container(TopToDown)(
-                    Cell.empty,
-                    Cell("Survey", format = Some(Cell.Format.bold), color = Some(Color.lightGreen)),
-                    Cell.empty,
-                    Cell.empty
-                  )
+                  if (surveyAnswers.isEmpty) NoElement
+                  else
+                    Container(TopToDown)(
+                      Cell.empty,
+                      Cell("Survey", format = Some(Cell.Format.bold), color = Some(Color.lightGreen)),
+                      Cell.empty,
+                      Cell.empty
+                    )
                 )
               )
             ),
             Container(TopToDown)(
-              Container(LeftToRight)(
-                forms.map { form =>
-                  val body = getFormBody(form)
-                  getFormContainer(form, body, rowColor)
-                }: _*),
-              if (surveyAnswers.isEmpty) NoElement else Container(TopToDown)(
-                Cell.empty,
-                Container(LeftToRight)(
-                  surveyForms.map { form =>
-                    val body = getSurveyFormBody(form)
-                    getFormContainer(form, body, Color.lightGreen)
-                  }: _*
+              Container(LeftToRight)(forms.map { form =>
+                val body = getFormBody(form)
+                getFormContainer(form, body, rowColor)
+              }: _*),
+              if (surveyAnswers.isEmpty) NoElement
+              else
+                Container(TopToDown)(
+                  Cell.empty,
+                  Container(LeftToRight)(
+                    surveyForms.map { form =>
+                      val body = getSurveyFormBody(form)
+                      getFormContainer(form, body, Color.lightGreen)
+                    }: _*
+                  )
                 )
-              )
             )
           )
         )
@@ -240,7 +251,6 @@ class SpreadsheetService @Inject()() {
           reports.map(getSection): _*
       )
     }
-
 
     val actionsAggregation = Action.getActions(aggregation, Point(0, 0))
     val requestsAggregation = SpreadsheetApi.getRequests(actionsAggregation, sheetId = 1, freezedColumnsAmount = 1)

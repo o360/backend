@@ -9,14 +9,16 @@ import models.notification.Notification
 /**
   * Fixture for event job.
   */
-trait EventJobFixture extends FixtureHelper with EventFixture {
-  _: FixtureSupport =>
+trait EventJobFixture extends FixtureHelper with EventFixture { _: FixtureSupport =>
 
   val EventJobs: Seq[EventJob] = Seq(
     EventJob.Upload(1, 1, new Timestamp(123), EventJob.Status.Cancelled),
     EventJob.Upload(2, 2, new Timestamp(456), EventJob.Status.New),
-    EventJob.SendNotification(3, 1, Event.NotificationTime(
-      new Timestamp(789), Notification.Kind.PreBegin, Notification.Recipient.Respondent), EventJob.Status.Failure)
+    EventJob.SendNotification(
+      3,
+      1,
+      Event.NotificationTime(new Timestamp(789), Notification.Kind.PreBegin, Notification.Recipient.Respondent),
+      EventJob.Status.Failure)
   )
 
   addFixtureOperation {

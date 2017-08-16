@@ -36,7 +36,7 @@ class PaginationTest extends PlaySpec with GeneratorDrivenPropertyChecks {
 
     "return error if size is less than zero" in {
       forAll { (size: Int) =>
-        whenever(size < 0){
+        whenever(size < 0) {
           val pagination = PaginationRequestParser.parse(Map("size" -> size.toString))
 
           pagination mustBe 'isLeft
@@ -46,7 +46,7 @@ class PaginationTest extends PlaySpec with GeneratorDrivenPropertyChecks {
 
     "return error if number is less or equal zero" in {
       forAll { (number: Int) =>
-        whenever(number <= 0){
+        whenever(number <= 0) {
           val pagination = PaginationRequestParser.parse(Map("number" -> number.toString, "size" -> "1"))
 
           pagination mustBe 'isLeft
@@ -56,7 +56,7 @@ class PaginationTest extends PlaySpec with GeneratorDrivenPropertyChecks {
 
     "return error if size is unparseable" in {
       forAll { (size: String) =>
-        whenever(!size.matches("\\d+")){
+        whenever(!size.matches("\\d+")) {
           val pagination = PaginationRequestParser.parse(Map("size" -> size))
 
           pagination mustBe 'isLeft

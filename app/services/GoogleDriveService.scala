@@ -16,7 +16,6 @@ import utils.Logger
 import scala.collection.JavaConversions._
 import scala.util.control.NonFatal
 
-
 /**
   * Google drive service.
   */
@@ -49,6 +48,7 @@ class GoogleDriveService @Inject()(
     val result = driveService.files.create(file).execute()
     result.getId
   }
+
   /**
     * Creates folder in gdrive.
     */

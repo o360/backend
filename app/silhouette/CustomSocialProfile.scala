@@ -7,13 +7,12 @@ import models.user.User
 /**
   * Custom silhouette social profile.
   */
-case class CustomSocialProfile (
+case class CustomSocialProfile(
   loginInfo: LoginInfo,
   fullName: Option[String],
   email: Option[String],
   gender: Option[User.Gender]
 ) extends SocialProfile
-
 
 /**
   * Profile parser for custom social profile.

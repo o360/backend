@@ -20,7 +20,8 @@ import utils.listmeta.sorting.Sorting
 class TemplateController @Inject()(
   protected val silhouette: Silhouette[DefaultEnv],
   protected val templateService: TemplateService
-) extends BaseController with ListActions {
+) extends BaseController
+  with ListActions {
 
   implicit val sortingFields = Sorting.AvailableFields('id, 'name, 'kind, 'recipient)
 
@@ -32,7 +33,6 @@ class TemplateController @Inject()(
     recipient: Option[ApiNotificationRecipient]
   ) =
     (silhouette.SecuredAction(AllowedRole.admin) andThen ListAction).async { implicit request =>
-
       toResult(Ok) {
         templateService
           .getList(kind.map(_.value), recipient.map(_.value))
@@ -68,23 +68,26 @@ class TemplateController @Inject()(
   /**
     * Updates template.
     */
-  def update(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async(parse.json[ApiPartialTemplate]) { implicit request =>
-    toResult(Ok) {
-      val template = request.body.toModel(id)
-      templateService
-        .update(template)
-        .map(ApiTemplate(_))
-    }
+  def update(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async(parse.json[ApiPartialTemplate]) {
+    implicit request =>
+      toResult(Ok) {
+        val template = request.body.toModel(id)
+        templateService
+          .update(template)
+          .map(ApiTemplate(_))
+      }
   }
 
   /**
     * Removes template.
     */
   def delete(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
-    templateService.delete(id).fold(
-      error => toResult(error),
-      _ => NoContent
-    )
+    templateService
+      .delete(id)
+      .fold(
+        error => toResult(error),
+        _ => NoContent
+      )
   }
 
   /**

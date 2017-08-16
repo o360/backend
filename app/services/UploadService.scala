@@ -32,7 +32,6 @@ class UploadService @Inject()(
   userDao: UserDao
 ) {
 
-
   /**
     * Executes upload job.
     */
@@ -47,7 +46,6 @@ class UploadService @Inject()(
     * Returns upload models grouped by user.
     */
   def getGroupedUploadModels(eventId: Long): Future[Map[User, Seq[UploadModel]]] = {
-
 
     /**
       * Returns forms for given relations and event.
@@ -71,7 +69,9 @@ class UploadService @Inject()(
         events.map { event =>
           projectDao
             .getList(optEventId = Some(event.id))
-            .map { projects => projects.data.map((event, _)) }
+            .map { projects =>
+              projects.data.map((event, _))
+            }
         }
       }
     }.map(_.flatten)
@@ -81,27 +81,28 @@ class UploadService @Inject()(
       */
     def getUploadModels(eventsWithProjects: Seq[(Event, Project)]): Future[Seq[UploadModel]] = {
       Future.sequence {
-        eventsWithProjects.map { case (event, project) =>
-          for {
-            relations <- relationDao.getList(optProjectId = Some(project.id))
-            reports <- reportService.getReport(event.id, project.id)
-            forms <- getForms(relations.data, event.id)
-          } yield {
-            val sortedReports = reports.sortWith{ (left, right) =>
-              val leftName = left.assessedUser.flatMap(_.name)
-              val rightName = right.assessedUser.flatMap(_.name)
-              (leftName, rightName) match {
-                case (None, None) => false
-                case (Some(l), Some(r)) => l < r
-                case (Some(_), None) => true
-                case (None, Some(_)) => false
+        eventsWithProjects.map {
+          case (event, project) =>
+            for {
+              relations <- relationDao.getList(optProjectId = Some(project.id))
+              reports <- reportService.getReport(event.id, project.id)
+              forms <- getForms(relations.data, event.id)
+            } yield {
+              val sortedReports = reports.sortWith { (left, right) =>
+                val leftName = left.assessedUser.flatMap(_.name)
+                val rightName = right.assessedUser.flatMap(_.name)
+                (leftName, rightName) match {
+                  case (None, None) => false
+                  case (Some(l), Some(r)) => l < r
+                  case (Some(_), None) => true
+                  case (None, Some(_)) => false
+                }
               }
-            }
 
-            val aggregatedReports = sortedReports.map(reportService.getAggregatedReport)
-            val batchUpdate = spreadsheetService.getBatchUpdateRequest(sortedReports, aggregatedReports, forms)
-            UploadModel(event, project, batchUpdate)
-          }
+              val aggregatedReports = sortedReports.map(reportService.getAggregatedReport)
+              val batchUpdate = spreadsheetService.getBatchUpdateRequest(sortedReports, aggregatedReports, forms)
+              UploadModel(event, project, batchUpdate)
+            }
         }
       }
     }
@@ -120,15 +121,15 @@ class UploadService @Inject()(
       }
 
       getGroupToUsersMap.map { groupToUsersMap =>
-        uploadModels.flatMap { uploadModel =>
-          val users = groupToUsersMap(uploadModel.project.groupAuditor.id)
-          users.map((_, uploadModel))
-        }
+        uploadModels
+          .flatMap { uploadModel =>
+            val users = groupToUsersMap(uploadModel.project.groupAuditor.id)
+            users.map((_, uploadModel))
+          }
           .groupBy(_._1)
           .mapValues(_.map(_._2))
       }
     }
-
 
     for {
       events <- eventDao.getList(optId = Some(eventId))
@@ -154,22 +155,27 @@ class UploadService @Inject()(
         userDao.setGdriveFolderId(user.id, userFolderId)
     }
 
-    Future.sequence {
-      modelsWithUsers.map { case (user, models) =>
-        for {
-          userFolderId <- getOrCreateUserFolder(user)
-        } yield {
-          models.groupBy(_.event).foreach { case (event, eventModels) =>
-            val eventFolderId = googleDriveService.createFolder(userFolderId, event.caption(user.timezone))
+    Future
+      .sequence {
+        modelsWithUsers.map {
+          case (user, models) =>
+            for {
+              userFolderId <- getOrCreateUserFolder(user)
+            } yield {
+              models.groupBy(_.event).foreach {
+                case (event, eventModels) =>
+                  val eventFolderId = googleDriveService.createFolder(userFolderId, event.caption(user.timezone))
 
-            eventModels.foreach { case UploadModel(_, project, batchUpdate) =>
-              val spreadSheetId = googleDriveService.createSpreadsheet(eventFolderId, project.name)
-              googleDriveService.applyBatchSpreadsheetUpdate(spreadSheetId, batchUpdate)
+                  eventModels.foreach {
+                    case UploadModel(_, project, batchUpdate) =>
+                      val spreadSheetId = googleDriveService.createSpreadsheet(eventFolderId, project.name)
+                      googleDriveService.applyBatchSpreadsheetUpdate(spreadSheetId, batchUpdate)
+                  }
+              }
             }
-          }
         }
       }
-    }.map(_ => ())
+      .map(_ => ())
   }
 }
 

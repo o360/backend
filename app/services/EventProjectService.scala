@@ -10,7 +10,6 @@ import utils.implicits.FutureLifting._
 
 import scalaz.Scalaz._
 
-
 /**
   * Project event service.
   */

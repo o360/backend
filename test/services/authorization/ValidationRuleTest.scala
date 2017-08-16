@@ -16,7 +16,6 @@ class ValidationRuleTest extends PlaySpec with GeneratorDrivenPropertyChecks {
     } yield ValidationRule(isSuccess, name)
   }
 
-
   "apply" should {
     "create correct validation rule" in {
       forAll { (name: String, precondition: Boolean, check: Boolean) =>

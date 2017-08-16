@@ -28,7 +28,8 @@ class ProjectService @Inject()(
     * Returns project by ID
     */
   def getById(id: Long)(implicit account: User): SingleResult = {
-    projectDao.findById(id)
+    projectDao
+      .findById(id)
       .liftRight {
         NotFoundError.Project(id)
       }
@@ -37,19 +38,23 @@ class ProjectService @Inject()(
   /**
     * Returns projects list.
     */
-  def getList(eventId: Option[Long], groupId: Option[Long], onlyAvailable: Boolean)(implicit account: User, meta: ListMeta): ListResult = {
+  def getList(eventId: Option[Long], groupId: Option[Long], onlyAvailable: Boolean)(implicit account: User,
+                                                                                    meta: ListMeta): ListResult = {
 
-    val groupFromFilter = if (!onlyAvailable && account.role == User.Role.Admin) None.toFuture
-    else groupDao.findGroupIdsByUserId(account.id).map(Some(_))
+    val groupFromFilter =
+      if (!onlyAvailable && account.role == User.Role.Admin) None.toFuture
+      else groupDao.findGroupIdsByUserId(account.id).map(Some(_))
 
     for {
       groupFromIds <- groupFromFilter.lift
-      projects <- projectDao.getList(
-        optId = None,
-        optEventId = eventId,
-        optGroupFromIds = groupFromIds,
-        optAnyRelatedGroupId = groupId
-      ).lift
+      projects <- projectDao
+        .getList(
+          optId = None,
+          optEventId = eventId,
+          optGroupFromIds = groupFromIds,
+          optAnyRelatedGroupId = groupId
+        )
+        .lift
     } yield projects
   }
 
@@ -100,12 +105,12 @@ class ProjectService @Inject()(
     for {
       _ <- getById(id)
 
-    conflictedEntities <- getConflictedEntities.lift
-    _ <- ensure(conflictedEntities.isEmpty) {
-      ConflictError.General(Some(Project.nameSingular), conflictedEntities)
-    }
+      conflictedEntities <- getConflictedEntities.lift
+      _ <- ensure(conflictedEntities.isEmpty) {
+        ConflictError.General(Some(Project.nameSingular), conflictedEntities)
+      }
 
-     _ <- projectDao.delete(id).lift
+      _ <- projectDao.delete(id).lift
     } yield ()
   }
 }

@@ -13,7 +13,6 @@ object PaginationRequestParser {
   private val sizeQueryParamName = "size"
   private val numberQueryParamName = "number"
 
-
   /**
     * Creates pagination by query string params.
     *

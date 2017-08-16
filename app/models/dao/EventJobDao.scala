@@ -14,8 +14,7 @@ import scala.concurrent.Future
 /**
   * Component for event_job table.
   */
-trait EventJobComponent extends NotificationComponent {
-  self: HasDatabaseConfigProvider[JdbcProfile] =>
+trait EventJobComponent extends NotificationComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import driver.api._
 
@@ -54,7 +53,8 @@ trait EventJobComponent extends NotificationComponent {
         val notification = Event.NotificationTime(
           time,
           kind.getOrElse(throw new NoSuchElementException(s"missed kind in notification job for event $eventId")),
-          recipient.getOrElse(throw new NoSuchElementException(s"missed recipient in notification job for event $eventId"))
+          recipient.getOrElse(
+            throw new NoSuchElementException(s"missed recipient in notification job for event $eventId"))
         )
         EventJob.SendNotification(id, eventId, notification, status)
       case 2 =>
@@ -109,10 +109,10 @@ class EventJobDao @Inject()(
     val existedJobQuery = EventJobs
       .filter { x =>
         x.eventId === dbJob.eventId &&
-          x.time === dbJob.time &&
-          dbJob.kind.fold(x.kind.isEmpty)(k => x.kind.fold(false: Rep[Boolean])(_ === k)) &&
-          dbJob.recipient.fold(x.kind.isEmpty)(r => x.recipient.fold(false: Rep[Boolean])(_ === r)) &&
-          x.jobType === dbJob.jobType
+        x.time === dbJob.time &&
+        dbJob.kind.fold(x.kind.isEmpty)(k => x.kind.fold(false: Rep[Boolean])(_ === k)) &&
+        dbJob.recipient.fold(x.kind.isEmpty)(r => x.recipient.fold(false: Rep[Boolean])(_ === r)) &&
+        x.jobType === dbJob.jobType
       }
       .map(_.id)
       .result
@@ -130,12 +130,14 @@ class EventJobDao @Inject()(
   /**
     * Updates status.
     */
-  def updateStatus(jobId: Long, status: EventJob.Status): Future[Unit] = db.run {
-    EventJobs
-      .filter(_.id === jobId)
-      .map(_.status)
-      .update(status)
-  }.map(_ => ())
+  def updateStatus(jobId: Long, status: EventJob.Status): Future[Unit] =
+    db.run {
+        EventJobs
+          .filter(_.id === jobId)
+          .map(_.status)
+          .update(status)
+      }
+      .map(_ => ())
 
   /**
     * Return jobs filtered by given criteria.

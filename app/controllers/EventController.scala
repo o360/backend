@@ -19,7 +19,8 @@ import utils.listmeta.sorting.Sorting
 class EventController @Inject()(
   silhouette: Silhouette[DefaultEnv],
   eventService: EventService
-) extends BaseController with ListActions {
+) extends BaseController
+  with ListActions {
 
   implicit val sortingFields = Sorting.AvailableFields('id, 'start, 'end, 'description)
 
@@ -46,8 +47,8 @@ class EventController @Inject()(
       eventService
         .list(status.map(_.value), projectId, onlyAvailable)
         .map { events =>
-          Response.List(events) {
-            event => ApiEvent(event)
+          Response.List(events) { event =>
+            ApiEvent(event)
           }
         }
     }
@@ -68,30 +69,33 @@ class EventController @Inject()(
   /**
     * Updates event and returns its model.
     */
-  def update(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async(parse.json[ApiPartialEvent]) { implicit request =>
-    toResult(Ok) {
-      val draft = request.body.toModel(id)
-      eventService
-        .update(draft)
-        .map(ApiEvent(_))
-    }
+  def update(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async(parse.json[ApiPartialEvent]) {
+    implicit request =>
+      toResult(Ok) {
+        val draft = request.body.toModel(id)
+        eventService
+          .update(draft)
+          .map(ApiEvent(_))
+      }
   }
 
   /**
     * Removes event.
     */
   def delete(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
-    eventService.delete(id).fold(
-      error => toResult(error),
-      _ => NoContent
-    )
+    eventService
+      .delete(id)
+      .fold(
+        error => toResult(error),
+        _ => NoContent
+      )
   }
 
   /**
     * Clones event.
     */
   def cloneEvent(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
-    toResult(Ok){
+    toResult(Ok) {
       eventService
         .cloneEvent(id)
         .map(ApiEvent(_))

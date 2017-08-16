@@ -19,7 +19,7 @@ import testutils.generator.ProjectRelationGenerator
 import utils.errors.{ApplicationError, NotFoundError}
 import utils.listmeta.ListMeta
 
-import scalaz.{-\/, EitherT, \/, \/-}
+import scalaz.{-\/, \/, \/-, EitherT}
 
 /**
   * Test for project relation controller.
@@ -73,25 +73,27 @@ class ProjectRelationControllerTest extends BaseControllerTest with ProjectRelat
 
   "GET /relations" should {
     "return relations list from service" in {
-      forAll { (
-      projectId: Option[Long],
-      total: Int,
-      relations: Seq[Relation]
-      ) =>
-        val env = fakeEnvironment(admin)
-        val fixture = getFixture(env)
-        when(fixture.projectServiceMock.getList(projectId)(admin, ListMeta.default))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(ListWithTotal(total, relations)): ApplicationError \/ ListWithTotal[Relation])))
-        val request = authenticated(FakeRequest(), env)
+      forAll {
+        (
+          projectId: Option[Long],
+          total: Int,
+          relations: Seq[Relation]
+        ) =>
+          val env = fakeEnvironment(admin)
+          val fixture = getFixture(env)
+          when(fixture.projectServiceMock.getList(projectId)(admin, ListMeta.default))
+            .thenReturn(EitherT.eitherT(
+              toFuture(\/-(ListWithTotal(total, relations)): ApplicationError \/ ListWithTotal[Relation])))
+          val request = authenticated(FakeRequest(), env)
 
-        val response = fixture.controller.getList(projectId)(request)
+          val response = fixture.controller.getList(projectId)(request)
 
-        status(response) mustBe OK
-        val relationsJson = contentAsJson(response)
-        val expectedJson = Json.toJson(
-          Response.List(Response.Meta(total, ListMeta.default), relations.map(ApiRelation(_)))
-        )
-        relationsJson mustBe expectedJson
+          status(response) mustBe OK
+          val relationsJson = contentAsJson(response)
+          val expectedJson = Json.toJson(
+            Response.List(Response.Meta(total, ListMeta.default), relations.map(ApiRelation(_)))
+          )
+          relationsJson mustBe expectedJson
       }
     }
     "return forbidden for non admin user" in {
@@ -138,8 +140,7 @@ class ProjectRelationControllerTest extends BaseControllerTest with ProjectRelat
       relation.form.id,
       ApiRelation.Kind(relation.kind),
       relation.templates.map(t =>
-        ApiPartialTemplateBinding(t.template.id, ApiNotificationKind(t.kind), ApiNotificationRecipient(t.recipient))
-      ),
+        ApiPartialTemplateBinding(t.template.id, ApiNotificationKind(t.kind), ApiNotificationRecipient(t.recipient))),
       relation.canSelfVote
     )
   }

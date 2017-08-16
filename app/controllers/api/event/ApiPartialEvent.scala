@@ -19,6 +19,7 @@ case class ApiPartialEvent(
   end: LocalDateTime,
   notifications: Seq[ApiEvent.NotificationTime]
 ) {
+
   /**
     * Converts api model to model.
     *
@@ -39,5 +40,5 @@ object ApiPartialEvent {
       (__ \ "start").read[LocalDateTime] and
       (__ \ "end").read[LocalDateTime] and
       (__ \ "notifications").read[Seq[ApiEvent.NotificationTime]]
-    ) (ApiPartialEvent.apply _)
+  )(ApiPartialEvent.apply _)
 }

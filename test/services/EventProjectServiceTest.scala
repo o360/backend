@@ -5,11 +5,11 @@ import models.event.Event
 import models.project.Project
 import org.mockito.ArgumentMatchers.{eq => eqTo}
 import org.mockito.Mockito._
-import testutils.fixture.{UserFixture, EventProjectFixture}
+import testutils.fixture.{EventProjectFixture, UserFixture}
 import testutils.generator.TristateGenerator
 import utils.errors.{ApplicationError, NotFoundError}
 
-import scalaz.{-\/, EitherT, \/, \/-}
+import scalaz.{-\/, \/, \/-, EitherT}
 
 /**
   * Test for project-event service.
@@ -22,7 +22,8 @@ class EventProjectServiceTest extends BaseServiceTest with TristateGenerator wit
     eventProjectDaoMock: EventProjectDao,
     projectServiceMock: ProjectService,
     eventServiceMock: EventService,
-    service: EventProjectService)
+    service: EventProjectService
+  )
 
   private def getFixture = {
     val eventProjectDao = mock[EventProjectDao]
@@ -49,9 +50,9 @@ class EventProjectServiceTest extends BaseServiceTest with TristateGenerator wit
       forAll { (eventId: Long, projectId: Long) =>
         val fixture = getFixture
         when(fixture.projectServiceMock.getById(projectId)(admin))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(Projects(0)):  ApplicationError \/ Project)))
+          .thenReturn(EitherT.eitherT(toFuture(\/-(Projects(0)): ApplicationError \/ Project)))
         when(fixture.eventServiceMock.getById(eventId)(admin))
-          .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Event(eventId)):  ApplicationError \/ Event)))
+          .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Event(eventId)): ApplicationError \/ Event)))
         val result = wait(fixture.service.add(eventId, projectId)(admin).run)
 
         result mustBe 'left
@@ -63,9 +64,9 @@ class EventProjectServiceTest extends BaseServiceTest with TristateGenerator wit
       forAll { (eventId: Long, projectId: Long) =>
         val fixture = getFixture
         when(fixture.projectServiceMock.getById(projectId)(admin))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(Projects(0)):  ApplicationError \/ Project)))
+          .thenReturn(EitherT.eitherT(toFuture(\/-(Projects(0)): ApplicationError \/ Project)))
         when(fixture.eventServiceMock.getById(eventId)(admin))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(Events(0)):  ApplicationError \/ Event)))
+          .thenReturn(EitherT.eitherT(toFuture(\/-(Events(0)): ApplicationError \/ Event)))
 
         when(fixture.eventProjectDaoMock.exists(eventId = eqTo(Some(eventId)), projectId = eqTo(Some(projectId))))
           .thenReturn(toFuture(true))
@@ -80,9 +81,9 @@ class EventProjectServiceTest extends BaseServiceTest with TristateGenerator wit
       forAll { (eventId: Long, projectId: Long) =>
         val fixture = getFixture
         when(fixture.projectServiceMock.getById(projectId)(admin))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(Projects(0)):  ApplicationError \/ Project)))
+          .thenReturn(EitherT.eitherT(toFuture(\/-(Projects(0)): ApplicationError \/ Project)))
         when(fixture.eventServiceMock.getById(eventId)(admin))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(Events(0)):  ApplicationError \/ Event)))
+          .thenReturn(EitherT.eitherT(toFuture(\/-(Events(0)): ApplicationError \/ Event)))
         when(fixture.eventProjectDaoMock.exists(eventId = eqTo(Some(eventId)), projectId = eqTo(Some(projectId))))
           .thenReturn(toFuture(false))
         when(fixture.eventProjectDaoMock.add(eventId, projectId)).thenReturn(toFuture(()))
@@ -100,7 +101,7 @@ class EventProjectServiceTest extends BaseServiceTest with TristateGenerator wit
       forAll { (eventId: Long, projectId: Long) =>
         val fixture = getFixture
         when(fixture.projectServiceMock.getById(projectId)(admin))
-          .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Project(projectId)):  ApplicationError \/ Project)))
+          .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Project(projectId)): ApplicationError \/ Project)))
         val result = wait(fixture.service.remove(eventId, projectId)(admin).run)
 
         result mustBe 'left
@@ -112,9 +113,9 @@ class EventProjectServiceTest extends BaseServiceTest with TristateGenerator wit
       forAll { (eventId: Long, projectId: Long) =>
         val fixture = getFixture
         when(fixture.projectServiceMock.getById(projectId)(admin))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(Projects(0)):  ApplicationError \/ Project)))
+          .thenReturn(EitherT.eitherT(toFuture(\/-(Projects(0)): ApplicationError \/ Project)))
         when(fixture.eventServiceMock.getById(eventId)(admin))
-          .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Event(eventId)):  ApplicationError \/ Event)))
+          .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Event(eventId)): ApplicationError \/ Event)))
         val result = wait(fixture.service.remove(eventId, projectId)(admin).run)
 
         result mustBe 'left
@@ -126,9 +127,9 @@ class EventProjectServiceTest extends BaseServiceTest with TristateGenerator wit
       forAll { (eventId: Long, projectId: Long) =>
         val fixture = getFixture
         when(fixture.projectServiceMock.getById(projectId)(admin))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(Projects(0)):  ApplicationError \/ Project)))
+          .thenReturn(EitherT.eitherT(toFuture(\/-(Projects(0)): ApplicationError \/ Project)))
         when(fixture.eventServiceMock.getById(eventId)(admin))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(Events(0)):  ApplicationError \/ Event)))
+          .thenReturn(EitherT.eitherT(toFuture(\/-(Events(0)): ApplicationError \/ Event)))
         when(fixture.eventProjectDaoMock.remove(eventId, projectId)).thenReturn(toFuture(()))
         val result = wait(fixture.service.remove(eventId, projectId)(admin).run)
 
@@ -138,4 +139,3 @@ class EventProjectServiceTest extends BaseServiceTest with TristateGenerator wit
     }
   }
 }
-

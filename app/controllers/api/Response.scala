@@ -32,6 +32,7 @@ object Response {
       * Error additional info.
       */
     sealed trait AdditionalInfo {
+
       /**
         * Converts additional info to JsObject.
         */
@@ -39,36 +40,44 @@ object Response {
     }
 
     object AdditionalInfo {
+
       /**
         * List of conflicted dependencies.
         */
       case class ConflictDependencies(values: Map[String, Seq[ApiNamedEntity]]) extends AdditionalInfo {
-        def toJson: JsObject = JsObject(Seq("conflicts" -> JsObject(
-          values.mapValues(x => JsArray(x.map(Json.toJson(_))))
-        )))
+        def toJson: JsObject =
+          JsObject(
+            Seq(
+              "conflicts" -> JsObject(
+                values.mapValues(x => JsArray(x.map(Json.toJson(_))))
+              )))
       }
 
       case class UserFormInfo(userId: Option[Long], formId: Long) extends AdditionalInfo {
-        def toJson: JsObject = JsObject(Seq(
-          "userId" -> Json.toJson(userId),
-          "formId" -> Json.toJson(formId)
-        ))
+        def toJson: JsObject =
+          JsObject(
+            Seq(
+              "userId" -> Json.toJson(userId),
+              "formId" -> Json.toJson(formId)
+            ))
       }
     }
 
     implicit val writes = new Writes[Error] {
       override def writes(o: Error): JsValue = {
-        var errorJs = JsObject(Seq(
-          "code" -> JsString(o.code),
-          "message" -> JsString(o.message)
-        ))
+        var errorJs = JsObject(
+          Seq(
+            "code" -> JsString(o.code),
+            "message" -> JsString(o.message)
+          ))
 
         o.additionalInfo.map(_.toJson).foreach(errorJs ++= _)
 
         o.inner.foreach { innerErrors =>
-          errorJs ++= JsObject(Seq(
-            "inner" -> JsArray(innerErrors.map(Json.toJson(_)(this)))
-          ))
+          errorJs ++= JsObject(
+            Seq(
+              "inner" -> JsArray(innerErrors.map(Json.toJson(_)(this)))
+            ))
         }
 
         errorJs
@@ -85,10 +94,12 @@ object Response {
   case class List[A](meta: Meta, data: Seq[A]) extends Response
   object List {
     implicit def writes[A](implicit inner: Writes[A]) = new Writes[List[A]] {
-      override def writes(o: List[A]) = JsObject(Seq(
-        "data" -> JsArray(o.data.map(Json.toJson(_))),
-        "meta" -> Json.toJson(o.meta)(Meta.writes)
-      ))
+      override def writes(o: List[A]) =
+        JsObject(
+          Seq(
+            "data" -> JsArray(o.data.map(Json.toJson(_))),
+            "meta" -> Json.toJson(o.meta)(Meta.writes)
+          ))
     }
 
     /**

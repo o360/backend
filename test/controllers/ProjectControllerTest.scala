@@ -19,7 +19,7 @@ import testutils.generator.ProjectGenerator
 import utils.errors.{ApplicationError, NotFoundError}
 import utils.listmeta.ListMeta
 
-import scalaz.{-\/, EitherT, \/, \/-}
+import scalaz.{-\/, \/, \/-, EitherT}
 
 /**
   * Test for projects controller.
@@ -73,27 +73,29 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
 
   "GET /projects" should {
     "return projects list from service" in {
-      forAll { (
-      eventId: Option[Long],
-      groupId: Option[Long],
-      onlyAvaiable: Boolean,
-      total: Int,
-      projects: Seq[Project]
-      ) =>
-        val env = fakeEnvironment(admin)
-        val fixture = getFixture(env)
-        when(fixture.projectServiceMock.getList(eventId, groupId, onlyAvaiable)(admin, ListMeta.default))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(ListWithTotal(total, projects)): ApplicationError \/ ListWithTotal[Project])))
-        val request = authenticated(FakeRequest(), env)
+      forAll {
+        (
+          eventId: Option[Long],
+          groupId: Option[Long],
+          onlyAvaiable: Boolean,
+          total: Int,
+          projects: Seq[Project]
+        ) =>
+          val env = fakeEnvironment(admin)
+          val fixture = getFixture(env)
+          when(fixture.projectServiceMock.getList(eventId, groupId, onlyAvaiable)(admin, ListMeta.default))
+            .thenReturn(EitherT.eitherT(
+              toFuture(\/-(ListWithTotal(total, projects)): ApplicationError \/ ListWithTotal[Project])))
+          val request = authenticated(FakeRequest(), env)
 
-        val response = fixture.controller.getList(eventId, groupId, onlyAvaiable)(request)
+          val response = fixture.controller.getList(eventId, groupId, onlyAvaiable)(request)
 
-        status(response) mustBe OK
-        val projectsJson = contentAsJson(response)
-        val expectedJson = Json.toJson(
-          Response.List(Response.Meta(total, ListMeta.default), projects.map(ApiProject(_)(UserFixture.admin)))
-        )
-        projectsJson mustBe expectedJson
+          status(response) mustBe OK
+          val projectsJson = contentAsJson(response)
+          val expectedJson = Json.toJson(
+            Response.List(Response.Meta(total, ListMeta.default), projects.map(ApiProject(_)(UserFixture.admin)))
+          )
+          projectsJson mustBe expectedJson
       }
     }
   }

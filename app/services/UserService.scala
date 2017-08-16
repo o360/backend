@@ -83,13 +83,15 @@ class UserService @Inject()(
     groupId: Tristate[Long],
     name: Option[String]
   )(implicit account: UserModel, meta: ListMeta): ListResult = {
-    userDao.getList(
-      optIds = None,
-      optRole = role,
-      optStatus = status,
-      optGroupIds = groupId.map(Seq(_)),
-      optName = name
-    ).lift
+    userDao
+      .getList(
+        optIds = None,
+        optRole = role,
+        optStatus = status,
+        optGroupIds = groupId.map(Seq(_)),
+        optName = name
+      )
+      .lift
   }
 
   /**
@@ -176,16 +178,18 @@ class UserService @Inject()(
     * @param groupIds IDS of the groups to get users for
     */
   def getGroupIdToUsersMap(groupIds: Seq[Long], includeDeleted: Boolean): Future[Map[Long, Seq[UserModel]]] = {
-    Future.sequence {
-      groupIds.map { groupId =>
-        listByGroupId(groupId, includeDeleted)
-          .map(_.data)
-          .run
-          .map { maybeUsers =>
-            val users = maybeUsers.getOrElse(Nil)
-            (groupId, users)
-          }
+    Future
+      .sequence {
+        groupIds.map { groupId =>
+          listByGroupId(groupId, includeDeleted)
+            .map(_.data)
+            .run
+            .map { maybeUsers =>
+              val users = maybeUsers.getOrElse(Nil)
+              (groupId, users)
+            }
+        }
       }
-    }.map(_.toMap)
+      .map(_.toMap)
   }
 }

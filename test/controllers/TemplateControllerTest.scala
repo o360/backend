@@ -20,7 +20,7 @@ import testutils.generator.TemplateGenerator
 import utils.errors.{ApplicationError, NotFoundError}
 import utils.listmeta.ListMeta
 
-import scalaz.{-\/, EitherT, \/, \/-}
+import scalaz.{-\/, \/, \/-, EitherT}
 
 /**
   * Test for templates controller.
@@ -74,28 +74,29 @@ class TemplateControllerTest extends BaseControllerTest with TemplateGenerator {
 
   "GET /templates" should {
     "return templates list from service" in {
-      forAll { (
-      kind: Option[Notification.Kind],
-      recipient: Option[Notification.Recipient],
-      total: Int,
-      templates: Seq[Template]
-      ) =>
-        val env = fakeEnvironment(admin)
-        val fixture = getFixture(env)
-        when(fixture.templateServiceMock.getList(kind, recipient)(admin, ListMeta.default))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(ListWithTotal(total, templates)): ApplicationError \/ ListWithTotal[Template])))
-        val request = authenticated(FakeRequest(), env)
+      forAll {
+        (
+          kind: Option[Notification.Kind],
+          recipient: Option[Notification.Recipient],
+          total: Int,
+          templates: Seq[Template]
+        ) =>
+          val env = fakeEnvironment(admin)
+          val fixture = getFixture(env)
+          when(fixture.templateServiceMock.getList(kind, recipient)(admin, ListMeta.default))
+            .thenReturn(EitherT.eitherT(
+              toFuture(\/-(ListWithTotal(total, templates)): ApplicationError \/ ListWithTotal[Template])))
+          val request = authenticated(FakeRequest(), env)
 
-        val response = fixture.controller.getList(
-          kind.map(ApiNotificationKind(_)),
-          recipient.map(ApiNotificationRecipient(_)))(request)
+          val response = fixture.controller.getList(kind.map(ApiNotificationKind(_)),
+                                                    recipient.map(ApiNotificationRecipient(_)))(request)
 
-        status(response) mustBe OK
-        val templatesJson = contentAsJson(response)
-        val expectedJson = Json.toJson(
-          Response.List(Response.Meta(total, ListMeta.default), templates.map(ApiTemplate(_)))
-        )
-        templatesJson mustBe expectedJson
+          status(response) mustBe OK
+          val templatesJson = contentAsJson(response)
+          val expectedJson = Json.toJson(
+            Response.List(Response.Meta(total, ListMeta.default), templates.map(ApiTemplate(_)))
+          )
+          templatesJson mustBe expectedJson
       }
     }
     "return forbidden for non admin user" in {

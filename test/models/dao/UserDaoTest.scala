@@ -8,39 +8,40 @@ import testutils.generator.{TristateGenerator, UserGenerator}
 
 class UserDaoTest
   extends BaseDaoTest
-    with UserFixture
-    with UserLoginFixture
-    with UserGroupFixture
-    with UserGenerator
-    with TristateGenerator {
+  with UserFixture
+  with UserLoginFixture
+  with UserGroupFixture
+  with UserGenerator
+  with TristateGenerator {
 
   private val dao = inject[UserDao]
 
   "get" should {
     "return users by specific criteria" in {
-      forAll(
-        Gen.option(Gen.choose(-1L, 5L)),
-        Gen.option(roleArbitrary.arbitrary),
-        Gen.option(statusArbitrary.arbitrary)) { (
-      id: Option[Long],
-      role: Option[UserModel.Role],
-      status: Option[UserModel.Status]
-      ) =>
-        val users = wait(dao.getList(id.map(Seq(_)), role, status))
-        val expectedUsers =
-          Users.filter(u => id.forall(_ == u.id) && role.forall(_ == u.role) && status.forall(_ == u.status))
-        users.total mustBe expectedUsers.length
-        users.data must contain theSameElementsAs expectedUsers
+      forAll(Gen.option(Gen.choose(-1L, 5L)),
+             Gen.option(roleArbitrary.arbitrary),
+             Gen.option(statusArbitrary.arbitrary)) {
+        (
+          id: Option[Long],
+          role: Option[UserModel.Role],
+          status: Option[UserModel.Status]
+        ) =>
+          val users = wait(dao.getList(id.map(Seq(_)), role, status))
+          val expectedUsers =
+            Users.filter(u => id.forall(_ == u.id) && role.forall(_ == u.role) && status.forall(_ == u.status))
+          users.total mustBe expectedUsers.length
+          users.data must contain theSameElementsAs expectedUsers
       }
     }
 
     "return users filtered by group" in {
       forAll { (groupId: Tristate[Long]) =>
         val users = wait(dao.getList(optGroupIds = groupId.map(Seq(_))))
-        val expectedUsers = Users.filter(u => groupId match {
-          case Tristate.Unspecified => true
-          case Tristate.Absent => !UserGroups.map(_._1).contains(u.id)
-          case Tristate.Present(gid) => UserGroups.filter(_._2 == gid).map(_._1).contains(u.id)
+        val expectedUsers = Users.filter(u =>
+          groupId match {
+            case Tristate.Unspecified => true
+            case Tristate.Absent => !UserGroups.map(_._1).contains(u.id)
+            case Tristate.Present(gid) => UserGroups.filter(_._2 == gid).map(_._1).contains(u.id)
         })
 
         users.data must contain theSameElementsAs expectedUsers

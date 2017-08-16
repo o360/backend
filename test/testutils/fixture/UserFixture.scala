@@ -8,11 +8,22 @@ import models.user.User
 /**
   * User's model fixture.
   */
-trait UserFixture extends FixtureHelper {
-  self: FixtureSupport =>
+trait UserFixture extends FixtureHelper { self: FixtureSupport =>
   val Users = Seq(
-    User(1, Some("adminname"), Some("admin@email.com"), Some(User.Gender.Male), User.Role.Admin, User.Status.Approved, ZoneOffset.UTC),
-    User(2, Some("username"), Some("user@email.com"), Some(User.Gender.Female), User.Role.User, User.Status.Approved, ZoneOffset.of("+07")),
+    User(1,
+         Some("adminname"),
+         Some("admin@email.com"),
+         Some(User.Gender.Male),
+         User.Role.Admin,
+         User.Status.Approved,
+         ZoneOffset.UTC),
+    User(2,
+         Some("username"),
+         Some("user@email.com"),
+         Some(User.Gender.Female),
+         User.Role.User,
+         User.Status.Approved,
+         ZoneOffset.of("+07")),
     User(3, Some("newuser"), Some("newuser@email.com"), None, User.Role.User, User.Status.New, ZoneOffset.UTC)
   )
 

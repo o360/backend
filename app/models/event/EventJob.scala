@@ -6,6 +6,7 @@ import java.sql.Timestamp
   * Job for event.
   */
 trait EventJob {
+
   /**
     * Job ID.
     */
@@ -15,6 +16,7 @@ trait EventJob {
     * Fire time.
     */
   def time: Timestamp
+
   /**
     * Id of event.
     */
@@ -38,18 +40,22 @@ object EventJob {
     */
   trait Status
   object Status {
+
     /**
       * New job.
       */
     case object New extends Status
+
     /**
       * Job completed successfully.
       */
     case object Success extends Status
+
     /**
       * Job completed with failure.
       */
     case object Failure extends Status
+
     /**
       * Job cancelled.
       */
@@ -73,7 +79,8 @@ object EventJob {
   /**
     * Send event notifications to email.
     */
-  case class SendNotification(id: Long, eventId: Long, notification: Event.NotificationTime, status: Status) extends EventJob {
+  case class SendNotification(id: Long, eventId: Long, notification: Event.NotificationTime, status: Status)
+    extends EventJob {
     override def copyWith(id: Long = id, eventId: Long = eventId, status: EventJob.Status = status): EventJob = {
       copy(id = id, eventId = eventId, status = status)
     }

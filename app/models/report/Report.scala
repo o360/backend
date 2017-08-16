@@ -16,6 +16,7 @@ case class Report(
 )
 
 object Report {
+
   /**
     * Report for single form.
     *

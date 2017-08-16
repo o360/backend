@@ -12,13 +12,12 @@ import testutils.fixture.{FormFixture, ProjectFixture, UserFixture}
 import utils.errors.ApplicationError
 import utils.listmeta.ListMeta
 
-import scalaz.{EitherT, \/, \/-}
+import scalaz.{\/, \/-, EitherT}
 
 /**
   * Test for report service.
   */
 class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixture with ProjectFixture {
-
 
   private case class Fixture(
     userService: UserService,
@@ -67,15 +66,16 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
         Set(Answer.Element(freezedForm.elements(0).id, Some("text"), None))
       )
 
-      when(fixture.relationDao.getList(
-        optId = any[Option[Long]],
-        optProjectId = eqTo(Some(projectId)),
-        optKind = any[Option[Relation.Kind]],
-        optFormId = any[Option[Long]],
-        optGroupFromId = any[Option[Long]],
-        optGroupToId = any[Option[Long]],
-        optEmailTemplateId = any[Option[Long]]
-      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Seq(relation))))
+      when(
+        fixture.relationDao.getList(
+          optId = any[Option[Long]],
+          optProjectId = eqTo(Some(projectId)),
+          optKind = any[Option[Relation.Kind]],
+          optFormId = any[Option[Long]],
+          optGroupFromId = any[Option[Long]],
+          optGroupToId = any[Option[Long]],
+          optEmailTemplateId = any[Option[Long]]
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Seq(relation))))
 
       when(fixture.userService.getGroupIdToUsersMap(Seq(groupFromId, groupToId), true))
         .thenReturn(toFuture(Map(groupFromId -> Seq(userFrom), groupToId -> Seq(userTo))))
@@ -89,15 +89,18 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
       val result = wait(fixture.service.getReport(eventId, projectId))
 
       val expectedResult =
-        Seq(Report(
-          Some(userTo),
-          Seq(Report.FormReport(
-            freezedForm,
-            Seq(
-              Report.FormElementReport(freezedForm.elements(0),
-                Seq(Report.FormElementAnswerReport(userFrom, answer.answers.head, false))),
-              Report.FormElementReport(freezedForm.elements(1), Seq())
-            )))))
+        Seq(
+          Report(
+            Some(userTo),
+            Seq(Report.FormReport(
+              freezedForm,
+              Seq(
+                Report.FormElementReport(freezedForm.elements(0),
+                                         Seq(Report.FormElementAnswerReport(userFrom, answer.answers.head, false))),
+                Report.FormElementReport(freezedForm.elements(1), Seq())
+              )
+            ))
+          ))
 
       result mustBe expectedResult
     }
@@ -125,24 +128,31 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
       val report =
         Report(
           Some(userTo),
-          Seq(Report.FormReport(
-            form,
-            elementsWithAnswers.map { case (element, answerElement) =>
-              Report.FormElementReport(element, Seq(Report.FormElementAnswerReport(userFrom, answerElement, false)))
-            }
-          )))
+          Seq(
+            Report.FormReport(
+              form,
+              elementsWithAnswers.map {
+                case (element, answerElement) =>
+                  Report.FormElementReport(element,
+                                           Seq(Report.FormElementAnswerReport(userFrom, answerElement, false)))
+              }
+            ))
+        )
 
       val result = fixture.service.getAggregatedReport(report)
 
       val expectedResult = AggregatedReport(
         Some(userTo),
-        Seq(AggregatedReport.FormAnswer(
-          form,
-          Seq(
-            AggregatedReport.FormElementAnswer(form.elements(0), "total: 1"),
-            AggregatedReport.FormElementAnswer(form.elements(1), """"true" - 1 (100.00%)"""),
-            AggregatedReport.FormElementAnswer(form.elements(2), """"radioval" - 1 (100.00%)""")
-          ))))
+        Seq(
+          AggregatedReport.FormAnswer(
+            form,
+            Seq(
+              AggregatedReport.FormElementAnswer(form.elements(0), "total: 1"),
+              AggregatedReport.FormElementAnswer(form.elements(1), """"true" - 1 (100.00%)"""),
+              AggregatedReport.FormElementAnswer(form.elements(2), """"radioval" - 1 (100.00%)""")
+            )
+          ))
+      )
 
       result mustBe expectedResult
     }

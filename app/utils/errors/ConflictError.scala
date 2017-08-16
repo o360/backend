@@ -32,15 +32,14 @@ object ConflictError {
     logMessage: Option[String] = None,
     errorText: Option[String] = None
   ) extends ConflictError(
-    s"CONFLICT-${entityName.map(_.toUpperCase + "-").getOrElse("")}GENERAL",
-    errorText.getOrElse("Integrity violation"),
-    logMessage,
-    conflicted
-  )
+      s"CONFLICT-${entityName.map(_.toUpperCase + "-").getOrElse("")}GENERAL",
+      errorText.getOrElse("Integrity violation"),
+      logMessage,
+      conflicted
+    )
 
   object Group {
-    case class ParentId(id: Long)
-      extends ConflictError("CONFLICT-GROUP-1", s"Group id:$id can't be parent to itself")
+    case class ParentId(id: Long) extends ConflictError("CONFLICT-GROUP-1", s"Group id:$id can't be parent to itself")
 
     case class CircularReference(id: Long, parentId: Long)
       extends ConflictError("CONFLICT-GROUP-2", s"Can't set parentId:$parentId in group id:$id. Circular reference")
@@ -61,7 +60,8 @@ object ConflictError {
 
     case class FormKind(action: String) extends ConflictError("CONFLICT-FORM-5", s"Can't $action.")
 
-    case object MissedValuesInLikeDislike extends ConflictError("CONFLICT-FORM-6", "Wrong values for likedislike element")
+    case object MissedValuesInLikeDislike
+      extends ConflictError("CONFLICT-FORM-6", "Wrong values for likedislike element")
   }
 
   object Project {
@@ -79,13 +79,15 @@ object ConflictError {
   }
 
   object Assessment {
-    case object WrongParameters extends ConflictError("CONFLICT-ASSESSMENT-1", "Can't find relation matched user and form ids")
+    case object WrongParameters
+      extends ConflictError("CONFLICT-ASSESSMENT-1", "Can't find relation matched user and form ids")
 
     case object CantRevote extends ConflictError("CONFLICT-ASSESSMENT-2", "Revoting is forbidden")
   }
 
   object Invite {
-    case class UserAlreadyRegistered(email: String) extends ConflictError("CONFLICT-INVITE-1", s"User $email already registered")
+    case class UserAlreadyRegistered(email: String)
+      extends ConflictError("CONFLICT-INVITE-1", s"User $email already registered")
 
     case object UserAlreadyApproved extends ConflictError("CONFLICT-INVITE-2", s"User already approved")
 

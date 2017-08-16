@@ -45,19 +45,18 @@ class AnswerDaoTest extends BaseDaoTest with AnswerFixture with AnswerGenerator 
 
   "saveAnswer" should {
     "saveAnswer in DB" in {
-      forAll(Gen.choose[Long](1, 4), Gen.nonEmptyListOf(Gen.choose[Long](1, 4)), answerFormArb.arbitrary) { (
-      elementId: Long,
-      elementValueIds: Seq[Long],
-      answer: Answer.Form) =>
-        val preparedAnswer = answer.copy(
-          answers = answer.answers.map(_.copy(elementId = elementId, valuesIds = Some(elementValueIds.toSet))),
-          form = NamedEntity(1))
+      forAll(Gen.choose[Long](1, 4), Gen.nonEmptyListOf(Gen.choose[Long](1, 4)), answerFormArb.arbitrary) {
+        (elementId: Long, elementValueIds: Seq[Long], answer: Answer.Form) =>
+          val preparedAnswer =
+            answer.copy(answers =
+                          answer.answers.map(_.copy(elementId = elementId, valuesIds = Some(elementValueIds.toSet))),
+                        form = NamedEntity(1))
 
-        val result = wait(dao.saveAnswer(1, 1, 1, None, preparedAnswer, "", ""))
-        val answerFromDb = wait(dao.getAnswer(1, 1, 1, None, 1))
+          val result = wait(dao.saveAnswer(1, 1, 1, None, preparedAnswer, "", ""))
+          val answerFromDb = wait(dao.getAnswer(1, 1, 1, None, 1))
 
-        answerFromDb mustBe defined
-        result mustBe answerFromDb.get
+          answerFromDb mustBe defined
+          result mustBe answerFromDb.get
       }
     }
   }

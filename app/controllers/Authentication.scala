@@ -37,7 +37,6 @@ class Authentication @Inject()(
     * @return JWT token
     */
   def auth(provider: String) = Action.async { implicit request =>
-
     def retrieveToken(
       p: SocialProvider,
       authResult: Either[Result, SocialProvider#A]

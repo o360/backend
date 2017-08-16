@@ -16,15 +16,18 @@ import utils.implicits.FutureLifting._
 class EventJobController @Inject()(
   silhouette: Silhouette[DefaultEnv],
   eventJobService: EventJobService
-) extends BaseController with ListActions {
+) extends BaseController
+  with ListActions {
 
   /**
     * Restarts failed job.
     */
   def restart(jobId: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
-    eventJobService.runFailedJob(jobId).fold(
-      toResult(_),
-      _ => NoContent
-    )
+    eventJobService
+      .runFailedJob(jobId)
+      .fold(
+        toResult(_),
+        _ => NoContent
+      )
   }
 }

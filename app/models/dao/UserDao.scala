@@ -18,8 +18,7 @@ import scala.util.Try
 /**
   * Component for 'user_login' table.
   */
-trait UserLoginComponent {
-  self: HasDatabaseConfigProvider[JdbcProfile] =>
+trait UserLoginComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import driver.api._
 
@@ -36,11 +35,11 @@ trait UserLoginComponent {
 
   val UserLogins = TableQuery[UserLoginTable]
 }
+
 /**
   * Component for user_meta table.
   */
-trait UserMetaComponent {
-  self: HasDatabaseConfigProvider[JdbcProfile] =>
+trait UserMetaComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import driver.api._
 
@@ -59,8 +58,7 @@ trait UserMetaComponent {
 /**
   * Component for 'account' table.
   */
-trait UserComponent extends Logger {
-  self: HasDatabaseConfigProvider[JdbcProfile] =>
+trait UserComponent extends Logger { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import driver.api._
 
@@ -172,7 +170,6 @@ class UserDao @Inject()(
     getList(optIds = Some(Seq(id))).map(_.data.headOption)
   }
 
-
   /**
     * Returns list of users, filtered by given criteria.
     */
@@ -216,8 +213,8 @@ class UserDao @Inject()(
         )
       }
 
-    runListQuery(query) {
-      user => {
+    runListQuery(query) { user =>
+      {
         case 'id => user.id
         case 'name => user.name
         case 'email => user.email
@@ -236,12 +233,15 @@ class UserDao @Inject()(
     */
   def findByProvider(providerId: String, providerKey: String): Future[Option[User]] = db.run {
     Users
-      .join(UserLogins).on(_.id === _.userId)
-      .filter { case (user, userLogin) =>
-        userLogin.providerId === providerId && userLogin.providerKey === providerKey
+      .join(UserLogins)
+      .on(_.id === _.userId)
+      .filter {
+        case (user, userLogin) =>
+          userLogin.providerId === providerId && userLogin.providerKey === providerKey
       }
-      .map { case (user, userLogin) =>
-        user
+      .map {
+        case (user, userLogin) =>
+          user
       }
       .result
       .headOption

@@ -17,4 +17,3 @@ case class ApiEventExport(
 object ApiEventExport {
   implicit val writes = Json.writes[ApiEventExport]
 }
-

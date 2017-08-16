@@ -20,7 +20,7 @@ import utils.Config
   */
 class SilhouetteModule extends AbstractModule {
   override def configure(): Unit = {
-    bind(new TypeLiteral[Silhouette[DefaultEnv]](){}).to(new TypeLiteral[SilhouetteProvider[DefaultEnv]](){})
+    bind(new TypeLiteral[Silhouette[DefaultEnv]]() {}).to(new TypeLiteral[SilhouetteProvider[DefaultEnv]]() {})
     bind(classOf[EventBus]).toInstance(EventBus())
     bind(classOf[OAuth2StateProvider]).to(classOf[DummyStateProvider])
   }
@@ -65,7 +65,7 @@ class SilhouetteModule extends AbstractModule {
     val oauthConfig = OAuth2Settings(
       accessTokenURL = config.googleSettings.accessTokenUrl,
       redirectURL = config.googleSettings.redirectUrl,
-      clientID =config.googleSettings.clientId,
+      clientID = config.googleSettings.clientId,
       clientSecret = config.googleSettings.clientSecret,
       scope = config.googleSettings.scope
     )

@@ -8,4 +8,6 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.1.5")
 
 addSbtPlugin("org.flywaydb" % "flyway-sbt" % "4.1.2")
 
+addSbtPlugin("com.lucidchart" % "sbt-scalafmt" % "1.10")
+
 resolvers += "Flyway" at "https://flywaydb.org/repo"

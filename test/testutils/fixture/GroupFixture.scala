@@ -3,12 +3,10 @@ package testutils.fixture
 import com.ninja_squad.dbsetup.Operations._
 import models.group.{Group => GroupModel}
 
-
 /**
   * Groups fixture.
   */
-trait GroupFixture extends FixtureHelper {
-  self: FixtureSupport =>
+trait GroupFixture extends FixtureHelper { self: FixtureSupport =>
 
   val Groups = Seq(
     GroupModel(1, None, "1", hasChildren = false, level = 0),
