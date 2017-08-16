@@ -19,12 +19,14 @@ import utils.listmeta.ListMeta
 class AssessmentController @Inject()(
   silhouette: Silhouette[DefaultEnv],
   assessmentService: AssessmentService
-) extends BaseController with ListActions {
+) extends BaseController
+  with ListActions {
 
   /**
     * Returns list of available assessmnet objects.
     */
-  def getList(eventId: Long, projectId: Long) = silhouette.SecuredAction(AllowedStatus.approved).async { implicit request =>
+  def getList(eventId: Long, projectId: Long) = silhouette.SecuredAction(AllowedStatus.approved).async {
+    implicit request =>
       toResult(Ok) {
         assessmentService
           .getList(eventId, projectId)
@@ -32,7 +34,7 @@ class AssessmentController @Inject()(
             Response.List(assessmentObjects)(ApiAssessment(_))(ListMeta.default)
           }
       }
-    }
+  }
 
   /**
     * Submits form answer for given event and project ids.
@@ -40,18 +42,22 @@ class AssessmentController @Inject()(
   def submit(eventId: Long, projectId: Long) =
     silhouette.SecuredAction(AllowedStatus.approved).async(parse.json[ApiPartialAssessment]) { implicit request =>
       val model = request.body.toModel
-      assessmentService.bulkSubmit(eventId, projectId, Seq(model)).fold(
-        error => toResult(error),
-        _ => NoContent
-      )
-  }
+      assessmentService
+        .bulkSubmit(eventId, projectId, Seq(model))
+        .fold(
+          error => toResult(error),
+          _ => NoContent
+        )
+    }
 
   def bulkSubmit(eventId: Long, projectId: Long) =
     silhouette.SecuredAction(AllowedStatus.approved).async(parse.json[Seq[ApiPartialAssessment]]) { implicit request =>
       val model = request.body.map(_.toModel)
-      assessmentService.bulkSubmit(eventId, projectId, model).fold(
-        error => toResult(error),
-        _ => NoContent
-      )
+      assessmentService
+        .bulkSubmit(eventId, projectId, model)
+        .fold(
+          error => toResult(error),
+          _ => NoContent
+        )
     }
 }

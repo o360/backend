@@ -3,7 +3,6 @@ package testutils.generator
 import org.davidbild.tristate.Tristate
 import org.scalacheck.{Arbitrary, Gen}
 
-
 /**
   * Tristate generator for scalacheck.
   */

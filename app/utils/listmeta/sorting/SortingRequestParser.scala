@@ -17,7 +17,8 @@ object SortingRequestParser {
     * @param sorting     available sorting fields
     * @return either error or sorting
     */
-  def parse(queryString: Map[String, String])(implicit sorting: Sorting.AvailableFields): Either[ApplicationError, Sorting] = {
+  def parse(queryString: Map[String, String])(
+    implicit sorting: Sorting.AvailableFields): Either[ApplicationError, Sorting] = {
     queryString.get(sortQueryParamName) match {
       case Some(sort) if sort.matches(sortPattern) =>
         val fields = sort.split(",").map { sortPart =>
@@ -30,7 +31,8 @@ object SortingRequestParser {
         if (unsupportedFields.isEmpty)
           Right(Sorting(fields.distinct))
         else
-          Left(BadRequestError.Sorting.UnsupportedField(unsupportedFields.mkString(", "), sorting.fields.mkString(", ")))
+          Left(
+            BadRequestError.Sorting.UnsupportedField(unsupportedFields.mkString(", "), sorting.fields.mkString(", ")))
       case Some(_) =>
         Left(BadRequestError.Sorting.General)
       case None =>

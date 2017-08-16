@@ -79,10 +79,12 @@ object Form {
     */
   sealed trait Kind
   object Kind {
+
     /**
       * Active form used as template. Active forms can be listed, edited, deleted.
       */
     case object Active extends Kind
+
     /**
       * Freezed form. Freezed form is a copy of active form assigned to event.
       */

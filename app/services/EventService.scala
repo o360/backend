@@ -31,7 +31,8 @@ class EventService @Inject()(
     * Returns event by ID
     */
   def getById(id: Long)(implicit account: User): SingleResult = {
-    eventDao.findById(id)
+    eventDao
+      .findById(id)
       .liftRight {
         NotFoundError.Event(id)
       }
@@ -57,12 +58,14 @@ class EventService @Inject()(
 
     for {
       groupFromIds <- groupFromFilter.lift
-      events <- eventDao.getList(
-        optId = None,
-        optStatus = status,
-        optProjectId = projectId,
-        optGroupFromIds = groupFromIds
-      ).lift
+      events <- eventDao
+        .getList(
+          optId = None,
+          optStatus = status,
+          optProjectId = projectId,
+          optGroupFromIds = groupFromIds
+        )
+        .lift
     } yield events
   }
 
@@ -129,9 +132,7 @@ class EventService @Inject()(
       */
     def shiftDates(event: Event): Event = {
       val newStartDate = Timestamp.valueOf(
-        TimestampConverter
-          .now
-          .toLocalDateTime
+        TimestampConverter.now.toLocalDateTime
           .plusDays(2)
           .withNano(0)
       )
@@ -167,7 +168,9 @@ class EventService @Inject()(
       }
 
       isUniqueNotifications = event.notifications
-        .map(x => (x.kind, x.recipient)).distinct.length == event.notifications.length
+        .map(x => (x.kind, x.recipient))
+        .distinct
+        .length == event.notifications.length
       _ <- ensure(isUniqueNotifications) {
         BadRequestError.Event.NotUniqueNotifications
       }

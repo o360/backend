@@ -3,11 +3,11 @@ package services.spreadsheet
 import services.spreadsheet.Action._
 import services.spreadsheet.Element._
 
-
 /**
   * Spreadsheet element.
   */
 trait Element {
+
   /**
     * Width in cells.
     */
@@ -71,6 +71,7 @@ object Element {
     */
   case class Border(style: Border.Style, placement: Border.Placement.ValueSet, color: Color = Color.black)
   object Border {
+
     /**
       * Border placement relative to element center.
       */
@@ -80,6 +81,7 @@ object Element {
       val outer = ValueSet(Left, Right, Top, Bottom)
       val inner = ValueSet(InnerVertical, InnerHorizontal)
     }
+
     /**
       * Border style.
       */
@@ -103,6 +105,7 @@ object Element {
     * Coordinate on spreadsheet.
     */
   case class Point(x: Int, y: Int) {
+
     /**
       * Returns region contains one cell.
       */
@@ -148,22 +151,26 @@ object Element {
       * Colors each even inner element.
       */
     def colorIfEven(color: Color): Container = this.copy(
-      elements = elements.filter(el => el.width > 0 || el.height > 0).zipWithIndex.map { case (el, index) =>
-        el.copyWithColor(if (index % 2 == 0) None else Some(color))
+      elements = elements.filter(el => el.width > 0 || el.height > 0).zipWithIndex.map {
+        case (el, index) =>
+          el.copyWithColor(if (index % 2 == 0) None else Some(color))
       }
     )
     override def copyWithColor(color: Option[(Int, Int, Int)]): Element = copy(color = color)
   }
   object Container {
+
     /**
       * Stacking direction.
       */
     sealed trait Direction
     object Direction {
+
       /**
         * Stack inner elements from top to down.
         */
       case object TopToDown extends Direction
+
       /**
         * Stack inner elements from left to right.
         */
@@ -209,6 +216,7 @@ object Element {
   }
 
   object Cell {
+
     /**
       * Horizontal text alignment.
       */
@@ -226,6 +234,7 @@ object Element {
         def value = "RIGHT"
       }
     }
+
     /**
       * Text format.
       */

@@ -3,7 +3,7 @@ package controllers
 import com.mohiva.play.silhouette.api.Silhouette
 import com.mohiva.play.silhouette.test.FakeEnvironment
 import controllers.api.Response
-import controllers.api.event.{ApiPartialEvent, ApiEvent}
+import controllers.api.event.{ApiEvent, ApiPartialEvent}
 import models.ListWithTotal
 import models.event.Event
 import models.user.User
@@ -18,7 +18,7 @@ import testutils.generator.EventGenerator
 import utils.errors.{ApplicationError, NotFoundError}
 import utils.listmeta.ListMeta
 
-import scalaz.{-\/, EitherT, \/, \/-}
+import scalaz.{-\/, \/, \/-, EitherT}
 
 /**
   * Test for event controller.
@@ -72,27 +72,30 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
 
   "GET /events" should {
     "return events list from service" in {
-      forAll { (
-      projectId: Option[Long],
-      optStatus: Option[Event.Status],
-      onlyAvailable: Boolean,
-      total: Int,
-      events: Seq[Event]
-      ) =>
-        val env = fakeEnvironment(admin)
-        val fixture = getFixture(env)
-        when(fixture.eventServiceMock.list(optStatus, projectId, onlyAvailable)(admin, ListMeta.default))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(ListWithTotal(total, events)): ApplicationError \/ ListWithTotal[Event])))
-        val request = authenticated(FakeRequest(), env)
+      forAll {
+        (
+          projectId: Option[Long],
+          optStatus: Option[Event.Status],
+          onlyAvailable: Boolean,
+          total: Int,
+          events: Seq[Event]
+        ) =>
+          val env = fakeEnvironment(admin)
+          val fixture = getFixture(env)
+          when(fixture.eventServiceMock.list(optStatus, projectId, onlyAvailable)(admin, ListMeta.default))
+            .thenReturn(
+              EitherT.eitherT(toFuture(\/-(ListWithTotal(total, events)): ApplicationError \/ ListWithTotal[Event])))
+          val request = authenticated(FakeRequest(), env)
 
-        val response = fixture.controller.getList(optStatus.map(ApiEvent.EventStatus(_)), projectId, onlyAvailable)(request)
+          val response =
+            fixture.controller.getList(optStatus.map(ApiEvent.EventStatus(_)), projectId, onlyAvailable)(request)
 
-        status(response) mustBe OK
-        val eventsJson = contentAsJson(response)
-        val expectedJson = Json.toJson(
-          Response.List(Response.Meta(total, ListMeta.default), events.map(ApiEvent(_)(UserFixture.admin)))
-        )
-        eventsJson mustBe expectedJson
+          status(response) mustBe OK
+          val eventsJson = contentAsJson(response)
+          val expectedJson = Json.toJson(
+            Response.List(Response.Meta(total, ListMeta.default), events.map(ApiEvent(_)(UserFixture.admin)))
+          )
+          eventsJson mustBe expectedJson
       }
     }
   }
@@ -141,7 +144,6 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
           event.start.toLocalDateTime,
           event.end.toLocalDateTime,
           event.notifications.map(ApiEvent.NotificationTime(_)(admin))
-
         )
 
         val request = authenticated(
@@ -177,7 +179,7 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
   }
 
   "POST /events/id/clone" should {
-    "clone event" in  {
+    "clone event" in {
       forAll { (id: Long, event: Event) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)

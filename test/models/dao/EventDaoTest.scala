@@ -12,20 +12,21 @@ import testutils.generator.EventGenerator
   */
 class EventDaoTest
   extends BaseDaoTest
-    with EventFixture
-    with EventGenerator
-    with EventProjectFixture
-    with ProjectRelationFixture {
+  with EventFixture
+  with EventGenerator
+  with EventProjectFixture
+  with ProjectRelationFixture {
 
   private val dao = inject[EventDao]
 
   "get" should {
     "return events by specific criteria" in {
-      forAll { (status: Option[Event.Status], notificationFrom: Option[Timestamp], notificationTo: Option[Timestamp]) =>
-        val events = wait(dao.getList(optStatus = status))
-        val expectedEvents = Events.filter(u => status.forall(_ == u.status))
-        events.total mustBe expectedEvents.length
-        events.data must contain theSameElementsAs expectedEvents
+      forAll {
+        (status: Option[Event.Status], notificationFrom: Option[Timestamp], notificationTo: Option[Timestamp]) =>
+          val events = wait(dao.getList(optStatus = status))
+          val expectedEvents = Events.filter(u => status.forall(_ == u.status))
+          events.total mustBe expectedEvents.length
+          events.data must contain theSameElementsAs expectedEvents
       }
     }
 

@@ -12,4 +12,5 @@ import utils.listmeta.ListMeta
 case class UnsecuredListRequest[B](
   meta: ListMeta,
   inner: Request[B]
-) extends WrappedRequest[B](inner) with BaseListRequest
+) extends WrappedRequest[B](inner)
+  with BaseListRequest

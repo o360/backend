@@ -12,8 +12,8 @@ import testutils.fixture.FixtureSupport
   */
 trait BaseServiceTest
   extends PlaySpec
-    with GeneratorDrivenPropertyChecks
-    with AsyncHelper
-    with MockitoSugar
-    with FixtureSupport
-    with OneInstancePerTest
+  with GeneratorDrivenPropertyChecks
+  with AsyncHelper
+  with MockitoSugar
+  with FixtureSupport
+  with OneInstancePerTest

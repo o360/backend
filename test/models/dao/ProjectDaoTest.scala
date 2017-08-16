@@ -79,7 +79,6 @@ class ProjectDaoTest extends BaseDaoTest with ProjectFixture with ProjectGenerat
       forAll(Gen.oneOf(Projects)) { (project: Project) =>
         val projectWithId = project.copy(id = newProjectId, name = java.util.UUID.randomUUID.toString)
 
-
         wait(dao.update(projectWithId))
 
         val updatedFromDb = wait(dao.findById(newProjectId))

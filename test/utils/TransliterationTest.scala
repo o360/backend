@@ -7,7 +7,6 @@ import org.scalatestplus.play.PlaySpec
   */
 class TransliterationTest extends PlaySpec {
 
-
   "transliterate" should {
     "translit ru to en" in {
       val input = "южно-эфиопский грач увёл мышь за хобот на съезд ящериц."

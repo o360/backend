@@ -19,5 +19,5 @@ object ApiPartialInvite {
   implicit val reads: Reads[ApiPartialInvite] = (
     (__ \ "email").read[String](maxLength[String](255)) and
       (__ \ "groupIds").read[Set[Long]]
-    ) (ApiPartialInvite(_, _))
+  )(ApiPartialInvite(_, _))
 }

@@ -19,7 +19,8 @@ import utils.listmeta.sorting.Sorting
 class FormController @Inject()(
   protected val silhouette: Silhouette[DefaultEnv],
   protected val formService: FormService
-) extends BaseController with ListActions {
+) extends BaseController
+  with ListActions {
 
   implicit val sortingFields = Sorting.AvailableFields('id, 'name)
 
@@ -55,13 +56,12 @@ class FormController @Inject()(
     projectId: Long,
     eventId: Long
   ) = silhouette.SecuredAction(AllowedStatus.approved).async { implicit request =>
-    toResult(Ok){
+    toResult(Ok) {
       formService
         .userGetById(id, projectId, eventId)
         .map(ApiForm(_))
     }
   }
-
 
   /**
     * Creates form template.
@@ -78,23 +78,26 @@ class FormController @Inject()(
   /**
     * Updates form template.
     */
-  def update(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async(parse.json[ApiPartialForm]) { implicit request =>
-    toResult(Ok) {
-      val form = request.body.toModel(id)
-      formService
-        .update(form)
-        .map(ApiForm(_))
-    }
+  def update(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async(parse.json[ApiPartialForm]) {
+    implicit request =>
+      toResult(Ok) {
+        val form = request.body.toModel(id)
+        formService
+          .update(form)
+          .map(ApiForm(_))
+      }
   }
 
   /**
     * Removes form template.
     */
   def delete(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
-    formService.delete(id).fold(
-      error => toResult(error),
-      _ => NoContent
-    )
+    formService
+      .delete(id)
+      .fold(
+        error => toResult(error),
+        _ => NoContent
+      )
   }
 
   /**

@@ -15,6 +15,7 @@ case class Assessment(
 )
 
 object Assessment {
+
   /**
     * Creates new assessment object from formsWithAnswers list.
     *
@@ -22,11 +23,10 @@ object Assessment {
     * @param user             assessed user
     */
   def apply(formsWithAnswers: Seq[(NamedEntity, Option[Answer.Form])], user: Option[User] = None): Assessment = {
-    val forms = formsWithAnswers.map { case (form, answer) =>
-      answer.getOrElse(Answer.Form(form, Set(), answer.fold(false)(_.isAnonymous)))
+    val forms = formsWithAnswers.map {
+      case (form, answer) =>
+        answer.getOrElse(Answer.Form(form, Set(), answer.fold(false)(_.isAnonymous)))
     }
     Assessment(user.map(UserShort.fromUser), forms)
   }
 }
-
-

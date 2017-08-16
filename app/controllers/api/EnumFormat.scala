@@ -7,11 +7,13 @@ import play.api.mvc.QueryStringBindable
   * Base format for enumerations.
   */
 trait EnumFormat[A] extends Response {
+
   /**
     * Inner value.
     */
   def value: A
 }
+
 /**
   * Helper for base enumeration format. Includes Json reads and writes, query binder.
   * Serializes enums to strings and backward based on mapping.
@@ -35,14 +37,14 @@ abstract class EnumFormatHelper[A, B <: EnumFormat[A]](val name: String) {
     */
   protected def apply(value: A): B
 
-
   /**
     * Reads string and returns either inner value or error message.
     */
   private def read(input: String): Either[String, A] = mapping.get(input) match {
     case None =>
-      Left(s"Unable to parse $name. Unknown value [$input]. " +
-        s"Possible values: [${mapping.keys.mkString(", ")}]")
+      Left(
+        s"Unable to parse $name. Unknown value [$input]. " +
+          s"Possible values: [${mapping.keys.mkString(", ")}]")
     case Some(value) => Right(value)
   }
 

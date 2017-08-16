@@ -43,7 +43,6 @@ object ApiForm {
     form.machineName
   )
 
-
   implicit val elementValueWrites = Json.writes[ElementValue]
   implicit val elementWrites = Json.writes[Element]
   implicit val formWrites = Json.writes[ApiForm]
@@ -60,6 +59,7 @@ object ApiForm {
   ) extends Response
 
   object Element {
+
     /**
       * Converts form element to api form element.
       */

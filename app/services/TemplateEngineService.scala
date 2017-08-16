@@ -11,7 +11,6 @@ import utils.TimestampConverter
 import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
 
-
 /**
   * Template engine service
   */
@@ -53,4 +52,3 @@ class TemplateEngineService {
     scala.io.Source.fromInputStream(stream).getLines.mkString(System.lineSeparator)
   }
 }
-

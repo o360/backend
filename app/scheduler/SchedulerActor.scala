@@ -15,7 +15,8 @@ import utils.{Config, Logger, TimestampConverter}
 class SchedulerActor @Inject()(
   protected val config: Config,
   protected val eventJobService: EventJobService
-) extends Actor with Logger {
+) extends Actor
+  with Logger {
 
   private val maxAge = config.schedulerSettings.maxAgeMilliseconds
 

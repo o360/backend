@@ -73,14 +73,16 @@ class UserGroupService @Inject()(
   }
 
   def bulkAdd(groupUsers: Seq[GroupUser])(implicit account: User): UnitResult = {
-    bulkAction(groupUsers, {
-      case (groupId, userId) =>
-        userGroupDao.exists(Some(groupId), Some(userId)).flatMap { isAlreadyExists =>
-          if (!isAlreadyExists) {
-            userGroupDao.add(groupId, userId)
-          } else ().toFuture
-        }
-    })
+    bulkAction(
+      groupUsers, {
+        case (groupId, userId) =>
+          userGroupDao.exists(Some(groupId), Some(userId)).flatMap { isAlreadyExists =>
+            if (!isAlreadyExists) {
+              userGroupDao.add(groupId, userId)
+            } else ().toFuture
+          }
+      }
+    )
   }
 
   def bulkRemove(groupUsers: Seq[GroupUser])(implicit account: User): UnitResult = {
@@ -89,11 +91,13 @@ class UserGroupService @Inject()(
     })
   }
 
-  private def bulkAction(groupUsers: Seq[GroupUser], action: GroupUser => Future[Unit])(implicit account: User): UnitResult = {
+  private def bulkAction(groupUsers: Seq[GroupUser], action: GroupUser => Future[Unit])(
+    implicit account: User): UnitResult = {
     for {
       maybeErrors <- Future.sequence {
-        groupUsers.map { case (groupId, userId) =>
-          validateUserGroup(groupId, userId).run
+        groupUsers.map {
+          case (groupId, userId) =>
+            validateUserGroup(groupId, userId).run
         }
       }.lift
       maybeError = maybeErrors.collect {

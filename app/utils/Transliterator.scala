@@ -54,9 +54,11 @@ object Transliteration {
       if (rest.isEmpty) acc
       else {
         rules
-          .filter { case (from, _) =>
-            rest.startsWith(from)
-          }.sortBy { case (from, _) => -from.length }
+          .filter {
+            case (from, _) =>
+              rest.startsWith(from)
+          }
+          .sortBy { case (from, _) => -from.length }
           .headOption match {
           case Some((from, to)) => helper(rest.drop(math.max(from.length, 1)), acc + to)
           case None => helper(rest.tail, acc + rest.head)

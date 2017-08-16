@@ -6,8 +6,7 @@ import models.form.Form
 /**
   * Form model fixture.
   */
-trait FormFixture extends FixtureHelper {
-  self: FixtureSupport =>
+trait FormFixture extends FixtureHelper { self: FixtureSupport =>
 
   val Forms = Seq(
     Form(
@@ -41,8 +40,7 @@ trait FormFixture extends FixtureHelper {
       Form.Kind.Active,
       showInAggregation = true,
       machineName = "machine 1"
-    )
-    ,
+    ),
     Form(
       2,
       "second",
@@ -83,7 +81,6 @@ trait FormFixture extends FixtureHelper {
       showInAggregation = true,
       machineName = "machine 1"
     )
-
   )
 
   val FormsShort = Forms.map(_.toShort)

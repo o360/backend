@@ -40,15 +40,16 @@ class EventResultExportService @Inject()(
       userDao.getList(optIds = Some(ids), includeDeleted = true).map(_.data)
     }
 
-    def anonimyzeAnswers(answers: Seq[UserAnswer], usersMap: Map[Long, String] = Map()): Seq[UserAnswer] = answers match {
-      case Seq() => Seq()
-      case answer +: tail if answer.isAnonymous && usersMap.contains(answer.userFromId) =>
-        answer.copy(userFrom = usersMap(answer.userFromId)) +: anonimyzeAnswers(tail, usersMap)
-      case answer +: tail if answer.isAnonymous =>
-        anonimyzeAnswers(answers, usersMap + (answer.userFromId -> RandomGenerator.generateAnonymousUserName))
-      case answer +: tail =>
-        answer.copy(userFrom = answer.userFromId.toString) +: anonimyzeAnswers(tail, usersMap)
-    }
+    def anonimyzeAnswers(answers: Seq[UserAnswer], usersMap: Map[Long, String] = Map()): Seq[UserAnswer] =
+      answers match {
+        case Seq() => Seq()
+        case answer +: tail if answer.isAnonymous && usersMap.contains(answer.userFromId) =>
+          answer.copy(userFrom = usersMap(answer.userFromId)) +: anonimyzeAnswers(tail, usersMap)
+        case answer +: tail if answer.isAnonymous =>
+          anonimyzeAnswers(answers, usersMap + (answer.userFromId -> RandomGenerator.generateAnonymousUserName))
+        case answer +: tail =>
+          answer.copy(userFrom = answer.userFromId.toString) +: anonimyzeAnswers(tail, usersMap)
+      }
 
     def getForms(answers: Seq[UserAnswer]) = {
       val ids = answers.map(_.answer.form.id).distinct

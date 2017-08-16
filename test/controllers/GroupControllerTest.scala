@@ -19,7 +19,7 @@ import testutils.generator.{GroupGenerator, TristateGenerator}
 import utils.errors.{ApplicationError, NotFoundError}
 import utils.listmeta.ListMeta
 
-import scalaz.{-\/, EitherT, \/, \/-}
+import scalaz.{-\/, \/, \/-, EitherT}
 
 /**
   * Test for groups controller.
@@ -73,28 +73,30 @@ class GroupControllerTest extends BaseControllerTest with GroupGenerator with Tr
 
   "GET /groups" should {
     "return groups list from service" in {
-      forAll { (
-      parentId: Tristate[Long],
-      userId: Option[Long],
-      name: Option[String],
-      levels: Option[String],
-      total: Int,
-      groups: Seq[Group]
-      ) =>
-        val env = fakeEnvironment(admin)
-        val fixture = getFixture(env)
-        when(fixture.groupServiceMock.list(parentId, userId, name, levels)(admin, ListMeta.default))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(ListWithTotal(total, groups)): ApplicationError \/ ListWithTotal[Group])))
-        val request = authenticated(FakeRequest(), env)
+      forAll {
+        (
+          parentId: Tristate[Long],
+          userId: Option[Long],
+          name: Option[String],
+          levels: Option[String],
+          total: Int,
+          groups: Seq[Group]
+        ) =>
+          val env = fakeEnvironment(admin)
+          val fixture = getFixture(env)
+          when(fixture.groupServiceMock.list(parentId, userId, name, levels)(admin, ListMeta.default))
+            .thenReturn(
+              EitherT.eitherT(toFuture(\/-(ListWithTotal(total, groups)): ApplicationError \/ ListWithTotal[Group])))
+          val request = authenticated(FakeRequest(), env)
 
-        val response = fixture.controller.getList(parentId, userId, name, levels)(request)
+          val response = fixture.controller.getList(parentId, userId, name, levels)(request)
 
-        status(response) mustBe OK
-        val groupsJson = contentAsJson(response)
-        val expectedJson = Json.toJson(
-          Response.List(Response.Meta(total, ListMeta.default), groups.map(ApiGroup(_)))
-        )
-        groupsJson mustBe expectedJson
+          status(response) mustBe OK
+          val groupsJson = contentAsJson(response)
+          val expectedJson = Json.toJson(
+            Response.List(Response.Meta(total, ListMeta.default), groups.map(ApiGroup(_)))
+          )
+          groupsJson mustBe expectedJson
       }
     }
     "return forbidden for non admin user" in {

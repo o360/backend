@@ -43,7 +43,7 @@ object ApiFormAnswer {
       (__ \ "elementId").read[Long] and
         (__ \ "text").readNullable[String] and
         (__ \ "valuesIds").readNullable[Seq[Long]]
-      ) (ElementAnswer(_, _, _))
+    )(ElementAnswer(_, _, _))
 
     def apply(element: Answer.Element): ElementAnswer = ElementAnswer(
       element.elementId,

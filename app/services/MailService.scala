@@ -50,10 +50,10 @@ class MailService @Inject()(
   ): Unit = {
 
     val email = Email(
-        subject,
-        sendFromEmail,
-        Seq(s"$name <$address>"),
-        bodyHtml = Some(text)
+      subject,
+      sendFromEmail,
+      Seq(s"$name <$address>"),
+      bodyHtml = Some(text)
     )
     log.trace(s"sending email $email")
     try {

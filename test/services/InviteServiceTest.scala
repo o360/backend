@@ -19,10 +19,10 @@ import utils.listmeta.ListMeta
   */
 class InviteServiceTest
   extends BaseServiceTest
-    with InviteGenerator
-    with InviteFixture
-    with GroupFixture
-    with UserFixture {
+  with InviteGenerator
+  with InviteFixture
+  with GroupFixture
+  with UserFixture {
 
   private case class Fixture(
     userDao: UserDao,
@@ -41,8 +41,19 @@ class InviteServiceTest
     val userGroupDaoMock = mock[UserGroupDao]
     val mailServiceMock = mock[MailService]
     val templateEngineServiceMock = mock[TemplateEngineService]
-    val service = new InviteService(userDaoMock, groupDaoMock, inviteDaoMock, userGroupDaoMock, mailServiceMock, templateEngineServiceMock)
-    Fixture(userDaoMock, groupDaoMock, inviteDaoMock, userGroupDaoMock, mailServiceMock, templateEngineServiceMock, service)
+    val service = new InviteService(userDaoMock,
+                                    groupDaoMock,
+                                    inviteDaoMock,
+                                    userGroupDaoMock,
+                                    mailServiceMock,
+                                    templateEngineServiceMock)
+    Fixture(userDaoMock,
+            groupDaoMock,
+            inviteDaoMock,
+            userGroupDaoMock,
+            mailServiceMock,
+            templateEngineServiceMock,
+            service)
   }
 
   "getList" should {
@@ -63,15 +74,16 @@ class InviteServiceTest
       val fixture = getFixture
       val email = "someemail"
       val groupId = 1
-      when(fixture.userDao.getList(
-        optIds = any[Option[Seq[Long]]],
-        optRole = any[Option[User.Role]],
-        optStatus = any[Option[User.Status]],
-        optGroupIds = any[Tristate[Seq[Long]]],
-        optName = any[Option[String]],
-        optEmail = eqTo(Some(email)),
-        includeDeleted = any[Boolean]
-      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[User](0, Nil)))
+      when(
+        fixture.userDao.getList(
+          optIds = any[Option[Seq[Long]]],
+          optRole = any[Option[User.Role]],
+          optStatus = any[Option[User.Status]],
+          optGroupIds = any[Tristate[Seq[Long]]],
+          optName = any[Option[String]],
+          optEmail = eqTo(Some(email)),
+          includeDeleted = any[Boolean]
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[User](0, Nil)))
       when(fixture.groupDao.findById(groupId)).thenReturn(toFuture(None))
 
       val result = wait(fixture.service.createInvites(Seq(Invite(email, Set(groupId)))).run)
@@ -86,15 +98,16 @@ class InviteServiceTest
       val groupId = 1
       val invite = Invite(email, Set(groupId))
 
-      when(fixture.userDao.getList(
-        optIds = any[Option[Seq[Long]]],
-        optRole = any[Option[User.Role]],
-        optStatus = any[Option[User.Status]],
-        optGroupIds = any[Tristate[Seq[Long]]],
-        optName = any[Option[String]],
-        optEmail = eqTo(Some(email)),
-        includeDeleted = any[Boolean]
-      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[User](0, Nil)))
+      when(
+        fixture.userDao.getList(
+          optIds = any[Option[Seq[Long]]],
+          optRole = any[Option[User.Role]],
+          optStatus = any[Option[User.Status]],
+          optGroupIds = any[Tristate[Seq[Long]]],
+          optName = any[Option[String]],
+          optEmail = eqTo(Some(email)),
+          includeDeleted = any[Boolean]
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[User](0, Nil)))
       when(fixture.groupDao.findById(groupId)).thenReturn(toFuture(Some(Groups(0))))
       when(fixture.inviteDao.create(any[Invite])).thenReturn(toFuture(invite))
       when(fixture.templateEngineService.loadStaticTemplate("user_invited.html")).thenReturn("template")

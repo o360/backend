@@ -1,6 +1,5 @@
 package testutils.generator
 
-
 import models.group.Group
 import org.scalacheck.Arbitrary
 

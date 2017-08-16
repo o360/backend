@@ -63,7 +63,7 @@ object ApiUser {
       (__ \ "role").read[ApiUser.ApiRole] and
       (__ \ "status").read[ApiUser.ApiStatus] and
       (__ \ "timezone").read[ZoneId]
-    ) (ApiUser(_, _, _, _, _, _, _))
+  )(ApiUser(_, _, _, _, _, _, _))
 
   implicit val format = Format(reads, Json.writes[ApiUser])
 

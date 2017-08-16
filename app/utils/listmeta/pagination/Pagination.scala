@@ -14,6 +14,7 @@ object Pagination {
     * @param number page number
     */
   case class WithPages(size: Int, number: Int) extends Pagination {
+
     /**
       * Offset.
       */

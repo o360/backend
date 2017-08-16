@@ -11,7 +11,7 @@ import testutils.fixture.UserFixture
 import testutils.generator.TristateGenerator
 import utils.errors.{ApplicationError, NotFoundError}
 
-import scalaz.{-\/, EitherT, \/, \/-}
+import scalaz.{-\/, \/, \/-, EitherT}
 
 /**
   * Test for event-project controller.

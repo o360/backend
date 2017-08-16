@@ -14,7 +14,8 @@ class SortingTest extends PlaySpec with GeneratorDrivenPropertyChecks with Symbo
     "create ascending sorting when sort is specified and fields are available" in {
       val availableFields = Set('one, 'two, 'three, 'four)
       forAll(Gen.someOf(availableFields)) { (fields: Seq[Symbol]) =>
-        val queryString = if (fields.nonEmpty) Map("sort" -> fields.map(_.name).mkString(",")) else Map[String, String]()
+        val queryString =
+          if (fields.nonEmpty) Map("sort" -> fields.map(_.name).mkString(",")) else Map[String, String]()
         val sorting = SortingRequestParser.parse(queryString)(Sorting.AvailableFields(availableFields))
         sorting mustBe Right(Sorting(fields.map(Sorting.Field(_, Sorting.Direction.Asc))))
       }
@@ -23,7 +24,8 @@ class SortingTest extends PlaySpec with GeneratorDrivenPropertyChecks with Symbo
     "create descending sorting when sort is specified and fields are available" in {
       val availableFields = Set('one, 'two, 'three, 'four)
       forAll(Gen.someOf(availableFields)) { (fields: Seq[Symbol]) =>
-        val queryString = if (fields.nonEmpty) Map("sort" -> fields.map("-" + _.name).mkString(",")) else Map[String, String]()
+        val queryString =
+          if (fields.nonEmpty) Map("sort" -> fields.map("-" + _.name).mkString(",")) else Map[String, String]()
         val sorting = SortingRequestParser.parse(queryString)(Sorting.AvailableFields(availableFields))
         sorting mustBe Right(Sorting(fields.map(Sorting.Field(_, Sorting.Direction.Desc))))
       }

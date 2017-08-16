@@ -21,11 +21,11 @@ import scala.concurrent.Future
   */
 class UserServiceTest
   extends BaseServiceTest
-    with UserGenerator
-    with SocialProfileGenerator
-    with UserFixture
-    with TristateGenerator
-    with GroupFixture {
+  with UserGenerator
+  with SocialProfileGenerator
+  with UserFixture
+  with TristateGenerator
+  with GroupFixture {
 
   private val admin = UserFixture.admin
 
@@ -35,7 +35,8 @@ class UserServiceTest
     groupDaoMock: GroupDao,
     mailService: MailService,
     templateEngineService: TemplateEngineService,
-    service: UserService)
+    service: UserService
+  )
 
   private def getFixture = {
     val daoMock = mock[UserDAO]
@@ -72,7 +73,8 @@ class UserServiceTest
 
         wait(fixture.service.createIfNotExist(profile))
 
-        verify(fixture.userDaoMock, times(1)).findByProvider(profile.loginInfo.providerID, profile.loginInfo.providerKey)
+        verify(fixture.userDaoMock, times(1)).findByProvider(profile.loginInfo.providerID,
+                                                             profile.loginInfo.providerKey)
       }
     }
 
@@ -84,7 +86,8 @@ class UserServiceTest
 
         wait(fixture.service.createIfNotExist(profile))
 
-        verify(fixture.userDaoMock, times(1)).findByProvider(profile.loginInfo.providerID, profile.loginInfo.providerKey)
+        verify(fixture.userDaoMock, times(1)).findByProvider(profile.loginInfo.providerID,
+                                                             profile.loginInfo.providerKey)
         verifyNoMoreInteractions(fixture.userDaoMock)
       }
     }
@@ -95,14 +98,14 @@ class UserServiceTest
         when(fixture.userDaoMock.findByProvider(profile.loginInfo.providerID, profile.loginInfo.providerKey))
           .thenReturn(toFuture(None))
         when(
-          fixture.userDaoMock.create(
-            any[UserModel],
-            eqTo(profile.loginInfo.providerID),
-            eqTo(profile.loginInfo.providerKey)))
+          fixture.userDaoMock.create(any[UserModel],
+                                     eqTo(profile.loginInfo.providerID),
+                                     eqTo(profile.loginInfo.providerKey)))
           .thenReturn(toFuture(Users(0)))
 
         wait(fixture.service.createIfNotExist(profile))
-        verify(fixture.userDaoMock, times(1)).findByProvider(profile.loginInfo.providerID, profile.loginInfo.providerKey)
+        verify(fixture.userDaoMock, times(1)).findByProvider(profile.loginInfo.providerID,
+                                                             profile.loginInfo.providerKey)
 
         val user = UserModel.fromSocialProfile(profile)
 
@@ -156,58 +159,62 @@ class UserServiceTest
 
   "list" should {
     "return list of users from db" in {
-      forAll { (
-      role: Option[UserModel.Role],
-      status: Option[UserModel.Status],
-      groupId: Tristate[Long],
-      name: Option[String],
-      users: Seq[UserModel],
-      total: Int
-      ) =>
-        val fixture = getFixture
-        when(fixture.userDaoMock.getList(
-          optIds = any[Option[Seq[Long]]],
-          optRole = eqTo(role),
-          optStatus = eqTo(status),
-          optGroupIds = eqTo(groupId.map(Seq(_))),
-          optName = eqTo(name),
-          optEmail = any[Option[String]],
-          includeDeleted = any[Boolean]
-        )(eqTo(ListMeta.default)))
-          .thenReturn(toFuture(ListWithTotal(total, users)))
-        val result = wait(fixture.service.list(role, status, groupId, name)(admin, ListMeta.default).run)
+      forAll {
+        (
+          role: Option[UserModel.Role],
+          status: Option[UserModel.Status],
+          groupId: Tristate[Long],
+          name: Option[String],
+          users: Seq[UserModel],
+          total: Int
+        ) =>
+          val fixture = getFixture
+          when(
+            fixture.userDaoMock.getList(
+              optIds = any[Option[Seq[Long]]],
+              optRole = eqTo(role),
+              optStatus = eqTo(status),
+              optGroupIds = eqTo(groupId.map(Seq(_))),
+              optName = eqTo(name),
+              optEmail = any[Option[String]],
+              includeDeleted = any[Boolean]
+            )(eqTo(ListMeta.default)))
+            .thenReturn(toFuture(ListWithTotal(total, users)))
+          val result = wait(fixture.service.list(role, status, groupId, name)(admin, ListMeta.default).run)
 
-        result mustBe 'isRight
-        result.toOption.get mustBe ListWithTotal(total, users)
+          result mustBe 'isRight
+          result.toOption.get mustBe ListWithTotal(total, users)
       }
     }
   }
 
   "listByGroupId" should {
     "return list of users in group including child groups" in {
-      forAll { (
-      groupId: Long,
-      childGroups: Seq[Long],
-      includeDeleted: Boolean,
-      users: Seq[UserModel],
-      total: Int
-      ) =>
-        val fixture = getFixture
-        when(fixture.groupDaoMock.findChildrenIds(groupId)).thenReturn(toFuture(childGroups))
-        when(fixture.userDaoMock.getList(
-          optIds = any[Option[Seq[Long]]],
-          optRole = any[Option[UserModel.Role]],
-          optStatus = any[Option[UserModel.Status]],
-          optGroupIds = eqTo(Tristate.Present(childGroups :+ groupId)),
-          optName = any[Option[String]],
-          optEmail = any[Option[String]],
-          includeDeleted = eqTo(includeDeleted)
-        )(eqTo(ListMeta.default))).thenReturn(toFuture(ListWithTotal(total, users)))
+      forAll {
+        (
+          groupId: Long,
+          childGroups: Seq[Long],
+          includeDeleted: Boolean,
+          users: Seq[UserModel],
+          total: Int
+        ) =>
+          val fixture = getFixture
+          when(fixture.groupDaoMock.findChildrenIds(groupId)).thenReturn(toFuture(childGroups))
+          when(
+            fixture.userDaoMock.getList(
+              optIds = any[Option[Seq[Long]]],
+              optRole = any[Option[UserModel.Role]],
+              optStatus = any[Option[UserModel.Status]],
+              optGroupIds = eqTo(Tristate.Present(childGroups :+ groupId)),
+              optName = any[Option[String]],
+              optEmail = any[Option[String]],
+              includeDeleted = eqTo(includeDeleted)
+            )(eqTo(ListMeta.default))).thenReturn(toFuture(ListWithTotal(total, users)))
 
-        val result = wait(fixture.service.listByGroupId(groupId, includeDeleted).run)
+          val result = wait(fixture.service.listByGroupId(groupId, includeDeleted).run)
 
-        result mustBe 'isRight
-        result.toOption.get mustBe ListWithTotal(total, users)
+          result mustBe 'isRight
+          result.toOption.get mustBe ListWithTotal(total, users)
       }
     }
   }
@@ -294,13 +301,14 @@ class UserServiceTest
       forAll { (user: UserModel, id: Long) =>
         val fixture = getFixture
         when(fixture.userDaoMock.findById(id)).thenReturn(toFuture(Some(user.copy(id = id))))
-        when(fixture.groupDaoMock.getList(
-          optId = any[Option[Long]],
-          optParentId = any[Tristate[Long]],
-          optUserId = eqTo(Some(id)),
-          optName = any[Option[String]],
-          optLevels = any[Option[Seq[Int]]]
-        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Groups.take(1))))
+        when(
+          fixture.groupDaoMock.getList(
+            optId = any[Option[Long]],
+            optParentId = any[Tristate[Long]],
+            optUserId = eqTo(Some(id)),
+            optName = any[Option[String]],
+            optLevels = any[Option[Seq[Int]]]
+          )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Groups.take(1))))
         val result = wait(fixture.service.delete(id)(admin).run)
 
         result mustBe 'left
@@ -312,13 +320,14 @@ class UserServiceTest
       forAll { (user: UserModel, id: Long) =>
         val fixture = getFixture
         when(fixture.userDaoMock.findById(id)).thenReturn(toFuture(Some(user.copy(id = id))))
-        when(fixture.groupDaoMock.getList(
-          optId = any[Option[Long]],
-          optParentId = any[Tristate[Long]],
-          optUserId = eqTo(Some(id)),
-          optName = any[Option[String]],
-          optLevels = any[Option[Seq[Int]]]
-        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Group](0, Nil)))
+        when(
+          fixture.groupDaoMock.getList(
+            optId = any[Option[Long]],
+            optParentId = any[Tristate[Long]],
+            optUserId = eqTo(Some(id)),
+            optName = any[Option[String]],
+            optLevels = any[Option[Seq[Int]]]
+          )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Group](0, Nil)))
         when(fixture.userDaoMock.delete(id)).thenReturn(toFuture(()))
         val result = wait(fixture.service.delete(id)(admin).run)
 
@@ -348,24 +357,26 @@ class UserServiceTest
       when(fixture.groupDaoMock.findChildrenIds(2))
         .thenReturn(toFuture(secondGroupChild))
 
-      when(fixture.userDaoMock.getList(
-        optIds = any[Option[Seq[Long]]],
-        optRole = any[Option[UserModel.Role]],
-        optStatus = any[Option[UserModel.Status]],
-        optGroupIds = eqTo(Tristate.Present(firstGroupChild :+ 1L)),
-        optName = any[Option[String]],
-        optEmail = any[Option[String]],
-        includeDeleted = eqTo(includeDeleted)
-      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(2, usersOfFirstGroup)))
-      when(fixture.userDaoMock.getList(
-        optIds = any[Option[Seq[Long]]],
-        optRole = any[Option[UserModel.Role]],
-        optStatus = any[Option[UserModel.Status]],
-        optGroupIds = eqTo(Tristate.Present(secondGroupChild :+ 2L)),
-        optName = any[Option[String]],
-        optEmail = any[Option[String]],
-        includeDeleted = eqTo(includeDeleted)
-      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(2, usersOfSecondGroup)))
+      when(
+        fixture.userDaoMock.getList(
+          optIds = any[Option[Seq[Long]]],
+          optRole = any[Option[UserModel.Role]],
+          optStatus = any[Option[UserModel.Status]],
+          optGroupIds = eqTo(Tristate.Present(firstGroupChild :+ 1L)),
+          optName = any[Option[String]],
+          optEmail = any[Option[String]],
+          includeDeleted = eqTo(includeDeleted)
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(2, usersOfFirstGroup)))
+      when(
+        fixture.userDaoMock.getList(
+          optIds = any[Option[Seq[Long]]],
+          optRole = any[Option[UserModel.Role]],
+          optStatus = any[Option[UserModel.Status]],
+          optGroupIds = eqTo(Tristate.Present(secondGroupChild :+ 2L)),
+          optName = any[Option[String]],
+          optEmail = any[Option[String]],
+          includeDeleted = eqTo(includeDeleted)
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(2, usersOfSecondGroup)))
 
       val result = wait(fixture.service.getGroupIdToUsersMap(groupIds, includeDeleted = true))
       val expectedResult = Map(1L -> usersOfFirstGroup, 2L -> usersOfSecondGroup)

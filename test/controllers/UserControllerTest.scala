@@ -18,7 +18,7 @@ import testutils.generator.{TristateGenerator, UserGenerator}
 import utils.errors.{ApplicationError, NotFoundError}
 import utils.listmeta.ListMeta
 
-import scalaz.{-\/, EitherT, \/, \/-}
+import scalaz.{-\/, \/, \/-, EitherT}
 
 /**
   * Test for user controller.
@@ -72,29 +72,31 @@ class UserControllerTest extends BaseControllerTest with UserGenerator with Tris
 
   "GET /users" should {
     "return users list from service" in {
-      forAll { (
-      role: Option[User.Role],
-      st: Option[User.Status],
-      groupId: Tristate[Long],
-      name: Option[String],
-      total: Int,
-      users: Seq[User]
-      ) =>
-        val env = fakeEnvironment(admin)
-        val fixture = getFixture(env)
-        when(fixture.userServiceMock.list(role, st, groupId, name)(admin, ListMeta.default))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(ListWithTotal(total, users)): ApplicationError \/ ListWithTotal[User])))
-        val request = authenticated(FakeRequest(), env)
+      forAll {
+        (
+          role: Option[User.Role],
+          st: Option[User.Status],
+          groupId: Tristate[Long],
+          name: Option[String],
+          total: Int,
+          users: Seq[User]
+        ) =>
+          val env = fakeEnvironment(admin)
+          val fixture = getFixture(env)
+          when(fixture.userServiceMock.list(role, st, groupId, name)(admin, ListMeta.default))
+            .thenReturn(
+              EitherT.eitherT(toFuture(\/-(ListWithTotal(total, users)): ApplicationError \/ ListWithTotal[User])))
+          val request = authenticated(FakeRequest(), env)
 
-        val response = fixture.controller
-          .getList(role.map(ApiUser.ApiRole(_)), st.map(ApiUser.ApiStatus(_)), groupId, name)(request)
+          val response = fixture.controller
+            .getList(role.map(ApiUser.ApiRole(_)), st.map(ApiUser.ApiStatus(_)), groupId, name)(request)
 
-        status(response) mustBe OK
-        val usersJson = contentAsJson(response)
-        val expectedJson = Json.toJson(
-          Response.List(Response.Meta(total, ListMeta.default), users.map(ApiUser(_)))
-        )
-        usersJson mustBe expectedJson
+          status(response) mustBe OK
+          val usersJson = contentAsJson(response)
+          val expectedJson = Json.toJson(
+            Response.List(Response.Meta(total, ListMeta.default), users.map(ApiUser(_)))
+          )
+          usersJson mustBe expectedJson
       }
     }
     "return forbidden for non admin user" in {

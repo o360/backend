@@ -11,8 +11,7 @@ import scala.concurrent.Future
 /**
   * Component for 'user_group' table.
   */
-trait UserGroupComponent {
-  self: HasDatabaseConfigProvider[JdbcProfile] =>
+trait UserGroupComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import driver.api._
 
@@ -28,6 +27,7 @@ trait UserGroupComponent {
 
   val UserGroups = TableQuery[UserGroupTable]
 }
+
 /**
   * DAO for user - group relation.
   */
@@ -35,7 +35,8 @@ trait UserGroupComponent {
 class UserGroupDao @Inject()(
   protected val dbConfigProvider: DatabaseConfigProvider
 ) extends HasDatabaseConfigProvider[JdbcProfile]
-  with UserGroupComponent with DaoHelper {
+  with UserGroupComponent
+  with DaoHelper {
 
   import driver.api._
 
@@ -70,10 +71,10 @@ class UserGroupDao @Inject()(
       _ <- if (exists) DBIO.successful(()) else UserGroups += DbUserGroup(userId, groupId)
     } yield ()
     db.run {
-      actions.transactionally
-    }.map(_ => ())
+        actions.transactionally
+      }
+      .map(_ => ())
   }
-
 
   /**
     * Removes user from group.
@@ -81,7 +82,9 @@ class UserGroupDao @Inject()(
     * @param groupId group ID
     * @param userId  user ID
     */
-  def remove(groupId: Long, userId: Long): Future[Unit] = db.run {
-    UserGroups.filter(x => x.userId === userId && x.groupId === groupId).delete
-  }.map(_ => ())
+  def remove(groupId: Long, userId: Long): Future[Unit] =
+    db.run {
+        UserGroups.filter(x => x.userId === userId && x.groupId === groupId).delete
+      }
+      .map(_ => ())
 }

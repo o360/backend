@@ -8,7 +8,6 @@ import Element.{Cell, Point, Region}
 
 import scala.util.Try
 
-
 object SpreadsheetApi {
 
   private val spreadsheetDefaultWidth = 26
@@ -40,7 +39,7 @@ object SpreadsheetApi {
       val rows = setTextActions.groupBy(_.coordinate.y)
       if (rows.isEmpty) None
       else {
-          val rowsModels = (0 to maxRow).map { rowIndex =>
+        val rowsModels = (0 to maxRow).map { rowIndex =>
           val cells = rows.getOrElse(rowIndex, Nil).groupBy(_.coordinate.x).mapValues(_.head.cell)
           val cellsModels = (0 to maxColumn).map { cellIndex =>
             val color = coordinateToColor.get(Point(cellIndex, rowIndex))
@@ -57,7 +56,8 @@ object SpreadsheetApi {
           new UpdateCellsRequest()
             .setStart(startCoordinate)
             .setRows(rowsModels)
-            .setFields("userEnteredValue,userEnteredFormat.textFormat,userEnteredFormat.backgroundColor,userEnteredFormat.horizontalAlignment")
+            .setFields(
+              "userEnteredValue,userEnteredFormat.textFormat,userEnteredFormat.backgroundColor,userEnteredFormat.horizontalAlignment")
         )
 
         Some(request)
@@ -71,8 +71,8 @@ object SpreadsheetApi {
         new Request()
           .setMergeCells(
             new MergeCellsRequest()
-            .setRange(getGridRange(createMergeAction.region, sheetId, includeRight = true))
-            .setMergeType("MERGE_ALL")
+              .setRange(getGridRange(createMergeAction.region, sheetId, includeRight = true))
+              .setMergeType("MERGE_ALL")
           )
       }
     }

@@ -18,7 +18,7 @@ import testutils.generator.AssessmentGenerator
 import utils.errors.ApplicationError
 import utils.listmeta.ListMeta
 
-import scalaz.{EitherT, \/, \/-}
+import scalaz.{\/, \/-, EitherT}
 
 /**
   * Test for assessment controller.
@@ -49,7 +49,8 @@ class AssessmentControllerTest extends BaseControllerTest {
       val total = 3
       val assessments = Seq(Assessment(None, Nil))
       when(fixture.assessmentServiceMock.getList(eventId, projectId)(admin))
-        .thenReturn(EitherT.eitherT(toFuture(\/-(ListWithTotal(total, assessments)): ApplicationError \/ ListWithTotal[Assessment])))
+        .thenReturn(EitherT.eitherT(
+          toFuture(\/-(ListWithTotal(total, assessments)): ApplicationError \/ ListWithTotal[Assessment])))
       val request = authenticated(FakeRequest(), env)
 
       val response = fixture.controller.getList(eventId, projectId)(request)

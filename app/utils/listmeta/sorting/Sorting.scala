@@ -28,7 +28,6 @@ object Sorting {
       */
     case object Asc extends Direction
 
-
     /**
       * Descending direction.
       */
@@ -36,12 +35,12 @@ object Sorting {
 
   }
 
-
   /**
     * List of fields available for sorting.
     */
   case class AvailableFields(fields: Set[Symbol])
   object AvailableFields {
+
     /**
       * Creates available sorting fields.
       *

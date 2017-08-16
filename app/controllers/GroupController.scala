@@ -20,7 +20,8 @@ import utils.listmeta.sorting.Sorting
 class GroupController @Inject()(
   silhouette: Silhouette[DefaultEnv],
   groupService: GroupService
-) extends BaseController with ListActions {
+) extends BaseController
+  with ListActions {
 
   implicit val sortingFields = Sorting.AvailableFields('id, 'name)
 
@@ -47,9 +48,9 @@ class GroupController @Inject()(
     toResult(Ok) {
       groupService
         .list(parentId, userId, name, levels)
-        .map {
-          groups => Response.List(groups) {
-            group => ApiGroup(group)
+        .map { groups =>
+          Response.List(groups) { group =>
+            ApiGroup(group)
           }
         }
     }
@@ -70,22 +71,25 @@ class GroupController @Inject()(
   /**
     * Updates group and returns its model.
     */
-  def update(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async(parse.json[ApiPartialGroup]) { implicit request =>
-    toResult(Ok) {
-      val draft = request.body.toModel(id)
-      groupService
-        .update(draft)
-        .map(ApiGroup(_))
-    }
+  def update(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async(parse.json[ApiPartialGroup]) {
+    implicit request =>
+      toResult(Ok) {
+        val draft = request.body.toModel(id)
+        groupService
+          .update(draft)
+          .map(ApiGroup(_))
+      }
   }
 
   /**
     * Removes group.
     */
   def delete(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
-    groupService.delete(id).fold(
-      error => toResult(error),
-      _ => NoContent
-    )
+    groupService
+      .delete(id)
+      .fold(
+        error => toResult(error),
+        _ => NoContent
+      )
   }
 }

@@ -13,8 +13,7 @@ trait ProjectRelationFixture
   with ProjectFixture
   with GroupFixture
   with FormFixture
-  with TemplateFixture {
-  self: FixtureSupport =>
+  with TemplateFixture { self: FixtureSupport =>
 
   val ProjectRelations = Seq(
     Relation(

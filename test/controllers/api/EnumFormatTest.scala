@@ -15,6 +15,7 @@ class EnumFormatTest extends PlaySpec with GeneratorDrivenPropertyChecks {
 
   private case class TestEnumFormat(value: TestEnum) extends EnumFormat[TestEnum]
   private object TestEnumFormat extends EnumFormatHelper[TestEnum, TestEnumFormat]("test") {
+
     /**
       * Mapping between string representation and concrete enum values.
       */

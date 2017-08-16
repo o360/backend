@@ -26,7 +26,6 @@ case class User(
   timezone: ZoneId
 ) extends Identity
 
-
 object User {
   val nameSingular = "user"
 

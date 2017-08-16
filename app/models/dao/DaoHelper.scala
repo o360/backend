@@ -18,8 +18,7 @@ import scala.language.higherKinds
 /**
   * Trait with helper methods for DAO's.
   */
-trait DaoHelper {
-  self: HasDatabaseConfigProvider[JdbcProfile] =>
+trait DaoHelper { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import driver.api._
 
@@ -27,6 +26,7 @@ trait DaoHelper {
     * Extensions for slick query.
     */
   implicit class QueryExtensions[E, U](query: Query[E, U, Seq]) {
+
     /**
       * Filter query by given list of criteria.
       *
@@ -55,7 +55,7 @@ trait DaoHelper {
       * @return slick query
       */
     def applyPagination(pagination: Pagination): Query[E, U, Seq] = pagination match {
-      case p@WithPages(size, _) =>
+      case p @ WithPages(size, _) =>
         query
           .drop(p.offset)
           .take(size)
@@ -94,9 +94,8 @@ trait DaoHelper {
     * @param meta        list meta
     * @return future of list result
     */
-  def runListQuery[E, U](query: Query[E, U, Seq])
-    (sortMapping: E => PartialFunction[Symbol, Rep[_]])
-    (implicit meta: ListMeta): Future[ListWithTotal[U]] = {
+  def runListQuery[E, U](query: Query[E, U, Seq])(sortMapping: E => PartialFunction[Symbol, Rep[_]])(
+    implicit meta: ListMeta): Future[ListWithTotal[U]] = {
     val paginatedQuery = query
       .applySorting(meta.sorting)(sortMapping)
       .applyPagination(meta.pagination)
@@ -107,9 +106,9 @@ trait DaoHelper {
       meta.pagination match {
         case Pagination.WithoutPages =>
           ListWithTotal(resultSize, elements).toFuture
-        case p@Pagination.WithPages(size, number) if resultSize < size && resultSize > 0 =>
+        case p @ Pagination.WithPages(size, number) if resultSize < size && resultSize > 0 =>
           ListWithTotal(p.offset + resultSize, elements).toFuture
-        case p@Pagination.WithPages(size, number) =>
+        case p @ Pagination.WithPages(size, number) =>
           db.run(query.length.result).map(ListWithTotal(_, elements))
       }
     }
@@ -138,8 +137,7 @@ trait DaoHelper {
       * @tparam K key type
       */
     def groupByWithOrder[K](f: (A) => K): Seq[(K, Seq[A])] = {
-      sequence
-        .zipWithIndex
+      sequence.zipWithIndex
         .groupBy(x => f(x._1))
         .toSeq
         .sortBy(_._2.head._2)

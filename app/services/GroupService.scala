@@ -29,7 +29,8 @@ class GroupService @Inject()(
     * Returns group by ID
     */
   def getById(id: Long)(implicit account: User): SingleResult = {
-    groupDao.findById(id)
+    groupDao
+      .findById(id)
       .liftRight {
         NotFoundError.Group(id)
       }
@@ -53,13 +54,15 @@ class GroupService @Inject()(
       Try(l.split(",")).map(_.toSeq.map(_.toInt)).toOption
     }
 
-    groupDao.getList(
-      optId = None,
-      optParentId = parentId,
-      optUserId = userId,
-      optName = name,
-      optLevels = levelsParsed
-    ).lift
+    groupDao
+      .getList(
+        optId = None,
+        optParentId = parentId,
+        optUserId = userId,
+        optName = name,
+        optLevels = levelsParsed
+      )
+      .lift
   }
 
   /**

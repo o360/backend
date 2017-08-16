@@ -6,6 +6,7 @@ import Element._
   * Action to apply on spreadsheet.
   */
 trait Action {
+
   /**
     * Region for action to apply.
     */
@@ -16,6 +17,7 @@ trait Action {
   * Action with the point.
   */
 trait PointAction extends Action {
+
   /**
     * Point for action to apply.
     */
@@ -30,14 +32,17 @@ object Action {
     * Sets text of cell at coordinate.
     */
   case class SetCellText(coordinate: Point, cell: Cell) extends PointAction
+
   /**
     * Sets borders of region.
     */
   case class SetBorder(region: Region, border: Border) extends Action
+
   /**
     * Sets background color of region.
     */
   case class SetColor(region: Region, color: Color) extends Action {
+
     /**
       * Converts region to seq of individual cells.
       */

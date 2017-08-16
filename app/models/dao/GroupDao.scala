@@ -13,8 +13,7 @@ import utils.listmeta.ListMeta
 
 import scala.concurrent.Future
 
-trait GroupComponent {
-  self: HasDatabaseConfigProvider[JdbcProfile] =>
+trait GroupComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import driver.api._
 
@@ -86,7 +85,8 @@ class GroupDao @Inject()(
     */
   def create(group: Group): Future[Group] = {
     db.run(Groups.returning(Groups.map(_.id)) += DbGroup.fromModel(group))
-      .flatMap(findById).map(_.getOrElse(throw new NoSuchElementException("group not found")))
+      .flatMap(findById)
+      .map(_.getOrElse(throw new NoSuchElementException("group not found")))
   }
 
   /**
@@ -116,23 +116,26 @@ class GroupDao @Inject()(
     }
 
     val query = Groups
-      .join(GroupLevels).on(_.id === _.group_id)
-      .applyFilter { case (group, levelView) =>
-        Seq(
-          optId.map(group.id === _),
-          optParentId match {
-            case Tristate.Present(parentId) => Some(group.parentId.fold(false: Rep[Boolean])(_ === parentId))
-            case Tristate.Absent => Some(group.parentId.isEmpty)
-            case Tristate.Unspecified => None
-          },
-          optUserId.map(userId => group.id in UserGroups.filter(_.userId === userId).map(_.groupId)),
-          filterName(group),
-          filterLevels(levelView)
-        )
+      .join(GroupLevels)
+      .on(_.id === _.group_id)
+      .applyFilter {
+        case (group, levelView) =>
+          Seq(
+            optId.map(group.id === _),
+            optParentId match {
+              case Tristate.Present(parentId) => Some(group.parentId.fold(false: Rep[Boolean])(_ === parentId))
+              case Tristate.Absent => Some(group.parentId.isEmpty)
+              case Tristate.Unspecified => None
+            },
+            optUserId.map(userId => group.id in UserGroups.filter(_.userId === userId).map(_.groupId)),
+            filterName(group),
+            filterLevels(levelView)
+          )
       }
-      .map { case (group, levelView) =>
-        val hasChildren = Groups.filter(_.parentId === group.id).exists
-        (group, hasChildren, levelView.level)
+      .map {
+        case (group, levelView) =>
+          val hasChildren = Groups.filter(_.parentId === group.id).exists
+          (group, hasChildren, levelView.level)
       }
 
     runListQuery(query) {
@@ -141,10 +144,10 @@ class GroupDao @Inject()(
         case 'name => group.name
         case 'level => level
       }
-    }
-    .map { case ListWithTotal(total, data) =>
-      ListWithTotal(total, data.map { case (group, hasChildren, level) => group.toModel(hasChildren, level) })
-    }
+    }.map {
+        case ListWithTotal(total, data) =>
+          ListWithTotal(total, data.map { case (group, hasChildren, level) => group.toModel(hasChildren, level) })
+      }
   }
 
   /**

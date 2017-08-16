@@ -35,5 +35,5 @@ object ApiPartialTemplate {
       (__ \ "body").read[String] and
       (__ \ "kind").read[ApiNotificationKind] and
       (__ \ "recipient").read[ApiNotificationRecipient]
-    ) (ApiPartialTemplate(_, _, _, _, _))
+  )(ApiPartialTemplate(_, _, _, _, _))
 }

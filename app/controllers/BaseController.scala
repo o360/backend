@@ -45,8 +45,8 @@ trait BaseController extends Controller {
     * @param res    either result or error
     * @param writes writes to convert result to JSON
     */
-  def toResult[E <: ApplicationError, T <: Response](status: Status)
-    (res: EitherT[Future, E, T])(implicit writes: Writes[T]): Future[Result] = {
+  def toResult[E <: ApplicationError, T <: Response](status: Status)(res: EitherT[Future, E, T])(
+    implicit writes: Writes[T]): Future[Result] = {
     res.fold(
       error => toResult(error),
       data => toResult(data, status)

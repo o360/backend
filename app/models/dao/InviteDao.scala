@@ -16,8 +16,7 @@ import scala.concurrent.Future
 /**
   * Component for invite and invite_group tables.
   */
-trait InviteComponent {
-  self: HasDatabaseConfigProvider[JdbcProfile] =>
+trait InviteComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import driver.api._
 
@@ -39,7 +38,11 @@ trait InviteComponent {
 
   object DbInvite {
     def fromModel(invite: Invite): DbInvite = DbInvite(
-      0, invite.code, invite.email, invite.activationTime, invite.creationTime
+      0,
+      invite.code,
+      invite.email,
+      invite.activationTime,
+      invite.creationTime
     )
   }
 
@@ -78,7 +81,9 @@ trait InviteComponent {
 @Singleton
 class InviteDao @Inject()(
   val dbConfigProvider: DatabaseConfigProvider
-) extends HasDatabaseConfigProvider[JdbcProfile] with DaoHelper with InviteComponent {
+) extends HasDatabaseConfigProvider[JdbcProfile]
+  with DaoHelper
+  with InviteComponent {
 
   import driver.api._
 
@@ -89,7 +94,8 @@ class InviteDao @Inject()(
     val inviteQuery = baseQuery
       .sortBy(_.id)
       .applyPagination(meta.pagination)
-      .joinLeft(InviteGroups).on(_.id === _.inviteId)
+      .joinLeft(InviteGroups)
+      .on(_.id === _.inviteId)
       .sortBy(_._1.id)
 
     for {
@@ -98,10 +104,11 @@ class InviteDao @Inject()(
     } yield {
       val data = flatResult
         .groupByWithOrder { case (invite, _) => invite }
-        .map { case (invite, groupIdsWithEvent) =>
-          val groupIds = groupIdsWithEvent
-            .collect { case (_, Some(g)) => g.groupId }
-          invite.toModel(groupIds)
+        .map {
+          case (invite, groupIdsWithEvent) =>
+            val groupIds = groupIdsWithEvent
+              .collect { case (_, Some(g)) => g.groupId }
+            invite.toModel(groupIds)
         }
 
       ListWithTotal(count, data)
@@ -120,13 +127,18 @@ class InviteDao @Inject()(
   def findByCode(code: String): Future[Option[Invite]] = {
     val inviteQuery = Invites
       .filter(_.code === code)
-      .joinLeft(InviteGroups).on(_.id === _.inviteId)
+      .joinLeft(InviteGroups)
+      .on(_.id === _.inviteId)
       .result
 
     db.run(inviteQuery).map { result =>
-      result.groupByWithOrder(_._1).map { case (dbInvite, groups) =>
-        dbInvite.toModel(groups.flatMap(_._2.map(_.groupId)))
-      }.headOption
+      result
+        .groupByWithOrder(_._1)
+        .map {
+          case (dbInvite, groups) =>
+            dbInvite.toModel(groups.flatMap(_._2.map(_.groupId)))
+        }
+        .headOption
     }
   }
 

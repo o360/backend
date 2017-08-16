@@ -16,8 +16,7 @@ import scala.concurrent.Future
 /**
   * Component for project table.
   */
-trait ProjectComponent {
-  self: HasDatabaseConfigProvider[JdbcProfile] =>
+trait ProjectComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import driver.api._
 
@@ -73,12 +72,11 @@ trait ProjectComponent {
     def isAnonymous = column[Boolean]("is_anonymous")
     def machineName = column[String]("machine_name")
 
-    def * = (id, name, description, groupAuditorId, formsOnSamePage, canRevote,
-      isAnonymous, machineName) <> ((DbProject.apply _).tupled, DbProject.unapply)
+    def * =
+      (id, name, description, groupAuditorId, formsOnSamePage, canRevote, isAnonymous, machineName) <> ((DbProject.apply _).tupled, DbProject.unapply)
   }
 
   val Projects = TableQuery[ProjectTable]
-
 
 }
 
@@ -139,9 +137,9 @@ class ProjectDao @Inject()(
 
     def anyRelatedGroupFilter(project: ProjectTable) = optAnyRelatedGroupId.map { anyRelatedGroup =>
       project.groupAuditorId === anyRelatedGroup ||
-        (project.id in Relations
-          .filter(x => x.groupToId === anyRelatedGroup || x.groupFromId === anyRelatedGroup)
-          .map(_.projectId))
+      (project.id in Relations
+        .filter(x => x.groupToId === anyRelatedGroup || x.groupFromId === anyRelatedGroup)
+        .map(_.projectId))
     }
 
     val baseQuery = Projects
@@ -164,14 +162,17 @@ class ProjectDao @Inject()(
     val resultQuery = baseQuery
       .applySorting(meta.sorting)(sortMapping)
       .applyPagination(meta.pagination)
-      .join(Groups).on(_.groupAuditorId === _.id)
-      .joinLeft(templatesQuery).on { case ((project, _), (template, _)) => project.id === template.projectId }
-      .map { case ((project, auditorGroup), templateOpt) =>
-        val eventsIds = EventProjects.filter(_.projectId === project.id).map(_.eventId)
-        val isEventsExists = Events
-          .filter(event => event.id.in(eventsIds) && statusFilter(event, Event.Status.InProgress))
-          .exists
-        ((project, auditorGroup, isEventsExists), templateOpt)
+      .join(Groups)
+      .on(_.groupAuditorId === _.id)
+      .joinLeft(templatesQuery)
+      .on { case ((project, _), (template, _)) => project.id === template.projectId }
+      .map {
+        case ((project, auditorGroup), templateOpt) =>
+          val eventsIds = EventProjects.filter(_.projectId === project.id).map(_.eventId)
+          val isEventsExists = Events
+            .filter(event => event.id.in(eventsIds) && statusFilter(event, Event.Status.InProgress))
+            .exists
+          ((project, auditorGroup, isEventsExists), templateOpt)
       }
       .applySorting(meta.sorting) { case ((project, _, _), _) => sortMapping(project) } // sort one page (order not preserved after join)
 
@@ -180,12 +181,15 @@ class ProjectDao @Inject()(
       result <- if (count > 0) db.run(resultQuery.result) else Nil.toFuture
     } yield {
       val data = result
-        .groupByWithOrder { case ((project, auditorGroup, isEventsExists), _) => (project, auditorGroup, isEventsExists) }
-        .map { case ((project, auditorGroup, isEventsExists), flatTemplates) =>
-          val templates = flatTemplates
-            .collect { case (_, Some((templateBinding, template))) => templateBinding.toModel(template.name) }
+        .groupByWithOrder {
+          case ((project, auditorGroup, isEventsExists), _) => (project, auditorGroup, isEventsExists)
+        }
+        .map {
+          case ((project, auditorGroup, isEventsExists), flatTemplates) =>
+            val templates = flatTemplates
+              .collect { case (_, Some((templateBinding, template))) => templateBinding.toModel(template.name) }
 
-          project.toModel(auditorGroup.name, templates, isEventsExists)
+            project.toModel(auditorGroup.name, templates, isEventsExists)
         }
       ListWithTotal(count, data)
     }

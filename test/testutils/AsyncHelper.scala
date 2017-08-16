@@ -3,7 +3,6 @@ package testutils
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 
-
 /**
   * Helper for scala's future.
   */

@@ -46,7 +46,8 @@ class ActionTest extends BaseServiceTest {
             SetMerge(Region(point, Point(point.x + 5, point.y)))
           )
         }, {
-          val container = Container(TopToDown)(Cell("1"), Cell("2"), NoElement, Cell("3"), Cell("4")).colorIfEven(Color.lightGray)
+          val container =
+            Container(TopToDown)(Cell("1"), Cell("2"), NoElement, Cell("3"), Cell("4")).colorIfEven(Color.lightGray)
           container -> Seq(
             SetColor(Point(0, 1).toRegion, Color.lightGray),
             SetColor(Point(0, 3).toRegion, Color.lightGray)

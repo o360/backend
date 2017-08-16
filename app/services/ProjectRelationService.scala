@@ -25,7 +25,8 @@ class ProjectRelationService @Inject()(
     * Returns relation by ID
     */
   def getById(id: Long)(implicit account: User): SingleResult = {
-    projectRelationDao.findById(id)
+    projectRelationDao
+      .findById(id)
       .liftRight {
         NotFoundError.ProjectRelation(id)
       }
@@ -93,10 +94,12 @@ class ProjectRelationService @Inject()(
     for {
       relation <- getById(id)
 
-      activeEvents <- eventDao.getList(
-        optStatus = Some(Event.Status.InProgress),
-        optProjectId = Some(relation.project.id)
-      ).lift
+      activeEvents <- eventDao
+        .getList(
+          optStatus = Some(Event.Status.InProgress),
+          optProjectId = Some(relation.project.id)
+        )
+        .lift
 
       _ <- ensure(activeEvents.total == 0) {
         ConflictError.Project.ActiveEventExists
@@ -119,11 +122,13 @@ class ProjectRelationService @Inject()(
         BadRequestError.Relation.GroupToMissed(validatedRelation.toString)
       }
 
-      activeEvents <- eventDao.getList(
-        optId = None,
-        optStatus = Some(Event.Status.InProgress),
-        optProjectId = Some(validatedRelation.project.id)
-      ).lift
+      activeEvents <- eventDao
+        .getList(
+          optId = None,
+          optStatus = Some(Event.Status.InProgress),
+          optProjectId = Some(validatedRelation.project.id)
+        )
+        .lift
 
       _ <- ensure(activeEvents.total == 0) {
         ConflictError.Project.ActiveEventExists

@@ -22,9 +22,9 @@ import Scalaz.ToEitherOps
   */
 class ProjectRelationServiceTest
   extends BaseServiceTest
-    with ProjectRelationGenerator
-    with ProjectRelationFixture
-    with FormFixture {
+  with ProjectRelationGenerator
+  with ProjectRelationFixture
+  with FormFixture {
 
   private val admin = UserFixture.admin
 
@@ -32,7 +32,8 @@ class ProjectRelationServiceTest
     relationDaoMock: ProjectRelationDao,
     eventDaoMock: EventDao,
     formService: FormService,
-    service: ProjectRelationService)
+    service: ProjectRelationService
+  )
 
   private def getFixture = {
     val daoMock = mock[ProjectRelationDao]
@@ -75,26 +76,27 @@ class ProjectRelationServiceTest
 
   "list" should {
     "return list of relations from db" in {
-      forAll { (
-      projectId: Option[Long],
-      relations: Seq[Relation],
-      total: Int
-      ) =>
-        val fixture = getFixture
-        when(fixture.relationDaoMock.getList(
-          optId = any[Option[Long]],
-          optProjectId = eqTo(projectId),
-          optKind = any[Option[Relation.Kind]],
-          optFormId = any[Option[Long]],
-          optGroupFromId = any[Option[Long]],
-          optGroupToId = any[Option[Long]],
-          optEmailTemplateId = any[Option[Long]]
-        )(eqTo(ListMeta.default))
-        ).thenReturn(toFuture(ListWithTotal(total, relations)))
-        val result = wait(fixture.service.getList(projectId)(admin, ListMeta.default).run)
+      forAll {
+        (
+          projectId: Option[Long],
+          relations: Seq[Relation],
+          total: Int
+        ) =>
+          val fixture = getFixture
+          when(
+            fixture.relationDaoMock.getList(
+              optId = any[Option[Long]],
+              optProjectId = eqTo(projectId),
+              optKind = any[Option[Relation.Kind]],
+              optFormId = any[Option[Long]],
+              optGroupFromId = any[Option[Long]],
+              optGroupToId = any[Option[Long]],
+              optEmailTemplateId = any[Option[Long]]
+            )(eqTo(ListMeta.default))).thenReturn(toFuture(ListWithTotal(total, relations)))
+          val result = wait(fixture.service.getList(projectId)(admin, ListMeta.default).run)
 
-        result mustBe 'right
-        result.toOption.get mustBe ListWithTotal(total, relations)
+          result mustBe 'right
+          result.toOption.get mustBe ListWithTotal(total, relations)
       }
     }
   }
@@ -102,7 +104,8 @@ class ProjectRelationServiceTest
   "create" should {
     "return bad request if can't validate relations" in {
       val fixture = getFixture
-      val relation = Relation(1, NamedEntity(1), NamedEntity(1), None, NamedEntity(2), Relation.Kind.Classic, Nil, false, false)
+      val relation =
+        Relation(1, NamedEntity(1), NamedEntity(1), None, NamedEntity(2), Relation.Kind.Classic, Nil, false, false)
 
       val result = wait(fixture.service.create(relation)(admin).run)
 
@@ -110,20 +113,20 @@ class ProjectRelationServiceTest
       result.swap.toOption.get mustBe a[BadRequestError]
     }
 
-
     "return bad request if relation already exists" in {
       val fixture = getFixture
       val relation = ProjectRelations(0)
       val form = Forms(0).copy(kind = Form.Kind.Active)
 
       when(fixture.relationDaoMock.exists(relation)).thenReturn(toFuture(true))
-      when(fixture.eventDaoMock.getList(
-        optId = any[Option[Long]],
-        optStatus = eqTo(Some(Event.Status.InProgress)),
-        optProjectId = eqTo(Some(relation.project.id)),
-        optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]]
-      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
+      when(
+        fixture.eventDaoMock.getList(
+          optId = any[Option[Long]],
+          optStatus = eqTo(Some(Event.Status.InProgress)),
+          optProjectId = eqTo(Some(relation.project.id)),
+          optFormId = any[Option[Long]],
+          optGroupFromIds = any[Option[Seq[Long]]]
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       when(fixture.formService.getById(relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
       val result = wait(fixture.service.create(relation)(admin).run)
@@ -137,13 +140,14 @@ class ProjectRelationServiceTest
       val relation = ProjectRelations(0)
 
       when(fixture.relationDaoMock.exists(relation)).thenReturn(toFuture(false))
-      when(fixture.eventDaoMock.getList(
-        optId = any[Option[Long]],
-        optStatus = eqTo(Some(Event.Status.InProgress)),
-        optProjectId = eqTo(Some(relation.project.id)),
-        optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]]
-      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](1, Nil)))
+      when(
+        fixture.eventDaoMock.getList(
+          optId = any[Option[Long]],
+          optStatus = eqTo(Some(Event.Status.InProgress)),
+          optProjectId = eqTo(Some(relation.project.id)),
+          optFormId = any[Option[Long]],
+          optGroupFromIds = any[Option[Seq[Long]]]
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](1, Nil)))
       val result = wait(fixture.service.create(relation)(admin).run)
 
       result mustBe 'left
@@ -158,13 +162,14 @@ class ProjectRelationServiceTest
 
       when(fixture.relationDaoMock.exists(relation.copy(id = 0))).thenReturn(toFuture(false))
       when(fixture.relationDaoMock.create(relation.copy(id = 0))).thenReturn(toFuture(relation))
-      when(fixture.eventDaoMock.getList(
-        optId = any[Option[Long]],
-        optStatus = eqTo(Some(Event.Status.InProgress)),
-        optProjectId = eqTo(Some(relation.project.id)),
-        optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]]
-      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
+      when(
+        fixture.eventDaoMock.getList(
+          optId = any[Option[Long]],
+          optStatus = eqTo(Some(Event.Status.InProgress)),
+          optProjectId = eqTo(Some(relation.project.id)),
+          optFormId = any[Option[Long]],
+          optGroupFromIds = any[Option[Seq[Long]]]
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       when(fixture.formService.getById(relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
       val result = wait(fixture.service.create(relation.copy(id = 0))(admin).run)
@@ -181,13 +186,14 @@ class ProjectRelationServiceTest
 
       when(fixture.relationDaoMock.exists(relation.copy(id = 0))).thenReturn(toFuture(false))
       when(fixture.relationDaoMock.create(relation.copy(id = 0))).thenReturn(toFuture(relation))
-      when(fixture.eventDaoMock.getList(
-        optId = any[Option[Long]],
-        optStatus = eqTo(Some(Event.Status.InProgress)),
-        optProjectId = eqTo(Some(relation.project.id)),
-        optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]]
-      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
+      when(
+        fixture.eventDaoMock.getList(
+          optId = any[Option[Long]],
+          optStatus = eqTo(Some(Event.Status.InProgress)),
+          optProjectId = eqTo(Some(relation.project.id)),
+          optFormId = any[Option[Long]],
+          optGroupFromIds = any[Option[Seq[Long]]]
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       when(fixture.formService.getById(relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
       val result = wait(fixture.service.create(relation.copy(id = 0))(admin).run)
@@ -224,22 +230,23 @@ class ProjectRelationServiceTest
 
     "return bad request if can't validate relations" in {
       val fixture = getFixture
-      val relation = Relation(1, NamedEntity(1), NamedEntity(1), None, NamedEntity(2), Relation.Kind.Classic, Nil, false, false)
+      val relation =
+        Relation(1, NamedEntity(1), NamedEntity(1), None, NamedEntity(2), Relation.Kind.Classic, Nil, false, false)
 
       when(fixture.relationDaoMock.findById(relation.id)).thenReturn(toFuture(Some(relation)))
-      when(fixture.eventDaoMock.getList(
-        optId = any[Option[Long]],
-        optStatus = eqTo(Some(Event.Status.InProgress)),
-        optProjectId = eqTo(Some(relation.project.id)),
-        optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]]
-      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
+      when(
+        fixture.eventDaoMock.getList(
+          optId = any[Option[Long]],
+          optStatus = eqTo(Some(Event.Status.InProgress)),
+          optProjectId = eqTo(Some(relation.project.id)),
+          optFormId = any[Option[Long]],
+          optGroupFromIds = any[Option[Seq[Long]]]
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       val result = wait(fixture.service.update(relation)(admin).run)
 
       result mustBe 'left
       result.swap.toOption.get mustBe a[BadRequestError]
     }
-
 
     "return bad request if relation already exists" in {
       val fixture = getFixture
@@ -249,13 +256,14 @@ class ProjectRelationServiceTest
       when(fixture.relationDaoMock.findById(relation.id))
         .thenReturn(toFuture(Some(relation.copy(groupFrom = NamedEntity(999)))))
       when(fixture.relationDaoMock.exists(relation)).thenReturn(toFuture(true))
-      when(fixture.eventDaoMock.getList(
-        optId = any[Option[Long]],
-        optStatus = eqTo(Some(Event.Status.InProgress)),
-        optProjectId = eqTo(Some(relation.project.id)),
-        optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]]
-      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
+      when(
+        fixture.eventDaoMock.getList(
+          optId = any[Option[Long]],
+          optStatus = eqTo(Some(Event.Status.InProgress)),
+          optProjectId = eqTo(Some(relation.project.id)),
+          optFormId = any[Option[Long]],
+          optGroupFromIds = any[Option[Seq[Long]]]
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       when(fixture.formService.getById(relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
       val result = wait(fixture.service.update(relation)(admin).run)
@@ -270,13 +278,14 @@ class ProjectRelationServiceTest
 
       when(fixture.relationDaoMock.findById(relation.id)).thenReturn(toFuture(Some(relation)))
       when(fixture.relationDaoMock.exists(relation)).thenReturn(toFuture(false))
-      when(fixture.eventDaoMock.getList(
-        optId = any[Option[Long]],
-        optStatus = eqTo(Some(Event.Status.InProgress)),
-        optProjectId = eqTo(Some(relation.project.id)),
-        optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]]
-      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](1, Nil)))
+      when(
+        fixture.eventDaoMock.getList(
+          optId = any[Option[Long]],
+          optStatus = eqTo(Some(Event.Status.InProgress)),
+          optProjectId = eqTo(Some(relation.project.id)),
+          optFormId = any[Option[Long]],
+          optGroupFromIds = any[Option[Seq[Long]]]
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](1, Nil)))
       val result = wait(fixture.service.update(relation)(admin).run)
 
       result mustBe 'left
@@ -292,13 +301,14 @@ class ProjectRelationServiceTest
       when(fixture.relationDaoMock.findById(relation.id)).thenReturn(toFuture(Some(relation)))
       when(fixture.relationDaoMock.exists(relation)).thenReturn(toFuture(false))
       when(fixture.relationDaoMock.update(relation)).thenReturn(toFuture(relation))
-      when(fixture.eventDaoMock.getList(
-        optId = any[Option[Long]],
-        optStatus = eqTo(Some(Event.Status.InProgress)),
-        optProjectId = eqTo(Some(relation.project.id)),
-        optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]]
-      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
+      when(
+        fixture.eventDaoMock.getList(
+          optId = any[Option[Long]],
+          optStatus = eqTo(Some(Event.Status.InProgress)),
+          optProjectId = eqTo(Some(relation.project.id)),
+          optFormId = any[Option[Long]],
+          optGroupFromIds = any[Option[Seq[Long]]]
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       when(fixture.formService.getById(relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
       val result = wait(fixture.service.update(relation)(admin).run)
@@ -316,13 +326,14 @@ class ProjectRelationServiceTest
       when(fixture.relationDaoMock.findById(relation.id)).thenReturn(toFuture(Some(relation)))
       when(fixture.relationDaoMock.exists(relation)).thenReturn(toFuture(false))
       when(fixture.relationDaoMock.update(relation)).thenReturn(toFuture(relation))
-      when(fixture.eventDaoMock.getList(
-        optId = any[Option[Long]],
-        optStatus = eqTo(Some(Event.Status.InProgress)),
-        optProjectId = eqTo(Some(relation.project.id)),
-        optFormId = any[Option[Long]],
-        optGroupFromIds = any[Option[Seq[Long]]]
-      )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
+      when(
+        fixture.eventDaoMock.getList(
+          optId = any[Option[Long]],
+          optStatus = eqTo(Some(Event.Status.InProgress)),
+          optProjectId = eqTo(Some(relation.project.id)),
+          optFormId = any[Option[Long]],
+          optGroupFromIds = any[Option[Seq[Long]]]
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       when(fixture.formService.getById(relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
       val result = wait(fixture.service.update(relation)(admin).run)
@@ -352,13 +363,14 @@ class ProjectRelationServiceTest
         val fixture = getFixture
         when(fixture.relationDaoMock.findById(id)).thenReturn(toFuture(Some(ProjectRelations(0))))
         when(fixture.relationDaoMock.delete(id)).thenReturn(toFuture(1))
-        when(fixture.eventDaoMock.getList(
-          optId = any[Option[Long]],
-          optStatus = eqTo(Some(Event.Status.InProgress)),
-          optProjectId = eqTo(Some(ProjectRelations(0).project.id)),
-          optFormId = any[Option[Long]],
-          optGroupFromIds = any[Option[Seq[Long]]]
-        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
+        when(
+          fixture.eventDaoMock.getList(
+            optId = any[Option[Long]],
+            optStatus = eqTo(Some(Event.Status.InProgress)),
+            optProjectId = eqTo(Some(ProjectRelations(0).project.id)),
+            optFormId = any[Option[Long]],
+            optGroupFromIds = any[Option[Seq[Long]]]
+          )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
 
         val result = wait(fixture.service.delete(id)(admin).run)
 

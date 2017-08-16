@@ -11,8 +11,7 @@ import scala.concurrent.Future
 /**
   * Component for event_project table.
   */
-trait EventProjectComponent {
-  self: HasDatabaseConfigProvider[JdbcProfile] =>
+trait EventProjectComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import driver.api._
 
@@ -27,6 +26,7 @@ trait EventProjectComponent {
 
   val EventProjects = TableQuery[EventProjectTable]
 }
+
 /**
   * DAO for event - project relation.
   */
@@ -34,7 +34,8 @@ trait EventProjectComponent {
 class EventProjectDao @Inject()(
   protected val dbConfigProvider: DatabaseConfigProvider
 ) extends HasDatabaseConfigProvider[JdbcProfile]
-  with EventProjectComponent with DaoHelper {
+  with EventProjectComponent
+  with DaoHelper {
 
   import driver.api._
 
@@ -50,12 +51,15 @@ class EventProjectDao @Inject()(
       .result
   }
 
-  def add(eventId: Long, projectId: Long): Future[Unit] = db.run {
-    EventProjects += DbEventProject(eventId, projectId)
-  }.map(_ => ())
+  def add(eventId: Long, projectId: Long): Future[Unit] =
+    db.run {
+        EventProjects += DbEventProject(eventId, projectId)
+      }
+      .map(_ => ())
 
-
-  def remove(eventId: Long, projectId: Long): Future[Unit] = db.run {
-    EventProjects.filter(x => x.eventId === eventId && x.projectId === projectId).delete
-  }.map(_ => ())
+  def remove(eventId: Long, projectId: Long): Future[Unit] =
+    db.run {
+        EventProjects.filter(x => x.eventId === eventId && x.projectId === projectId).delete
+      }
+      .map(_ => ())
 }

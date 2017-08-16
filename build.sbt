@@ -4,7 +4,8 @@ version := "1.0"
 
 scalaVersion := "2.11.8"
 
-lazy val root = (project in file(".")).enablePlugins(PlayScala, SwaggerPlugin, DockerPlugin)
+lazy val root =
+  (project in file(".")).enablePlugins(PlayScala, SwaggerPlugin, DockerPlugin)
 
 libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-slick" % "2.0.2",
@@ -17,7 +18,7 @@ libraryDependencies ++= Seq(
   "com.google.apis" % "google-api-services-sheets" % "v4-rev473-1.22.0",
   "com.google.apis" % "google-api-services-drive" % "v3-rev74-1.22.0",
   "org.flywaydb" % "flyway-core" % "4.1.2",
-    filters
+  filters
 )
 
 libraryDependencies ++= Seq(
@@ -48,3 +49,5 @@ dockerUpdateLatest := true
 (stage in Docker) := (stage in Docker).dependsOn(swagger).value
 
 swaggerDomainNameSpaces := Seq("controllers.api")
+
+scalafmtOnCompile := true

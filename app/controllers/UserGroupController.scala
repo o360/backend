@@ -25,10 +25,12 @@ class UserGroupController @Inject()(
     * @param userId  user ID
     */
   def add(groupId: Long, userId: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
-    userGroupService.add(groupId, userId).fold(
-      error => toResult(error),
-      _ => NoContent
-    )
+    userGroupService
+      .add(groupId, userId)
+      .fold(
+        error => toResult(error),
+        _ => NoContent
+      )
   }
 
   /**
@@ -38,33 +40,41 @@ class UserGroupController @Inject()(
     * @param userId  user ID
     */
   def remove(groupId: Long, userId: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
-    userGroupService.remove(groupId, userId).fold(
-      error => toResult(error),
-      _ => NoContent
-    )
+    userGroupService
+      .remove(groupId, userId)
+      .fold(
+        error => toResult(error),
+        _ => NoContent
+      )
   }
 
   /**
     * Bulk adds users to groups.
     */
   def bulkAdd =
-    silhouette.SecuredAction(AllowedRole.admin)
+    silhouette
+      .SecuredAction(AllowedRole.admin)
       .async(parse.json[Seq[ApiUserGroup]]) { implicit request =>
-    userGroupService.bulkAdd(request.body.map(x => (x.groupId, x.userId))).fold(
-      error => toResult(error),
-      _ => NoContent
-    )
-  }
+        userGroupService
+          .bulkAdd(request.body.map(x => (x.groupId, x.userId)))
+          .fold(
+            error => toResult(error),
+            _ => NoContent
+          )
+      }
 
   /**
     * Bulk removes users from groups.
     */
   def bulkRemove =
-    silhouette.SecuredAction(AllowedRole.admin)
+    silhouette
+      .SecuredAction(AllowedRole.admin)
       .async(parse.json[Seq[ApiUserGroup]]) { implicit request =>
-        userGroupService.bulkRemove(request.body.map(x => (x.groupId, x.userId))).fold(
-          error => toResult(error),
-          _ => NoContent
-        )
+        userGroupService
+          .bulkRemove(request.body.map(x => (x.groupId, x.userId)))
+          .fold(
+            error => toResult(error),
+            _ => NoContent
+          )
       }
 }

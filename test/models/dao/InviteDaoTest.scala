@@ -25,11 +25,10 @@ class InviteDaoTest extends BaseDaoTest with InviteFixture with GroupFixture wit
 
   "findByCode" should {
     "find invite by code" in {
-      forAll(Gen.oneOf(Invites), Gen.oneOf(Some("not existed code"), None)) {
-        (invite: Invite, code: Option[String]) =>
-          val result = wait(dao.findByCode(code.getOrElse(invite.code)))
+      forAll(Gen.oneOf(Invites), Gen.oneOf(Some("not existed code"), None)) { (invite: Invite, code: Option[String]) =>
+        val result = wait(dao.findByCode(code.getOrElse(invite.code)))
 
-          result mustBe (if (code.isEmpty) Some(invite) else None)
+        result mustBe (if (code.isEmpty) Some(invite) else None)
       }
     }
   }

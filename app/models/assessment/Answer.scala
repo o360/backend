@@ -7,6 +7,7 @@ import models.form.{Form => FormTemplate}
   * Answers.
   */
 object Answer {
+
   /**
     * Answer for form.
     *
@@ -36,7 +37,8 @@ object Answer {
               answerElement.text.exists(t => t == "true" || t == "false")
 
             if (!needValues && answerIsValues) Some(invalidForm("Text element contains values answer"))
-            else if (needValues && !answerValuesMatchFormValues) Some(invalidForm("Values answer contains unknown valueId"))
+            else if (needValues && !answerValuesMatchFormValues)
+              Some(invalidForm("Values answer contains unknown valueId"))
             else if (!needValues && !answerIsText) Some(invalidForm("Text answer is missed"))
             else if (!validCheckboxAnswer) Some(invalidForm("Wrong checkbox value"))
             else None
@@ -46,9 +48,10 @@ object Answer {
 
       lazy val answerElementsIds = answers.map(_.elementId)
       lazy val elementAnswersAreDistinct = answerElementsIds.size == answers.size
-      lazy val allRequiredElementsAreAnswered = form.elements.filter(_.required).forall(x => answerElementsIds.contains(x.id))
+      lazy val allRequiredElementsAreAnswered =
+        form.elements.filter(_.required).forall(x => answerElementsIds.contains(x.id))
       lazy val maybeElementValidationError = answers.toSeq.map(validateElementAnswer).fold(None) {
-        case (err@Some(_), _) => err
+        case (err @ Some(_), _) => err
         case (None, maybeError) => maybeError
       }
 
@@ -58,7 +61,6 @@ object Answer {
       else None
     }
   }
-
 
   /**
     * Answer for form element.
@@ -85,11 +87,11 @@ object Answer {
         def findCaption(id: Long) = element.values.find(_.id == id).map(_.caption)
 
         valuesIds
-          .map(_
-            .map(findCaption)
-            .collect { case Some(v) => v }
-            .mkString(";\n")
-          ).getOrElse("")
+          .map(
+            _.map(findCaption)
+              .collect { case Some(v) => v }
+              .mkString(";\n"))
+          .getOrElse("")
       }
 
       element.kind match {

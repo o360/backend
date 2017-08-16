@@ -33,6 +33,7 @@ class CustomGoogleProfileParser extends CustomSocialProfileParser[JsValue, OAuth
     }
   }
 }
+
 /**
   * Custom google provider.
   */

@@ -9,8 +9,7 @@ import slick.driver.JdbcProfile
 /**
   * Component for template binding tables.
   */
-trait TemplateBindingComponent extends NotificationComponent {
-  self: HasDatabaseConfigProvider[JdbcProfile] =>
+trait TemplateBindingComponent extends NotificationComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import driver.api._
 
@@ -58,7 +57,8 @@ trait TemplateBindingComponent extends NotificationComponent {
     def kind = column[Notification.Kind]("kind")
     def recipient = column[Notification.Recipient]("recipient_kind")
 
-    def * = (relationId, templateId, kind, recipient) <> ((DbTemplateBinding.apply _).tupled, DbTemplateBinding.unapply)
+    def * =
+      (relationId, templateId, kind, recipient) <> ((DbTemplateBinding.apply _).tupled, DbTemplateBinding.unapply)
   }
 
   val RelationTemplates = TableQuery[RelationTemplateBindingTable]

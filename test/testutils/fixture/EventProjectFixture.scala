@@ -5,8 +5,7 @@ import com.ninja_squad.dbsetup.Operations._
 /**
   * Event project fixture.
   */
-trait EventProjectFixture extends FixtureHelper with EventFixture with ProjectFixture {
-  self: FixtureSupport =>
+trait EventProjectFixture extends FixtureHelper with EventFixture with ProjectFixture { self: FixtureSupport =>
 
   val EventProjects = Seq(
     (1, 1),

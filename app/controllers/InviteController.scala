@@ -19,15 +19,17 @@ import utils.implicits.FutureLifting._
 class InviteController @Inject()(
   silhouette: Silhouette[DefaultEnv],
   inviteService: InviteService
-) extends BaseController with ListActions {
+) extends BaseController
+  with ListActions {
 
   /**
     * Returns list of invites.
     */
   def getList = silhouette.SecuredAction(AllowedRole.admin).andThen(ListAction).async { implicit request =>
     toResult(Ok) {
-      inviteService.getList.map(invites => Response.List(invites) {
-        invite => ApiInvite(invite)
+      inviteService.getList.map(invites =>
+        Response.List(invites) { invite =>
+          ApiInvite(invite)
       })
     }
   }
@@ -35,20 +37,25 @@ class InviteController @Inject()(
   /**
     * Bulk creates invites.
     */
-  def bulkCreate = silhouette.SecuredAction(AllowedRole.admin).async(parse.json[Seq[ApiPartialInvite]]) { implicit request =>
-    inviteService.createInvites(request.body.map(_.toModel)).fold(
-      toResult(_),
-      _ => NoContent
-    )
+  def bulkCreate = silhouette.SecuredAction(AllowedRole.admin).async(parse.json[Seq[ApiPartialInvite]]) {
+    implicit request =>
+      inviteService
+        .createInvites(request.body.map(_.toModel))
+        .fold(
+          toResult(_),
+          _ => NoContent
+        )
   }
 
   /**
     * Submits invite code.
     */
   def submit = silhouette.SecuredAction.async(parse.json[ApiInviteCode]) { implicit request =>
-    inviteService.applyInvite(request.body.code).fold(
-      toResult(_),
-      _ => NoContent
-    )
+    inviteService
+      .applyInvite(request.body.code)
+      .fold(
+        toResult(_),
+        _ => NoContent
+      )
   }
 }

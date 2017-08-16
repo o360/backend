@@ -18,8 +18,7 @@ import scala.concurrent.Future
 /**
   * Component for notification datatypes.
   */
-trait NotificationComponent {
-  self: HasDatabaseConfigProvider[JdbcProfile] =>
+trait NotificationComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import driver.api._
 
@@ -51,8 +50,7 @@ trait NotificationComponent {
 /**
   * Component for event and event_notification tables.
   */
-trait EventComponent extends NotificationComponent {
-  self: HasDatabaseConfigProvider[JdbcProfile] =>
+trait EventComponent extends NotificationComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import driver.api._
 
@@ -131,7 +129,6 @@ trait EventComponent extends NotificationComponent {
   }
 }
 
-
 /**
   * Event DAO.
   */
@@ -154,11 +151,12 @@ class EventDao @Inject()(
     */
   def create(event: Event): Future[Event] = {
     db.run {
-      (for {
-        eventId <- Events.returning(Events.map(_.id)) += DbEvent.fromModel(event)
-        _ <- DBIO.seq(EventNotifications ++= event.notifications.map(x => DbEventNotification.fromModel(eventId, x)))
-      } yield eventId).transactionally
-    }.map(id => event.copy(id = id))
+        (for {
+          eventId <- Events.returning(Events.map(_.id)) += DbEvent.fromModel(event)
+          _ <- DBIO.seq(EventNotifications ++= event.notifications.map(x => DbEventNotification.fromModel(eventId, x)))
+        } yield eventId).transactionally
+      }
+      .map(id => event.copy(id = id))
   }
 
   /**
@@ -179,19 +177,25 @@ class EventDao @Inject()(
     }
 
     def formFilter(event: EventTable) = optFormId.map { formId =>
-      EventProjects.join(Relations).on(_.projectId === _.projectId)
-        .filter { case (eventProject, relation) =>
-          eventProject.eventId === event.id && relation.formId === formId
+      EventProjects
+        .join(Relations)
+        .on(_.projectId === _.projectId)
+        .filter {
+          case (eventProject, relation) =>
+            eventProject.eventId === event.id && relation.formId === formId
         }
         .exists
     }
 
     def groupFromFilter(event: EventTable) = optGroupFromIds.map { groupFromIds =>
-      EventProjects.join(Relations).on(_.projectId === _.projectId)
-        .filter { case (eventProject, relation) =>
-          eventProject.eventId === event.id && relation.groupFromId.inSet(groupFromIds)
-      }
-      .exists
+      EventProjects
+        .join(Relations)
+        .on(_.projectId === _.projectId)
+        .filter {
+          case (eventProject, relation) =>
+            eventProject.eventId === event.id && relation.groupFromId.inSet(groupFromIds)
+        }
+        .exists
     }
 
     val baseQuery = Events
@@ -217,7 +221,8 @@ class EventDao @Inject()(
     val resultQuery = baseQuery
       .applySorting(meta.sorting)(sortMapping)
       .applyPagination(meta.pagination)
-      .joinLeft(EventNotifications).on(_.id === _.eventId)
+      .joinLeft(EventNotifications)
+      .on(_.id === _.eventId)
       .applySorting(meta.sorting) { case (event, _) => sortMapping(event) } // sort one page (order not preserved after join)
 
     for {
@@ -226,10 +231,11 @@ class EventDao @Inject()(
     } yield {
       val data = flatResult
         .groupByWithOrder { case (event, _) => event }
-        .map { case (event, notificationsWithEvent) =>
-          val notifications = notificationsWithEvent
-            .collect { case (_, Some(n)) => Event.NotificationTime(n.time, n.kind, n.recipient) }
-          Event(event.id, event.description, event.start, event.end, notifications)
+        .map {
+          case (event, notificationsWithEvent) =>
+            val notifications = notificationsWithEvent
+              .collect { case (_, Some(n)) => Event.NotificationTime(n.time, n.kind, n.recipient) }
+            Event(event.id, event.description, event.start, event.end, notifications)
         }
 
       ListWithTotal(count, data)
@@ -243,7 +249,6 @@ class EventDao @Inject()(
     getList(optId = Some(id)).map(_.data.headOption)
   }
 
-
   /**
     * Updates event with notifications.
     *
@@ -252,12 +257,13 @@ class EventDao @Inject()(
     */
   def update(event: Event): Future[Event] = {
     db.run {
-      (for {
-        _ <- Events.filter(_.id === event.id).update(DbEvent.fromModel(event))
-        _ <- EventNotifications.filter(_.eventId === event.id).delete
-        _ <- DBIO.seq(EventNotifications ++= event.notifications.map(DbEventNotification.fromModel(event.id, _)))
-      } yield ()).transactionally
-    }.map(_ => event)
+        (for {
+          _ <- Events.filter(_.id === event.id).update(DbEvent.fromModel(event))
+          _ <- EventNotifications.filter(_.eventId === event.id).delete
+          _ <- DBIO.seq(EventNotifications ++= event.notifications.map(DbEventNotification.fromModel(event.id, _)))
+        } yield ()).transactionally
+      }
+      .map(_ => event)
   }
 
   /**

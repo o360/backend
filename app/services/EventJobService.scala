@@ -23,7 +23,8 @@ class EventJobService @Inject()(
   protected val notificationService: NotificationService,
   protected val uploadService: UploadService,
   protected val formService: FormService
-) extends Logger with ServiceResults[EventJob] {
+) extends Logger
+  with ServiceResults[EventJob] {
 
   def runFailedJob(id: Long): UnitResult = {
     for {
@@ -64,19 +65,21 @@ class EventJobService @Inject()(
       * @return future of tuple (elements that matched predicate; elements that not matched predicate)
       */
     def split[A](seq: Seq[A], splitter: A => Future[Boolean]): Future[(Seq[A], Seq[A])] = {
-      Future.sequence {
-        seq.map(el => splitter(el).map((el, _)))
-      }.map { result =>
-        val positive = result
-          .filter { case (_, condition) => condition }
-          .map { case (el, _) => el }
+      Future
+        .sequence {
+          seq.map(el => splitter(el).map((el, _)))
+        }
+        .map { result =>
+          val positive = result
+            .filter { case (_, condition) => condition }
+            .map { case (el, _) => el }
 
-        val negative = result
-          .filter {case (_, condition) => !condition }
-          .map { case (el, _) => el }
+          val negative = result
+            .filter { case (_, condition) => !condition }
+            .map { case (el, _) => el }
 
-        (positive, negative)
-      }
+          (positive, negative)
+        }
     }
 
     /**
@@ -94,7 +97,6 @@ class EventJobService @Inject()(
           false
       }
     }
-
 
     for {
       jobs <- eventJobDao.getJobs(from, to, EventJob.Status.New)

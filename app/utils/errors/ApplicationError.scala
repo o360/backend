@@ -14,6 +14,7 @@ abstract class ApplicationError(
   logMessage: Option[String] = None,
   inner: Option[Seq[ApplicationError]] = None
 ) {
+
   /**
     * Returns error code.
     */
@@ -34,5 +35,3 @@ abstract class ApplicationError(
     */
   def getInnerErrors = inner
 }
-
-

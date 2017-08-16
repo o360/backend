@@ -8,7 +8,6 @@ import play.api.libs.json.Reads._
 import play.api.libs.json._
 import utils.RandomGenerator
 
-
 /**
   * Api partial form model.
   */
@@ -39,14 +38,14 @@ object ApiPartialForm {
       (__ \ "caption").read[String](maxLength[String](1024)) and
       (__ \ "required").read[Boolean] and
       (__ \ "values").readNullable[Seq[ElementValue]]
-    ) (Element)
+  )(Element)
 
   implicit val formReads: Reads[ApiPartialForm] = (
     (__ \ "name").read[String](maxLength[String](1024)) and
       (__ \ "elements").readNullable[Seq[ApiPartialForm.Element]] and
       (__ \ "showInAggregation").read[Boolean] and
       (__ \ "machineName").readNullable[String]
-    ) (ApiPartialForm(_, _, _, _))
+  )(ApiPartialForm(_, _, _, _))
 
   /**
     * Form element api model.

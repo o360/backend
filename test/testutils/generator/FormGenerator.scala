@@ -9,7 +9,7 @@ import org.scalacheck.{Arbitrary, Gen}
 trait FormGenerator {
 
   implicit val elementValueArb = Arbitrary {
-      Arbitrary.arbitrary[String].map(Form.ElementValue(0, _))
+    Arbitrary.arbitrary[String].map(Form.ElementValue(0, _))
   }
 
   implicit val elementKindArb = Arbitrary[Form.ElementKind] {

@@ -14,7 +14,6 @@ import utils.Logger
 
 import scala.concurrent.Future
 
-
 /**
   * Report service.
   */
@@ -41,7 +40,8 @@ class ReportService @Inject()(
       * @param relations relations
       */
     def createCombinations(relations: Seq[Relation]): Future[Seq[Combination]] = {
-      log.trace(s"\tcreating combinations for ${relations.map(r => s"from ${r.groupFrom.id} to ${r.groupTo.map(_.id)} form: ${r.form.id}")}")
+      log.trace(s"\tcreating combinations for ${relations.map(r =>
+        s"from ${r.groupFrom.id} to ${r.groupTo.map(_.id)} form: ${r.form.id}")}")
 
       /**
         * Map from groupId to sequence of group users.
@@ -61,7 +61,8 @@ class ReportService @Inject()(
         futureSeqToMap {
           allTemplates.map { templateId =>
             log.trace(s"\t\tgetting freezed form for template $templateId")
-            formService.getOrCreateFreezedForm(eventId, templateId)
+            formService
+              .getOrCreateFreezedForm(eventId, templateId)
               .run
               .map { maybeForm =>
                 val form = maybeForm.getOrElse(throw new NoSuchElementException("missed form"))
@@ -74,7 +75,8 @@ class ReportService @Inject()(
       /**
         * Returns combinations of users from relations using given maps.
         */
-      def getCombinations(groupToUsers: Map[Long, Seq[User]], templateIdToFreezedForm: Map[Long, Form]): Seq[Combination] = {
+      def getCombinations(groupToUsers: Map[Long, Seq[User]],
+                          templateIdToFreezedForm: Map[Long, Form]): Seq[Combination] = {
         relations.flatMap { relation =>
           for {
             userFrom <- groupToUsers(relation.groupFrom.id)
@@ -97,7 +99,6 @@ class ReportService @Inject()(
       } yield getCombinations(groupToUsersMap, templateIdToFreezedFormMap)
     }
 
-
     /**
       * Returns report for the assessed user.
       *
@@ -105,7 +106,8 @@ class ReportService @Inject()(
       * @param assessedUserCombinations combinations with assessed user
       */
     def getReportForAssessedUser(assessedUser: Option[User], assessedUserCombinations: Seq[Combination]) = {
-      log.trace(s"creating report for assessed user:${assessedUser.map(_.id)}, combinations:${assessedUserCombinations.map(c => s"userFrom ${c.userFrom.id} userTo ${c.userTo.map(_.id)} form ${c.form.id}")}")
+      log.trace(s"creating report for assessed user:${assessedUser.map(_.id)}, combinations:${assessedUserCombinations
+        .map(c => s"userFrom ${c.userFrom.id} userTo ${c.userTo.map(_.id)} form ${c.form.id}")}")
 
       /**
         * Returns pairs of users with their answers.
@@ -118,7 +120,8 @@ class ReportService @Inject()(
 
         val maybeAnswersSeqFuture = Future.sequence {
           usersFrom.map { userFrom =>
-            log.trace(s"\t\tgetting answer for userFrom:${userFrom.id}, userTo:${assessedUser.map(_.id)}, form:${form.id}")
+            log.trace(
+              s"\t\tgetting answer for userFrom:${userFrom.id}, userTo:${assessedUser.map(_.id)}, form:${form.id}")
             answerDao
               .getAnswer(eventId, projectId, userFrom.id, assessedUser.map(_.id), form.id)
               .map {
@@ -140,12 +143,13 @@ class ReportService @Inject()(
         * @param userFromToAnswers pairs of users with their answers
         */
       def getFormReport(form: Form, userFromToAnswers: Seq[(User, Answer.Form)]) = {
-        log.trace(s"\tcreating form report userTo:${assessedUser.map(_.id)}, form:${form.id}, userAnswers:${userFromToAnswers.map(x => s"userFrom:${x._1.id}, answer: ${x._2}")}")
+        log.trace(
+          s"\tcreating form report userTo:${assessedUser.map(_.id)}, form:${form.id}, userAnswers:${userFromToAnswers
+            .map(x => s"userFrom:${x._1.id}, answer: ${x._2}")}")
         val formElementIdToUserAnswerMap =
           userFromToAnswers
             .flatMap { x =>
-              x._2
-                .answers
+              x._2.answers
                 .map { answer =>
                   (answer.elementId, (x._1, answer, x._2.isAnonymous))
                 }
@@ -156,27 +160,32 @@ class ReportService @Inject()(
         val formAnswers = form.elements.map { formElement =>
           val answers = formElementIdToUserAnswerMap
             .filter(_._1 == formElement.id)
-            .map { case (_, (user, answer, isAnonymous)) =>
-              FormElementAnswerReport(user, answer, isAnonymous)
-          }
+            .map {
+              case (_, (user, answer, isAnonymous)) =>
+                FormElementAnswerReport(user, answer, isAnonymous)
+            }
           FormElementReport(formElement, answers)
         }
         FormReport(form, formAnswers)
       }
+
       /**
         * Map from form to combinations with its form.
         */
       val formsToCombinations: Map[Form, Seq[Combination]] = assessedUserCombinations.groupBy(_.form)
 
-      Future.sequence {
-        formsToCombinations.map { case (form, formsCombinations) =>
-          getUserFromToAnswer(form, formsCombinations.map(_.userFrom).distinct).map { userFromToAnswersMap =>
-            getFormReport(form, userFromToAnswersMap)
+      Future
+        .sequence {
+          formsToCombinations.map {
+            case (form, formsCombinations) =>
+              getUserFromToAnswer(form, formsCombinations.map(_.userFrom).distinct).map { userFromToAnswersMap =>
+                getFormReport(form, userFromToAnswersMap)
+              }
           }
         }
-      }.map { formReports =>
-        Report(assessedUser, formReports.toSeq)
-      }
+        .map { formReports =>
+          Report(assessedUser, formReports.toSeq)
+        }
     }
 
     for {
@@ -200,6 +209,7 @@ class ReportService @Inject()(
     * @param report report
     */
   def getAggregatedReport(report: Report): AggregatedReport = {
+
     /**
       * Returns total count of answers.
       */
@@ -220,11 +230,11 @@ class ReportService @Inject()(
 
       val totalCount = textsWithCount.values.sum
 
-      val captionsToPercents = textsWithCount
-        .toSeq
-        .map { case (text, count) =>
-          val percent = count * 100F / totalCount
-          f""""$text" - $count ($percent%3.2f%%)"""
+      val captionsToPercents = textsWithCount.toSeq
+        .map {
+          case (text, count) =>
+            val percent = count * 100F / totalCount
+            f""""$text" - $count ($percent%3.2f%%)"""
         }
 
       captionsToPercents.mkString(";\n")
@@ -244,12 +254,12 @@ class ReportService @Inject()(
 
       val totalCount = valueIdToCount.values.sum
 
-      val captionsToPercents = valueIdToCount
-        .toSeq
-        .map { case (valueId, count) =>
-          val caption = valueIdToCaption.getOrElse(valueId, valueId.toString)
-          val percent = count * 100F / totalCount
-          f""""$caption" - $count ($percent%3.2f%%)"""
+      val captionsToPercents = valueIdToCount.toSeq
+        .map {
+          case (valueId, count) =>
+            val caption = valueIdToCaption.getOrElse(valueId, valueId.toString)
+            val percent = count * 100F / totalCount
+            f""""$caption" - $count ($percent%3.2f%%)"""
         }
 
       captionsToPercents.mkString(";\n")

@@ -48,5 +48,5 @@ object ApiPartialProject {
       (__ \ "canRevote").read[Boolean] and
       (__ \ "isAnonymous").read[Boolean] and
       (__ \ "machineName").readNullable[String]
-    ) (ApiPartialProject(_, _, _, _, _, _, _, _))
+  )(ApiPartialProject(_, _, _, _, _, _, _, _))
 }

@@ -93,7 +93,8 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
         when(fixture.formServiceMock.getList()(admin, ListMeta.default))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(ListWithTotal(total, forms)): ApplicationError \/ ListWithTotal[FormShort])))
+          .thenReturn(
+            EitherT.eitherT(toFuture(\/-(ListWithTotal(total, forms)): ApplicationError \/ ListWithTotal[FormShort])))
         val request = authenticated(FakeRequest(), env)
 
         val response = fixture.controller.getList()(request)
@@ -119,11 +120,10 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
   private def toApiPartialForm(form: Form) = ApiPartialForm(
     form.name,
     Some(form.elements.map { element =>
-      ApiPartialForm.Element(
-        ApiForm.ElementKind(element.kind),
-        element.caption,
-        element.required,
-        Some(element.values.map(value => ApiPartialForm.ElementValue(value.caption))))
+      ApiPartialForm.Element(ApiForm.ElementKind(element.kind),
+                             element.caption,
+                             element.required,
+                             Some(element.values.map(value => ApiPartialForm.ElementValue(value.caption))))
     }),
     form.showInAggregation,
     Some(form.machineName)

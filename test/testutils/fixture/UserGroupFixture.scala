@@ -5,8 +5,7 @@ import com.ninja_squad.dbsetup.Operations._
 /**
   * User groups fixture.
   */
-trait UserGroupFixture extends FixtureHelper with UserFixture with GroupFixture {
-  self: FixtureSupport =>
+trait UserGroupFixture extends FixtureHelper with UserFixture with GroupFixture { self: FixtureSupport =>
 
   val UserGroups = Seq(
     (1, 1),
