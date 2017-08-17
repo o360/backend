@@ -6,6 +6,7 @@ import com.mohiva.play.silhouette.api.Silhouette
 import controllers.api.Response
 import controllers.api.group.{ApiGroup, ApiPartialGroup}
 import controllers.authorization.AllowedRole
+import play.api.mvc.ControllerComponents
 import org.davidbild.tristate.Tristate
 import services.GroupService
 import silhouette.DefaultEnv
@@ -13,13 +14,17 @@ import utils.implicits.FutureLifting._
 import utils.listmeta.actions.ListActions
 import utils.listmeta.sorting.Sorting
 
+import scala.concurrent.ExecutionContext
+
 /**
   * Group controller.
   */
 @Singleton
 class GroupController @Inject()(
   silhouette: Silhouette[DefaultEnv],
-  groupService: GroupService
+  groupService: GroupService,
+  val controllerComponents: ControllerComponents,
+  implicit val ec: ExecutionContext
 ) extends BaseController
   with ListActions {
 

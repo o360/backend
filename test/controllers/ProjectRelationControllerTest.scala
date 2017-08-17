@@ -19,6 +19,7 @@ import testutils.generator.ProjectRelationGenerator
 import utils.errors.{ApplicationError, NotFoundError}
 import utils.listmeta.ListMeta
 
+import scala.concurrent.ExecutionContext
 import scalaz.{-\/, \/, \/-, EitherT}
 
 /**
@@ -35,7 +36,8 @@ class ProjectRelationControllerTest extends BaseControllerTest with ProjectRelat
   private def getFixture(environment: FakeEnvironment[DefaultEnv]) = {
     val silhouette = getSilhouette(environment)
     val projectRelationServiceMock = mock[ProjectRelationService]
-    val controller = new ProjectRelationController(silhouette, projectRelationServiceMock)
+    val controller =
+      new ProjectRelationController(silhouette, projectRelationServiceMock, cc, ExecutionContext.Implicits.global)
     TestFixture(silhouette, projectRelationServiceMock, controller)
   }
 

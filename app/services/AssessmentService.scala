@@ -9,11 +9,10 @@ import models.event.Event
 import models.form.Form
 import models.project.Relation
 import models.user.{User, UserShort}
-import play.api.libs.concurrent.Execution.Implicits._
 import utils.errors.{ApplicationError, BadRequestError, ConflictError, NotFoundError}
 import utils.implicits.FutureLifting._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scalaz._
 import Scalaz._
 
@@ -28,7 +27,8 @@ class AssessmentService @Inject()(
   protected val eventDao: EventDao,
   protected val relationDao: ProjectRelationDao,
   protected val answerDao: AnswerDao,
-  protected val projectDao: ProjectDao
+  protected val projectDao: ProjectDao,
+  implicit val ec: ExecutionContext
 ) extends ServiceResults[Assessment] {
 
   /**

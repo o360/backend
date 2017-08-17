@@ -6,19 +6,24 @@ import com.mohiva.play.silhouette.api.Silhouette
 import controllers.api.Response
 import controllers.api.assessment.{ApiAssessment, ApiPartialAssessment}
 import controllers.authorization.AllowedStatus
+import play.api.mvc.ControllerComponents
 import services.AssessmentService
 import silhouette.DefaultEnv
 import utils.listmeta.actions.ListActions
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
 
+import scala.concurrent.ExecutionContext
+
 /**
-  * Asssessment controller.
+  * Assessment controller.
   */
 @Singleton
 class AssessmentController @Inject()(
   silhouette: Silhouette[DefaultEnv],
-  assessmentService: AssessmentService
+  assessmentService: AssessmentService,
+  val controllerComponents: ControllerComponents,
+  implicit val ec: ExecutionContext
 ) extends BaseController
   with ListActions {
 

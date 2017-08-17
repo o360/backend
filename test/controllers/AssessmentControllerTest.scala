@@ -18,6 +18,7 @@ import testutils.generator.AssessmentGenerator
 import utils.errors.ApplicationError
 import utils.listmeta.ListMeta
 
+import scala.concurrent.ExecutionContext
 import scalaz.{\/, \/-, EitherT}
 
 /**
@@ -34,7 +35,7 @@ class AssessmentControllerTest extends BaseControllerTest {
   private def getFixture(environment: FakeEnvironment[DefaultEnv]) = {
     val silhouette = getSilhouette(environment)
     val assessmentServiceMock = mock[AssessmentService]
-    val controller = new AssessmentController(silhouette, assessmentServiceMock)
+    val controller = new AssessmentController(silhouette, assessmentServiceMock, cc, ExecutionContext.Implicits.global)
     TestFixture(silhouette, assessmentServiceMock, controller)
   }
 

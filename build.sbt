@@ -2,32 +2,34 @@ name := "bw-assessment"
 
 version := "1.0"
 
-scalaVersion := "2.11.8"
+scalaVersion := "2.12.3"
 
 lazy val root =
   (project in file(".")).enablePlugins(PlayScala, SwaggerPlugin, DockerPlugin)
 
 libraryDependencies ++= Seq(
-  "com.typesafe.play" %% "play-slick" % "2.0.2",
+  "com.typesafe.play" %% "play-slick" % "3.0.0",
   "org.postgresql" % "postgresql" % "42.0.0",
-  "com.mohiva" %% "play-silhouette" % "4.0.0",
-  "com.mohiva" %% "play-silhouette-persistence" % "4.0.0",
-  "com.typesafe.play" %% "play-mailer" % "5.0.0",
-  "org.davidbild" %% "tristate-play" % "0.2.0",
+  "org.davidbild" %% "tristate-play" % "0.3.0",
+  "com.mohiva" %% "play-silhouette" % "5.0.0",
+  "com.mohiva" %% "play-silhouette-persistence" % "5.0.0",
+  "com.typesafe.play" %% "play-mailer" % "6.0.1",
+  "com.typesafe.play" %% "play-mailer-guice" % "6.0.1",
   "org.scalaz" %% "scalaz-core" % "7.2.10",
   "com.google.apis" % "google-api-services-sheets" % "v4-rev473-1.22.0",
   "com.google.apis" % "google-api-services-drive" % "v3-rev74-1.22.0",
   "org.flywaydb" % "flyway-core" % "4.1.2",
-  filters
+  filters,
+  guice
 )
 
 libraryDependencies ++= Seq(
-  "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0",
+  "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.1",
   "org.scalacheck" %% "scalacheck" % "1.13.4",
   "com.h2database" % "h2" % "1.4.194",
   "org.mockito" % "mockito-core" % "2.7.19",
   "com.ninja-squad" % "DbSetup" % "2.1.0",
-  "com.mohiva" %% "play-silhouette-testkit" % "4.0.0"
+  "com.mohiva" %% "play-silhouette-testkit" % "5.0.0"
 ).map(_ % Test)
 
 routesImport ++= Seq("controllers.api.TristateQueryBinder._")

@@ -7,12 +7,11 @@ import models.ListWithTotal
 import models.user.User
 import org.davidbild.tristate.Tristate
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
-import play.api.libs.concurrent.Execution.Implicits._
-import slick.driver.JdbcProfile
+import slick.jdbc.JdbcProfile
 import utils.{Logger, Transliteration}
 import utils.listmeta.ListMeta
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 /**
@@ -20,7 +19,7 @@ import scala.util.Try
   */
 trait UserLoginComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
-  import driver.api._
+  import profile.api._
 
   case class DbUserLogin(userId: Long, providerId: String, providerKey: String)
 
@@ -41,7 +40,7 @@ trait UserLoginComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
   */
 trait UserMetaComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
-  import driver.api._
+  import profile.api._
 
   case class DbUserMeta(userId: Long, gdriveFolderId: Option[String])
 
@@ -60,7 +59,7 @@ trait UserMetaComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
   */
 trait UserComponent extends Logger { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
-  import driver.api._
+  import profile.api._
 
   implicit lazy val roleColumnType = MappedColumnType.base[User.Role, Byte](
     {
@@ -153,7 +152,8 @@ trait UserComponent extends Logger { self: HasDatabaseConfigProvider[JdbcProfile
   * DAO for User model.
   */
 class UserDao @Inject()(
-  protected val dbConfigProvider: DatabaseConfigProvider
+  protected val dbConfigProvider: DatabaseConfigProvider,
+  implicit val ec: ExecutionContext
 ) extends HasDatabaseConfigProvider[JdbcProfile]
   with UserComponent
   with UserLoginComponent
@@ -161,7 +161,7 @@ class UserDao @Inject()(
   with UserMetaComponent
   with DaoHelper {
 
-  import driver.api._
+  import profile.api._
 
   /**
     * Returns user by ID.

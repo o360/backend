@@ -19,6 +19,7 @@ import testutils.generator.ProjectGenerator
 import utils.errors.{ApplicationError, NotFoundError}
 import utils.listmeta.ListMeta
 
+import scala.concurrent.ExecutionContext
 import scalaz.{-\/, \/, \/-, EitherT}
 
 /**
@@ -35,7 +36,7 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
   private def getFixture(environment: FakeEnvironment[DefaultEnv]) = {
     val silhouette = getSilhouette(environment)
     val projectServiceMock = mock[ProjectService]
-    val controller = new ProjectController(silhouette, projectServiceMock)
+    val controller = new ProjectController(silhouette, projectServiceMock, cc, ExecutionContext.Implicits.global)
     TestFixture(silhouette, projectServiceMock, controller)
   }
 

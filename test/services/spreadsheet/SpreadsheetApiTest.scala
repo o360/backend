@@ -3,7 +3,7 @@ package services.spreadsheet
 import com.google.api.services.sheets.v4.model.Request
 import services.BaseServiceTest
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.util.Try
 
 /**
@@ -23,7 +23,7 @@ class SpreadsheetApiTest extends BaseServiceTest {
               SetCellText(Point(0, 0),
                           Cell("test", alignment = Some(Cell.Alignment.Center), format = Some(Cell.Format.bold)))),
             request => {
-              val cell = request.getUpdateCells.getRows.head.getValues.head
+              val cell = request.getUpdateCells.getRows.asScala.head.getValues.asScala.head
               cell.getUserEnteredValue.getStringValue == "test" &&
               cell.getUserEnteredFormat.getHorizontalAlignment == Cell.Alignment.Center.value &&
               cell.getUserEnteredFormat.getTextFormat.getBold == true
@@ -33,7 +33,8 @@ class SpreadsheetApiTest extends BaseServiceTest {
           (
             Seq(SetCellText(Point(0, 0), Cell("")), SetColor(Point(0, 0).toRegion, Color.lightGray)),
             r => {
-              val color = r.getUpdateCells.getRows.head.getValues.head.getUserEnteredFormat.getBackgroundColor
+              val color =
+                r.getUpdateCells.getRows.asScala.head.getValues.asScala.head.getUserEnteredFormat.getBackgroundColor
               color.getRed == Color.lightGray._1 / 255F &&
               color.getGreen == Color.lightGray._2 / 255F &&
               color.getBlue == Color.lightGray._3 / 255F

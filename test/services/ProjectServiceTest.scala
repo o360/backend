@@ -33,7 +33,7 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
     val daoMock = mock[ProjectDao]
     val eventDaoMock = mock[EventDao]
     val groupDao = mock[GroupDao]
-    val service = new ProjectService(daoMock, eventDaoMock, groupDao)
+    val service = new ProjectService(daoMock, eventDaoMock, groupDao, ec)
     TestFixture(daoMock, eventDaoMock, groupDao, service)
   }
 

@@ -11,8 +11,7 @@ import models.project.{Project, Relation}
 import models.user.User
 import services.UploadService.UploadModel
 
-import scala.concurrent.Future
-import play.api.libs.concurrent.Execution.Implicits._
+import scala.concurrent.{ExecutionContext, Future}
 import services.spreadsheet.SpreadsheetService
 import utils.implicits.FutureLifting._
 
@@ -29,7 +28,8 @@ class UploadService @Inject()(
   relationDao: ProjectRelationDao,
   userService: UserService,
   googleDriveService: GoogleDriveService,
-  userDao: UserDao
+  userDao: UserDao,
+  implicit val ec: ExecutionContext
 ) {
 
   /**

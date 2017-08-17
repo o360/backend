@@ -32,7 +32,7 @@ class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with Te
     val eventDaoMock = mock[EventDao]
     val projectDao = mock[ProjectDao]
     val relationDao = mock[ProjectRelationDao]
-    val service = new TemplateService(daoMock, eventDaoMock, projectDao, relationDao)
+    val service = new TemplateService(daoMock, eventDaoMock, projectDao, relationDao, ec)
     TestFixture(daoMock, eventDaoMock, projectDao, relationDao, service)
   }
 

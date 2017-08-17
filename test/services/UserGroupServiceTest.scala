@@ -29,7 +29,7 @@ class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with U
     val userGroupDao = mock[UserGroupDao]
     val userService = mock[UserService]
     val groupService = mock[GroupService]
-    val service = new UserGroupService(userService, groupService, userGroupDao)
+    val service = new UserGroupService(userService, groupService, userGroupDao, ec)
     TestFixture(userGroupDao, userService, groupService, service)
   }
 

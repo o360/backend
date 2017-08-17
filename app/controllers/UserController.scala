@@ -6,6 +6,7 @@ import com.mohiva.play.silhouette.api.Silhouette
 import controllers.api.Response
 import controllers.api.user.ApiUser
 import controllers.authorization.AllowedRole
+import play.api.mvc.ControllerComponents
 import org.davidbild.tristate.Tristate
 import services.UserService
 import silhouette.DefaultEnv
@@ -13,13 +14,17 @@ import utils.implicits.FutureLifting._
 import utils.listmeta.actions.ListActions
 import utils.listmeta.sorting.Sorting
 
+import scala.concurrent.ExecutionContext
+
 /**
   * User controller.
   */
 @Singleton
 class UserController @Inject()(
   protected val silhouette: Silhouette[DefaultEnv],
-  protected val userService: UserService
+  protected val userService: UserService,
+  val controllerComponents: ControllerComponents,
+  implicit val ec: ExecutionContext
 ) extends BaseController
   with ListActions {
 

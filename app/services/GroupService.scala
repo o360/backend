@@ -7,11 +7,11 @@ import models.group.{Group => GroupModel}
 import models.project.{Project, Relation}
 import models.user.User
 import org.davidbild.tristate.Tristate
-import play.api.libs.concurrent.Execution.Implicits._
 import utils.errors.{ConflictError, ExceptionHandler, NotFoundError}
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
 
+import scala.concurrent.ExecutionContext
 import scala.util.Try
 
 /**
@@ -22,7 +22,8 @@ class GroupService @Inject()(
   protected val groupDao: GroupDao,
   protected val userGroupDao: UserGroupDao,
   protected val relationDao: ProjectRelationDao,
-  protected val projectDao: ProjectDao
+  protected val projectDao: ProjectDao,
+  implicit val ec: ExecutionContext
 ) extends ServiceResults[GroupModel] {
 
   /**

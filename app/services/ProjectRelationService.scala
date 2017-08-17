@@ -11,6 +11,8 @@ import utils.errors._
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
 
+import scala.concurrent.ExecutionContext
+
 /**
   * Project relation service.
   */
@@ -18,7 +20,8 @@ import utils.listmeta.ListMeta
 class ProjectRelationService @Inject()(
   protected val projectRelationDao: ProjectRelationDao,
   protected val eventDao: EventDao,
-  protected val formService: FormService
+  protected val formService: FormService,
+  implicit val ec: ExecutionContext
 ) extends ServiceResults[Relation] {
 
   /**

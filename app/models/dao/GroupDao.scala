@@ -6,16 +6,15 @@ import models.ListWithTotal
 import models.group.Group
 import org.davidbild.tristate.Tristate
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
-import play.api.libs.concurrent.Execution.Implicits._
-import slick.driver.JdbcProfile
+import slick.jdbc.JdbcProfile
 import utils.Transliteration
 import utils.listmeta.ListMeta
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 trait GroupComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
-  import driver.api._
+  import profile.api._
 
   /**
     * Group DB model.
@@ -69,13 +68,14 @@ trait GroupComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
   */
 @Singleton
 class GroupDao @Inject()(
-  protected val dbConfigProvider: DatabaseConfigProvider
+  protected val dbConfigProvider: DatabaseConfigProvider,
+  implicit val ec: ExecutionContext
 ) extends HasDatabaseConfigProvider[JdbcProfile]
   with GroupComponent
   with UserGroupComponent
   with DaoHelper {
 
-  import driver.api._
+  import profile.api._
 
   /**
     * Creates group.
@@ -145,9 +145,9 @@ class GroupDao @Inject()(
         case 'level => level
       }
     }.map {
-        case ListWithTotal(total, data) =>
-          ListWithTotal(total, data.map { case (group, hasChildren, level) => group.toModel(hasChildren, level) })
-      }
+      case ListWithTotal(total, data) =>
+        ListWithTotal(total, data.map { case (group, hasChildren, level) => group.toModel(hasChildren, level) })
+    }
   }
 
   /**

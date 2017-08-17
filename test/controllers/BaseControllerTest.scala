@@ -9,10 +9,9 @@ import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.test.FakeRequest
+import play.api.test.Helpers.stubControllerComponents
 import silhouette.DefaultEnv
 import testutils.AsyncHelper
-
-import play.api.libs.concurrent.Execution.Implicits._
 
 /**
   * Base trait for controllers test.
@@ -24,6 +23,9 @@ trait BaseControllerTest
   with GuiceOneAppPerSuite
   with AsyncHelper
   with MockitoSugar {
+
+  implicit val ec = scala.concurrent.ExecutionContext.global
+  val cc = stubControllerComponents()
 
   /**
     * Returns silhouette with given environment.

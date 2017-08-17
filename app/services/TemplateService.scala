@@ -11,9 +11,8 @@ import models.user.User
 import utils.errors.{ConflictError, ExceptionHandler, NotFoundError}
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
-import play.api.libs.concurrent.Execution.Implicits._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * Template service.
@@ -23,7 +22,8 @@ class TemplateService @Inject()(
   protected val templateDao: TemplateDao,
   protected val eventDao: EventDao,
   protected val projectDao: ProjectDao,
-  protected val relationDao: ProjectRelationDao
+  protected val relationDao: ProjectRelationDao,
+  implicit val ec: ExecutionContext
 ) extends ServiceResults[Template] {
 
   /**

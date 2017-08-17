@@ -8,6 +8,7 @@ import models.user.User
 import utils.errors.AuthorizationError
 import utils.implicits.FutureLifting._
 
+import scala.concurrent.ExecutionContext
 import scalaz.Scalaz._
 
 /**
@@ -17,7 +18,8 @@ import scalaz.Scalaz._
 class EventProjectService @Inject()(
   protected val projectService: ProjectService,
   protected val eventService: EventService,
-  protected val eventProjectDao: EventProjectDao
+  protected val eventProjectDao: EventProjectDao,
+  implicit val ec: ExecutionContext
 ) extends ServiceResults[Unit] {
 
   /**

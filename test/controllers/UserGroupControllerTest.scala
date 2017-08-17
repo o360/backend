@@ -28,7 +28,7 @@ class UserGroupControllerTest extends BaseControllerTest with TristateGenerator 
   private def getFixture(environment: FakeEnvironment[DefaultEnv]) = {
     val silhouette = getSilhouette(environment)
     val userGroupService = mock[UserGroupService]
-    val controller = new UserGroupController(silhouette, userGroupService)
+    val controller = new UserGroupController(silhouette, userGroupService, cc, ec)
     TestFixture(silhouette, userGroupService, controller)
   }
 

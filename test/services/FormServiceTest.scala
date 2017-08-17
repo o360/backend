@@ -41,7 +41,7 @@ class FormServiceTest
     val groupDao = mock[GroupDao]
     val projectDao = mock[ProjectDao]
     val relationDao = mock[ProjectRelationDao]
-    val service = new FormService(daoMock, eventDao, groupDao, projectDao, relationDao)
+    val service = new FormService(daoMock, eventDao, groupDao, projectDao, relationDao, ec)
     TestFixture(daoMock, eventDao, groupDao, projectDao, relationDao, service)
   }
 

@@ -29,7 +29,7 @@ class EventJobServiceTest extends BaseServiceTest with EventFixture {
     val notificationService = mock[NotificationService]
     val uploadService = mock[UploadService]
     val formService = mock[FormService]
-    val service = new EventJobService(eventJobDao, eventDao, notificationService, uploadService, formService)
+    val service = new EventJobService(eventJobDao, eventDao, notificationService, uploadService, formService, ec)
     Fixture(eventJobDao, eventDao, notificationService, uploadService, formService, service)
   }
 

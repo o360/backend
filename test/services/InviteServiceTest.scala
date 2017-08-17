@@ -41,12 +41,15 @@ class InviteServiceTest
     val userGroupDaoMock = mock[UserGroupDao]
     val mailServiceMock = mock[MailService]
     val templateEngineServiceMock = mock[TemplateEngineService]
-    val service = new InviteService(userDaoMock,
-                                    groupDaoMock,
-                                    inviteDaoMock,
-                                    userGroupDaoMock,
-                                    mailServiceMock,
-                                    templateEngineServiceMock)
+    val service = new InviteService(
+      userDaoMock,
+      groupDaoMock,
+      inviteDaoMock,
+      userGroupDaoMock,
+      mailServiceMock,
+      templateEngineServiceMock,
+      ec
+    )
     Fixture(userDaoMock,
             groupDaoMock,
             inviteDaoMock,

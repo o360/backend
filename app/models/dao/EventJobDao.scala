@@ -6,17 +6,16 @@ import javax.inject.{Inject, Singleton}
 import models.event.{Event, EventJob}
 import models.notification.Notification
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
-import slick.driver.JdbcProfile
-import play.api.libs.concurrent.Execution.Implicits._
+import slick.jdbc.JdbcProfile
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * Component for event_job table.
   */
 trait EventJobComponent extends NotificationComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
-  import driver.api._
+  import profile.api._
 
   implicit val jobStatusColumnType = MappedColumnType.base[EventJob.Status, Byte](
     {
@@ -94,12 +93,13 @@ trait EventJobComponent extends NotificationComponent { self: HasDatabaseConfigP
   */
 @Singleton
 class EventJobDao @Inject()(
-  protected val dbConfigProvider: DatabaseConfigProvider
+  protected val dbConfigProvider: DatabaseConfigProvider,
+  implicit val ec: ExecutionContext
 ) extends HasDatabaseConfigProvider[JdbcProfile]
   with EventJobComponent
   with DaoHelper {
 
-  import driver.api._
+  import profile.api._
 
   /**
     * Creates job in DB if not exists.

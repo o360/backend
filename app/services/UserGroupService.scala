@@ -7,11 +7,9 @@ import models.user.User
 import utils.errors.ConflictError
 import utils.implicits.FutureLifting._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scalaz.-\/
 import scalaz.Scalaz._
-
-import play.api.libs.concurrent.Execution.Implicits._
 
 /**
   * User group service.
@@ -20,7 +18,8 @@ import play.api.libs.concurrent.Execution.Implicits._
 class UserGroupService @Inject()(
   protected val userService: UserService,
   protected val groupService: GroupService,
-  protected val userGroupDao: UserGroupDao
+  protected val userGroupDao: UserGroupDao,
+  implicit val ec: ExecutionContext
 ) extends ServiceResults[Unit] {
 
   type GroupUser = (Long, Long)

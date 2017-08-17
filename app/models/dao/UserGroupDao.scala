@@ -3,17 +3,16 @@ package models.dao
 import javax.inject.{Inject, Singleton}
 
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
-import play.api.libs.concurrent.Execution.Implicits._
-import slick.driver.JdbcProfile
+import slick.jdbc.JdbcProfile
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * Component for 'user_group' table.
   */
 trait UserGroupComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
-  import driver.api._
+  import profile.api._
 
   case class DbUserGroup(userId: Long, groupId: Long)
 
@@ -33,12 +32,13 @@ trait UserGroupComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
   */
 @Singleton
 class UserGroupDao @Inject()(
-  protected val dbConfigProvider: DatabaseConfigProvider
+  protected val dbConfigProvider: DatabaseConfigProvider,
+  implicit val ec: ExecutionContext
 ) extends HasDatabaseConfigProvider[JdbcProfile]
   with UserGroupComponent
   with DaoHelper {
 
-  import driver.api._
+  import profile.api._
 
   /**
     * Checks whether relation exists.

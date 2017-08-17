@@ -6,13 +6,14 @@ import com.mohiva.play.silhouette.api.Silhouette
 import com.mohiva.play.silhouette.api.exceptions.SilhouetteException
 import com.mohiva.play.silhouette.impl.providers.{SocialProvider, SocialProviderRegistry}
 import controllers.api.user.ApiUser
-import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json.Json
-import play.api.mvc.{Action, Result}
+import play.api.mvc.{Action, ControllerComponents, Result}
 import services.UserService
 import silhouette.{CustomSocialProfile, DefaultEnv}
 import utils.errors.AuthenticationError
 import utils.implicits.FutureLifting._
+
+import scala.concurrent.ExecutionContext
 
 /**
   * Authentication controller.
@@ -20,7 +21,9 @@ import utils.implicits.FutureLifting._
 class Authentication @Inject()(
   silhouette: Silhouette[DefaultEnv],
   socialProviderRegistry: SocialProviderRegistry,
-  userService: UserService
+  userService: UserService,
+  val controllerComponents: ControllerComponents,
+  implicit val ec: ExecutionContext
 ) extends BaseController {
 
   /**

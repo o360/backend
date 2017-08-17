@@ -4,10 +4,13 @@ import javax.inject.{Inject, Singleton}
 
 import com.mohiva.play.silhouette.api.Silhouette
 import controllers.authorization.AllowedRole
+import play.api.mvc.ControllerComponents
 import services.EventJobService
 import silhouette.DefaultEnv
 import utils.listmeta.actions.ListActions
 import utils.implicits.FutureLifting._
+
+import scala.concurrent.ExecutionContext
 
 /**
   * Event job controller.
@@ -15,7 +18,9 @@ import utils.implicits.FutureLifting._
 @Singleton
 class EventJobController @Inject()(
   silhouette: Silhouette[DefaultEnv],
-  eventJobService: EventJobService
+  eventJobService: EventJobService,
+  val controllerComponents: ControllerComponents,
+  implicit val ec: ExecutionContext
 ) extends BaseController
   with ListActions {
 

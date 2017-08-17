@@ -32,7 +32,7 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
     val relationDao = mock[ProjectRelationDao]
     val formService = mock[FormService]
     val answerDao = mock[AnswerDao]
-    val service = new ReportService(userService, relationDao, formService, answerDao)
+    val service = new ReportService(userService, relationDao, formService, answerDao, ec)
     Fixture(userService, relationDao, formService, answerDao, service)
   }
 

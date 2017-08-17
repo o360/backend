@@ -8,12 +8,11 @@ import models.event.{Event, EventJob}
 import models.form.{Form, FormShort}
 import models.project.{Project, Relation}
 import models.user.User
-import play.api.libs.concurrent.Execution.Implicits._
 import utils.errors._
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scalaz.Scalaz._
 import scalaz._
 
@@ -26,7 +25,8 @@ class FormService @Inject()(
   protected val eventDao: EventDao,
   protected val groupDao: GroupDao,
   protected val projectDao: ProjectDao,
-  protected val relationDao: ProjectRelationDao
+  protected val relationDao: ProjectRelationDao,
+  implicit val ec: ExecutionContext
 ) extends ServiceResults[Form] {
 
   /**

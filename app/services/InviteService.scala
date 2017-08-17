@@ -5,13 +5,12 @@ import javax.inject.{Inject, Singleton}
 import models.dao.{GroupDao, InviteDao, UserDao, UserGroupDao}
 import models.invite.Invite
 import models.user.User
-import play.api.libs.concurrent.Execution.Implicits._
 import utils.errors.{ApplicationError, ConflictError, NotFoundError}
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
 import utils.{RandomGenerator, TimestampConverter}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * Invite service.
@@ -23,7 +22,8 @@ class InviteService @Inject()(
   inviteDao: InviteDao,
   userGroupDao: UserGroupDao,
   mailService: MailService,
-  templateEngineService: TemplateEngineService
+  templateEngineService: TemplateEngineService,
+  implicit val ec: ExecutionContext
 ) extends ServiceResults[Invite] {
 
   private def validateInvite(invite: Invite): Future[Option[ApplicationError]] = {

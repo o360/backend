@@ -6,11 +6,13 @@ import com.mohiva.play.silhouette.api.Silhouette
 import controllers.api.Response
 import controllers.api.invite.{ApiInvite, ApiInviteCode, ApiPartialInvite}
 import controllers.authorization.AllowedRole
+import play.api.mvc.ControllerComponents
 import services.InviteService
 import silhouette.DefaultEnv
 import utils.listmeta.actions.ListActions
-import play.api.libs.concurrent.Execution.Implicits._
 import utils.implicits.FutureLifting._
+
+import scala.concurrent.ExecutionContext
 
 /**
   * Invite controller.
@@ -18,7 +20,9 @@ import utils.implicits.FutureLifting._
 @Singleton
 class InviteController @Inject()(
   silhouette: Silhouette[DefaultEnv],
-  inviteService: InviteService
+  inviteService: InviteService,
+  val controllerComponents: ControllerComponents,
+  implicit val ec: ExecutionContext
 ) extends BaseController
   with ListActions {
 

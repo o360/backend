@@ -19,6 +19,7 @@ import testutils.generator.{GroupGenerator, TristateGenerator}
 import utils.errors.{ApplicationError, NotFoundError}
 import utils.listmeta.ListMeta
 
+import scala.concurrent.ExecutionContext
 import scalaz.{-\/, \/, \/-, EitherT}
 
 /**
@@ -35,7 +36,7 @@ class GroupControllerTest extends BaseControllerTest with GroupGenerator with Tr
   private def getFixture(environment: FakeEnvironment[DefaultEnv]) = {
     val silhouette = getSilhouette(environment)
     val groupServiceMock = mock[GroupService]
-    val controller = new GroupController(silhouette, groupServiceMock)
+    val controller = new GroupController(silhouette, groupServiceMock, cc, ExecutionContext.Implicits.global)
     TestFixture(silhouette, groupServiceMock, controller)
   }
 

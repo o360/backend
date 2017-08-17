@@ -7,11 +7,14 @@ import controllers.api.Response
 import controllers.api.notification.{ApiNotificationKind, ApiNotificationRecipient}
 import controllers.api.template.{ApiPartialTemplate, ApiTemplate}
 import controllers.authorization.AllowedRole
+import play.api.mvc.ControllerComponents
 import services.TemplateService
 import silhouette.DefaultEnv
 import utils.implicits.FutureLifting._
 import utils.listmeta.actions.ListActions
 import utils.listmeta.sorting.Sorting
+
+import scala.concurrent.ExecutionContext
 
 /**
   * Template controller.
@@ -19,7 +22,9 @@ import utils.listmeta.sorting.Sorting
 @Singleton
 class TemplateController @Inject()(
   protected val silhouette: Silhouette[DefaultEnv],
-  protected val templateService: TemplateService
+  protected val templateService: TemplateService,
+  val controllerComponents: ControllerComponents,
+  implicit val ec: ExecutionContext
 ) extends BaseController
   with ListActions {
 

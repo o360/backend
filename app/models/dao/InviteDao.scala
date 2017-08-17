@@ -6,19 +6,18 @@ import javax.inject.{Inject, Singleton}
 import models.ListWithTotal
 import models.invite.Invite
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
-import play.api.libs.concurrent.Execution.Implicits._
-import slick.driver.JdbcProfile
+import slick.jdbc.JdbcProfile
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * Component for invite and invite_group tables.
   */
 trait InviteComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
-  import driver.api._
+  import profile.api._
 
   case class DbInvite(
     id: Long,
@@ -80,12 +79,13 @@ trait InviteComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
   */
 @Singleton
 class InviteDao @Inject()(
-  val dbConfigProvider: DatabaseConfigProvider
+  val dbConfigProvider: DatabaseConfigProvider,
+  implicit val ec: ExecutionContext
 ) extends HasDatabaseConfigProvider[JdbcProfile]
   with DaoHelper
   with InviteComponent {
 
-  import driver.api._
+  import profile.api._
 
   def getList(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Invite]] = {
 

@@ -18,6 +18,7 @@ import testutils.generator.EventGenerator
 import utils.errors.{ApplicationError, NotFoundError}
 import utils.listmeta.ListMeta
 
+import scala.concurrent.ExecutionContext
 import scalaz.{-\/, \/, \/-, EitherT}
 
 /**
@@ -34,7 +35,7 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
   private def getFixture(environment: FakeEnvironment[DefaultEnv]) = {
     val silhouette = getSilhouette(environment)
     val eventServiceMock = mock[EventService]
-    val controller = new EventController(silhouette, eventServiceMock)
+    val controller = new EventController(silhouette, eventServiceMock, cc, ec)
     TestFixture(silhouette, eventServiceMock, controller)
   }
 

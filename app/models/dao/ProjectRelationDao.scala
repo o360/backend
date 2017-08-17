@@ -6,11 +6,10 @@ import models.event.Event
 import models.{ListWithTotal, NamedEntity}
 import models.project.{Relation, TemplateBinding}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
-import slick.driver.JdbcProfile
+import slick.jdbc.JdbcProfile
 import utils.listmeta.ListMeta
 
-import scala.concurrent.Future
-import play.api.libs.concurrent.Execution.Implicits._
+import scala.concurrent.{ExecutionContext, Future}
 import utils.implicits.FutureLifting._
 
 /**
@@ -18,7 +17,7 @@ import utils.implicits.FutureLifting._
   */
 trait ProjectRelationComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
-  import driver.api._
+  import profile.api._
 
   /**
     * Relation db model.
@@ -97,7 +96,8 @@ trait ProjectRelationComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
   */
 @Singleton
 class ProjectRelationDao @Inject()(
-  protected val dbConfigProvider: DatabaseConfigProvider
+  protected val dbConfigProvider: DatabaseConfigProvider,
+  implicit val ec: ExecutionContext
 ) extends HasDatabaseConfigProvider[JdbcProfile]
   with ProjectRelationComponent
   with GroupComponent
@@ -109,7 +109,7 @@ class ProjectRelationDao @Inject()(
   with TemplateComponent
   with DaoHelper {
 
-  import driver.api._
+  import profile.api._
 
   /**
     * Returns list of relations filtered by given criteria.

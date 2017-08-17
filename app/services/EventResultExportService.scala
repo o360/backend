@@ -9,10 +9,9 @@ import models.dao._
 import models.event.Event
 import models.form.Form
 import models.user.User
-import play.api.libs.concurrent.Execution.Implicits._
 import utils.RandomGenerator
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * Service for exporting event results.
@@ -24,7 +23,8 @@ class EventResultExportService @Inject()(
   groupDao: GroupDao,
   relationDao: ProjectRelationDao,
   projectDao: ProjectDao,
-  eventDao: EventDao
+  eventDao: EventDao,
+  implicit val ec: ExecutionContext
 ) {
 
   type ExportResult = (Seq[Form], Seq[User], Seq[UserAnswer])

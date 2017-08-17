@@ -5,18 +5,18 @@ import javax.inject.{Inject, Singleton}
 import models.NamedEntity
 import models.assessment.{Answer, UserAnswer}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
-import slick.driver.JdbcProfile
-import play.api.libs.concurrent.Execution.Implicits._
+import slick.jdbc.JdbcProfile
+
 import scalaz._
 import Scalaz._
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * Component for form_answer, form_element_answer and form_element_answer_value tables.
   */
 trait AnswerComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
-  import driver.api._
+  import profile.api._
 
   /**
     * Form answer DB model.
@@ -120,14 +120,15 @@ trait AnswerComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
   */
 @Singleton
 class AnswerDao @Inject()(
-  protected val dbConfigProvider: DatabaseConfigProvider
+  protected val dbConfigProvider: DatabaseConfigProvider,
+  implicit val ec: ExecutionContext
 ) extends HasDatabaseConfigProvider[JdbcProfile]
   with AnswerComponent
   with FormComponent
   with DaoHelper
   with ProjectComponent {
 
-  import driver.api._
+  import profile.api._
 
   private def userToFilter(answer: FormAnswerTable, userToId: Option[Long]) = userToId match {
     case Some(toId) => answer.userToId.fold(false: Rep[Boolean])(_ === toId)

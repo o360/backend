@@ -4,15 +4,14 @@ import com.mohiva.play.silhouette.api.util.HTTPLayer
 import com.mohiva.play.silhouette.impl.providers._
 import com.mohiva.play.silhouette.impl.providers.oauth2.{BaseGoogleProvider, GoogleProfileParser}
 import models.user.User
-import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json.JsValue
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * Custom google profile parser.
   */
-class CustomGoogleProfileParser extends CustomSocialProfileParser[JsValue, OAuth2Info] {
+class CustomGoogleProfileParser(implicit ec: ExecutionContext) extends CustomSocialProfileParser[JsValue, OAuth2Info] {
 
   val parser = new GoogleProfileParser
 
@@ -39,15 +38,16 @@ class CustomGoogleProfileParser extends CustomSocialProfileParser[JsValue, OAuth
   */
 class CustomGoogleProvider(
   protected val httpLayer: HTTPLayer,
-  protected val stateProvider: OAuth2StateProvider,
-  val settings: OAuth2Settings
+  protected val stateHandler: SocialStateHandler,
+  val settings: OAuth2Settings,
+  implicit val ec: ExecutionContext
 ) extends BaseGoogleProvider {
 
   type Self = CustomGoogleProvider
   type Profile = CustomSocialProfile
 
   def withSettings(f: (OAuth2Settings) => OAuth2Settings): CustomGoogleProvider = {
-    new CustomGoogleProvider(httpLayer, stateProvider, f(settings))
+    new CustomGoogleProvider(httpLayer, stateHandler, f(settings), ec)
   }
 
   protected def profileParser: CustomGoogleProfileParser = new CustomGoogleProfileParser

@@ -2,9 +2,8 @@ package models.dao
 
 import models.ListWithTotal
 import play.api.db.slick.HasDatabaseConfigProvider
-import play.api.libs.concurrent.Execution.Implicits._
 import slick.ast.Ordering
-import slick.driver.JdbcProfile
+import slick.jdbc.JdbcProfile
 import slick.lifted.ColumnOrdered
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
@@ -12,7 +11,7 @@ import utils.listmeta.pagination.Pagination
 import utils.listmeta.pagination.Pagination.{WithPages, WithoutPages}
 import utils.listmeta.sorting.Sorting
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.language.higherKinds
 
 /**
@@ -20,7 +19,7 @@ import scala.language.higherKinds
   */
 trait DaoHelper { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
-  import driver.api._
+  import profile.api._
 
   /**
     * Extensions for slick query.
@@ -37,7 +36,7 @@ trait DaoHelper { self: HasDatabaseConfigProvider[JdbcProfile] =>
     def applyFilter(
       f: E => Seq[Option[Rep[Boolean]]],
       allIfNoCriteria: Boolean = true
-    ): Query[E, U, Seq] = {
+    )(implicit ec: ExecutionContext): Query[E, U, Seq] = {
       query.filter {
         f(_)
           .collect {
@@ -54,7 +53,7 @@ trait DaoHelper { self: HasDatabaseConfigProvider[JdbcProfile] =>
       * @param pagination pagination model
       * @return slick query
       */
-    def applyPagination(pagination: Pagination): Query[E, U, Seq] = pagination match {
+    def applyPagination(pagination: Pagination)(implicit ec: ExecutionContext): Query[E, U, Seq] = pagination match {
       case p @ WithPages(size, _) =>
         query
           .drop(p.offset)
@@ -68,7 +67,8 @@ trait DaoHelper { self: HasDatabaseConfigProvider[JdbcProfile] =>
       *
       * @param mapping mapping between field names and slick columns
       */
-    def applySorting(sorting: Sorting)(mapping: E => PartialFunction[Symbol, Rep[_]]): Query[E, U, Seq] = {
+    def applySorting(sorting: Sorting)(mapping: E => PartialFunction[Symbol, Rep[_]])(
+      implicit ec: ExecutionContext): Query[E, U, Seq] = {
       def getSortedQuery(fields: Seq[Sorting.Field]): Query[E, U, Seq] = fields match {
         case Seq() => query
         case Sorting.Field(field, direction) +: tail =>
@@ -95,7 +95,8 @@ trait DaoHelper { self: HasDatabaseConfigProvider[JdbcProfile] =>
     * @return future of list result
     */
   def runListQuery[E, U](query: Query[E, U, Seq])(sortMapping: E => PartialFunction[Symbol, Rep[_]])(
-    implicit meta: ListMeta): Future[ListWithTotal[U]] = {
+    implicit meta: ListMeta,
+    ec: ExecutionContext): Future[ListWithTotal[U]] = {
     val paginatedQuery = query
       .applySorting(meta.sorting)(sortMapping)
       .applyPagination(meta.pagination)
@@ -120,7 +121,8 @@ trait DaoHelper { self: HasDatabaseConfigProvider[JdbcProfile] =>
     * @param column column to compare
     * @param value  value to compare
     */
-  def like(column: Rep[String], value: String, ignoreCase: Boolean = false): Rep[Boolean] = {
+  def like(column: Rep[String], value: String, ignoreCase: Boolean = false)(
+    implicit ec: ExecutionContext): Rep[Boolean] = {
     val escapedValue = value.replace("%", "\\%") // postgres specific % escape
     val condition = s"%$escapedValue%"
 

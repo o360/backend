@@ -8,7 +8,6 @@ import models.dao.{GroupDao, UserDao, UserGroupDao}
 import models.group.Group
 import models.user.{User => UserModel}
 import org.davidbild.tristate.Tristate
-import play.api.libs.concurrent.Execution.Implicits._
 import services.authorization.UserSda
 import silhouette.CustomSocialProfile
 import utils.Logger
@@ -16,7 +15,7 @@ import utils.errors.{ConflictError, NotFoundError}
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 /**
@@ -28,7 +27,8 @@ class UserService @Inject()(
   protected val userGroupDao: UserGroupDao,
   protected val groupDao: GroupDao,
   protected val mailService: MailService,
-  protected val templateEngineService: TemplateEngineService
+  protected val templateEngineService: TemplateEngineService,
+  implicit val ec: ExecutionContext
 ) extends IdentityService[UserModel]
   with ServiceResults[UserModel]
   with Logger {

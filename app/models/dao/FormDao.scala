@@ -5,15 +5,14 @@ import javax.inject.{Inject, Singleton}
 import models.ListWithTotal
 import models.form.{Form, FormShort}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
-import play.api.libs.concurrent.Execution.Implicits._
-import slick.driver.JdbcProfile
+import slick.jdbc.JdbcProfile
 import utils.listmeta.ListMeta
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 trait FormComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
-  import driver.api._
+  import profile.api._
 
   implicit lazy val formKindColumnType = MappedColumnType.base[Form.Kind, Byte](
     {
@@ -170,7 +169,7 @@ trait FormComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
   */
 trait EventFormMappingComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
-  import driver.api._
+  import profile.api._
 
   /**
     * DB model for form event mapping.
@@ -198,7 +197,8 @@ trait EventFormMappingComponent { self: HasDatabaseConfigProvider[JdbcProfile] =
   */
 @Singleton
 class FormDao @Inject()(
-  protected val dbConfigProvider: DatabaseConfigProvider
+  protected val dbConfigProvider: DatabaseConfigProvider,
+  implicit val ec: ExecutionContext
 ) extends HasDatabaseConfigProvider[JdbcProfile]
   with FormComponent
   with EventFormMappingComponent
@@ -206,7 +206,7 @@ class FormDao @Inject()(
   with EventProjectComponent
   with DaoHelper {
 
-  import driver.api._
+  import profile.api._
 
   /**
     * Returns list of forms.

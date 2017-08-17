@@ -49,13 +49,16 @@ class NotificationServiceTest
     val userService = mock[UserService]
     val mailService = mock[MailService]
     val templateEngineService = mock[TemplateEngineService]
-    val service = new NotificationService(eventDao,
-                                          projectDao,
-                                          relationDao,
-                                          templateDao,
-                                          userService,
-                                          mailService,
-                                          templateEngineService)
+    val service = new NotificationService(
+      eventDao,
+      projectDao,
+      relationDao,
+      templateDao,
+      userService,
+      mailService,
+      templateEngineService,
+      ec
+    )
     Fixture(eventDao, projectDao, relationDao, templateDao, userService, mailService, templateEngineService, service)
   }
 

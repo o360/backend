@@ -29,7 +29,7 @@ class EventProjectServiceTest extends BaseServiceTest with TristateGenerator wit
     val eventProjectDao = mock[EventProjectDao]
     val projectService = mock[ProjectService]
     val eventService = mock[EventService]
-    val service = new EventProjectService(projectService, eventService, eventProjectDao)
+    val service = new EventProjectService(projectService, eventService, eventProjectDao, ec)
     TestFixture(eventProjectDao, projectService, eventService, service)
   }
 

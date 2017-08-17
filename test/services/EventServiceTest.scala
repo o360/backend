@@ -37,7 +37,7 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
     val projectDao = mock[ProjectDao]
     val eventProjectDao = mock[EventProjectDao]
     val eventJobService = mock[EventJobService]
-    val service = new EventService(daoMock, groupDao, projectDao, eventProjectDao, eventJobService)
+    val service = new EventService(daoMock, groupDao, projectDao, eventProjectDao, eventJobService, ec)
     TestFixture(daoMock, groupDao, projectDao, eventProjectDao, eventJobService, service)
   }
 
