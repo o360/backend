@@ -39,7 +39,7 @@ class ProjectRelationServiceTest
     val daoMock = mock[ProjectRelationDao]
     val eventDaoMock = mock[EventDao]
     val formService = mock[FormService]
-    val service = new ProjectRelationService(daoMock, eventDaoMock, formService)
+    val service = new ProjectRelationService(daoMock, eventDaoMock, formService, ec)
     TestFixture(daoMock, eventDaoMock, formService, service)
   }
 

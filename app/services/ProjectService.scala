@@ -7,12 +7,11 @@ import models.dao.{EventDao, GroupDao, ProjectDao}
 import models.event.Event
 import models.project.Project
 import models.user.User
-import play.api.libs.concurrent.Execution.Implicits._
 import utils.errors.{ConflictError, ExceptionHandler, NotFoundError}
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * Project service.
@@ -21,7 +20,8 @@ import scala.concurrent.Future
 class ProjectService @Inject()(
   protected val projectDao: ProjectDao,
   protected val eventDao: EventDao,
-  protected val groupDao: GroupDao
+  protected val groupDao: GroupDao,
+  implicit val ec: ExecutionContext
 ) extends ServiceResults[Project] {
 
   /**

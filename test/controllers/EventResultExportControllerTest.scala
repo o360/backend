@@ -9,6 +9,8 @@ import play.api.test.Helpers._
 import services.EventResultExportService
 import utils.Config
 
+import scala.concurrent.ExecutionContext
+
 /**
   * Test for EventResultExportController.
   */
@@ -23,7 +25,7 @@ class EventResultExportControllerTest extends BaseControllerTest {
   private def getFixture = {
     val config = mock[Config]
     val exportService = mock[EventResultExportService]
-    val controller = new EventResultExportController(config, exportService)
+    val controller = new EventResultExportController(config, exportService, cc, ExecutionContext.Implicits.global)
     Fixture(config, exportService, controller)
   }
 

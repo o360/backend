@@ -7,7 +7,7 @@ import models.form.Form
 import models.report.{AggregatedReport, Report}
 import models.user.User
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 /**
   * Spreadsheet service.
@@ -260,13 +260,15 @@ class SpreadsheetService @Inject()() {
 
     new BatchUpdateSpreadsheetRequest()
       .setRequests(
-        Seq(
-          SpreadsheetApi.addSheetRequest(1, "Aggregation"),
-          SpreadsheetApi.addSheetRequest(2, "Many-One"),
-          SpreadsheetApi.deleteSheetRequest(0) // removes default sheet
-        ) ++
-          requestsManyToOne ++
-          requestsAggregation
+        {
+          Seq(
+            SpreadsheetApi.addSheetRequest(1, "Aggregation"),
+            SpreadsheetApi.addSheetRequest(2, "Many-One"),
+            SpreadsheetApi.deleteSheetRequest(0) // removes default sheet
+          ) ++
+            requestsManyToOne ++
+            requestsAggregation
+        }.asJava
       )
   }
 }

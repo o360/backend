@@ -20,6 +20,7 @@ import testutils.generator.TemplateGenerator
 import utils.errors.{ApplicationError, NotFoundError}
 import utils.listmeta.ListMeta
 
+import scala.concurrent.ExecutionContext
 import scalaz.{-\/, \/, \/-, EitherT}
 
 /**
@@ -36,7 +37,7 @@ class TemplateControllerTest extends BaseControllerTest with TemplateGenerator {
   private def getFixture(environment: FakeEnvironment[DefaultEnv]) = {
     val silhouette = getSilhouette(environment)
     val templateServiceMock = mock[TemplateService]
-    val controller = new TemplateController(silhouette, templateServiceMock)
+    val controller = new TemplateController(silhouette, templateServiceMock, cc, ExecutionContext.Implicits.global)
     TestFixture(silhouette, templateServiceMock, controller)
   }
 

@@ -5,9 +5,12 @@ import javax.inject.{Inject, Singleton}
 import com.mohiva.play.silhouette.api.Silhouette
 import controllers.api.group.ApiUserGroup
 import controllers.authorization.AllowedRole
+import play.api.mvc.ControllerComponents
 import services.UserGroupService
 import silhouette.DefaultEnv
 import utils.implicits.FutureLifting._
+
+import scala.concurrent.ExecutionContext
 
 /**
   * User group controller.
@@ -15,7 +18,9 @@ import utils.implicits.FutureLifting._
 @Singleton
 class UserGroupController @Inject()(
   protected val silhouette: Silhouette[DefaultEnv],
-  protected val userGroupService: UserGroupService
+  protected val userGroupService: UserGroupService,
+  val controllerComponents: ControllerComponents,
+  implicit val ec: ExecutionContext
 ) extends BaseController {
 
   /**

@@ -6,19 +6,18 @@ import models.event.Event
 import models.{ListWithTotal, NamedEntity}
 import models.project.{Project, TemplateBinding}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
-import play.api.libs.concurrent.Execution.Implicits._
-import slick.driver.JdbcProfile
+import slick.jdbc.JdbcProfile
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * Component for project table.
   */
 trait ProjectComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
-  import driver.api._
+  import profile.api._
 
   /**
     * Project db model.
@@ -85,7 +84,8 @@ trait ProjectComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
   */
 @Singleton
 class ProjectDao @Inject()(
-  protected val dbConfigProvider: DatabaseConfigProvider
+  protected val dbConfigProvider: DatabaseConfigProvider,
+  implicit val ec: ExecutionContext
 ) extends HasDatabaseConfigProvider[JdbcProfile]
   with ProjectComponent
   with EventProjectComponent
@@ -96,7 +96,7 @@ class ProjectDao @Inject()(
   with EventComponent
   with DaoHelper {
 
-  import driver.api._
+  import profile.api._
 
   /**
     * Returns list of projects with relations.

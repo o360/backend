@@ -7,20 +7,23 @@ import controllers.api.export.{ApiAnswerExport, ApiEventExport, ApiExportCode, A
 import controllers.api.form.ApiForm
 import controllers.api.user.ApiShortUser
 import models.user.UserShort
-import play.api.libs.concurrent.Execution.Implicits._
-import play.api.mvc.Action
+import play.api.mvc.{Action, ControllerComponents}
 import services.EventResultExportService
 import utils.Config
 import utils.implicits.FutureLifting._
 import utils.listmeta.actions.ListActions
 import utils.listmeta.sorting.Sorting
 
+import scala.concurrent.ExecutionContext
+
 /**
   * Controller exporting event results as JSON.
   */
 class EventResultExportController @Inject()(
   config: Config,
-  exportService: EventResultExportService
+  exportService: EventResultExportService,
+  val controllerComponents: ControllerComponents,
+  implicit val ec: ExecutionContext
 ) extends BaseController
   with ListActions {
 

@@ -9,7 +9,7 @@ import utils.listmeta.ListMeta
 import utils.listmeta.pagination.PaginationRequestParser
 import utils.listmeta.sorting.{Sorting, SortingRequestParser}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.language.implicitConversions
 
 /**
@@ -17,6 +17,8 @@ import scala.language.implicitConversions
   */
 trait ListActions {
   type DefaultSecuredRequest[A] = SecuredRequest[DefaultEnv, A]
+
+  def ec: ExecutionContext
 
   /**
     * Extends secured action with list meta info.
@@ -29,6 +31,7 @@ trait ListActions {
           case Right(meta) => Right(ListRequest(meta, request)).toFuture
         }
       }
+      override protected def executionContext: ExecutionContext = ec
     }
 
   /**
@@ -42,6 +45,7 @@ trait ListActions {
           case Right(meta) => Right(UnsecuredListRequest(meta, request)).toFuture
         }
       }
+      override protected def executionContext: ExecutionContext = ec
     }
 
   /**

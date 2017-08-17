@@ -13,7 +13,7 @@ import com.google.api.services.sheets.v4.{Sheets, SheetsScopes}
 import play.api.Environment
 import utils.Logger
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.util.control.NonFatal
 
 /**
@@ -26,7 +26,7 @@ class GoogleDriveService @Inject()(
 
   private lazy val credential = GoogleCredential
     .fromStream(new FileInputStream("conf/drive_service_key.json"))
-    .createScoped(Seq(DriveScopes.DRIVE, SheetsScopes.SPREADSHEETS))
+    .createScoped(Seq(DriveScopes.DRIVE, SheetsScopes.SPREADSHEETS).asJava)
   private lazy val transport = new NetHttpTransport()
   private lazy val jsonFactory = JacksonFactory.getDefaultInstance
   private lazy val driveService = new Drive.Builder(transport, jsonFactory, credential).build
@@ -44,7 +44,7 @@ class GoogleDriveService @Inject()(
     val file = new File()
       .setMimeType(contentType)
       .setName(name)
-      .setParents(Seq(parent))
+      .setParents(Seq(parent).asJava)
     val result = driveService.files.create(file).execute()
     result.getId
   }

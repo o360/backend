@@ -6,18 +6,17 @@ import models.ListWithTotal
 import models.notification.Notification
 import models.template.Template
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
-import slick.driver.JdbcProfile
+import slick.jdbc.JdbcProfile
 import utils.listmeta.ListMeta
 
-import scala.concurrent.Future
-import play.api.libs.concurrent.Execution.Implicits._
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * Component for template table.
   */
 trait TemplateComponent extends NotificationComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
-  import driver.api._
+  import profile.api._
 
   class TemplateTable(tag: Tag) extends Table[Template](tag, "template") {
 
@@ -39,12 +38,13 @@ trait TemplateComponent extends NotificationComponent { self: HasDatabaseConfigP
   */
 @Singleton
 class TemplateDao @Inject()(
-  protected val dbConfigProvider: DatabaseConfigProvider
+  protected val dbConfigProvider: DatabaseConfigProvider,
+  implicit val ec: ExecutionContext
 ) extends HasDatabaseConfigProvider[JdbcProfile]
   with TemplateComponent
   with DaoHelper {
 
-  import driver.api._
+  import profile.api._
 
   /**
     * Creates template.

@@ -18,6 +18,7 @@ import testutils.generator.{TristateGenerator, UserGenerator}
 import utils.errors.{ApplicationError, NotFoundError}
 import utils.listmeta.ListMeta
 
+import scala.concurrent.ExecutionContext
 import scalaz.{-\/, \/, \/-, EitherT}
 
 /**
@@ -34,7 +35,7 @@ class UserControllerTest extends BaseControllerTest with UserGenerator with Tris
   private def getFixture(environment: FakeEnvironment[DefaultEnv]) = {
     val silhouette = getSilhouette(environment)
     val userServiceMock = mock[UserService]
-    val controller = new UserController(silhouette, userServiceMock)
+    val controller = new UserController(silhouette, userServiceMock, cc, ExecutionContext.Implicits.global)
     TestFixture(silhouette, userServiceMock, controller)
   }
 

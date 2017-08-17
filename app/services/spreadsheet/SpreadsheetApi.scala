@@ -2,7 +2,7 @@ package services.spreadsheet
 
 import com.google.api.services.sheets.v4.model._
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import Action._
 import Element.{Cell, Point, Region}
 
@@ -47,7 +47,7 @@ object SpreadsheetApi {
               textCell(cell.text, cell.alignment, cell.format, color)
             }
           }
-          new RowData().setValues(cellsModels)
+          new RowData().setValues(cellsModels.asJava)
         }
 
         val startCoordinate = new GridCoordinate().setSheetId(sheetId).setColumnIndex(0).setRowIndex(0)
@@ -55,7 +55,7 @@ object SpreadsheetApi {
         val request = new Request().setUpdateCells(
           new UpdateCellsRequest()
             .setStart(startCoordinate)
-            .setRows(rowsModels)
+            .setRows(rowsModels.asJava)
             .setFields(
               "userEnteredValue,userEnteredFormat.textFormat,userEnteredFormat.backgroundColor,userEnteredFormat.horizontalAlignment")
         )

@@ -8,9 +8,8 @@ import models.event.{Event, EventJob}
 import models.notification.Notification
 import models.project.{Project, Relation, TemplateBinding}
 import models.template.Template
-import play.api.libs.concurrent.Execution.Implicits._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * Email notifications service.
@@ -23,7 +22,8 @@ class NotificationService @Inject()(
   templateDao: TemplateDao,
   userService: UserService,
   mailService: MailService,
-  templateEngineService: TemplateEngineService
+  templateEngineService: TemplateEngineService,
+  implicit val ec: ExecutionContext
 ) {
 
   /**

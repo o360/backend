@@ -37,7 +37,7 @@ class GroupServiceTest
     val userGroupDaoMock = mock[UserGroupDao]
     val projectDao = mock[ProjectDao]
     val relationDao = mock[ProjectRelationDao]
-    val service = new GroupService(daoMock, userGroupDaoMock, relationDao, projectDao)
+    val service = new GroupService(daoMock, userGroupDaoMock, relationDao, projectDao, ec)
     TestFixture(daoMock, userGroupDaoMock, projectDao, relationDao, service)
   }
 

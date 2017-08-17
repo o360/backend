@@ -5,12 +5,11 @@ import javax.inject.{Inject, Singleton}
 
 import models.dao.{EventDao, EventJobDao}
 import models.event.{Event, EventJob}
-import play.api.libs.concurrent.Execution.Implicits._
 import utils.errors.NotFoundError
 import utils.implicits.FutureLifting._
 import utils.{Logger, TimestampConverter}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 /**
@@ -22,7 +21,8 @@ class EventJobService @Inject()(
   protected val eventDao: EventDao,
   protected val notificationService: NotificationService,
   protected val uploadService: UploadService,
-  protected val formService: FormService
+  protected val formService: FormService,
+  implicit val ec: ExecutionContext
 ) extends Logger
   with ServiceResults[EventJob] {
 

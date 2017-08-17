@@ -18,6 +18,7 @@ import testutils.generator.FormGenerator
 import utils.errors.{ApplicationError, NotFoundError}
 import utils.listmeta.ListMeta
 
+import scala.concurrent.ExecutionContext
 import scalaz._
 
 /**
@@ -34,7 +35,7 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
   private def getFixture(environment: FakeEnvironment[DefaultEnv]) = {
     val silhouette = getSilhouette(environment)
     val formServiceMock = mock[FormService]
-    val controller = new FormController(silhouette, formServiceMock)
+    val controller = new FormController(silhouette, formServiceMock, cc, ExecutionContext.Implicits.global)
     TestFixture(silhouette, formServiceMock, controller)
   }
 

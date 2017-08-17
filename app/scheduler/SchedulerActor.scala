@@ -4,9 +4,10 @@ import java.sql.Timestamp
 import javax.inject.{Inject, Singleton}
 
 import akka.actor.Actor
-import play.api.libs.concurrent.Execution.Implicits._
 import services.EventJobService
 import utils.{Config, Logger, TimestampConverter}
+
+import scala.concurrent.ExecutionContext
 
 /**
   * Scheduler actor.
@@ -14,7 +15,8 @@ import utils.{Config, Logger, TimestampConverter}
 @Singleton
 class SchedulerActor @Inject()(
   protected val config: Config,
-  protected val eventJobService: EventJobService
+  protected val eventJobService: EventJobService,
+  implicit val ec: ExecutionContext
 ) extends Actor
   with Logger {
 

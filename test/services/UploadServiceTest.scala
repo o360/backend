@@ -51,15 +51,18 @@ class UploadServiceTest
     val userService = mock[UserService]
     val googleDriveService = mock[GoogleDriveService]
     val userDao = mock[UserDao]
-    val service = new UploadService(eventDao,
-                                    projectDao,
-                                    reportService,
-                                    spreadsheetService,
-                                    formService,
-                                    relationDao,
-                                    userService,
-                                    googleDriveService,
-                                    userDao)
+    val service = new UploadService(
+      eventDao,
+      projectDao,
+      reportService,
+      spreadsheetService,
+      formService,
+      relationDao,
+      userService,
+      googleDriveService,
+      userDao,
+      ec
+    )
     Fixture(eventDao,
             projectDao,
             reportService,

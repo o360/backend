@@ -7,20 +7,19 @@ import models.ListWithTotal
 import models.event.{Event, EventJob}
 import models.notification.Notification
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
-import play.api.libs.concurrent.Execution.Implicits._
-import slick.driver.JdbcProfile
+import slick.jdbc.JdbcProfile
 import utils.TimestampConverter
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * Component for notification datatypes.
   */
 trait NotificationComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
-  import driver.api._
+  import profile.api._
 
   implicit val eventKindMappedType = MappedColumnType.base[Notification.Kind, Byte](
     {
@@ -52,7 +51,7 @@ trait NotificationComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
   */
 trait EventComponent extends NotificationComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
-  import driver.api._
+  import profile.api._
 
   /**
     * Event DB model.
@@ -134,14 +133,15 @@ trait EventComponent extends NotificationComponent { self: HasDatabaseConfigProv
   */
 @Singleton
 class EventDao @Inject()(
-  protected val dbConfigProvider: DatabaseConfigProvider
+  protected val dbConfigProvider: DatabaseConfigProvider,
+  implicit val ec: ExecutionContext
 ) extends HasDatabaseConfigProvider[JdbcProfile]
   with EventComponent
   with EventProjectComponent
   with ProjectRelationComponent
   with DaoHelper {
 
-  import driver.api._
+  import profile.api._
 
   /**
     * Creates event with notifications.

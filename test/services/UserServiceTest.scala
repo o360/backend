@@ -44,7 +44,7 @@ class UserServiceTest
     val groupDaoMock = mock[GroupDao]
     val mailService = mock[MailService]
     val templateEngineService = mock[TemplateEngineService]
-    val service = new UserService(daoMock, userGroupDaoMock, groupDaoMock, mailService, templateEngineService)
+    val service = new UserService(daoMock, userGroupDaoMock, groupDaoMock, mailService, templateEngineService, ec)
     TestFixture(daoMock, userGroupDaoMock, groupDaoMock, mailService, templateEngineService, service)
   }
 

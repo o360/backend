@@ -4,14 +4,14 @@ import models.NamedEntity
 import models.notification.Notification
 import models.project.TemplateBinding
 import play.api.db.slick.HasDatabaseConfigProvider
-import slick.driver.JdbcProfile
+import slick.jdbc.JdbcProfile
 
 /**
   * Component for template binding tables.
   */
 trait TemplateBindingComponent extends NotificationComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
-  import driver.api._
+  import profile.api._
 
   /**
     * Template binding DM model.

@@ -11,37 +11,37 @@ import play.api.Configuration
 class Config @Inject()(protected val configuration: Configuration) {
 
   lazy val googleSettings: Config.OAuthGoogle = {
-    val accessTokenURL = configuration.getString("silhouette.google.accessTokenURL").get
-    val redirectURL = configuration.getString("silhouette.google.redirectURL").get
-    val clientID = configuration.getString("silhouette.google.clientID").get
-    val clientSecret = configuration.getString("silhouette.google.clientSecret").get
-    val scope = configuration.getString("silhouette.google.scope")
+    val accessTokenURL = configuration.get[String]("silhouette.google.accessTokenURL")
+    val redirectURL = configuration.get[String]("silhouette.google.redirectURL")
+    val clientID = configuration.get[String]("silhouette.google.clientID")
+    val clientSecret = configuration.get[String]("silhouette.google.clientSecret")
+    val scope = configuration.getOptional[String]("silhouette.google.scope")
 
     Config.OAuthGoogle(accessTokenURL, redirectURL, clientID, clientSecret, scope)
   }
 
   lazy val schedulerSettings: Config.Scheduler = {
-    val isEnabled = configuration.getBoolean("scheduler.enabled")
-    val interval = configuration.getMilliseconds("scheduler.interval").get
-    val maxAge = configuration.getMilliseconds("scheduler.max-age").get
+    val isEnabled = configuration.getOptional[Boolean]("scheduler.enabled")
+    val interval = configuration.getMillis("scheduler.interval")
+    val maxAge = configuration.getMillis("scheduler.max-age")
     Config.Scheduler(isEnabled.contains(true), interval, maxAge)
   }
 
   lazy val mailerSettings: Config.Mailer = {
-    val sendFromEmail = configuration.getString("play.mailer.from").get
+    val sendFromEmail = configuration.get[String]("play.mailer.from")
     Config.Mailer(sendFromEmail)
   }
 
-  lazy val cryptoSecret: String = configuration.getString("play.crypto.secret").get
+  lazy val cryptoSecret: String = configuration.get[String]("play.http.secret.key")
 
   lazy val dbSettings: Config.DbSetting = {
-    val url = configuration.getString("slick.dbs.default.db.url").get
-    val user = configuration.getString("slick.dbs.default.db.user").get
-    val password = configuration.getString("slick.dbs.default.db.password").get
+    val url = configuration.get[String]("slick.dbs.default.db.url")
+    val user = configuration.get[String]("slick.dbs.default.db.user")
+    val password = configuration.get[String]("slick.dbs.default.db.password")
     Config.DbSetting(url, user, password)
   }
 
-  lazy val exportSecret: String = configuration.getString("export.secret").get
+  lazy val exportSecret: String = configuration.get[String]("export.secret")
 }
 
 object Config {

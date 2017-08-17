@@ -51,7 +51,7 @@ class AssessmentServiceTest
     val answerDao = mock[AnswerDao]
     val projectDao = mock[ProjectDao]
     val service =
-      new AssessmentService(formService, userService, groupDao, eventDao, relationDao, answerDao, projectDao)
+      new AssessmentService(formService, userService, groupDao, eventDao, relationDao, answerDao, projectDao, ec)
     Fixture(formService, userService, groupDao, eventDao, relationDao, answerDao, projectDao, service)
   }
 

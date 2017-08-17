@@ -6,11 +6,14 @@ import com.mohiva.play.silhouette.api.Silhouette
 import controllers.api.Response
 import controllers.api.project.{ApiPartialRelation, ApiRelation}
 import controllers.authorization.AllowedRole
+import play.api.mvc.ControllerComponents
 import services.ProjectRelationService
 import silhouette.DefaultEnv
 import utils.implicits.FutureLifting._
 import utils.listmeta.actions.ListActions
 import utils.listmeta.sorting.Sorting
+
+import scala.concurrent.ExecutionContext
 
 /**
   * Project relation controller.
@@ -18,7 +21,9 @@ import utils.listmeta.sorting.Sorting
 @Singleton
 class ProjectRelationController @Inject()(
   protected val silhouette: Silhouette[DefaultEnv],
-  protected val projectRelationService: ProjectRelationService
+  protected val projectRelationService: ProjectRelationService,
+  val controllerComponents: ControllerComponents,
+  implicit val ec: ExecutionContext
 ) extends BaseController
   with ListActions {
 

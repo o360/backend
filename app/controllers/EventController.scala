@@ -6,11 +6,14 @@ import com.mohiva.play.silhouette.api.Silhouette
 import controllers.api.Response
 import controllers.api.event.{ApiEvent, ApiPartialEvent}
 import controllers.authorization.{AllowedRole, AllowedStatus}
+import play.api.mvc.ControllerComponents
 import services.EventService
 import silhouette.DefaultEnv
 import utils.implicits.FutureLifting._
 import utils.listmeta.actions.ListActions
 import utils.listmeta.sorting.Sorting
+
+import scala.concurrent.ExecutionContext
 
 /**
   * Event controller.
@@ -18,7 +21,9 @@ import utils.listmeta.sorting.Sorting
 @Singleton
 class EventController @Inject()(
   silhouette: Silhouette[DefaultEnv],
-  eventService: EventService
+  eventService: EventService,
+  val controllerComponents: ControllerComponents,
+  implicit val ec: ExecutionContext
 ) extends BaseController
   with ListActions {
 

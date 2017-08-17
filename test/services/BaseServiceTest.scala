@@ -16,4 +16,7 @@ trait BaseServiceTest
   with AsyncHelper
   with MockitoSugar
   with FixtureSupport
-  with OneInstancePerTest
+  with OneInstancePerTest {
+
+  val ec = scala.concurrent.ExecutionContext.global
+}

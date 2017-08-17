@@ -4,9 +4,12 @@ import javax.inject.{Inject, Singleton}
 
 import com.mohiva.play.silhouette.api.Silhouette
 import controllers.authorization.AllowedRole
+import play.api.mvc.ControllerComponents
 import services.EventProjectService
 import silhouette.DefaultEnv
 import utils.implicits.FutureLifting._
+
+import scala.concurrent.ExecutionContext
 
 /**
   * Event project controller.
@@ -14,7 +17,9 @@ import utils.implicits.FutureLifting._
 @Singleton
 class EventProjectController @Inject()(
   protected val silhouette: Silhouette[DefaultEnv],
-  protected val eventProjectService: EventProjectService
+  protected val eventProjectService: EventProjectService,
+  val controllerComponents: ControllerComponents,
+  implicit val ec: ExecutionContext
 ) extends BaseController {
 
   /**

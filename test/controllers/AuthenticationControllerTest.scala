@@ -8,7 +8,6 @@ import controllers.api.user.ApiUser
 import models.user.{User => UserModel}
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
-import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test._
@@ -31,7 +30,7 @@ class AuthenticationControllerTest extends BaseControllerTest with UserGenerator
     "return user's json if user is present" in {
       forAll { (user: UserModel, provId: String, provKey: String) =>
         implicit val env = FakeEnvironment[DefaultEnv](Seq(LoginInfo(provId, provKey) -> user))
-        val controller = new Authentication(getSilhouette(env), socialProviderRegistryMock, userServiceMock)
+        val controller = new Authentication(getSilhouette(env), socialProviderRegistryMock, userServiceMock, cc, ec)
         val request = FakeRequest().withAuthenticator(LoginInfo(provId, provKey))
 
         val result = controller.me(request)
@@ -43,7 +42,7 @@ class AuthenticationControllerTest extends BaseControllerTest with UserGenerator
     "return unauthorized if user is not present" in {
       forAll { (provId: String, provKey: String) =>
         implicit val env = FakeEnvironment[DefaultEnv](Nil)
-        val controller = new Authentication(getSilhouette(env), socialProviderRegistryMock, userServiceMock)
+        val controller = new Authentication(getSilhouette(env), socialProviderRegistryMock, userServiceMock, cc, ec)
         val request = FakeRequest().withAuthenticator(LoginInfo(provId, provKey))
 
         val result = controller.me(request)
@@ -54,7 +53,7 @@ class AuthenticationControllerTest extends BaseControllerTest with UserGenerator
     "return unauthorized if authenticator is not present" in {
       forAll { (user: UserModel, provId: String, provKey: String) =>
         implicit val env = FakeEnvironment[DefaultEnv](Seq(LoginInfo(provId, provKey) -> user))
-        val controller = new Authentication(getSilhouette(env), socialProviderRegistryMock, userServiceMock)
+        val controller = new Authentication(getSilhouette(env), socialProviderRegistryMock, userServiceMock, cc, ec)
         val request = FakeRequest()
 
         val result = controller.me(request)
@@ -68,7 +67,7 @@ class AuthenticationControllerTest extends BaseControllerTest with UserGenerator
       forAll { (unsupportedProvider: String) =>
         when(socialProviderRegistryMock.get[SocialProvider](any[String])(any())).thenReturn(None)
 
-        val controller = new Authentication(silhouetteMock, socialProviderRegistryMock, userServiceMock)
+        val controller = new Authentication(silhouetteMock, socialProviderRegistryMock, userServiceMock, cc, ec)
 
         val result = controller.auth(unsupportedProvider)(FakeRequest())
         status(result) mustBe UNAUTHORIZED
@@ -80,7 +79,7 @@ class AuthenticationControllerTest extends BaseControllerTest with UserGenerator
       when(socialProviderMock.authenticate()(any())).thenReturn(Future.failed(new SilhouetteException("")))
       when(socialProviderRegistryMock.get[SocialProvider](any[String])(any())).thenReturn(Some(socialProviderMock))
 
-      val controller = new Authentication(silhouetteMock, socialProviderRegistryMock, userServiceMock)
+      val controller = new Authentication(silhouetteMock, socialProviderRegistryMock, userServiceMock, cc, ec)
 
       val result = controller.auth("anyprovider")(FakeRequest())
       status(result) mustBe UNAUTHORIZED

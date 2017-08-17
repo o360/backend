@@ -5,18 +5,23 @@ import controllers.api.Response
 import models.user.{User => UserModel}
 import play.api.libs.json.{Json, Writes}
 import play.api.mvc._
+import play.api.mvc.{BaseController => PlayBaseController}
 import silhouette.DefaultEnv
 import utils.errors.{ApplicationError, ErrorHelper}
 import utils.implicits.FutureLifting._
 import utils.listmeta.actions.ListRequest
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scalaz.EitherT
 
 /**
   * Base class for controllers.
   */
-trait BaseController extends Controller {
+trait BaseController extends PlayBaseController {
+
+  implicit val ec: ExecutionContext
+
+  val controllerComponents: ControllerComponents
 
   /**
     * Converts given value to JSON and returns Ok result.

@@ -8,11 +8,10 @@ import models.form.Form
 import models.project.Relation
 import models.report._
 import models.user.User
-import play.api.libs.concurrent.Execution.Implicits._
 import services.ReportService.Combination
 import utils.Logger
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * Report service.
@@ -22,7 +21,8 @@ class ReportService @Inject()(
   userService: UserService,
   relationDao: ProjectRelationDao,
   formService: FormService,
-  answerDao: AnswerDao
+  answerDao: AnswerDao,
+  implicit val ec: ExecutionContext
 ) extends Logger {
 
   /**

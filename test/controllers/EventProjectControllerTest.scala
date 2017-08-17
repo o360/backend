@@ -27,7 +27,7 @@ class EventProjectControllerTest extends BaseControllerTest with TristateGenerat
   private def getFixture(environment: FakeEnvironment[DefaultEnv]) = {
     val silhouette = getSilhouette(environment)
     val eventProjectService = mock[EventProjectService]
-    val controller = new EventProjectController(silhouette, eventProjectService)
+    val controller = new EventProjectController(silhouette, eventProjectService, cc, ec)
     TestFixture(silhouette, eventProjectService, controller)
   }
 

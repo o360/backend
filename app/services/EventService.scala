@@ -6,14 +6,13 @@ import javax.inject.{Inject, Singleton}
 import models.dao.{EventDao, EventProjectDao, GroupDao, ProjectDao}
 import models.event.Event
 import models.user.User
-import play.api.libs.concurrent.Execution.Implicits._
 import services.authorization.EventSda
 import utils.TimestampConverter
 import utils.errors.{BadRequestError, NotFoundError}
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * Event service.
@@ -24,7 +23,8 @@ class EventService @Inject()(
   protected val groupDao: GroupDao,
   protected val projectDao: ProjectDao,
   protected val eventProjectDao: EventProjectDao,
-  protected val eventJobService: EventJobService
+  protected val eventJobService: EventJobService,
+  implicit val ec: ExecutionContext
 ) extends ServiceResults[Event] {
 
   /**

@@ -6,11 +6,14 @@ import com.mohiva.play.silhouette.api.Silhouette
 import controllers.api.Response
 import controllers.api.form.{ApiForm, ApiPartialForm}
 import controllers.authorization.{AllowedRole, AllowedStatus}
+import play.api.mvc.ControllerComponents
 import services.FormService
 import silhouette.DefaultEnv
 import utils.implicits.FutureLifting._
 import utils.listmeta.actions.ListActions
 import utils.listmeta.sorting.Sorting
+
+import scala.concurrent.ExecutionContext
 
 /**
   * Form template controller.
@@ -18,7 +21,9 @@ import utils.listmeta.sorting.Sorting
 @Singleton
 class FormController @Inject()(
   protected val silhouette: Silhouette[DefaultEnv],
-  protected val formService: FormService
+  protected val formService: FormService,
+  val controllerComponents: ControllerComponents,
+  implicit val ec: ExecutionContext
 ) extends BaseController
   with ListActions {
 
