@@ -67,7 +67,7 @@ class SilhouetteModule extends AbstractModule {
 
     val oauthConfig = OAuth2Settings(
       accessTokenURL = config.googleSettings.accessTokenUrl,
-//      redirectURL = config.googleSettings.redirectUrl,
+      redirectURL = Some(config.googleSettings.redirectUrl),
       clientID = config.googleSettings.clientId,
       clientSecret = config.googleSettings.clientSecret,
       scope = config.googleSettings.scope
