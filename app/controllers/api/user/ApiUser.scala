@@ -26,17 +26,19 @@ case class ApiUser(
   gender: Option[ApiUser.ApiGender],
   role: ApiUser.ApiRole,
   status: ApiUser.ApiStatus,
-  timezone: ZoneId
+  timezone: ZoneId,
+  termsApproved: Boolean
 ) extends Response {
 
   def toModel = User(
-    id = id,
-    name = name,
-    email = email,
-    gender = gender.map(_.value),
-    role = role.value,
-    status = status.value,
-    timezone = timezone
+    id,
+    name,
+    email,
+    gender.map(_.value),
+    role.value,
+    status.value,
+    timezone,
+    termsApproved
   )
 }
 
@@ -62,8 +64,9 @@ object ApiUser {
       (__ \ "gender").readNullable[ApiUser.ApiGender] and
       (__ \ "role").read[ApiUser.ApiRole] and
       (__ \ "status").read[ApiUser.ApiStatus] and
-      (__ \ "timezone").read[ZoneId]
-  )(ApiUser(_, _, _, _, _, _, _))
+      (__ \ "timezone").read[ZoneId] and
+      (__ \ "termsApproved").read[Boolean]
+  )(ApiUser(_, _, _, _, _, _, _, _))
 
   implicit val format = Format(reads, Json.writes[ApiUser])
 
@@ -80,7 +83,8 @@ object ApiUser {
     user.gender.map(ApiGender(_)),
     ApiRole(user.role),
     ApiStatus(user.status),
-    user.timezone
+    user.timezone,
+    user.termsApproved
   )
 
   /**

@@ -102,6 +102,7 @@ trait UserComponent extends Logger { self: HasDatabaseConfigProvider[JdbcProfile
     role: User.Role,
     status: User.Status,
     timezone: String,
+    termsApproved: Boolean,
     isDeleted: Boolean
   ) {
     def toModel = User(
@@ -114,7 +115,8 @@ trait UserComponent extends Logger { self: HasDatabaseConfigProvider[JdbcProfile
       Try(ZoneId.of(timezone)).getOrElse {
         log.error(s"User $id has incorrect timezone $timezone, UTC used instead")
         ZoneOffset.UTC
-      }
+      },
+      termsApproved
     )
   }
 
@@ -127,6 +129,7 @@ trait UserComponent extends Logger { self: HasDatabaseConfigProvider[JdbcProfile
       user.role,
       user.status,
       user.timezone.getId,
+      user.termsApproved,
       isDeleted = false
     )
   }
@@ -140,9 +143,11 @@ trait UserComponent extends Logger { self: HasDatabaseConfigProvider[JdbcProfile
     def role = column[User.Role]("role")
     def status = column[User.Status]("status")
     def timezone = column[String]("timezone")
+    def termsApproved = column[Boolean]("terms_approved")
     def isDeleted = column[Boolean]("is_deleted")
 
-    def * = (id, name, email, gender, role, status, timezone, isDeleted) <> ((DbUser.apply _).tupled, DbUser.unapply)
+    def * =
+      (id, name, email, gender, role, status, timezone, termsApproved, isDeleted) <> ((DbUser.apply _).tupled, DbUser.unapply)
   }
 
   val Users = TableQuery[UserTable]

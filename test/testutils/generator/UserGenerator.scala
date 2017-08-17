@@ -29,7 +29,8 @@ trait UserGenerator {
       gender <- Arbitrary.arbitrary[Option[User.Gender]]
       role <- Arbitrary.arbitrary[User.Role]
       status <- Arbitrary.arbitrary[User.Status]
-    } yield User(0, name, email, gender, role, status, ZoneOffset.UTC)
+      termsApproved <- Arbitrary.arbitrary[Boolean]
+    } yield User(0, name, email, gender, role, status, ZoneOffset.UTC, termsApproved)
   }
 
   implicit val userShortArb = Arbitrary {
