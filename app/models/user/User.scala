@@ -23,7 +23,8 @@ case class User(
   gender: Option[User.Gender],
   role: User.Role,
   status: User.Status,
-  timezone: ZoneId
+  timezone: ZoneId,
+  termsApproved: Boolean
 ) extends Identity
 
 object User {
@@ -83,7 +84,8 @@ object User {
       socialProfile.gender,
       User.Role.User,
       User.Status.New,
-      ZoneOffset.UTC
+      ZoneOffset.UTC,
+      termsApproved = false
     )
   }
 }
