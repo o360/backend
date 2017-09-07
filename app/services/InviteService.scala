@@ -29,10 +29,10 @@ class InviteService @Inject()(
   private def validateInvite(invite: Invite): Future[Option[ApplicationError]] = {
     for {
       users <- userDao.getList(optEmail = Some(invite.email))
-      groups <- Future.sequence(invite.groupIds.map(id => groupDao.findById(id).map((id, _))))
+      groups <- Future.sequence(invite.groups.map(entity => groupDao.findById(entity.id).map((entity, _))))
     } yield {
       val existedEmail = users.data.headOption.flatMap(_.email)
-      val notFoundGroupId = groups.collectFirst { case (id, None) => id }
+      val notFoundGroupId = groups.collectFirst { case (entity, None) => entity.id }
 
       (existedEmail, notFoundGroupId) match {
         case (Some(email), _) => Some(ConflictError.Invite.UserAlreadyRegistered(email))
@@ -78,10 +78,11 @@ class InviteService @Inject()(
         ConflictError.Invite.UserAlreadyApproved
       }
       _ <- userDao.update(account.copy(status = User.Status.Approved)).lift
-      _ <- Future.sequence(invite.groupIds.map(userGroupDao.add(_, account.id))).lift
+      _ <- Future.sequence(invite.groups.map(x => userGroupDao.add(x.id, account.id))).lift
       _ <- inviteDao.activate(code, TimestampConverter.now).lift
     } yield ()
   }
 
-  def getList(implicit meta: ListMeta = ListMeta.default): ListResult = inviteDao.getList.lift
+  def getList(activated: Option[Boolean] = None)(implicit meta: ListMeta = ListMeta.default): ListResult =
+    inviteDao.getList(activated = activated).lift
 }

@@ -3,8 +3,8 @@ package models.dao
 import java.sql.Timestamp
 import javax.inject.{Inject, Singleton}
 
-import models.ListWithTotal
 import models.invite.Invite
+import models.{ListWithTotal, NamedEntity}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 import utils.implicits.FutureLifting._
@@ -26,10 +26,10 @@ trait InviteComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
     activationTime: Option[Timestamp],
     creationTime: Timestamp
   ) {
-    def toModel(groupIds: Seq[Long]) = Invite(
+    def toModel(groups: Seq[NamedEntity]) = Invite(
       code,
       email,
-      groupIds.toSet,
+      groups.toSet,
       activationTime,
       creationTime
     )
@@ -83,20 +83,36 @@ class InviteDao @Inject()(
   implicit val ec: ExecutionContext
 ) extends HasDatabaseConfigProvider[JdbcProfile]
   with DaoHelper
-  with InviteComponent {
+  with InviteComponent
+  with GroupComponent {
 
   import profile.api._
 
-  def getList(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Invite]] = {
+  def getList(code: Option[String] = None, activated: Option[Boolean] = None)(
+    implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Invite]] = {
 
-    val baseQuery = Invites
+    val baseQuery = Invites.applyFilter(
+      invite =>
+        Seq(
+          code.map(invite.code === _),
+          activated.map(if (_) invite.activationTime.nonEmpty else invite.activationTime.isEmpty)
+      )
+    )
 
+    val sortMapping: (InviteTable) => PartialFunction[Symbol, Rep[_]] = invite => {
+      case 'code => invite.code
+      case 'email => invite.email
+      case 'activationTime => invite.activationTime
+      case 'creationTime => invite.creationTime
+    }
     val inviteQuery = baseQuery
-      .sortBy(_.id)
+      .applySorting(meta.sorting)(sortMapping)
       .applyPagination(meta.pagination)
-      .joinLeft(InviteGroups)
-      .on(_.id === _.inviteId)
-      .sortBy(_._1.id)
+      .joinLeft {
+        InviteGroups.join(Groups).on(_.groupId === _.id)
+      }
+      .on(_.id === _._1.inviteId)
+      .applySorting(meta.sorting)(x => sortMapping(x._1))
 
     for {
       count <- db.run(baseQuery.length.result)
@@ -106,9 +122,9 @@ class InviteDao @Inject()(
         .groupByWithOrder { case (invite, _) => invite }
         .map {
           case (invite, groupIdsWithEvent) =>
-            val groupIds = groupIdsWithEvent
-              .collect { case (_, Some(g)) => g.groupId }
-            invite.toModel(groupIds)
+            val groups = groupIdsWithEvent
+              .collect { case (_, Some((_, g))) => NamedEntity(g.id, g.name) }
+            invite.toModel(groups)
         }
 
       ListWithTotal(count, data)
@@ -118,29 +134,13 @@ class InviteDao @Inject()(
   def create(invite: Invite): Future[Invite] = {
     val actions = for {
       inviteId <- Invites.returning(Invites.map(_.id)) += DbInvite.fromModel(invite)
-      _ <- InviteGroups ++= invite.groupIds.map(DbInviteGroup(inviteId, _))
+      _ <- InviteGroups ++= invite.groups.map(x => DbInviteGroup(inviteId, x.id))
     } yield invite
 
     db.run(actions.transactionally)
   }
 
-  def findByCode(code: String): Future[Option[Invite]] = {
-    val inviteQuery = Invites
-      .filter(_.code === code)
-      .joinLeft(InviteGroups)
-      .on(_.id === _.inviteId)
-      .result
-
-    db.run(inviteQuery).map { result =>
-      result
-        .groupByWithOrder(_._1)
-        .map {
-          case (dbInvite, groups) =>
-            dbInvite.toModel(groups.flatMap(_._2.map(_.groupId)))
-        }
-        .headOption
-    }
-  }
+  def findByCode(code: String): Future[Option[Invite]] = getList(Some(code)).map(_.data.headOption)
 
   def activate(code: String, time: Timestamp): Future[Unit] = {
     db.run(Invites.filter(_.code === code).map(_.activationTime).update(Some(time))).map(_ => ())

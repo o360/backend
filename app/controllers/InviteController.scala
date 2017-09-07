@@ -9,8 +9,9 @@ import controllers.authorization.AllowedRole
 import play.api.mvc.ControllerComponents
 import services.InviteService
 import silhouette.DefaultEnv
-import utils.listmeta.actions.ListActions
 import utils.implicits.FutureLifting._
+import utils.listmeta.actions.ListActions
+import utils.listmeta.sorting.Sorting
 
 import scala.concurrent.ExecutionContext
 
@@ -26,16 +27,21 @@ class InviteController @Inject()(
 ) extends BaseController
   with ListActions {
 
+  implicit val sortingFields = Sorting.AvailableFields('code, 'email, 'activationTime, 'creationTime)
+
   /**
     * Returns list of invites.
     */
-  def getList = silhouette.SecuredAction(AllowedRole.admin).andThen(ListAction).async { implicit request =>
-    toResult(Ok) {
-      inviteService.getList.map(invites =>
-        Response.List(invites) { invite =>
-          ApiInvite(invite)
-      })
-    }
+  def getList(activated: Option[Boolean]) = silhouette.SecuredAction(AllowedRole.admin).andThen(ListAction).async {
+    implicit request =>
+      toResult(Ok) {
+        inviteService
+          .getList(activated)
+          .map(invites =>
+            Response.List(invites) { invite =>
+              ApiInvite(invite)
+          })
+      }
   }
 
   /**

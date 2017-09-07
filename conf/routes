@@ -1302,6 +1302,11 @@ POST          /system/jobs/restart/:jobId                controllers.EventJobCon
 # tags:
 #   - Invite
 # parameters:
+#   - name: sort
+#     in: query
+#     type: string
+#     pattern: '^-?\w+(,-?\w+)*$'
+#     description: 'Available fields: code, email, activationTime, creationTime. Format: field1,-field2,...'
 #   - $ref: '#/parameters/pageSize'
 #   - $ref: '#/parameters/pageNumber'
 # responses:
@@ -1323,7 +1328,7 @@ POST          /system/jobs/restart/:jobId                controllers.EventJobCon
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /invites                                    controllers.InviteController.getList
+GET           /invites                                    controllers.InviteController.getList(activated: Option[Boolean])
 
 ###
 # summary: Bulk creates invites

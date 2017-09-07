@@ -2,7 +2,7 @@ package services
 
 import java.sql.Timestamp
 
-import models.ListWithTotal
+import models.{ListWithTotal, NamedEntity}
 import models.dao.{GroupDao, InviteDao, UserDao, UserGroupDao}
 import models.invite.Invite
 import models.user.User
@@ -64,7 +64,10 @@ class InviteServiceTest
       forAll { (invites: Seq[Invite], total: Int) =>
         val fixture = getFixture
 
-        when(fixture.inviteDao.getList(any[ListMeta])).thenReturn(toFuture(ListWithTotal(total, invites)))
+        when(fixture.inviteDao.getList(
+          any[Option[String]],
+          any[Option[Boolean]]
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(total, invites)))
         val result = wait(fixture.service.getList().run)
 
         result.toOption.get mustBe ListWithTotal(total, invites)
@@ -76,7 +79,7 @@ class InviteServiceTest
     "return error if validation failed" in {
       val fixture = getFixture
       val email = "someemail"
-      val groupId = 1
+      val group = NamedEntity(1)
       when(
         fixture.userDao.getList(
           optIds = any[Option[Seq[Long]]],
@@ -87,9 +90,9 @@ class InviteServiceTest
           optEmail = eqTo(Some(email)),
           includeDeleted = any[Boolean]
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[User](0, Nil)))
-      when(fixture.groupDao.findById(groupId)).thenReturn(toFuture(None))
+      when(fixture.groupDao.findById(group.id)).thenReturn(toFuture(None))
 
-      val result = wait(fixture.service.createInvites(Seq(Invite(email, Set(groupId)))).run)
+      val result = wait(fixture.service.createInvites(Seq(Invite(email, Set(group)))).run)
 
       result mustBe 'isLeft
       result.swap.toOption.get mustBe a[NotFoundError]
@@ -98,8 +101,8 @@ class InviteServiceTest
     "create invites" in {
       val fixture = getFixture
       val email = "someemail"
-      val groupId = 1
-      val invite = Invite(email, Set(groupId))
+      val group = NamedEntity(1)
+      val invite = Invite(email, Set(group))
 
       when(
         fixture.userDao.getList(
@@ -111,7 +114,7 @@ class InviteServiceTest
           optEmail = eqTo(Some(email)),
           includeDeleted = any[Boolean]
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[User](0, Nil)))
-      when(fixture.groupDao.findById(groupId)).thenReturn(toFuture(Some(Groups(0))))
+      when(fixture.groupDao.findById(group.id)).thenReturn(toFuture(Some(Groups(0))))
       when(fixture.inviteDao.create(any[Invite])).thenReturn(toFuture(invite))
       when(fixture.templateEngineService.loadStaticTemplate("user_invited.html")).thenReturn("template")
       when(fixture.templateEngineService.render(eqTo("template"), any[Map[String, String]])).thenReturn("rendered")
@@ -164,12 +167,12 @@ class InviteServiceTest
     "approve user and add him to groups" in {
       val fixture = getFixture
       val code = "code"
-      val groupId = 1
+      val group = NamedEntity(1)
 
-      val invite = Invite(code, "email", Set(groupId), None, new Timestamp(0))
+      val invite = Invite(code, "email", Set(group), None, new Timestamp(0))
       when(fixture.inviteDao.findByCode(code)).thenReturn(toFuture(Some(invite)))
       when(fixture.userDao.update(Users(2).copy(status = User.Status.Approved))).thenReturn(toFuture(Users(2)))
-      when(fixture.userGroupDao.add(groupId, Users(2).id)).thenReturn(toFuture(()))
+      when(fixture.userGroupDao.add(group.id, Users(2).id)).thenReturn(toFuture(()))
       when(fixture.inviteDao.activate(eqTo(code), any[Timestamp])).thenReturn(toFuture(()))
 
       val result = wait(fixture.service.applyInvite(code)(Users(2)).run)
