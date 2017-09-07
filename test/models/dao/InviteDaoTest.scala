@@ -2,6 +2,7 @@ package models.dao
 
 import java.sql.Timestamp
 
+import models.NamedEntity
 import models.invite.Invite
 import org.scalacheck.Gen
 import testutils.fixture.{GroupFixture, InviteFixture}
@@ -16,7 +17,7 @@ class InviteDaoTest extends BaseDaoTest with InviteFixture with GroupFixture wit
 
   "getList" should {
     "return list of events" in {
-      val result = wait(dao.getList)
+      val result = wait(dao.getList())
 
       result.total mustBe Invites.length
       result.data mustBe Invites
@@ -37,9 +38,9 @@ class InviteDaoTest extends BaseDaoTest with InviteFixture with GroupFixture wit
     "create invites" in {
       forAll(inviteArb.arbitrary, Gen.someOf(Groups.map(_.id))) { (invite: Invite, groupIds: Seq[Long]) =>
         whenever(wait(dao.findByCode(invite.code)).isEmpty) {
-          val groupsSet = groupIds.toSet
+          val groupsSet = groupIds.map(NamedEntity(_)).toSet
 
-          val created = wait(dao.create(invite.copy(groupIds = groupsSet)))
+          val created = wait(dao.create(invite.copy(groups = groupsSet)))
           val fromDb = wait(dao.findByCode(invite.code))
 
           fromDb mustBe defined

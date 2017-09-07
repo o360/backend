@@ -2,6 +2,7 @@ package testutils.generator
 
 import java.sql.Timestamp
 
+import models.NamedEntity
 import models.invite.Invite
 import org.scalacheck.Arbitrary
 
@@ -17,6 +18,6 @@ trait InviteGenerator extends TimestampGenerator {
       groupIds <- Arbitrary.arbitrary[Set[Long]]
       activationTime <- Arbitrary.arbitrary[Option[Timestamp]]
       creationTime <- Arbitrary.arbitrary[Timestamp]
-    } yield Invite(code, email, groupIds, activationTime, creationTime)
+    } yield Invite(code, email, groupIds.map(NamedEntity(_)), activationTime, creationTime)
   }
 }

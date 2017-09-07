@@ -2,6 +2,7 @@ package models.invite
 
 import java.sql.Timestamp
 
+import models.NamedEntity
 import utils.TimestampConverter
 
 /**
@@ -10,13 +11,13 @@ import utils.TimestampConverter
 case class Invite(
   code: String,
   email: String,
-  groupIds: Set[Long],
+  groups: Set[NamedEntity],
   activationTime: Option[Timestamp],
   creationTime: Timestamp
 )
 
 object Invite {
-  def apply(email: String, groupIds: Set[Long]): Invite = Invite(
+  def apply(email: String, groupIds: Set[NamedEntity]): Invite = Invite(
     "",
     email,
     groupIds,
