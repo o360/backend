@@ -5,12 +5,13 @@ import javax.inject.{Inject, Singleton}
 import com.mohiva.play.silhouette.api.Silhouette
 import controllers.api.Response
 import controllers.api.group.{ApiGroup, ApiPartialGroup}
-import controllers.authorization.AllowedRole
-import play.api.mvc.ControllerComponents
+import controllers.authorization.{AllowedRole, AllowedStatus}
 import org.davidbild.tristate.Tristate
+import play.api.mvc.ControllerComponents
 import services.GroupService
 import silhouette.DefaultEnv
 import utils.implicits.FutureLifting._
+import utils.listmeta.ListMeta
 import utils.listmeta.actions.ListActions
 import utils.listmeta.sorting.Sorting
 
@@ -60,6 +61,22 @@ class GroupController @Inject()(
         }
     }
   }
+
+  /**
+    * Returns current user groups.
+    */
+  def getCurrentUserList =
+    silhouette.SecuredAction(AllowedStatus.approved).async { implicit request =>
+      toResult(Ok) {
+        groupService
+          .listByUserId(request.identity.id)
+          .map { groups =>
+            Response.List(groups) { group =>
+              ApiGroup(group)
+            }(ListMeta.default)
+          }
+      }
+    }
 
   /**
     * Creates group and returns its model.

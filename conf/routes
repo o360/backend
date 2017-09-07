@@ -164,26 +164,6 @@ PUT           /users/:id                            controllers.UserController.u
 DELETE        /users/:id                            controllers.UserController.delete(id: Long)
 
 ###
-# summary: Returns group by ID
-# tags:
-#   - Group
-# responses:
-#   200:
-#       description: Success
-#       schema:
-#           $ref: '#/definitions/controllers.api.group.ApiGroup'
-#   401:
-#       $ref: '#/responses/Unauthorized'
-#   403:
-#       $ref: '#/responses/Forbidden'
-#   404:
-#       $ref: '#/responses/NotFound'
-#   500:
-#       $ref: '#/responses/InternalServerError'
-###
-GET           /groups/:id                           controllers.GroupController.getById(id: Long)
-
-###
 # summary: Returns list of groups
 # tags:
 #   - Group
@@ -226,6 +206,52 @@ GET           /groups/:id                           controllers.GroupController.
 #       $ref: '#/responses/InternalServerError'
 ###
 GET           /groups                               controllers.GroupController.getList(parentId: org.davidbild.tristate.Tristate[Long], userId: Option[Long], name: Option[String], levels: Option[String])
+
+###
+# summary: Returns current user groups
+# tags:
+#   - Group
+#   - User
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.group.ApiGroup'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET           /groups/current-user                  controllers.GroupController.getCurrentUserList
+
+###
+# summary: Returns group by ID
+# tags:
+#   - Group
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.group.ApiGroup'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET           /groups/:id                           controllers.GroupController.getById(id: Long)
 
 ###
 # summary: Creates group
