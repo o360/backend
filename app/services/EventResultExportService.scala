@@ -34,7 +34,7 @@ class EventResultExportService @Inject()(
   def exportAnswers(eventId: Long): Future[ExportResult] = {
 
     def getUsers(answers: Seq[UserAnswer]) = {
-      val userFromIds = answers.filter(!_.isAnonymous).map(_.userFromId)
+      val userFromIds = answers.filterNot(_.isAnonymous).map(_.userFromId)
       val userToIds = answers.flatMap(_.userTo)
       val ids = (userFromIds ++ userToIds).distinct
       userDao.getList(optIds = Some(ids), includeDeleted = true).map(_.data)

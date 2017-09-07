@@ -113,14 +113,17 @@ class UserService @Inject()(
     * @return updated user
     */
   def update(
-    draft: UserModel
+    draft: UserModel,
+    updatePicture: Boolean = false
   )(implicit account: UserModel): SingleResult = {
     for {
       original <- getById(draft.id)
 
       _ <- UserSda.canUpdate(original, draft).liftLeft
 
-      updated <- userDao.update(draft).lift
+      withoutPicture = if (updatePicture) draft else draft.copy(pictureName = original.pictureName)
+
+      updated <- userDao.update(withoutPicture).lift
     } yield {
       if (original.status == UserModel.Status.New && updated.status == UserModel.Status.Approved) {
         sendAppprovalEmail(updated)

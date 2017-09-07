@@ -164,26 +164,6 @@ PUT           /users/:id                            controllers.UserController.u
 DELETE        /users/:id                            controllers.UserController.delete(id: Long)
 
 ###
-# summary: Returns group by ID
-# tags:
-#   - Group
-# responses:
-#   200:
-#       description: Success
-#       schema:
-#           $ref: '#/definitions/controllers.api.group.ApiGroup'
-#   401:
-#       $ref: '#/responses/Unauthorized'
-#   403:
-#       $ref: '#/responses/Forbidden'
-#   404:
-#       $ref: '#/responses/NotFound'
-#   500:
-#       $ref: '#/responses/InternalServerError'
-###
-GET           /groups/:id                           controllers.GroupController.getById(id: Long)
-
-###
 # summary: Returns list of groups
 # tags:
 #   - Group
@@ -226,6 +206,52 @@ GET           /groups/:id                           controllers.GroupController.
 #       $ref: '#/responses/InternalServerError'
 ###
 GET           /groups                               controllers.GroupController.getList(parentId: org.davidbild.tristate.Tristate[Long], userId: Option[Long], name: Option[String], levels: Option[String])
+
+###
+# summary: Returns current user groups
+# tags:
+#   - Group
+#   - User
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.group.ApiGroup'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET           /groups/current-user                  controllers.GroupController.getCurrentUserList
+
+###
+# summary: Returns group by ID
+# tags:
+#   - Group
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.group.ApiGroup'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET           /groups/:id                           controllers.GroupController.getById(id: Long)
 
 ###
 # summary: Creates group
@@ -1344,3 +1370,49 @@ POST          /invites/create                           controllers.InviteContro
 #       $ref: '#/responses/InternalServerError'
 ###
 POST          /invites/submit                           controllers.InviteController.submit
+
+###
+# summary: Uploads user profile picture
+# tags:
+#   - User
+# consumes:
+#   - multipart/form-data
+# parameters:
+#   - in: formData
+#     name: picture
+#     type: file
+# responses:
+#   204:
+#       description: Profile picture was set
+#   400:
+#       $ref: '#/responses/BadRequest'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST          /user-pictures/:userId                    controllers.ProfilePictureController.upload(userId: Long)
+
+###
+# summary: Returns user profile picture
+# tags:
+#   - User
+# produces:
+#   - image/gif
+#   - image/jpeg
+#   - image/png
+# responses:
+#   200:
+#       description: Profile picture
+#   400:
+#       $ref: '#/responses/BadRequest'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET           /user-pictures/:userId                    controllers.ProfilePictureController.get(userId: Long)

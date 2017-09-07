@@ -7,14 +7,6 @@ import silhouette.CustomSocialProfile
 
 /**
   * User model.
-  *
-  * @param id       DB ID
-  * @param name     full name
-  * @param email    email
-  * @param gender   gender
-  * @param role     role
-  * @param status   status
-  * @param timezone timezone
   */
 case class User(
   id: Long,
@@ -24,7 +16,8 @@ case class User(
   role: User.Role,
   status: User.Status,
   timezone: ZoneId,
-  termsApproved: Boolean
+  termsApproved: Boolean,
+  pictureName: Option[String]
 ) extends Identity
 
 object User {
@@ -85,7 +78,8 @@ object User {
       User.Role.User,
       User.Status.New,
       ZoneOffset.UTC,
-      termsApproved = false
+      termsApproved = false,
+      None
     )
   }
 }

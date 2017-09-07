@@ -2,6 +2,7 @@ package services
 
 import javax.inject.{Inject, Singleton}
 
+import models.ListWithTotal
 import models.dao.{GroupDao, ProjectDao, ProjectRelationDao, UserGroupDao}
 import models.group.{Group => GroupModel}
 import models.project.{Project, Relation}
@@ -11,8 +12,9 @@ import utils.errors.{ConflictError, ExceptionHandler, NotFoundError}
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
+import scalaz.EitherT
 
 /**
   * Group service.
@@ -64,6 +66,29 @@ class GroupService @Inject()(
         optLevels = levelsParsed
       )
       .lift
+  }
+
+  def listByUserId(userId: Long): ListResult = {
+
+    def getParents(group: GroupModel): Future[Seq[GroupModel]] = {
+      group.parentId match {
+        case None => Nil.toFuture
+        case Some(parentId) =>
+          groupDao.findById(parentId).flatMap { maybeParent =>
+            maybeParent.fold(Seq.empty[GroupModel].toFuture)(parent => getParents(parent).map(_ :+ parent))
+          }
+      }
+    }
+
+    EitherT.right {
+      groupDao.getList(optUserId = Some(userId)).flatMap { groups =>
+        Future
+          .sequence(groups.data.map(getParents))
+          .map { result =>
+            ListWithTotal((result.flatten ++ groups.data).distinct)
+          }
+      }
+    }
   }
 
   /**
