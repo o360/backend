@@ -115,7 +115,7 @@ class UserControllerTest extends BaseControllerTest with UserGenerator with Tris
       forAll { (id: Long, user: User) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        val userWithId = user.copy(id = id)
+        val userWithId = user.copy(id = id, pictureName = None)
         when(fixture.userServiceMock.update(userWithId)(admin))
           .thenReturn(EitherT.eitherT(toFuture(\/-(userWithId): ApplicationError \/ User)))
         val request = authenticated(

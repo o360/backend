@@ -54,4 +54,14 @@ object BadRequestError {
     case class WithUserFormInfo(error: ApplicationError, userId: Option[Long], formId: Long)
       extends BadRequestError(error.getCode, error.getMessage, error.getInnerErrors)
   }
+
+  object File {
+    case class Extension(actual: String, expected: Set[String])
+      extends BadRequestError("BAD-REQUEST-FILE-1",
+                              s"Invalid file extension [$actual]. Available extensions: [${expected.mkString(", ")}]")
+
+    case object Unexpected extends BadRequestError("BAD-REQUEST-FILE-2", "Unexpected problems with file upload")
+
+    case object Request extends BadRequestError("BAD-REQUEST-FILE-3", "Invalid request")
+  }
 }

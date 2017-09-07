@@ -6,9 +6,13 @@ import java.util.UUID
   * Entity machine name generator.
   */
 object RandomGenerator {
-  def generateMachineName: String = UUID.randomUUID().toString
+  private def guid = UUID.randomUUID().toString
 
-  def generateInviteCode: String = UUID.randomUUID().toString
+  def generateMachineName: String = guid
 
-  def generateAnonymousUserName: String = UUID.randomUUID().toString
+  def generateInviteCode: String = guid
+
+  def generateAnonymousUserName: String = guid
+
+  def generateFilename: String = guid
 }

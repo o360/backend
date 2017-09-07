@@ -11,7 +11,8 @@ if [[ \
 -z $GOOGLE_CLIENT_SECRET || \
 -z $APPLICATION_SECRET || \
 -z $MAIL_SEND_FROM || \
--z $EXPORT_SECRET \
+-z $EXPORT_SECRET || \
+-z $USER_FILES_PATH \
  ]];
 then
 echo "ENVIRONMENT VARIABLES ARE UNSET"
@@ -56,4 +57,5 @@ docker run -d --name private-bw-assessment-api --restart=always -p 9000:9000 \
     -v $(pwd)/drive_service_key.json:/opt/docker/conf/drive_service_key.json \
     -v $(pwd)/user_approved.html:/opt/docker/templates/user_approved.html \
     -v $(pwd)/user_invited.html:/opt/docker/templates/user_invited.html \
+    -v ${USER_FILES_PATH}:/opt/docker/uploads \
     bw-assessment/api:latest

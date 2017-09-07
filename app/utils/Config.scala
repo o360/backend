@@ -42,6 +42,8 @@ class Config @Inject()(protected val configuration: Configuration) {
   }
 
   lazy val exportSecret: String = configuration.get[String]("export.secret")
+
+  lazy val userFilesPath: String = configuration.get[String]("userFilesPath")
 }
 
 object Config {

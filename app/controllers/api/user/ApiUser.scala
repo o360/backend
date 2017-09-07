@@ -11,13 +11,6 @@ import play.api.libs.json._
 
 /**
   * User format model.
-  *
-  * @param id     DB ID
-  * @param name   full name
-  * @param email  email
-  * @param gender gender
-  * @param role   role
-  * @param status status
   */
 case class ApiUser(
   id: Long,
@@ -38,7 +31,8 @@ case class ApiUser(
     role.value,
     status.value,
     timezone,
-    termsApproved
+    termsApproved,
+    pictureName = None
   )
 }
 

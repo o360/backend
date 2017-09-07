@@ -1344,3 +1344,49 @@ POST          /invites/create                           controllers.InviteContro
 #       $ref: '#/responses/InternalServerError'
 ###
 POST          /invites/submit                           controllers.InviteController.submit
+
+###
+# summary: Uploads user profile picture
+# tags:
+#   - User
+# consumes:
+#   - multipart/form-data
+# parameters:
+#   - in: formData
+#     name: picture
+#     type: file
+# responses:
+#   204:
+#       description: Profile picture was set
+#   400:
+#       $ref: '#/responses/BadRequest'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST          /user-pictures/:userId                    controllers.ProfilePictureController.upload(userId: Long)
+
+###
+# summary: Returns user profile picture
+# tags:
+#   - User
+# produces:
+#   - image/gif
+#   - image/jpeg
+#   - image/png
+# responses:
+#   200:
+#       description: Profile picture
+#   400:
+#       $ref: '#/responses/BadRequest'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET           /user-pictures/:userId                    controllers.ProfilePictureController.get(userId: Long)

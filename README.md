@@ -42,6 +42,7 @@ docker run -d --name bw-assessment-api --restart=always -p 9000:9000 \
     -v $(pwd)/drive_service_key.json:/opt/docker/conf/drive_service_key.json \
     -v $(pwd)/user_approved.html:/opt/docker/templates/user_approved.html \
     -v $(pwd)/user_invited.html:/opt/docker/templates/user_invited.html \
+    -v ${USER_FILES_PATH}:/opt/docker/uploads
     bw-assessment/api:latest
 ```
 > It is possible to directly replace application.conf file with preconfigured one instead of using 
