@@ -6,7 +6,7 @@ import com.mohiva.play.silhouette.api.Silhouette
 import controllers.BaseController
 import controllers.api.Response
 import controllers.api.event.ApiEvent
-import controllers.authorization.AllowedRole
+import controllers.authorization.{AllowedRole, AllowedStatus}
 import play.api.mvc.ControllerComponents
 import services.EventService
 import silhouette.DefaultEnv
@@ -33,7 +33,7 @@ class EventController @Inject()(
   /**
     * Returns event by ID.
     */
-  def getById(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
+  def getById(id: Long) = silhouette.SecuredAction(AllowedStatus.approved).async { implicit request =>
     toResult(Ok) {
       eventService
         .getById(id)
@@ -47,7 +47,7 @@ class EventController @Inject()(
   def getList(
     status: Option[ApiEvent.EventStatus],
     projectId: Option[Long]
-  ) = (silhouette.SecuredAction(AllowedRole.admin) andThen ListAction).async { implicit request =>
+  ) = (silhouette.SecuredAction(AllowedStatus.approved) andThen ListAction).async { implicit request =>
     toResult(Ok) {
       eventService
         .list(status.map(_.value), projectId, onlyAvailable = true)
