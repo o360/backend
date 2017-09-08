@@ -1,5 +1,6 @@
 package controllers.api.user
 
+import controllers.api.Response
 import models.user.UserShort
 import play.api.libs.json.Json
 
@@ -10,7 +11,7 @@ case class ApiShortUser(
   id: Long,
   name: String,
   gender: ApiUser.ApiGender
-)
+) extends Response
 
 object ApiShortUser {
 

@@ -22,7 +22,7 @@ import utils.errors.{ApplicationError, NotFoundError}
 import utils.listmeta.ListMeta
 
 import scala.concurrent.ExecutionContext
-import scalaz.{-\/, EitherT, \/, \/-}
+import scalaz.{-\/, \/, \/-, EitherT}
 
 /**
   * Test for templates controller.

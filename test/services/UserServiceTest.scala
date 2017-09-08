@@ -116,18 +116,6 @@ class UserServiceTest
   }
 
   "getById" should {
-    "return error if authorization failed" in {
-      forAll { (loggedInUser: UserModel, id: Long) =>
-        val fixture = getFixture
-        whenever(loggedInUser.id != id && loggedInUser.role != UserModel.Role.Admin) {
-          val result = wait(fixture.service.getById(id)(loggedInUser).run)
-
-          result mustBe 'isLeft
-          result.swap.toOption.get mustBe an[AuthorizationError]
-        }
-      }
-    }
-
     "return not found if user not found" in {
       forAll { (id: Long) =>
         val fixture = getFixture

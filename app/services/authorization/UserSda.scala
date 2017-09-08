@@ -9,19 +9,6 @@ import utils.errors.AuthorizationError
 object UserSda {
 
   /**
-    * Checks authorization for getting by ID.
-    *
-    * @param id      user ID
-    * @param account logged in user
-    * @return some error if authorization failed
-    */
-  def canGetById(id: Long)(implicit account: User): Option[AuthorizationError] = account.role match {
-    case User.Role.Admin => None
-    case User.Role.User if account.id == id => None
-    case _ => Some(AuthorizationError.General)
-  }
-
-  /**
     * Checks authorization for user updating.
     *
     * @param original original user model
