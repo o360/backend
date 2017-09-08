@@ -1,13 +1,13 @@
-package controllers
+package controllers.admin
 
 import com.mohiva.play.silhouette.api.Silhouette
 import com.mohiva.play.silhouette.test.FakeEnvironment
+import controllers.BaseControllerTest
 import controllers.api.Response
 import controllers.api.notification.{ApiNotificationKind, ApiNotificationRecipient}
 import controllers.api.project.{ApiPartialProject, ApiPartialTemplateBinding, ApiProject}
 import models.ListWithTotal
 import models.project.Project
-import models.user.User
 import org.mockito.Mockito._
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
@@ -20,7 +20,7 @@ import utils.errors.{ApplicationError, NotFoundError}
 import utils.listmeta.ListMeta
 
 import scala.concurrent.ExecutionContext
-import scalaz.{-\/, \/, \/-, EitherT}
+import scalaz.{-\/, EitherT, \/, \/-}
 
 /**
   * Test for projects controller.
@@ -78,18 +78,17 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
         (
           eventId: Option[Long],
           groupId: Option[Long],
-          onlyAvaiable: Boolean,
           total: Int,
           projects: Seq[Project]
         ) =>
           val env = fakeEnvironment(admin)
           val fixture = getFixture(env)
-          when(fixture.projectServiceMock.getList(eventId, groupId, onlyAvaiable)(admin, ListMeta.default))
+          when(fixture.projectServiceMock.getList(eventId, groupId, false)(admin, ListMeta.default))
             .thenReturn(EitherT.eitherT(
               toFuture(\/-(ListWithTotal(total, projects)): ApplicationError \/ ListWithTotal[Project])))
           val request = authenticated(FakeRequest(), env)
 
-          val response = fixture.controller.getList(eventId, groupId, onlyAvaiable)(request)
+          val response = fixture.controller.getList(eventId, groupId)(request)
 
           status(response) mustBe OK
           val projectsJson = contentAsJson(response)

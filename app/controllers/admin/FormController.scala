@@ -1,11 +1,12 @@
-package controllers
+package controllers.admin
 
 import javax.inject.{Inject, Singleton}
 
 import com.mohiva.play.silhouette.api.Silhouette
+import controllers.BaseController
 import controllers.api.Response
 import controllers.api.form.{ApiForm, ApiPartialForm}
-import controllers.authorization.{AllowedRole, AllowedStatus}
+import controllers.authorization.AllowedRole
 import play.api.mvc.ControllerComponents
 import services.FormService
 import silhouette.DefaultEnv
@@ -49,21 +50,6 @@ class FormController @Inject()(
     toResult(Ok) {
       formService
         .getById(id)
-        .map(ApiForm(_))
-    }
-  }
-
-  /**
-    * Returns form template with elements for user.
-    */
-  def userGetById(
-    id: Long,
-    projectId: Long,
-    eventId: Long
-  ) = silhouette.SecuredAction(AllowedStatus.approved).async { implicit request =>
-    toResult(Ok) {
-      formService
-        .userGetById(id, projectId, eventId)
         .map(ApiForm(_))
     }
   }

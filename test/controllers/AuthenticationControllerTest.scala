@@ -26,42 +26,6 @@ class AuthenticationControllerTest extends BaseControllerTest with UserGenerator
   private val silhouetteMock = mock[Silhouette[DefaultEnv]]
   private val userServiceMock = mock[UserService]
 
-  "GET /auth" should {
-    "return user's json if user is present" in {
-      forAll { (user: UserModel, provId: String, provKey: String) =>
-        implicit val env = FakeEnvironment[DefaultEnv](Seq(LoginInfo(provId, provKey) -> user))
-        val controller = new Authentication(getSilhouette(env), socialProviderRegistryMock, userServiceMock, cc, ec)
-        val request = FakeRequest().withAuthenticator(LoginInfo(provId, provKey))
-
-        val result = controller.me(request)
-        status(result) mustBe OK
-        val userJson = contentAsJson(result)
-        userJson mustBe Json.toJson(ApiUser(user))
-      }
-    }
-    "return unauthorized if user is not present" in {
-      forAll { (provId: String, provKey: String) =>
-        implicit val env = FakeEnvironment[DefaultEnv](Nil)
-        val controller = new Authentication(getSilhouette(env), socialProviderRegistryMock, userServiceMock, cc, ec)
-        val request = FakeRequest().withAuthenticator(LoginInfo(provId, provKey))
-
-        val result = controller.me(request)
-        status(result) mustBe UNAUTHORIZED
-      }
-    }
-
-    "return unauthorized if authenticator is not present" in {
-      forAll { (user: UserModel, provId: String, provKey: String) =>
-        implicit val env = FakeEnvironment[DefaultEnv](Seq(LoginInfo(provId, provKey) -> user))
-        val controller = new Authentication(getSilhouette(env), socialProviderRegistryMock, userServiceMock, cc, ec)
-        val request = FakeRequest()
-
-        val result = controller.me(request)
-        status(result) mustBe UNAUTHORIZED
-      }
-    }
-  }
-
   "POST /auth" should {
     "return unauthorized if provider not supported" in {
       forAll { (unsupportedProvider: String) =>

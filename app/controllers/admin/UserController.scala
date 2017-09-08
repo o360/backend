@@ -1,13 +1,14 @@
-package controllers
+package controllers.admin
 
 import javax.inject.{Inject, Singleton}
 
 import com.mohiva.play.silhouette.api.Silhouette
+import controllers.BaseController
 import controllers.api.Response
 import controllers.api.user.ApiUser
 import controllers.authorization.AllowedRole
-import play.api.mvc.ControllerComponents
 import org.davidbild.tristate.Tristate
+import play.api.mvc.ControllerComponents
 import services.UserService
 import silhouette.DefaultEnv
 import utils.implicits.FutureLifting._
@@ -64,7 +65,7 @@ class UserController @Inject()(
   /**
     * Updates user.
     */
-  def update(id: Long) = silhouette.SecuredAction.async(parse.json[ApiUser]) { implicit request =>
+  def update(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async(parse.json[ApiUser]) { implicit request =>
     toResult(Ok) {
       val draft = request.body.copy(id = id)
       userService

@@ -1,7 +1,8 @@
-package controllers
+package controllers.admin
 
 import com.mohiva.play.silhouette.api.Silhouette
 import com.mohiva.play.silhouette.test.FakeEnvironment
+import controllers.BaseControllerTest
 import controllers.api.Response
 import controllers.api.notification.{ApiNotificationKind, ApiNotificationRecipient}
 import controllers.api.project.{ApiPartialRelation, ApiPartialTemplateBinding, ApiRelation}
@@ -20,7 +21,7 @@ import utils.errors.{ApplicationError, NotFoundError}
 import utils.listmeta.ListMeta
 
 import scala.concurrent.ExecutionContext
-import scalaz.{-\/, \/, \/-, EitherT}
+import scalaz.{-\/, EitherT, \/, \/-}
 
 /**
   * Test for project relation controller.

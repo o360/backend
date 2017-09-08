@@ -1,8 +1,9 @@
-package controllers
+package controllers.admin
 
 import javax.inject.Inject
 
 import com.mohiva.play.silhouette.api.Silhouette
+import controllers.BaseController
 import play.api.http.HttpEntity
 import play.api.mvc.{ControllerComponents, ResponseHeader, Result}
 import services.{FileService, UserService}
@@ -48,22 +49,6 @@ class ProfilePictureController @Inject()(
       .fold(
         toResult(_),
         _ => NoContent
-      )
-  }
-
-  /**
-    * Returns user profile picture by user ID.
-    */
-  def get(userId: Long) = silhouette.SecuredAction.async { implicit request =>
-    userService
-      .getById(userId)
-      .fold(
-        toResult(_),
-        user => {
-          user.pictureName
-            .flatMap(fileService.get)
-            .fold(Result(header = ResponseHeader(NOT_FOUND), body = HttpEntity.NoEntity))(file => Ok.sendFile(file))
-        }
       )
   }
 }

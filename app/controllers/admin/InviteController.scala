@@ -1,8 +1,9 @@
-package controllers
+package controllers.admin
 
 import javax.inject.{Inject, Singleton}
 
 import com.mohiva.play.silhouette.api.Silhouette
+import controllers.BaseController
 import controllers.api.Response
 import controllers.api.invite.{ApiInvite, ApiInviteCode, ApiPartialInvite}
 import controllers.authorization.AllowedRole
@@ -55,17 +56,5 @@ class InviteController @Inject()(
           toResult(_),
           _ => NoContent
         )
-  }
-
-  /**
-    * Submits invite code.
-    */
-  def submit = silhouette.SecuredAction.async(parse.json[ApiInviteCode]) { implicit request =>
-    inviteService
-      .applyInvite(request.body.code)
-      .fold(
-        toResult(_),
-        _ => NoContent
-      )
   }
 }

@@ -27,13 +27,6 @@ class Authentication @Inject()(
 ) extends BaseController {
 
   /**
-    * Returns logged in user.
-    */
-  def me = silhouette.SecuredAction { request =>
-    toResult(ApiUser(request.identity))
-  }
-
-  /**
     * Authenticate user by OAuth code.
     *
     * @param provider OAuth provider name

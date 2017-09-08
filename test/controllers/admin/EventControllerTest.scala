@@ -1,12 +1,12 @@
-package controllers
+package controllers.admin
 
 import com.mohiva.play.silhouette.api.Silhouette
 import com.mohiva.play.silhouette.test.FakeEnvironment
+import controllers.BaseControllerTest
 import controllers.api.Response
 import controllers.api.event.{ApiEvent, ApiPartialEvent}
 import models.ListWithTotal
 import models.event.Event
-import models.user.User
 import org.mockito.Mockito._
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
@@ -18,8 +18,7 @@ import testutils.generator.EventGenerator
 import utils.errors.{ApplicationError, NotFoundError}
 import utils.listmeta.ListMeta
 
-import scala.concurrent.ExecutionContext
-import scalaz.{-\/, \/, \/-, EitherT}
+import scalaz.{-\/, EitherT, \/, \/-}
 
 /**
   * Test for event controller.
@@ -77,19 +76,18 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
         (
           projectId: Option[Long],
           optStatus: Option[Event.Status],
-          onlyAvailable: Boolean,
           total: Int,
           events: Seq[Event]
         ) =>
           val env = fakeEnvironment(admin)
           val fixture = getFixture(env)
-          when(fixture.eventServiceMock.list(optStatus, projectId, onlyAvailable)(admin, ListMeta.default))
+          when(fixture.eventServiceMock.list(optStatus, projectId, false)(admin, ListMeta.default))
             .thenReturn(
               EitherT.eitherT(toFuture(\/-(ListWithTotal(total, events)): ApplicationError \/ ListWithTotal[Event])))
           val request = authenticated(FakeRequest(), env)
 
           val response =
-            fixture.controller.getList(optStatus.map(ApiEvent.EventStatus(_)), projectId, onlyAvailable)(request)
+            fixture.controller.getList(optStatus.map(ApiEvent.EventStatus(_)), projectId)(request)
 
           status(response) mustBe OK
           val eventsJson = contentAsJson(response)

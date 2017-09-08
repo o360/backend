@@ -1,8 +1,9 @@
-package controllers
+package controllers.admin
 
 import javax.inject.{Inject, Singleton}
 
 import com.mohiva.play.silhouette.api.Silhouette
+import controllers.BaseController
 import controllers.authorization.AllowedRole
 import play.api.mvc.ControllerComponents
 import services.EventProjectService

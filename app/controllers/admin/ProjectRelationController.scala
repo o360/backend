@@ -1,8 +1,9 @@
-package controllers
+package controllers.admin
 
 import javax.inject.{Inject, Singleton}
 
 import com.mohiva.play.silhouette.api.Silhouette
+import controllers.BaseController
 import controllers.api.Response
 import controllers.api.project.{ApiPartialRelation, ApiRelation}
 import controllers.authorization.AllowedRole
