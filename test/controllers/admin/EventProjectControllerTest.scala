@@ -1,7 +1,8 @@
-package controllers
+package controllers.admin
 
 import com.mohiva.play.silhouette.api.Silhouette
 import com.mohiva.play.silhouette.test.FakeEnvironment
+import controllers.BaseControllerTest
 import org.mockito.Mockito._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -11,7 +12,7 @@ import testutils.fixture.UserFixture
 import testutils.generator.TristateGenerator
 import utils.errors.{ApplicationError, NotFoundError}
 
-import scalaz.{-\/, \/, \/-, EitherT}
+import scalaz.{-\/, EitherT, \/, \/-}
 
 /**
   * Test for event-project controller.

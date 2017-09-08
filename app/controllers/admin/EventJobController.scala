@@ -1,14 +1,15 @@
-package controllers
+package controllers.admin
 
 import javax.inject.{Inject, Singleton}
 
 import com.mohiva.play.silhouette.api.Silhouette
+import controllers.BaseController
 import controllers.authorization.AllowedRole
 import play.api.mvc.ControllerComponents
 import services.EventJobService
 import silhouette.DefaultEnv
-import utils.listmeta.actions.ListActions
 import utils.implicits.FutureLifting._
+import utils.listmeta.actions.ListActions
 
 import scala.concurrent.ExecutionContext
 

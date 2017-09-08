@@ -1,7 +1,8 @@
-package controllers
+package controllers.admin
 
 import com.mohiva.play.silhouette.api.Silhouette
 import com.mohiva.play.silhouette.test.FakeEnvironment
+import controllers.BaseControllerTest
 import controllers.api.Response
 import controllers.api.form.{ApiForm, ApiPartialForm}
 import models.ListWithTotal
@@ -64,23 +65,6 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
         val request = authenticated(FakeRequest(), env)
 
         val response = fixture.controller.getById(id)(request)
-        status(response) mustBe OK
-        val formJson = contentAsJson(response)
-        formJson mustBe Json.toJson(ApiForm(form))
-      }
-    }
-  }
-
-  "GET /forms/user/id" should {
-    "return json with form" in {
-      forAll { (id: Long, form: Form, projectId: Long, eventId: Long) =>
-        val env = fakeEnvironment(admin)
-        val fixture = getFixture(env)
-        when(fixture.formServiceMock.userGetById(id, projectId, eventId)(admin))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(form): ApplicationError \/ Form)))
-        val request = authenticated(FakeRequest(), env)
-
-        val response = fixture.controller.userGetById(id, projectId, eventId)(request)
         status(response) mustBe OK
         val formJson = contentAsJson(response)
         formJson mustBe Json.toJson(ApiForm(form))

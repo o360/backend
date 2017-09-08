@@ -1,8 +1,9 @@
-package controllers
+package controllers.user
 
 import javax.inject.{Inject, Singleton}
 
 import com.mohiva.play.silhouette.api.Silhouette
+import controllers.BaseController
 import controllers.api.Response
 import controllers.api.project.{ApiPartialProject, ApiProject}
 import controllers.authorization.{AllowedRole, AllowedStatus}
@@ -32,11 +33,11 @@ class ProjectController @Inject()(
   /**
     * Returns list of projects with relations.
     */
-  def getList(eventId: Option[Long], groupId: Option[Long], onlyAvailable: Boolean) =
+  def getList(eventId: Option[Long], groupId: Option[Long]) =
     (silhouette.SecuredAction(AllowedStatus.approved) andThen ListAction).async { implicit request =>
       toResult(Ok) {
         projectService
-          .getList(eventId, groupId, onlyAvailable)
+          .getList(eventId, groupId, onlyAvailable = true)
           .map { projects =>
             Response.List(projects)(ApiProject(_))
           }
@@ -52,42 +53,5 @@ class ProjectController @Inject()(
         .getById(id)
         .map(ApiProject(_))
     }
-  }
-
-  /**
-    * Creates project.
-    */
-  def create = silhouette.SecuredAction(AllowedRole.admin).async(parse.json[ApiPartialProject]) { implicit request =>
-    toResult(Created) {
-      val project = request.body.toModel()
-      projectService
-        .create(project)
-        .map(ApiProject(_))
-    }
-  }
-
-  /**
-    * Updates project.
-    */
-  def update(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async(parse.json[ApiPartialProject]) {
-    implicit request =>
-      toResult(Ok) {
-        val project = request.body.toModel(id)
-        projectService
-          .update(project)
-          .map(ApiProject(_))
-      }
-  }
-
-  /**
-    * Removes project.
-    */
-  def delete(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
-    projectService
-      .delete(id)
-      .fold(
-        error => toResult(error),
-        _ => NoContent
-      )
   }
 }

@@ -1,10 +1,10 @@
 ### NoDocs ###
-GET           /swagger.json                         controllers.Assets.at(path="/public", file="swagger.json")
+GET /swagger.json controllers.Assets.at(path="/public", file="swagger.json")
 
 ###
 # summary: Returns logged in user
 # tags:
-#   - Account
+#   - User
 # responses:
 #   200:
 #       description: Success
@@ -15,12 +15,12 @@ GET           /swagger.json                         controllers.Assets.at(path="
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /auth                                 controllers.Authentication.me
+GET /users/current controllers.user.UserController.me
 
 ###
 # summary: Authenticate user by OAuth code
 # tags:
-#   - Account
+#   - Auth
 # security: []
 # parameters:
 #   - name: body
@@ -44,7 +44,7 @@ GET           /auth                                 controllers.Authentication.m
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-POST          /auth/:provider                       controllers.Authentication.auth(provider: String)
+POST /auth/:provider controllers.Authentication.auth(provider: String)
 
 ###
 # summary: Returns user by ID
@@ -64,7 +64,7 @@ POST          /auth/:provider                       controllers.Authentication.a
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /users/:id                            controllers.UserController.getById(id: Long)
+GET /admin/users/:id controllers.admin.UserController.getById(id: Long)
 
 ###
 # summary: Returns list of users
@@ -117,7 +117,31 @@ GET           /users/:id                            controllers.UserController.g
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /users                                controllers.UserController.getList(role: Option[controllers.api.user.ApiUser.ApiRole], status: Option[controllers.api.user.ApiUser.ApiStatus], groupId: org.davidbild.tristate.Tristate[Long], name: Option[String])
+GET /admin/users controllers.admin.UserController.getList(role: Option[controllers.api.user.ApiUser.ApiRole], status: Option[controllers.api.user.ApiUser.ApiStatus], groupId: org.davidbild.tristate.Tristate[Long], name: Option[String])
+
+###
+# summary: Updates current user
+# tags:
+#   - User
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.user.ApiUser'
+# responses:
+#   200:
+#       description: User updated
+#       schema:
+#           $ref: '#/definitions/controllers.api.user.ApiUser'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+PUT /users/current controllers.user.UserController.update
 
 ###
 # summary: Updates user
@@ -141,7 +165,7 @@ GET           /users                                controllers.UserController.g
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-PUT           /users/:id                            controllers.UserController.update(id: Long)
+PUT /admin/users/:id controllers.admin.UserController.update(id: Long)
 
 ###
 # summary: Removes user by ID
@@ -161,7 +185,7 @@ PUT           /users/:id                            controllers.UserController.u
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-DELETE        /users/:id                            controllers.UserController.delete(id: Long)
+DELETE /admin/users/:id controllers.admin.UserController.delete(id: Long)
 
 ###
 # summary: Returns list of groups
@@ -205,7 +229,7 @@ DELETE        /users/:id                            controllers.UserController.d
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /groups                               controllers.GroupController.getList(parentId: org.davidbild.tristate.Tristate[Long], userId: Option[Long], name: Option[String], levels: Option[String])
+GET /admin/groups controllers.admin.GroupController.getList(parentId: org.davidbild.tristate.Tristate[Long], userId: Option[Long], name: Option[String], levels: Option[String])
 
 ###
 # summary: Returns current user groups
@@ -231,7 +255,7 @@ GET           /groups                               controllers.GroupController.
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /groups/current-user                  controllers.GroupController.getCurrentUserList
+GET /users/current/groups controllers.user.GroupController.getList
 
 ###
 # summary: Returns group by ID
@@ -251,7 +275,7 @@ GET           /groups/current-user                  controllers.GroupController.
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /groups/:id                           controllers.GroupController.getById(id: Long)
+GET /admin/groups/:id controllers.admin.GroupController.getById(id: Long)
 
 ###
 # summary: Creates group
@@ -275,7 +299,7 @@ GET           /groups/:id                           controllers.GroupController.
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-POST          /groups                               controllers.GroupController.create
+POST /admin/groups controllers.admin.GroupController.create
 
 ###
 # summary: Updates group
@@ -301,7 +325,7 @@ POST          /groups                               controllers.GroupController.
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-PUT           /groups/:id                           controllers.GroupController.update(id: Long)
+PUT /admin/groups/:id controllers.admin.GroupController.update(id: Long)
 
 ###
 # summary: Removes group by ID
@@ -321,7 +345,7 @@ PUT           /groups/:id                           controllers.GroupController.
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-DELETE        /groups/:id                           controllers.GroupController.delete(id: Long)
+DELETE /admin/groups/:id controllers.admin.GroupController.delete(id: Long)
 
 ###
 # summary: Adds user to group
@@ -339,7 +363,7 @@ DELETE        /groups/:id                           controllers.GroupController.
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-POST          /groups/:groupId/users/:userId        controllers.UserGroupController.add(groupId: Long, userId: Long)
+POST /admin/groups/:groupId/users/:userId controllers.admin.UserGroupController.add(groupId: Long, userId: Long)
 
 ###
 # summary: Remove user from group
@@ -357,7 +381,7 @@ POST          /groups/:groupId/users/:userId        controllers.UserGroupControl
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-DELETE        /groups/:groupId/users/:userId        controllers.UserGroupController.remove(groupId: Long, userId: Long)
+DELETE /admin/groups/:groupId/users/:userId controllers.admin.UserGroupController.remove(groupId: Long, userId: Long)
 
 ###
 # summary: Bulk adds users to groups
@@ -381,7 +405,7 @@ DELETE        /groups/:groupId/users/:userId        controllers.UserGroupControl
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-POST          /groups-users/add                      controllers.UserGroupController.bulkAdd
+POST /admin/groups-users/add controllers.admin.UserGroupController.bulkAdd
 
 ###
 # summary: Bulk removes users from groups
@@ -405,7 +429,7 @@ POST          /groups-users/add                      controllers.UserGroupContro
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-POST           /groups-users/remove                   controllers.UserGroupController.bulkRemove
+POST /admin/groups-users/remove controllers.admin.UserGroupController.bulkRemove
 
 
 ###
@@ -427,7 +451,7 @@ POST           /groups-users/remove                   controllers.UserGroupContr
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /forms/user/:id                        controllers.FormController.userGetById(id: Long, projectId: Long, eventId: Long)
+GET /forms/:id controllers.user.FormController.getById(id: Long, projectId: Long, eventId: Long)
 
 ###
 # summary: Returns form template with elements by ID for admin
@@ -447,7 +471,7 @@ GET           /forms/user/:id                        controllers.FormController.
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /forms/:id                            controllers.FormController.getById(id: Long)
+GET /admin/forms/:id controllers.admin.FormController.getById(id: Long)
 
 ###
 # summary: Returns list of form templates without elements
@@ -480,7 +504,7 @@ GET           /forms/:id                            controllers.FormController.g
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /forms                                controllers.FormController.getList
+GET /admin/forms controllers.admin.FormController.getList
 
 ###
 # summary: Creates form template
@@ -506,7 +530,7 @@ GET           /forms                                controllers.FormController.g
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-POST          /forms                                controllers.FormController.create
+POST /admin/forms controllers.admin.FormController.create
 
 ###
 # summary: Updates form template
@@ -532,7 +556,7 @@ POST          /forms                                controllers.FormController.c
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-PUT           /forms/:id                            controllers.FormController.update(id: Long)
+PUT /amdin/forms/:id controllers.admin.FormController.update(id: Long)
 
 ###
 # summary: Removes form template by ID
@@ -552,7 +576,7 @@ PUT           /forms/:id                            controllers.FormController.u
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-DELETE        /forms/:id                            controllers.FormController.delete(id: Long)
+DELETE /admin/forms/:id controllers.admin.FormController.delete(id: Long)
 
 ###
 # summary: Clones form with given ID
@@ -570,7 +594,7 @@ DELETE        /forms/:id                            controllers.FormController.d
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-POST          /forms/:id/clone                      controllers.FormController.cloneForm(id: Long)
+POST /admin/forms/:id/clone controllers.admin.FormController.cloneForm(id: Long)
 
 ###
 # summary: Returns project by ID
@@ -590,7 +614,7 @@ POST          /forms/:id/clone                      controllers.FormController.c
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /projects/:id                            controllers.ProjectController.getById(id: Long)
+GET /admin/projects/:id controllers.admin.ProjectController.getById(id: Long)
 
 ###
 # summary: Returns list of projects
@@ -623,7 +647,41 @@ GET           /projects/:id                            controllers.ProjectContro
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /projects                                controllers.ProjectController.getList(eventId: Option[Long], groupId: Option[Long], onlyAvailable: Boolean ?= false)
+GET /admin/projects controllers.admin.ProjectController.getList(eventId: Option[Long], groupId: Option[Long])
+
+###
+# summary: Returns list of projects
+# tags:
+#   - Project
+# parameters:
+#   - name: sort
+#     in: query
+#     type: string
+#     pattern: '^-?\w+(,-?\w+)*$'
+#     description: 'Available fields: id, name, description. Format: field1,-field2,...'
+#   - $ref: '#/parameters/pageSize'
+#   - $ref: '#/parameters/pageNumber'
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.project.ApiProject'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /projects controllers.user.ProjectController.getList(eventId: Option[Long], groupId: Option[Long])
+
 
 ###
 # summary: Creates project
@@ -647,7 +705,7 @@ GET           /projects                                controllers.ProjectContro
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-POST          /projects                                controllers.ProjectController.create
+POST /admin/projects controllers.admin.ProjectController.create
 
 ###
 # summary: Updates project
@@ -673,7 +731,7 @@ POST          /projects                                controllers.ProjectContro
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-PUT           /projects/:id                            controllers.ProjectController.update(id: Long)
+PUT /admin/projects/:id controllers.admin.ProjectController.update(id: Long)
 
 ###
 # summary: Removes project
@@ -693,7 +751,7 @@ PUT           /projects/:id                            controllers.ProjectContro
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-DELETE        /projects/:id                            controllers.ProjectController.delete(id: Long)
+DELETE /admin/projects/:id controllers.admin.ProjectController.delete(id: Long)
 
 ###
 # summary: Returns relation by ID
@@ -713,7 +771,7 @@ DELETE        /projects/:id                            controllers.ProjectContro
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /relations/:id                           controllers.ProjectRelationController.getById(id: Long)
+GET /admin/relations/:id controllers.admin.ProjectRelationController.getById(id: Long)
 
 ###
 # summary: Returns list of relations
@@ -746,7 +804,7 @@ GET           /relations/:id                           controllers.ProjectRelati
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /relations                               controllers.ProjectRelationController.getList(projectId: Option[Long])
+GET /admin/relations controllers.admin.ProjectRelationController.getList(projectId: Option[Long])
 
 ###
 # summary: Creates relation
@@ -770,7 +828,7 @@ GET           /relations                               controllers.ProjectRelati
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-POST          /relations                               controllers.ProjectRelationController.create
+POST /admin/relations controllers.admin.ProjectRelationController.create
 
 ###
 # summary: Updates relation
@@ -796,7 +854,7 @@ POST          /relations                               controllers.ProjectRelati
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-PUT           /relations/:id                           controllers.ProjectRelationController.update(id: Long)
+PUT /admin/relations/:id controllers.admin.ProjectRelationController.update(id: Long)
 
 ###
 # summary: Removes relation
@@ -814,7 +872,7 @@ PUT           /relations/:id                           controllers.ProjectRelati
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-DELETE        /relations/:id                           controllers.ProjectRelationController.delete(id: Long)
+DELETE /admin/relations/:id controllers.admin.ProjectRelationController.delete(id: Long)
 
 ###
 # summary: Returns event by ID
@@ -834,7 +892,27 @@ DELETE        /relations/:id                           controllers.ProjectRelati
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /events/:id                           controllers.EventController.getById(id: Long)
+GET /admin/events/:id controllers.admin.EventController.getById(id: Long)
+
+###
+# summary: Returns event by ID
+# tags:
+#   - Event
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.event.ApiEvent'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /events/:id controllers.user.EventController.getById(id: Long)
 
 ###
 # summary: Returns list of events
@@ -876,7 +954,50 @@ GET           /events/:id                           controllers.EventController.
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /events                               controllers.EventController.getList(status: Option[controllers.api.event.ApiEvent.EventStatus], projectId: Option[Long], onlyAvailable: Boolean ?= false)
+GET /admin/events controllers.admin.EventController.getList(status: Option[controllers.api.event.ApiEvent.EventStatus], projectId: Option[Long])
+
+###
+# summary: Returns list of events
+# tags:
+#   - Event
+# parameters:
+#   - name: status
+#     in: query
+#     required: false
+#     schema:
+#     type: string
+#     enum:
+#       - notStarted
+#       - inProgress
+#       - completed
+#   - name: sort
+#     in: query
+#     type: string
+#     pattern: '^-?\w+(,-?\w+)*$'
+#     description: 'Available fields: id, start, end, description. Format: field1,-field2,...'
+#   - $ref: '#/parameters/pageSize'
+#   - $ref: '#/parameters/pageNumber'
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.event.ApiEvent'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /events controllers.user.EventController.getList(status: Option[controllers.api.event.ApiEvent.EventStatus], projectId: Option[Long])
+
 
 ###
 # summary: Creates event
@@ -900,7 +1021,7 @@ GET           /events                               controllers.EventController.
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-POST          /events                               controllers.EventController.create
+POST /admin/events controllers.admin.EventController.create
 
 ###
 # summary: Updates event
@@ -926,7 +1047,7 @@ POST          /events                               controllers.EventController.
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-PUT           /events/:id                           controllers.EventController.update(id: Long)
+PUT /admin/events/:id controllers.admin.EventController.update(id: Long)
 
 ###
 # summary: Removes event by ID
@@ -946,7 +1067,7 @@ PUT           /events/:id                           controllers.EventController.
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-DELETE        /events/:id                           controllers.EventController.delete(id: Long)
+DELETE /admin/events/:id controllers.admin.EventController.delete(id: Long)
 
 ###
 # summary: Clones event
@@ -966,7 +1087,7 @@ DELETE        /events/:id                           controllers.EventController.
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-POST          /events/:id/clone                       controllers.EventController.cloneEvent(id: Long)
+POST /admin/events/:id/clone controllers.admin.EventController.cloneEvent(id: Long)
 
 ###
 # summary: Adds project to event
@@ -984,7 +1105,7 @@ POST          /events/:id/clone                       controllers.EventControlle
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-POST          /events/:eventId/projects/:projectId        controllers.EventProjectController.create(eventId: Long, projectId: Long)
+POST /admin/events/:eventId/projects/:projectId controllers.admin.EventProjectController.create(eventId: Long, projectId: Long)
 
 ###
 # summary: Remove project from event
@@ -1002,7 +1123,7 @@ POST          /events/:eventId/projects/:projectId        controllers.EventProje
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-DELETE        /events/:eventId/projects/:projectId        controllers.EventProjectController.delete(eventId: Long, projectId: Long)
+DELETE /admin/events/:eventId/projects/:projectId controllers.admin.EventProjectController.delete(eventId: Long, projectId: Long)
 
 ###
 # summary: Returns template by ID
@@ -1022,7 +1143,7 @@ DELETE        /events/:eventId/projects/:projectId        controllers.EventProje
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /templates/:id                              controllers.TemplateController.getById(id: Long)
+GET /admin/templates/:id controllers.admin.TemplateController.getById(id: Long)
 
 ###
 # summary: Returns list of templates
@@ -1071,7 +1192,7 @@ GET           /templates/:id                              controllers.TemplateCo
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /templates                                  controllers.TemplateController.getList(kind: Option[controllers.api.notification.ApiNotificationKind], recipient: Option[controllers.api.notification.ApiNotificationRecipient])
+GET /admin/templates controllers.admin.TemplateController.getList(kind: Option[controllers.api.notification.ApiNotificationKind], recipient: Option[controllers.api.notification.ApiNotificationRecipient])
 
 ###
 # summary: Creates template
@@ -1093,7 +1214,7 @@ GET           /templates                                  controllers.TemplateCo
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-POST          /templates                                  controllers.TemplateController.create
+POST /admin/templates controllers.admin.TemplateController.create
 
 ###
 # summary: Updates template
@@ -1117,7 +1238,7 @@ POST          /templates                                  controllers.TemplateCo
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-PUT           /templates/:id                              controllers.TemplateController.update(id: Long)
+PUT /admin/templates/:id controllers.admin.TemplateController.update(id: Long)
 
 ###
 # summary: Removes template
@@ -1137,7 +1258,7 @@ PUT           /templates/:id                              controllers.TemplateCo
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-DELETE        /templates/:id                              controllers.TemplateController.delete(id: Long)
+DELETE /admin/templates/:id controllers.admin.TemplateController.delete(id: Long)
 
 ###
 # summary: Clones template with given ID
@@ -1157,7 +1278,7 @@ DELETE        /templates/:id                              controllers.TemplateCo
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-POST          /templates/:id/clone                      controllers.TemplateController.cloneTemplate(id: Long)
+POST /admin/templates/:id/clone controllers.admin.TemplateController.cloneTemplate(id: Long)
 
 ###
 # summary: Returns list of assessment objects
@@ -1184,7 +1305,7 @@ POST          /templates/:id/clone                      controllers.TemplateCont
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /assessments                              controllers.AssessmentController.getList(eventId: Long, projectId: Long)
+GET /assessments controllers.user.AssessmentController.getList(eventId: Long, projectId: Long)
 
 ###
 # summary: Bulk submits answers
@@ -1208,29 +1329,7 @@ GET           /assessments                              controllers.AssessmentCo
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-POST          /assessments/bulk                         controllers.AssessmentController.bulkSubmit(eventId: Long, projectId: Long)
-
-###
-# summary: Submits answers
-# tags:
-#   - Assessment
-# parameters:
-#   - name: body
-#     schema:
-#       $ref: '#/definitions/controllers.api.assessment.ApiPartialAssessment'
-# responses:
-#   200:
-#       description: Answer submited
-#   401:
-#       $ref: '#/responses/Unauthorized'
-#   403:
-#       $ref: '#/responses/Forbidden'
-#   409:
-#       $ref: '#/responses/Conflict'
-#   500:
-#       $ref: '#/responses/InternalServerError'
-###
-POST          /assessments                              controllers.AssessmentController.submit(eventId: Long, projectId: Long)
+POST /assessments controllers.user.AssessmentController.bulkSubmit(eventId: Long, projectId: Long)
 
 ###
 # summary: Returns list of events
@@ -1262,7 +1361,7 @@ POST          /assessments                              controllers.AssessmentCo
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-POST          /export/events                            controllers.EventResultExportController.listEvents
+POST /export/events controllers.EventResultExportController.listEvents
 
 ###
 # summary: Returns results of single event
@@ -1281,7 +1380,7 @@ POST          /export/events                            controllers.EventResultE
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-POST          /export/event                             controllers.EventResultExportController.export(eventId: Long)
+POST /export/event controllers.EventResultExportController.export(eventId: Long)
 
 ###
 # summary: Restarts failed event job
@@ -1295,7 +1394,7 @@ POST          /export/event                             controllers.EventResultE
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-POST          /system/jobs/restart/:jobId                controllers.EventJobController.restart(jobId: Long)
+POST /system/jobs/restart/:jobId controllers.admin.EventJobController.restart(jobId: Long)
 
 ###
 # summary: Returns list of invites
@@ -1328,7 +1427,7 @@ POST          /system/jobs/restart/:jobId                controllers.EventJobCon
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /invites                                    controllers.InviteController.getList(activated: Option[Boolean])
+GET /admin/invites controllers.admin.InviteController.getList(activated: Option[Boolean])
 
 ###
 # summary: Bulk creates invites
@@ -1352,7 +1451,7 @@ GET           /invites                                    controllers.InviteCont
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-POST          /invites/create                           controllers.InviteController.bulkCreate
+POST /admin/invites controllers.admin.InviteController.bulkCreate
 
 ###
 # summary: Submits invite code
@@ -1374,7 +1473,7 @@ POST          /invites/create                           controllers.InviteContro
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-POST          /invites/submit                           controllers.InviteController.submit
+POST /invites/submit controllers.user.InviteController.submit
 
 ###
 # summary: Uploads user profile picture
@@ -1398,7 +1497,31 @@ POST          /invites/submit                           controllers.InviteContro
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-POST          /user-pictures/:userId                    controllers.ProfilePictureController.upload(userId: Long)
+POST /users/current/picture controllers.user.ProfilePictureController.upload
+
+###
+# summary: Uploads user profile picture
+# tags:
+#   - User
+# consumes:
+#   - multipart/form-data
+# parameters:
+#   - in: formData
+#     name: picture
+#     type: file
+# responses:
+#   204:
+#       description: Profile picture was set
+#   400:
+#       $ref: '#/responses/BadRequest'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST /admin/users/:userId/picture controllers.admin.ProfilePictureController.upload(userId: Long)
 
 ###
 # summary: Returns user profile picture
@@ -1420,4 +1543,4 @@ POST          /user-pictures/:userId                    controllers.ProfilePictu
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET           /user-pictures/:userId                    controllers.ProfilePictureController.get(userId: Long)
+GET /users/:userId/picture controllers.user.ProfilePictureController.get(userId: Long)
