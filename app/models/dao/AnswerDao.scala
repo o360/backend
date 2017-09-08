@@ -73,12 +73,24 @@ trait AnswerComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
     id: Long,
     answerId: Long,
     elementId: Long,
-    text: Option[String]
+    text: Option[String],
+    comment: Option[String]
   ) {
     def toModel(values: Option[Seq[Long]]) = Answer.Element(
       elementId,
       text,
-      values.map(_.toSet)
+      values.map(_.toSet),
+      comment
+    )
+  }
+
+  object DbFormElementAnswer {
+    def fromModel(el: Answer.Element, answerId: Long) = DbFormElementAnswer(
+      0,
+      answerId,
+      el.elementId,
+      el.text,
+      el.comment
     )
   }
 
@@ -87,8 +99,10 @@ trait AnswerComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
     def answerId = column[Long]("answer_id")
     def formElementId = column[Long]("form_element_id")
     def text = column[Option[String]]("text")
+    def comment = column[Option[String]]("comment")
 
-    def * = (id, answerId, formElementId, text) <> ((DbFormElementAnswer.apply _).tupled, DbFormElementAnswer.unapply)
+    def * =
+      (id, answerId, formElementId, text, comment) <> ((DbFormElementAnswer.apply _).tupled, DbFormElementAnswer.unapply)
   }
 
   val FormElementAnswers = TableQuery[FormElementAnswerTable]
@@ -251,7 +265,7 @@ class AnswerDao @Inject()(
     def insertAnswerElementAction(answerId: Long, element: Answer.Element) = {
       for {
         elementId <- FormElementAnswers.returning(FormElementAnswers.map(_.id)) +=
-          DbFormElementAnswer(0, answerId, element.elementId, element.text)
+          DbFormElementAnswer.fromModel(element, answerId)
 
         _ <- FormElementAnswerValues ++=
           element.valuesIds.getOrElse(Nil).map(DbFormElementAnswerValue(0, elementId, _))

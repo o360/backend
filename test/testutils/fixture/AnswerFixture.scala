@@ -17,12 +17,14 @@ trait AnswerFixture extends FixtureHelper with EventFixture with ProjectFixture 
         Answer.Element(
           elementId = 1,
           text = Some("first answer"),
-          valuesIds = None
+          valuesIds = None,
+          comment = Some("comment")
         ),
         Answer.Element(
           elementId = 2,
           text = None,
-          valuesIds = Some(Set(1))
+          valuesIds = Some(Set(1)),
+          comment = None
         )
       ),
       isAnonymous = true
@@ -42,9 +44,9 @@ trait AnswerFixture extends FixtureHelper with EventFixture with ProjectFixture 
         .scalaValues(2, 1, 1, 1, null, 2, false)
         .build,
       insertInto("form_element_answer")
-        .columns("id", "answer_id", "form_element_id", "text")
-        .scalaValues(1, 1, 1, "first answer")
-        .scalaValues(2, 1, 2, null)
+        .columns("id", "answer_id", "form_element_id", "text", "comment")
+        .scalaValues(1, 1, 1, "first answer", "comment")
+        .scalaValues(2, 1, 2, null, null)
         .build,
       insertInto("form_element_answer_value")
         .columns("id", "answer_element_id", "form_element_value_id")

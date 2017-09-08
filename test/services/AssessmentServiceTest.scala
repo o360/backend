@@ -223,23 +223,24 @@ class AssessmentServiceTest
       val invalidFormsWithAnswers = Seq(
         // Duplicate answers
         baseForm ->
-          Answer.Form(NamedEntity(1), Set(Answer.Element(2, Some(""), None), Answer.Element(2, Some(""), None))),
+          Answer.Form(NamedEntity(1),
+                      Set(Answer.Element(2, Some(""), None, None), Answer.Element(2, Some(""), None, None))),
         // Missed required answer
         baseForm.copy(elements = Seq(Form.Element(1, Form.ElementKind.TextArea, "", required = true, Nil))) ->
           Answer.Form(NamedEntity(1), Set()),
         // Text element contains values answer
         baseForm.copy(elements = Seq(Form.Element(1, Form.ElementKind.TextArea, "", required = true, Nil))) ->
-          Answer.Form(NamedEntity(1), Set(Answer.Element(1, None, Some(Set(1))))),
+          Answer.Form(NamedEntity(1), Set(Answer.Element(1, None, Some(Set(1)), None))),
         // Values answer contains unknown element
         baseForm.copy(elements =
           Seq(Form.Element(1, Form.ElementKind.Select, "", required = true, Seq(Form.ElementValue(3, ""))))) ->
-          Answer.Form(NamedEntity(1), Set(Answer.Element(1, None, Some(Set(1))))),
+          Answer.Form(NamedEntity(1), Set(Answer.Element(1, None, Some(Set(1)), None))),
         // Text answer is missed
         baseForm.copy(elements = Seq(Form.Element(1, Form.ElementKind.TextArea, "", required = true, Nil))) ->
-          Answer.Form(NamedEntity(1), Set(Answer.Element(1, None, None))),
+          Answer.Form(NamedEntity(1), Set(Answer.Element(1, None, None, None))),
         // Answer for unknown element id
         baseForm.copy(elements = Seq(Form.Element(1, Form.ElementKind.TextArea, "", required = false, Nil))) ->
-          Answer.Form(NamedEntity(1), Set(Answer.Element(2, Some(""), None)))
+          Answer.Form(NamedEntity(1), Set(Answer.Element(2, Some(""), None, None)))
       )
 
       forAll(Gen.oneOf(invalidFormsWithAnswers)) {
@@ -287,7 +288,7 @@ class AssessmentServiceTest
       val userGroupsIds = Seq(1L, 2, 3)
       val form =
         Form(1, "", Seq(Form.Element(1, Form.ElementKind.TextField, "", true, Nil)), Form.Kind.Freezed, true, "")
-      val answer = Answer.Form(NamedEntity(form.id), Set(Answer.Element(1, Some("text"), None)))
+      val answer = Answer.Form(NamedEntity(form.id), Set(Answer.Element(1, Some("text"), None, None)))
       val assessment = Assessment(None, Seq(answer))
 
       when(fixture.groupDao.findGroupIdsByUserId(user.id)).thenReturn(toFuture(userGroupsIds))
@@ -335,7 +336,7 @@ class AssessmentServiceTest
       val userGroupsIds = Seq(1L, 2, 3)
       val form =
         Form(1, "", Seq(Form.Element(1, Form.ElementKind.TextField, "", true, Nil)), Form.Kind.Freezed, true, "")
-      val answer = Answer.Form(NamedEntity(form.id), Set(Answer.Element(1, Some("text"), None)))
+      val answer = Answer.Form(NamedEntity(form.id), Set(Answer.Element(1, Some("text"), None, None)))
       val assessment = Assessment(None, Seq(answer))
       val relation = Relation(
         id = 1,
@@ -397,7 +398,7 @@ class AssessmentServiceTest
       val userGroupsIds = Seq(1L, 2, 3)
       val form =
         Form(1, "", Seq(Form.Element(1, Form.ElementKind.TextField, "", true, Nil)), Form.Kind.Freezed, true, "")
-      val answer = Answer.Form(NamedEntity(form.id), Set(Answer.Element(1, Some("text"), None)))
+      val answer = Answer.Form(NamedEntity(form.id), Set(Answer.Element(1, Some("text"), None, None)))
       val assessment = Assessment(None, Seq(answer))
       val relation = Relation(
         id = 1,
