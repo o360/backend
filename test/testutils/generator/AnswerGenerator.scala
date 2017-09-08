@@ -14,7 +14,8 @@ trait AnswerGenerator {
       elementId <- Arbitrary.arbitrary[Long]
       text <- Arbitrary.arbitrary[Option[String]]
       values <- Arbitrary.arbitrary[Option[Seq[Long]]]
-    } yield Answer.Element(elementId, text, values.map(_.toSet))
+      comment <- Arbitrary.arbitrary[Option[String]]
+    } yield Answer.Element(elementId, text, values.map(_.toSet), comment)
   }
 
   implicit val answerFormArb: Arbitrary[Answer.Form] = Arbitrary {

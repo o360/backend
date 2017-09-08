@@ -63,7 +63,7 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
 
       val answer = Answer.Form(
         NamedEntity(freezedForm.id),
-        Set(Answer.Element(freezedForm.elements(0).id, Some("text"), None))
+        Set(Answer.Element(freezedForm.elements(0).id, Some("text"), None, None))
       )
 
       when(
@@ -111,11 +111,11 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
       val fixture = getFixture
       val elementsWithAnswers = Seq(
         Form.Element(1, Form.ElementKind.TextArea, "", false, Nil) ->
-          Answer.Element(1, Some("text"), None),
+          Answer.Element(1, Some("text"), None, None),
         Form.Element(2, Form.ElementKind.Checkbox, "", false, Nil) ->
-          Answer.Element(2, Some("true"), None),
+          Answer.Element(2, Some("true"), None, None),
         Form.Element(3, Form.ElementKind.Radio, "", false, Seq(Form.ElementValue(10, "radioval"))) ->
-          Answer.Element(3, None, Some(Set(10)))
+          Answer.Element(3, None, Some(Set(10)), None)
       )
       val form = Forms(0).copy(id = 1, elements = elementsWithAnswers.map(_._1))
       val userTo = Users(1).copy(id = 2)

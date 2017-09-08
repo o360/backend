@@ -68,11 +68,13 @@ object Answer {
     * @param elementId ID of form element
     * @param text      text answer
     * @param valuesIds predefined answers IDs list
+    * @param comment   optional comment
     */
   case class Element(
     elementId: Long,
     text: Option[String],
-    valuesIds: Option[Set[Long]]
+    valuesIds: Option[Set[Long]],
+    comment: Option[String]
   ) {
 
     /**
@@ -94,11 +96,12 @@ object Answer {
           .getOrElse("")
       }
 
-      element.kind match {
+      val basePart = element.kind match {
         case TextArea | TextField | Checkbox => text.getOrElse("")
-        case CheckboxGroup | Radio | Select => getValuesText
-        case LikeDislike => getValuesText + text.fold("")("\nComment: \"" + _ + "\"")
+        case CheckboxGroup | Radio | Select | LikeDislike => getValuesText
       }
+
+      comment.fold(basePart)(c => s"$basePart ($c)")
     }
   }
 }
