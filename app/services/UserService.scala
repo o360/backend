@@ -63,7 +63,7 @@ class UserService @Inject()(
       user <- userDao.findById(id).liftRight {
         NotFoundError.User(id)
       }
-      _ <- ensure(account.role == UserModel.Role.Admin || user.status == UserModel.Status.Approved) {
+      _ <- ensure(account.role == UserModel.Role.Admin || user.status == UserModel.Status.Approved || account.id == id) {
         AuthorizationError.General
       }
     } yield user

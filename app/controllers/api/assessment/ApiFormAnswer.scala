@@ -29,12 +29,14 @@ object ApiFormAnswer {
   case class ElementAnswer(
     elementId: Long,
     text: Option[String],
-    valuesIds: Option[Seq[Long]]
+    valuesIds: Option[Seq[Long]],
+    comment: Option[String]
   ) {
     def toModel = Answer.Element(
       elementId,
       text,
-      valuesIds.map(_.toSet)
+      valuesIds.map(_.toSet),
+      comment
     )
   }
 
@@ -42,13 +44,15 @@ object ApiFormAnswer {
     implicit val answerElementReads: Reads[ElementAnswer] = (
       (__ \ "elementId").read[Long] and
         (__ \ "text").readNullable[String] and
-        (__ \ "valuesIds").readNullable[Seq[Long]]
-    )(ElementAnswer(_, _, _))
+        (__ \ "valuesIds").readNullable[Seq[Long]] and
+        (__ \ "comment").readNullable[String]
+    )(ElementAnswer(_, _, _, _))
 
     def apply(element: Answer.Element): ElementAnswer = ElementAnswer(
       element.elementId,
       element.text,
-      element.valuesIds.map(_.toSeq)
+      element.valuesIds.map(_.toSeq),
+      element.comment
     )
   }
 }

@@ -1,0 +1,1 @@
+ALTER TABLE form_element_answer ADD COLUMN comment VARCHAR NULL DEFAULT NULL;
