@@ -5,8 +5,9 @@ import javax.inject.{Inject, Singleton}
 import com.mohiva.play.silhouette.api.Silhouette
 import controllers.BaseController
 import controllers.api.Response
-import controllers.api.user.ApiUser
-import controllers.authorization.AllowedRole
+import controllers.api.user.{ApiShortUser, ApiUser}
+import controllers.authorization.{AllowedRole, AllowedStatus}
+import models.user.{User, UserShort}
 import org.davidbild.tristate.Tristate
 import play.api.mvc.ControllerComponents
 import services.UserService
@@ -29,7 +30,34 @@ class UserController @Inject()(
 ) extends BaseController
   with ListActions {
 
-  implicit val sortingFields = Sorting.AvailableFields('id, 'name, 'email, 'role, 'status, 'gender)
+  implicit val sortingFields = Sorting.AvailableFields('id, 'name, 'gender)
+
+  /**
+    * Returns user by ID.
+    */
+  def getById(id: Long) = silhouette.SecuredAction(AllowedStatus.approved).async { implicit request =>
+    toResult(Ok) {
+      userService
+        .getById(id)
+        .map(x => ApiShortUser(UserShort.fromUser(x)))
+    }
+  }
+
+  /**
+    * Returns list of users filtered by given filters.
+    */
+  def getList(name: Option[String]) = (silhouette.SecuredAction(AllowedStatus.approved) andThen ListAction).async {
+    implicit request =>
+      toResult(Ok) {
+        userService
+          .list(None, Some(User.Status.Approved), Tristate.Unspecified, name)
+          .map { users =>
+            Response.List(users) { user =>
+              ApiShortUser(UserShort.fromUser(user))
+            }
+          }
+      }
+  }
 
   /**
     * Returns logged in user.

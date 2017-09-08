@@ -11,7 +11,7 @@ import org.davidbild.tristate.Tristate
 import services.authorization.UserSda
 import silhouette.CustomSocialProfile
 import utils.Logger
-import utils.errors.{ConflictError, NotFoundError}
+import utils.errors.{AuthorizationError, ConflictError, NotFoundError}
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
 
@@ -60,9 +60,11 @@ class UserService @Inject()(
     */
   def getById(id: Long)(implicit account: UserModel): SingleResult = {
     for {
-      _ <- UserSda.canGetById(id).liftLeft
       user <- userDao.findById(id).liftRight {
         NotFoundError.User(id)
+      }
+      _ <- ensure(account.role == UserModel.Role.Admin || user.status == UserModel.Status.Approved) {
+        AuthorizationError.General
       }
     } yield user
   }

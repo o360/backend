@@ -64,10 +64,11 @@ class InviteServiceTest
       forAll { (invites: Seq[Invite], total: Int) =>
         val fixture = getFixture
 
-        when(fixture.inviteDao.getList(
-          any[Option[String]],
-          any[Option[Boolean]]
-        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(total, invites)))
+        when(
+          fixture.inviteDao.getList(
+            any[Option[String]],
+            any[Option[Boolean]]
+          )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(total, invites)))
         val result = wait(fixture.service.getList().run)
 
         result.toOption.get mustBe ListWithTotal(total, invites)

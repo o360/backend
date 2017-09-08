@@ -19,7 +19,7 @@ import utils.errors.ApplicationError
 import utils.listmeta.ListMeta
 
 import scala.concurrent.ExecutionContext
-import scalaz.{EitherT, \/, \/-}
+import scalaz.{\/, \/-, EitherT}
 
 /**
   * Test for assessment controller.

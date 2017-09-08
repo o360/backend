@@ -54,6 +54,26 @@ POST /auth/:provider controllers.Authentication.auth(provider: String)
 #   200:
 #       description: Success
 #       schema:
+#           $ref: '#/definitions/controllers.api.user.ApiShortUser'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /users/:id controllers.user.UserController.getById(id: Long)
+
+###
+# summary: Returns user by ID
+# tags:
+#   - User
+# responses:
+#   200:
+#       description: Success
+#       schema:
 #           $ref: '#/definitions/controllers.api.user.ApiUser'
 #   401:
 #       $ref: '#/responses/Unauthorized'
@@ -65,6 +85,39 @@ POST /auth/:provider controllers.Authentication.auth(provider: String)
 #       $ref: '#/responses/InternalServerError'
 ###
 GET /admin/users/:id controllers.admin.UserController.getById(id: Long)
+
+###
+# summary: Returns list of users
+# tags:
+#   - User
+# parameters:
+#   - name: sort
+#     in: query
+#     type: string
+#     pattern: '^-?\w+(,-?\w+)*$'
+#     description: 'Available fields: id, name, gender. Format: field1,-field2,...'
+#   - $ref: '#/parameters/pageSize'
+#   - $ref: '#/parameters/pageNumber'
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.user.ApiShortUser'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /users controllers.user.UserController.getList(name: Option[String])
 
 ###
 # summary: Returns list of users
@@ -256,6 +309,32 @@ GET /admin/groups controllers.admin.GroupController.getList(parentId: org.davidb
 #       $ref: '#/responses/InternalServerError'
 ###
 GET /users/current/groups controllers.user.GroupController.getList
+
+###
+# summary: Returns user groups
+# tags:
+#   - Group
+#   - User
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.group.ApiGroup'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /users/:userId/groups controllers.user.GroupController.getListByUserId(userId: Long)
 
 ###
 # summary: Returns group by ID

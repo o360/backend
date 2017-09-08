@@ -8,7 +8,7 @@ import controllers.api.Response
 import controllers.api.group.ApiGroup
 import controllers.authorization.AllowedStatus
 import play.api.mvc.ControllerComponents
-import services.GroupService
+import services.{GroupService, UserService}
 import silhouette.DefaultEnv
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
@@ -24,21 +24,25 @@ import scala.concurrent.ExecutionContext
 class GroupController @Inject()(
   silhouette: Silhouette[DefaultEnv],
   groupService: GroupService,
+  userService: UserService,
   val controllerComponents: ControllerComponents,
   implicit val ec: ExecutionContext
 ) extends BaseController
   with ListActions {
-
-  implicit val sortingFields = Sorting.AvailableFields('id, 'name)
 
   /**
     * Returns current user groups.
     */
   def getList =
     silhouette.SecuredAction(AllowedStatus.approved).async { implicit request =>
-      toResult(Ok) {
+      getListByUserId(request.identity.id)(request)
+    }
+
+  def getListByUserId(userId: Long) = silhouette.SecuredAction(AllowedStatus.approved).async { implicit request =>
+    toResult(Ok) {
+      userService.getById(userId).flatMap { _ =>
         groupService
-          .listByUserId(request.identity.id)
+          .listByUserId(userId)
           .map { groups =>
             Response.List(groups) { group =>
               ApiGroup(group)
@@ -46,4 +50,5 @@ class GroupController @Inject()(
           }
       }
     }
+  }
 }

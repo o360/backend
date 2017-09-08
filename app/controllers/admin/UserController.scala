@@ -34,7 +34,7 @@ class UserController @Inject()(
   /**
     * Returns user by ID.
     */
-  def getById(id: Long) = silhouette.SecuredAction.async { implicit request =>
+  def getById(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
     toResult(Ok) {
       userService
         .getById(id)
