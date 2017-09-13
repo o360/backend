@@ -6,10 +6,14 @@ import models.assessment.Answer
 import models.dao.{AnswerDao, UserDao}
 import models.form.Form
 import models.report._
-import utils.Logger
+import models.user.User
+import utils.errors.{ApplicationError, AuthorizationError}
+import utils.{Logger, RandomGenerator}
 import utils.implicits.RichEitherT._
+import utils.implicits.FutureLifting._
 
 import scala.concurrent.{ExecutionContext, Future}
+import scalaz.EitherT
 
 /**
   * Report service.
@@ -21,6 +25,66 @@ class ReportService @Inject()(
   answerDao: AnswerDao,
   implicit val ec: ExecutionContext
 ) extends Logger {
+
+  def getAuditorReport(activeProjectId: Long)(
+    implicit user: User): EitherT[Future, ApplicationError, Seq[SimpleReport]] = {
+
+    var allUsersToAnonymousMap = Map.empty[Long, String]
+    def getUserAnonymousId(userId: Long) = {
+      allUsersToAnonymousMap.getOrElse(userId, {
+        val anonymousUserId = RandomGenerator.generateAnonymousUserName
+        allUsersToAnonymousMap += userId -> anonymousUserId
+        anonymousUserId
+      })
+    }
+
+    for {
+      auditors <- userDao.getList(optProjectIdAuditor = Some(activeProjectId)).lift
+      _ <- ensure(auditors.data.map(_.id).contains(user.id)) {
+        AuthorizationError.Report.OnlyAuditor(activeProjectId)
+      }
+
+      reports <- getReport(activeProjectId).lift
+
+      simpleReports = reports.map { report =>
+        val detailedReports = report.forms.flatMap { reportForm =>
+          reportForm.answers.flatMap { reportFormAnswer =>
+            reportFormAnswer.elementAnswers.map { reportElementAnswer =>
+              SimpleReport.SimpleReportElement(
+                if (reportElementAnswer.isAnonymous) {
+                  Some(
+                    SimpleReport.SimpleReportUser(isAnonymous = true,
+                                                  Some(getUserAnonymousId(reportElementAnswer.fromUser.id)),
+                                                  None))
+                } else {
+                  Some(SimpleReport.SimpleReportUser(isAnonymous = false, None, Some(reportElementAnswer.fromUser.id)))
+                },
+                reportForm.form.id,
+                reportFormAnswer.formElement.id,
+                reportElementAnswer.answer.getText(reportFormAnswer.formElement)
+              )
+            }
+
+          }
+        }
+
+        val aggregatedReport = getAggregatedReport(report)
+        val simpleAggregatedReport = aggregatedReport.forms.flatMap { reportForm =>
+          reportForm.answers.map { reportFormAnswer =>
+            SimpleReport.SimpleReportElement(
+              None,
+              reportForm.form.id,
+              reportFormAnswer.element.id,
+              reportFormAnswer.aggregationResult
+            )
+          }
+        }
+
+        SimpleReport(report.assessedUser.map(_.id), detailedReports, simpleAggregatedReport)
+      }
+
+    } yield simpleReports
+  }
 
   def getReport(activeProjectId: Long): Future[Seq[Report]] = {
 

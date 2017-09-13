@@ -13,11 +13,13 @@ case class ApiActiveProject(
   description: Option[String],
   formsOnSamePage: Boolean,
   canRevote: Boolean,
-  isAnonymous: Boolean
+  isAnonymous: Boolean,
+  userInfo: Option[ApiActiveProject.ApiUserInfo]
 ) extends Response
 
 object ApiActiveProject {
 
+  implicit val userInfoWrites = Json.writes[ApiUserInfo]
   implicit val writes = Json.writes[ApiActiveProject]
 
   def apply(project: ActiveProject): ApiActiveProject = ApiActiveProject(
@@ -26,6 +28,9 @@ object ApiActiveProject {
     project.description,
     project.formsOnSamePage,
     project.canRevote,
-    project.isAnonymous
+    project.isAnonymous,
+    project.userInfo.map(x => ApiUserInfo(x.isAuditor))
   )
+
+  case class ApiUserInfo(isAuditor: Boolean)
 }

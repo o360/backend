@@ -12,5 +12,10 @@ case class ActiveProject(
   canRevote: Boolean,
   isAnonymous: Boolean,
   machineName: String,
-  parentProjectId: Option[Long]
+  parentProjectId: Option[Long],
+  userInfo: Option[ActiveProject.UserInfo] = None
 )
+
+object ActiveProject {
+  case class UserInfo(isAuditor: Boolean)
+}

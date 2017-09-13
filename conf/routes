@@ -1642,3 +1642,28 @@ POST /admin/users/:userId/picture controllers.admin.ProfilePictureController.upl
 #       $ref: '#/responses/InternalServerError'
 ###
 GET /users/:userId/picture controllers.user.ProfilePictureController.get(userId: Long)
+
+###
+# summary: Returns reports list
+# tags:
+#   - Report
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.report.ApiReport'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /projects/:projectId/report controllers.user.ReportController.getAuditorReport(projectId: Long)

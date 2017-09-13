@@ -127,6 +127,11 @@ object Response {
     )(model2response: A => B)(implicit meta: ListMeta): Either[E, List[B]] = {
       list.right.map(List(_)(model2response))
     }
+
+    /**
+      * Creates list response with default meta.
+      */
+    def apply[A](list: Seq[A]): List[A] = List(Meta(list.length, list.length, 1), list)
   }
 
   /**

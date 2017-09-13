@@ -23,4 +23,9 @@ object AuthorizationError {
     extends AuthorizationError("AUTHORIZATION-EVENT-2", "Can't update completed event")
 
   case class Form(id: Long) extends AuthorizationError("AUTHORIZATION-FORM-1", "Can't get form by ID.")
+
+  object Report {
+    case class OnlyAuditor(id: Long)
+      extends AuthorizationError("AUTHORIZATION-REPORT-1", s"Only auditors can get report for project $id")
+  }
 }
