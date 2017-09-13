@@ -30,4 +30,7 @@ object NotFoundError {
                           s"There is no assessment objects for event: $eventId; project: $projectId; user: $accountId")
 
   case class Invite(code: String) extends NotFoundError("NOTFOUND-INVITE", s"Can't find invite with code $code")
+
+  case class ActiveProject(id: Long)
+    extends NotFoundError("NOTFOUND-ACTIVEPROJECT", s"Can't find active project with id:$id")
 }

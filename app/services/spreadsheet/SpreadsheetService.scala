@@ -23,12 +23,10 @@ class SpreadsheetService @Inject()() {
     *
     * @param reports           reports
     * @param aggregatedReports aggregated reports
-    * @param forms             forms used in relations
     */
   def getBatchUpdateRequest(
     reports: Seq[Report],
-    aggregatedReports: Seq[AggregatedReport],
-    forms: Seq[Form]
+    aggregatedReports: Seq[AggregatedReport]
   ): BatchUpdateSpreadsheetRequest = {
 
     def getFormContainer(form: Form, answers: Element, headerColor: Color) =

@@ -6,7 +6,7 @@ import com.mohiva.play.silhouette.api.Silhouette
 import controllers.BaseController
 import controllers.authorization.AllowedRole
 import play.api.mvc.ControllerComponents
-import services.EventProjectService
+import services.event.EventProjectService
 import silhouette.DefaultEnv
 import utils.implicits.FutureLifting._
 

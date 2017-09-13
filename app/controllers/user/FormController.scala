@@ -11,7 +11,6 @@ import services.FormService
 import silhouette.DefaultEnv
 import utils.implicits.FutureLifting._
 import utils.listmeta.actions.ListActions
-import utils.listmeta.sorting.Sorting
 
 import scala.concurrent.ExecutionContext
 
@@ -27,19 +26,13 @@ class FormController @Inject()(
 ) extends BaseController
   with ListActions {
 
-  implicit val sortingFields = Sorting.AvailableFields('id, 'name)
-
   /**
     * Returns form template with elements for user.
     */
-  def getById(
-    id: Long,
-    projectId: Long,
-    eventId: Long
-  ) = silhouette.SecuredAction(AllowedStatus.approved).async { implicit request =>
+  def getById(id: Long) = silhouette.SecuredAction(AllowedStatus.approved).async { implicit request =>
     toResult(Ok) {
       formService
-        .userGetById(id, projectId, eventId)
+        .userGetById(id)
         .map(ApiForm(_))
     }
   }

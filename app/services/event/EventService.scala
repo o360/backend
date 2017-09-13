@@ -1,11 +1,13 @@
-package services
+package services.event
 
 import java.sql.Timestamp
 import javax.inject.{Inject, Singleton}
 
-import models.dao.{EventDao, EventProjectDao, GroupDao, ProjectDao}
+import models.ListWithTotal
+import models.dao._
 import models.event.Event
 import models.user.User
+import services.ServiceResults
 import services.authorization.EventSda
 import utils.TimestampConverter
 import utils.errors.{BadRequestError, NotFoundError}
@@ -24,13 +26,14 @@ class EventService @Inject()(
   protected val projectDao: ProjectDao,
   protected val eventProjectDao: EventProjectDao,
   protected val eventJobService: EventJobService,
+  protected val answerDao: AnswerDao,
   implicit val ec: ExecutionContext
 ) extends ServiceResults[Event] {
 
   /**
     * Returns event by ID
     */
-  def getById(id: Long)(implicit account: User): SingleResult = {
+  def getById(id: Long): SingleResult = {
     eventDao
       .findById(id)
       .liftRight {
@@ -38,35 +41,49 @@ class EventService @Inject()(
       }
   }
 
+  def userGetById(id: Long)(implicit account: User): SingleResult = {
+    for {
+      event <- getById(id)
+      answers <- answerDao.getList(optEventId = Some(event.id)).lift
+      _ <- ensure(answers.nonEmpty || event.status == Event.Status.NotStarted) {
+        NotFoundError.Event(id)
+      }
+    } yield event
+  }
+
   /**
     * Returns events list filtered by given criteria.
     *
     * @param status        event status
     * @param projectId     event containing project ID
-    * @param onlyAvailable only events user has access to
     */
   def list(
     status: Option[Event.Status],
-    projectId: Option[Long],
-    onlyAvailable: Boolean = false
-  )(implicit account: User, meta: ListMeta): ListResult = {
+    projectId: Option[Long]
+  )(implicit meta: ListMeta): ListResult = {
 
-    val groupFromFilter = account.role match {
-      case User.Role.Admin if !onlyAvailable => None.toFuture
-      case _ => groupDao.findGroupIdsByUserId(account.id).map(Some(_))
-    }
+    eventDao
+      .getList(
+        optStatus = status,
+        optProjectId = projectId
+      )
+      .lift
+  }
 
-    for {
-      groupFromIds <- groupFromFilter.lift
-      events <- eventDao
-        .getList(
-          optId = None,
-          optStatus = status,
-          optProjectId = projectId,
-          optGroupFromIds = groupFromIds
-        )
-        .lift
-    } yield events
+  def userList(status: Option[Event.Status])(implicit account: User, meta: ListMeta): ListResult = {
+    val groupFromFilter = groupDao.findGroupIdsByUserId(account.id)
+
+    val result = for {
+      groupFromIds <- groupFromFilter
+      notStartedEvents <- status match {
+        case None | Some(Event.Status.NotStarted) =>
+          eventDao.getList(optStatus = Some(Event.Status.NotStarted), optGroupFromIds = Some(groupFromIds))
+        case _ => ListWithTotal(Seq.empty[Event]).toFuture
+      }
+      anotherEvents <- eventDao.getList(optStatus = status, optUserId = Some(account.id))
+    } yield ListWithTotal(notStartedEvents.data ++ anotherEvents.data)
+
+    result.lift
   }
 
   /**
@@ -74,7 +91,7 @@ class EventService @Inject()(
     *
     * @param event event model
     */
-  def create(event: Event)(implicit account: User): SingleResult = {
+  def create(event: Event): SingleResult = {
     for {
       _ <- validateEvent(event)
 
@@ -93,7 +110,7 @@ class EventService @Inject()(
     *
     * @param draft event draft
     */
-  def update(draft: Event)(implicit account: User): SingleResult = {
+  def update(draft: Event): SingleResult = {
     for {
       original <- getById(draft.id)
       _ <- validateEvent(draft)

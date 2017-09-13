@@ -6,7 +6,7 @@ import models.event.Event
 import org.mockito.Mockito._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import services.EventResultExportService
+import services.event.EventResultExportService
 import utils.Config
 
 import scala.concurrent.ExecutionContext

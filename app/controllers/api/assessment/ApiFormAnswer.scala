@@ -20,9 +20,9 @@ object ApiFormAnswer {
   implicit val answerElementWrites = Json.writes[ElementAnswer]
   implicit val answerWrites = Json.writes[ApiFormAnswer]
 
-  def apply(answer: Answer.Form): ApiFormAnswer = ApiFormAnswer(
+  def apply(answer: Answer): ApiFormAnswer = ApiFormAnswer(
     ApiNamedEntity(answer.form),
-    answer.answers.toSeq.map(ElementAnswer(_)),
+    answer.elements.toSeq.map(ElementAnswer(_)),
     answer.isAnonymous
   )
 

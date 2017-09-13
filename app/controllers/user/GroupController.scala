@@ -13,7 +13,6 @@ import silhouette.DefaultEnv
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
 import utils.listmeta.actions.ListActions
-import utils.listmeta.sorting.Sorting
 
 import scala.concurrent.ExecutionContext
 

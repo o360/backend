@@ -47,7 +47,7 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
       forAll { (id: Long) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.projectServiceMock.getById(id)(admin))
+        when(fixture.projectServiceMock.getById(id))
           .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Project(id)): ApplicationError \/ Project)))
         val request = authenticated(FakeRequest(), env)
 
@@ -60,7 +60,7 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
       forAll { (id: Long, project: Project) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.projectServiceMock.getById(id)(admin))
+        when(fixture.projectServiceMock.getById(id))
           .thenReturn(EitherT.eitherT(toFuture(\/-(project): ApplicationError \/ Project)))
         val request = authenticated(FakeRequest(), env)
 
@@ -83,7 +83,7 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
         ) =>
           val env = fakeEnvironment(admin)
           val fixture = getFixture(env)
-          when(fixture.projectServiceMock.getList(eventId, groupId, false)(admin, ListMeta.default))
+          when(fixture.projectServiceMock.getList(eventId, groupId)(ListMeta.default))
             .thenReturn(EitherT.eitherT(
               toFuture(\/-(ListWithTotal(total, projects)): ApplicationError \/ ListWithTotal[Project])))
           val request = authenticated(FakeRequest(), env)
@@ -118,7 +118,7 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
       forAll { (project: Project) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.projectServiceMock.update(project)(admin))
+        when(fixture.projectServiceMock.update(project))
           .thenReturn(EitherT.eitherT(toFuture(\/-(project): ApplicationError \/ Project)))
 
         val partialProject = toPartialProject(project)
@@ -144,7 +144,7 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
       forAll { (project: Project) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.projectServiceMock.create(project.copy(id = 0))(admin))
+        when(fixture.projectServiceMock.create(project.copy(id = 0)))
           .thenReturn(EitherT.eitherT(toFuture(\/-(project): ApplicationError \/ Project)))
 
         val partialProject = toPartialProject(project)

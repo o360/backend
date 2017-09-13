@@ -168,6 +168,7 @@ class UserDao @Inject()(
   with UserLoginComponent
   with UserGroupComponent
   with UserMetaComponent
+  with ActiveProjectComponent
   with DaoHelper {
 
   import profile.api._
@@ -189,6 +190,7 @@ class UserDao @Inject()(
     optGroupIds: Tristate[Seq[Long]] = Tristate.Unspecified,
     optName: Option[String] = None,
     optEmail: Option[String] = None,
+    optProjectIdAuditor: Option[Long] = None,
     includeDeleted: Boolean = false
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[User]] = {
 
@@ -207,6 +209,10 @@ class UserDao @Inject()(
       }
     }
 
+    def filterActiveProject(user: UserTable) = optProjectIdAuditor.map { projectIdAuditor =>
+      user.id.in(ActiveProjectsAuditors.filter(_.activeProjectId === projectIdAuditor).map(_.userId))
+    }
+
     def deletedFilter(user: UserTable) = if (includeDeleted) None else Some(!user.isDeleted)
 
     val query = Users
@@ -218,6 +224,7 @@ class UserDao @Inject()(
           filterGroup(x),
           filterName(x),
           optEmail.map(email => x.email.fold(false: Rep[Boolean])(_ === email)),
+          filterActiveProject(x),
           deletedFilter(x)
         )
       }

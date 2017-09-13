@@ -8,7 +8,7 @@ import controllers.api.Response
 import controllers.api.event.{ApiEvent, ApiPartialEvent}
 import controllers.authorization.AllowedRole
 import play.api.mvc.ControllerComponents
-import services.EventService
+import services.event.EventService
 import silhouette.DefaultEnv
 import utils.implicits.FutureLifting._
 import utils.listmeta.actions.ListActions

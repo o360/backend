@@ -1,7 +1,6 @@
 package controllers.api.assessment
 
-import models.NamedEntity
-import models.assessment.Answer
+import models.assessment.PartialAnswer
 import play.api.libs.json.Json
 
 /**
@@ -12,10 +11,10 @@ case class ApiPartialFormAnswer(
   answers: Seq[ApiFormAnswer.ElementAnswer],
   isAnonymous: Boolean
 ) {
-  def toModel = Answer.Form(
-    NamedEntity(formId),
-    answers.map(_.toModel).toSet,
-    isAnonymous
+  def toModel = PartialAnswer(
+    formId,
+    isAnonymous,
+    answers.map(_.toModel).toSet
   )
 }
 

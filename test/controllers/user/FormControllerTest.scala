@@ -36,18 +36,18 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
     TestFixture(silhouette, formServiceMock, controller)
   }
 
-  private val admin = UserFixture.admin
+  private val user = UserFixture.user
 
   "GET /forms/id" should {
     "return json with form" in {
-      forAll { (id: Long, form: Form, projectId: Long, eventId: Long) =>
-        val env = fakeEnvironment(admin)
+      forAll { (id: Long, form: Form) =>
+        val env = fakeEnvironment(user)
         val fixture = getFixture(env)
-        when(fixture.formServiceMock.userGetById(id, projectId, eventId)(admin))
+        when(fixture.formServiceMock.userGetById(id)(user))
           .thenReturn(EitherT.eitherT(toFuture(\/-(form): ApplicationError \/ Form)))
         val request = authenticated(FakeRequest(), env)
 
-        val response = fixture.controller.getById(id, projectId, eventId)(request)
+        val response = fixture.controller.getById(id)(request)
         status(response) mustBe OK
         val formJson = contentAsJson(response)
         formJson mustBe Json.toJson(ApiForm(form))

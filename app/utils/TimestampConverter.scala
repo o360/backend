@@ -2,7 +2,7 @@ package utils
 
 import java.sql.Timestamp
 import java.time.format.DateTimeFormatter
-import java.time.{Instant, LocalDateTime, ZoneId}
+import java.time._
 import java.util.TimeZone
 
 /**
@@ -42,7 +42,7 @@ object TimestampConverter {
     * Returns current UTC time.
     */
   def now: Timestamp = {
-    val instant = Instant.now()
-    new Timestamp(instant.toEpochMilli)
+    val zonedDateTime = ZonedDateTime.now(ZoneOffset.UTC)
+    Timestamp.valueOf(zonedDateTime.toLocalDateTime)
   }
 }

@@ -4,9 +4,9 @@ import javax.inject.{Inject, Singleton}
 
 import models.ListWithTotal
 import models.dao._
-import models.event.{Event, EventJob}
+import models.event.Event
 import models.form.{Form, FormShort}
-import models.project.{Project, Relation}
+import models.project.Project
 import models.user.User
 import utils.errors._
 import utils.implicits.FutureLifting._
@@ -26,16 +26,16 @@ class FormService @Inject()(
   protected val groupDao: GroupDao,
   protected val projectDao: ProjectDao,
   protected val relationDao: ProjectRelationDao,
+  protected val answerDao: AnswerDao,
   implicit val ec: ExecutionContext
 ) extends ServiceResults[Form] {
 
   /**
     * Returns list of form templates without elements.
     *
-    * @param account logged in user
     * @param meta    list meta
     */
-  def getList()(implicit account: User, meta: ListMeta): EitherT[Future, ApplicationError, ListWithTotal[FormShort]] = {
+  def getList()(implicit meta: ListMeta): EitherT[Future, ApplicationError, ListWithTotal[FormShort]] = {
     formDao.getList(optKind = Some(Form.Kind.Active)).lift
   }
 
@@ -55,30 +55,12 @@ class FormService @Inject()(
   /**
     * Returns form by ID for user.
     */
-  def userGetById(
-    formId: Long,
-    projectId: Long,
-    eventId: Long
-  )(implicit account: User): SingleResult = {
+  def userGetById(id: Long)(implicit account: User): SingleResult = {
     for {
-      form <- getById(formId)
-
-      userGroups <- groupDao.findGroupIdsByUserId(account.id).lift
-      events <- eventDao
-        .getList(
-          optId = Some(eventId),
-          optProjectId = Some(projectId),
-          optGroupFromIds = Some(userGroups)
-        )
-        .lift
-      _ <- ensure(events.total == 1) {
-        AuthorizationError.Form(formId)
-      }
-
-      event = events.data.head
-      maybeEventId <- formDao.getEventIdByFreezedForm(formId).lift
-      _ <- ensure(maybeEventId.contains(event.id)) {
-        AuthorizationError.Form(formId)
+      form <- getById(id)
+      answers <- answerDao.getList(optUserFromId = Some(account.id), optFormId = Some(id)).lift
+      _ <- ensure(answers.nonEmpty) {
+        NotFoundError.Form(id)
       }
     } yield form
   }
@@ -101,21 +83,9 @@ class FormService @Inject()(
     * Updates form and elements in DB.
     *
     * @param form    form
-    * @param account logged in user
     * @return updated form
     */
-  def update(form: Form)(implicit account: User): SingleResult = {
-
-    def updateChildFreezedForms() =
-      for {
-        childFreezedForms <- formDao.getList(optKind = Some(Form.Kind.Freezed), optFormTemplateId = Some(form.id))
-
-        _ <- Future.sequence {
-          childFreezedForms.data.map { childFreezedForm =>
-            formDao.update(childFreezedForm.copy(name = form.name, showInAggregation = form.showInAggregation))
-          }
-        }
-      } yield ()
+  def update(form: Form): SingleResult = {
 
     for {
       original <- getById(form.id)
@@ -134,7 +104,6 @@ class FormService @Inject()(
       _ <- formDao.deleteElements(form.id).lift
       createdElements <- formDao.createElements(form.id, elements).lift
 
-      _ <- updateChildFreezedForms().lift
     } yield form.copy(elements = createdElements)
   }
 
@@ -142,9 +111,8 @@ class FormService @Inject()(
     * Deletes form with elements.
     *
     * @param id      form ID
-    * @param account logged in user
     */
-  def delete(id: Long)(implicit account: User): UnitResult = {
+  def delete(id: Long): UnitResult = {
 
     def getConflictedEntities = {
       for {
@@ -169,39 +137,6 @@ class FormService @Inject()(
       }
 
       _ <- formDao.delete(id).lift
-    } yield ()
-  }
-
-  /**
-    * Creates freezed form if not exists and returns it.
-    *
-    * @param eventId event ID
-    * @param formId  template form ID
-    */
-  def getOrCreateFreezedForm(eventId: Long, formId: Long): SingleResult = {
-    for {
-      freezedFormId <- formDao.getFreezedFormId(eventId, formId).lift
-      freezedForm <- freezedFormId match {
-        case Some(freezedFormId) => getById(freezedFormId)
-        case None =>
-          for {
-            form <- getById(formId)
-            freezedForm <- create(form.copy(kind = Form.Kind.Freezed))
-            _ <- formDao.setFreezedFormId(eventId, formId, freezedForm.id).lift
-          } yield freezedForm
-      }
-    } yield freezedForm
-  }
-
-  /**
-    * Executes create freezed forms job.
-    */
-  def execute(job: EventJob.CreateFreezedForms): Future[Unit] = {
-    for {
-      forms <- formDao.getList(optEventId = Some(job.eventId))
-      _ <- Future.sequence {
-        forms.data.map(form => getOrCreateFreezedForm(job.eventId, form.id).run)
-      }
     } yield ()
   }
 

@@ -31,13 +31,13 @@ class ProjectController @Inject()(
   implicit val sortingFields = Sorting.AvailableFields('id, 'name, 'description)
 
   /**
-    * Returns list of projects with relations.
+    * Returns list of projects.
     */
   def getList(eventId: Option[Long], groupId: Option[Long]) =
     (silhouette.SecuredAction(AllowedRole.admin) andThen ListAction).async { implicit request =>
       toResult(Ok) {
         projectService
-          .getList(eventId, groupId, onlyAvailable = false)
+          .getList(eventId, groupId)
           .map { projects =>
             Response.List(projects)(ApiProject(_))
           }
@@ -45,7 +45,7 @@ class ProjectController @Inject()(
     }
 
   /**
-    * Returns project with relations.
+    * Returns project.
     */
   def getById(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
     toResult(Ok) {

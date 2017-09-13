@@ -3,12 +3,11 @@ package models.dao
 import javax.inject.{Inject, Singleton}
 
 import models.NamedEntity
-import models.assessment.{Answer, UserAnswer}
+import models.assessment.Answer
+import org.davidbild.tristate.Tristate
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 
-import scalaz._
-import Scalaz._
 import scala.concurrent.{ExecutionContext, Future}
 
 /**
@@ -18,53 +17,66 @@ trait AnswerComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import profile.api._
 
+  implicit lazy val answerStatusColumnType = MappedColumnType.base[Answer.Status, Byte](
+    {
+      case Answer.Status.New => 0
+      case Answer.Status.Answered => 1
+    }, {
+      case 0 => Answer.Status.New
+      case 1 => Answer.Status.Answered
+    }
+  )
+
   /**
     * Form answer DB model.
     */
-  case class DbFormAnswer(
+  case class DbAnswer(
     id: Long,
-    eventId: Long,
-    projectId: Option[Long],
+    activeProjectId: Long,
     userFromId: Long,
     userToId: Option[Long],
     formId: Long,
     isAnonymous: Boolean,
-    projectMachineName: String,
-    formMachineName: String
+    status: Answer.Status
   ) {
-    def toModel(answers: Seq[Answer.Element], formName: String) = Answer.Form(
-      NamedEntity(formId, formName),
-      answers.toSet,
-      isAnonymous
-    )
-
-    def toUserAnswer(answers: Seq[Answer.Element], formName: String) = UserAnswer(
-      "",
+    def toModel(answers: Seq[Answer.Element], formName: String) = Answer(
+      activeProjectId,
       userFromId,
       userToId,
-      toModel(answers, formName),
-      projectMachineName,
-      formMachineName
+      NamedEntity(formId, formName),
+      status,
+      isAnonymous,
+      answers.toSet
     )
   }
 
-  class FormAnswerTable(tag: Tag) extends Table[DbFormAnswer](tag, "form_answer") {
+  object DbAnswer {
+    def fromModel(answer: Answer): DbAnswer = DbAnswer(
+      0,
+      answer.activeProjectId,
+      answer.userFromId,
+      answer.userToId,
+      answer.form.id,
+      answer.isAnonymous,
+      answer.status
+    )
+  }
+
+  class AnswerTable(tag: Tag) extends Table[DbAnswer](tag, "form_answer") {
 
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
-    def eventId = column[Long]("event_id")
-    def projectId = column[Option[Long]]("project_id")
+    def activeProjectId = column[Long]("active_project_id")
     def userFromId = column[Long]("user_from_id")
     def userToId = column[Option[Long]]("user_to_id")
     def formId = column[Long]("form_id")
     def isAnonymous = column[Boolean]("is_anonymous")
-    def projectMachineName = column[String]("project_machine_name")
-    def formMachineName = column[String]("form_machine_name")
+    def status = column[Answer.Status]("status")
 
     def * =
-      (id, eventId, projectId, userFromId, userToId, formId, isAnonymous, projectMachineName, formMachineName) <> ((DbFormAnswer.apply _).tupled, DbFormAnswer.unapply)
+      (id, activeProjectId, userFromId, userToId, formId, isAnonymous, status) <> ((DbAnswer.apply _).tupled, DbAnswer.unapply)
   }
 
-  val FormAnswers = TableQuery[FormAnswerTable]
+  val Answers = TableQuery[AnswerTable]
 
   /**
     * Element answer DB model.
@@ -140,22 +152,41 @@ class AnswerDao @Inject()(
   with AnswerComponent
   with FormComponent
   with DaoHelper
-  with ProjectComponent {
+  with ActiveProjectComponent {
 
   import profile.api._
 
-  private def userToFilter(answer: FormAnswerTable, userToId: Option[Long]) = userToId match {
+  private def userToFilter(answer: AnswerTable, userToId: Option[Long]) = userToId match {
     case Some(toId) => answer.userToId.fold(false: Rep[Boolean])(_ === toId)
     case None => answer.userToId.isEmpty
   }
 
   /**
-    * Returns list of answers for given event ID.
+    * Returns list of answers by given criteria.
     */
-  def getEventAnswers(eventId: Long): Future[Seq[UserAnswer]] = {
+  def getList(
+    optEventId: Option[Long] = None,
+    optActiveProjectId: Option[Long] = None,
+    optUserFromId: Option[Long] = None,
+    optFormId: Option[Long] = None,
+    optUserToId: Tristate[Long] = Tristate.Unspecified
+  ): Future[Seq[Answer]] = {
 
-    val query = FormAnswers
-      .filter(_.eventId === eventId)
+    def userToFilter(answer: AnswerTable) = optUserToId match {
+      case Tristate.Unspecified => None
+      case Tristate.Absent => Some(answer.userToId.isEmpty)
+      case Tristate.Present(userToId) => Some(answer.userToId.fold(false: Rep[Boolean])(_ === userToId))
+    }
+
+    val query = Answers
+      .applyFilter(answer =>
+        Seq(
+          optEventId.map(eventId => answer.activeProjectId.in(ActiveProjects.filter(_.eventId === eventId).map(_.id))),
+          optActiveProjectId.map(answer.activeProjectId === _),
+          optUserFromId.map(answer.userFromId === _),
+          optFormId.map(answer.formId === _),
+          userToFilter(answer)
+      ))
       .join(Forms)
       .on(_.formId === _.id)
       .joinLeft {
@@ -186,7 +217,7 @@ class AnswerDao @Inject()(
                   element.toModel(valuesOpt)
               }
               .toSeq
-            answer.toUserAnswer(elements, form.name)
+            answer.toModel(elements, form.name)
         }
         .toSeq
     }
@@ -196,69 +227,26 @@ class AnswerDao @Inject()(
     * Returns answer by given criteria.
     */
   def getAnswer(
-    eventId: Long,
-    projectId: Long,
-    fromUserId: Long,
-    toUserId: Option[Long],
+    activeProjectId: Long,
+    userFromId: Long,
+    userToId: Option[Long],
     formId: Long
-  ): Future[Option[Answer.Form]] = {
-
-    val query = FormAnswers
-      .filter { answer =>
-        answer.eventId === eventId &&
-        answer.projectId === projectId &&
-        answer.userFromId === fromUserId &&
-        userToFilter(answer, toUserId) &&
-        answer.formId === formId
-      }
-      .join(Forms)
-      .on(_.formId === _.id)
-      .take(1)
-      .joinLeft {
-        FormElementAnswers
-          .joinLeft(FormElementAnswerValues)
-          .on(_.id === _.answerElementId)
-      }
-      .on { case ((answer, _), (element, _)) => answer.id === element.answerId }
-
-    db.run(query.result).map { flatResults =>
-      flatResults.headOption.map {
-        case ((answer, form), _) =>
-          val elements = flatResults
-            .collect { case (_, Some(elementWithValues)) => elementWithValues }
-            .groupBy { case (element, _) => element }
-            .map {
-              case (element, elementWithValues) =>
-                val values = elementWithValues
-                  .collect { case (_, Some(value)) => value }
-                  .map(_.valueId)
-
-                val valuesOpt = if (values.isEmpty) None else Some(values)
-                element.toModel(valuesOpt)
-            }
-            .toSeq
-          answer.toModel(elements, form.name)
-      }
-    }
-  }
+  ): Future[Option[Answer]] =
+    getList(
+      optActiveProjectId = Some(activeProjectId),
+      optUserFromId = Some(userFromId),
+      optUserToId = Tristate.fromOption(userToId),
+      optFormId = Some(formId)
+    ).map(_.headOption)
 
   /**
     * Saves answer with elements and values in DB.
     */
-  def saveAnswer(
-    eventId: Long,
-    projectId: Long,
-    fromUserId: Long,
-    toUserId: Option[Long],
-    answer: Answer.Form,
-    projectMachineName: String,
-    formMachineName: String
-  ): Future[Answer.Form] = {
-    val deleteExistedAnswer = FormAnswers.filter { x =>
-      x.eventId === eventId &&
-      x.projectId === projectId &&
-      x.userFromId === fromUserId &&
-      userToFilter(x, toUserId) &&
+  def saveAnswer(answer: Answer): Future[Answer] = {
+    val deleteExistedAnswer = Answers.filter { x =>
+      x.activeProjectId === answer.activeProjectId &&
+      x.userFromId === answer.userFromId &&
+      userToFilter(x, answer.userToId) &&
       x.formId === answer.form.id
     }.delete
 
@@ -274,20 +262,10 @@ class AnswerDao @Inject()(
 
     val actions = for {
       _ <- deleteExistedAnswer
-      answerId <- FormAnswers.returning(FormAnswers.map(_.id)) +=
-        DbFormAnswer(
-          0,
-          eventId,
-          Some(projectId),
-          fromUserId,
-          toUserId,
-          answer.form.id,
-          answer.isAnonymous,
-          projectMachineName,
-          formMachineName
-        )
+      answerId <- Answers.returning(Answers.map(_.id)) +=
+        DbAnswer.fromModel(answer)
 
-      _ <- DBIO.seq(answer.answers.toSeq.map(insertAnswerElementAction(answerId, _)): _*)
+      _ <- DBIO.seq(answer.elements.toSeq.map(insertAnswerElementAction(answerId, _)): _*)
     } yield ()
 
     db.run(actions.transactionally).map(_ => answer)

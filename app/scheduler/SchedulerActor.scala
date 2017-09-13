@@ -4,7 +4,7 @@ import java.sql.Timestamp
 import javax.inject.{Inject, Singleton}
 
 import akka.actor.Actor
-import services.EventJobService
+import services.event.EventJobService
 import utils.{Config, Logger, TimestampConverter}
 
 import scala.concurrent.ExecutionContext

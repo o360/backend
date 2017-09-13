@@ -4,7 +4,7 @@ import java.sql.Timestamp
 import javax.inject.{Inject, Singleton}
 
 import models.ListWithTotal
-import models.event.{Event, EventJob}
+import models.event.Event
 import models.notification.Notification
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
@@ -139,6 +139,8 @@ class EventDao @Inject()(
   with EventComponent
   with EventProjectComponent
   with ProjectRelationComponent
+  with ActiveProjectComponent
+  with AnswerComponent
   with DaoHelper {
 
   import profile.api._
@@ -167,7 +169,8 @@ class EventDao @Inject()(
     optStatus: Option[Event.Status] = None,
     optProjectId: Option[Long] = None,
     optFormId: Option[Long] = None,
-    optGroupFromIds: Option[Seq[Long]] = None
+    optGroupFromIds: Option[Seq[Long]] = None,
+    optUserId: Option[Long] = None
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Event]] = {
 
     def projectFilter(event: EventTable) = optProjectId.map { projectId =>
@@ -198,6 +201,17 @@ class EventDao @Inject()(
         .exists
     }
 
+    def userFilter(event: EventTable) = optUserId.map { userId =>
+      Answers
+        .join(ActiveProjects)
+        .on(_.activeProjectId === _.id)
+        .filter {
+          case (answer, activeProject) =>
+            activeProject.eventId === event.id && answer.userFromId === userId
+        }
+        .exists
+    }
+
     val baseQuery = Events
       .applyFilter { event =>
         Seq(
@@ -205,7 +219,8 @@ class EventDao @Inject()(
           optStatus.map(statusFilter(event, _)),
           projectFilter(event),
           formFilter(event),
-          groupFromFilter(event)
+          groupFromFilter(event),
+          userFilter(event)
         )
       }
 

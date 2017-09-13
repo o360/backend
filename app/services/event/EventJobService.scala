@@ -1,10 +1,11 @@
-package services
+package services.event
 
 import java.sql.Timestamp
 import javax.inject.{Inject, Singleton}
 
 import models.dao.{EventDao, EventJobDao}
 import models.event.{Event, EventJob}
+import services.{NotificationService, ServiceResults, UploadService}
 import utils.errors.NotFoundError
 import utils.implicits.FutureLifting._
 import utils.{Logger, TimestampConverter}
@@ -21,7 +22,7 @@ class EventJobService @Inject()(
   protected val eventDao: EventDao,
   protected val notificationService: NotificationService,
   protected val uploadService: UploadService,
-  protected val formService: FormService,
+  protected val eventStartService: EventStartService,
   implicit val ec: ExecutionContext
 ) extends Logger
   with ServiceResults[EventJob] {
@@ -46,8 +47,8 @@ class EventJobService @Inject()(
   def createJobs(event: Event): Future[Unit] = {
     val uploadJob = EventJob.Upload(0, event.id, event.end, EventJob.Status.New)
     val sendEmailJobs = event.notifications.map(EventJob.SendNotification(0, event.id, _, EventJob.Status.New))
-    val createFreezedFormsJob = EventJob.CreateFreezedForms(0, event.id, event.start, EventJob.Status.New)
-    val jobsInTheFuture = (createFreezedFormsJob +: uploadJob +: sendEmailJobs)
+    val eventStart = EventJob.EventStart(0, event.id, event.start, EventJob.Status.New)
+    val jobsInTheFuture = (eventStart +: uploadJob +: sendEmailJobs)
       .filter(_.time.after(TimestampConverter.now))
     Future.sequence(jobsInTheFuture.map(eventJobDao.createJob(_))).map(_ => ())
   }
@@ -91,7 +92,7 @@ class EventJobService @Inject()(
           job match {
             case j: EventJob.Upload => event.end == j.time
             case j: EventJob.SendNotification => event.notifications.contains(j.notification)
-            case j: EventJob.CreateFreezedForms => event.start == j.time
+            case j: EventJob.EventStart => event.start == j.time
           }
         case None =>
           false
@@ -113,7 +114,7 @@ class EventJobService @Inject()(
       val result = job match {
         case j: EventJob.Upload => uploadService.execute(j)
         case j: EventJob.SendNotification => notificationService.execute(j)
-        case j: EventJob.CreateFreezedForms => formService.execute(j)
+        case j: EventJob.EventStart => eventStartService.execute(j)
       }
 
       result.onComplete {

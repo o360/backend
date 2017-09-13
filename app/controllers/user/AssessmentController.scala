@@ -31,25 +31,24 @@ class AssessmentController @Inject()(
   /**
     * Returns list of available assessment objects.
     */
-  def getList(eventId: Long, projectId: Long) = silhouette.SecuredAction(AllowedStatus.approved).async {
-    implicit request =>
-      toResult(Ok) {
-        assessmentService
-          .getList(eventId, projectId)
-          .map { assessmentObjects =>
-            Response.List(assessmentObjects)(ApiAssessment(_))(ListMeta.default)
-          }
-      }
+  def getList(projectId: Long) = silhouette.SecuredAction(AllowedStatus.approved).async { implicit request =>
+    toResult(Ok) {
+      assessmentService
+        .getList(projectId)
+        .map { assessmentObjects =>
+          Response.List(assessmentObjects)(ApiAssessment(_))(ListMeta.default)
+        }
+    }
   }
 
   /**
     * Submits form answers for given event and project ids.
     */
-  def bulkSubmit(eventId: Long, projectId: Long) =
+  def bulkSubmit(projectId: Long) =
     silhouette.SecuredAction(AllowedStatus.approved).async(parse.json[Seq[ApiPartialAssessment]]) { implicit request =>
       val model = request.body.map(_.toModel)
       assessmentService
-        .bulkSubmit(eventId, projectId, model)
+        .bulkSubmit(projectId, model)
         .fold(
           error => toResult(error),
           _ => NoContent

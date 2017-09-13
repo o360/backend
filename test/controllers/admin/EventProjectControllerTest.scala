@@ -6,7 +6,7 @@ import controllers.BaseControllerTest
 import org.mockito.Mockito._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import services.EventProjectService
+import services.event.EventProjectService
 import silhouette.DefaultEnv
 import testutils.fixture.UserFixture
 import testutils.generator.TristateGenerator
