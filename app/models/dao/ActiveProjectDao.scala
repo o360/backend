@@ -148,4 +148,13 @@ class ActiveProjectDao @Inject()(
   def addAuditor(activeProjectId: Long, userId: Long): Future[Unit] = {
     db.run(ActiveProjectsAuditors += DbActiveProjectAuditor(activeProjectId, userId)).map(_ => ())
   }
+
+  /**
+    * Returns true if user is auditor of project.
+    */
+  def isAuditor(activeProjectId: Long, userId: Long): Future[Boolean] = {
+    db.run {
+      ActiveProjectsAuditors.filter(x => x.userId === userId && x.activeProjectId === activeProjectId).exists.result
+    }
+  }
 }

@@ -2,6 +2,7 @@ package services.event
 
 import javax.inject.Inject
 
+import models.ListWithTotal
 import models.dao.ActiveProjectDao
 import models.project.{ActiveProject, Project}
 import services.ServiceResults
@@ -24,7 +25,14 @@ class ActiveProjectService @Inject()(
     * Returns list of active projects.
     */
   def getList(eventId: Option[Long])(implicit account: User, meta: ListMeta): ListResult = {
-    activeProjectDao.getList(optEventId = eventId, optUserId = Some(account.id)).lift
+    activeProjectDao
+      .getList(optEventId = eventId, optUserId = Some(account.id))
+      .flatMap { projects =>
+        Future.sequence(projects.data.map(getProjectWithUserInfo(_, account.id))).map { projectsWithUserInfo =>
+          ListWithTotal(projectsWithUserInfo)
+        }
+      }
+      .lift
   }
 
   /**
@@ -56,7 +64,8 @@ class ActiveProjectService @Inject()(
       _ <- ensure(project.nonEmpty) {
         NotFoundError.ActiveProject(id)
       }
-    } yield project.get
+      withUserInfo <- getProjectWithUserInfo(project.get, account.id).lift
+    } yield withUserInfo
   }
 
   /**
@@ -66,4 +75,13 @@ class ActiveProjectService @Inject()(
     Future.sequence(auditorsIds.map(activeProjectDao.addAuditor(apId, _))).map(_ => ()).lift
   }
 
+  /**
+    * Returns project with user info.
+    */
+  def getProjectWithUserInfo(project: ActiveProject, userId: Long): Future[ActiveProject] = {
+    activeProjectDao.isAuditor(project.id, userId).map { isAuditor =>
+      val userInfo = ActiveProject.UserInfo(isAuditor)
+      project.copy(userInfo = Some(userInfo))
+    }
+  }
 }
