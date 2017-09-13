@@ -49,7 +49,7 @@ class FormDaoTest extends BaseDaoTest with FormFixture with FormGenerator {
       forAll { (form: Form) =>
         val created = wait(dao.create(form.toShort))
 
-        val createdElements = wait(dao.createElements(created.id, form.elements))
+        wait(dao.createElements(created.id, form.elements))
 
         val formFromDb = wait(dao.findById(created.id))
         val preparedForm = formFromDb.get.copy(elements = formFromDb.get.elements.map { element =>

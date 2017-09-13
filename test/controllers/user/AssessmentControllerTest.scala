@@ -5,9 +5,8 @@ import com.mohiva.play.silhouette.test.FakeEnvironment
 import controllers.BaseControllerTest
 import controllers.api.Response
 import controllers.api.assessment.{ApiAssessment, ApiPartialAssessment, ApiPartialFormAnswer}
-import models.assessment.{Answer, Assessment}
-import models.user.UserShort
-import models.{ListWithTotal, NamedEntity}
+import models.ListWithTotal
+import models.assessment.{Assessment, PartialAnswer, PartialAssessment}
 import org.mockito.Mockito._
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
@@ -45,16 +44,15 @@ class AssessmentControllerTest extends BaseControllerTest {
     "return assessments list from service" in {
       val env = fakeEnvironment(admin)
       val fixture = getFixture(env)
-      val eventId = 1
       val projectId = 2
       val total = 3
       val assessments = Seq(Assessment(None, Nil))
-      when(fixture.assessmentServiceMock.getList(eventId, projectId)(admin))
+      when(fixture.assessmentServiceMock.getList(projectId)(admin))
         .thenReturn(EitherT.eitherT(
           toFuture(\/-(ListWithTotal(total, assessments)): ApplicationError \/ ListWithTotal[Assessment])))
       val request = authenticated(FakeRequest(), env)
 
-      val response = fixture.controller.getList(eventId, projectId)(request)
+      val response = fixture.controller.getList(projectId)(request)
 
       status(response) mustBe OK
       val assessmentsJson = contentAsJson(response)
@@ -70,8 +68,8 @@ class AssessmentControllerTest extends BaseControllerTest {
       val env = fakeEnvironment(admin)
       val fixture = getFixture(env)
 
-      val assessment = Assessment(Some(UserShort(1)), Seq(Answer.Form(NamedEntity(1), Set(), false)))
-      when(fixture.assessmentServiceMock.bulkSubmit(1, 2, Seq(assessment))(admin))
+      val assessment = PartialAssessment(Some(admin.id), Seq(PartialAnswer(1, false, Set())))
+      when(fixture.assessmentServiceMock.bulkSubmit(1, Seq(assessment))(admin))
         .thenReturn(EitherT.eitherT(toFuture(\/-(()): ApplicationError \/ Unit)))
 
       val partialAssessment = ApiPartialAssessment(Some(1), ApiPartialFormAnswer(1, Seq(), false))
@@ -83,7 +81,7 @@ class AssessmentControllerTest extends BaseControllerTest {
         env
       )
 
-      val response = fixture.controller.bulkSubmit(1, 2).apply(request)
+      val response = fixture.controller.bulkSubmit(1).apply(request)
       status(response) mustBe NO_CONTENT
     }
   }

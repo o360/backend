@@ -18,11 +18,15 @@ trait AnswerGenerator {
     } yield Answer.Element(elementId, text, values.map(_.toSet), comment)
   }
 
-  implicit val answerFormArb: Arbitrary[Answer.Form] = Arbitrary {
+  implicit val answerFormArb: Arbitrary[Answer] = Arbitrary {
     for {
-      id <- Arbitrary.arbitrary[Long]
-      answers <- Arbitrary.arbitrary[Set[Answer.Element]]
+      activeProjectId <- Arbitrary.arbitrary[Long]
+      userFromId <- Arbitrary.arbitrary[Long]
+      userToId <- Arbitrary.arbitrary[Option[Long]]
+      formId <- Arbitrary.arbitrary[Long]
+      formId <- Arbitrary.arbitrary[Long]
       isAnonymous <- Arbitrary.arbitrary[Boolean]
-    } yield Answer.Form(NamedEntity(id), answers, isAnonymous)
+      answers <- Arbitrary.arbitrary[Set[Answer.Element]]
+    } yield Answer(activeProjectId, userFromId, userToId, NamedEntity(formId), Answer.Status.New, isAnonymous, answers)
   }
 }

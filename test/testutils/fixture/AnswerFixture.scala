@@ -5,15 +5,20 @@ import models.NamedEntity
 import models.assessment.Answer
 
 /**
-  * Event model fixture.
+  * Answer model fixture.
   */
-trait AnswerFixture extends FixtureHelper with EventFixture with ProjectFixture with FormFixture with UserFixture {
+trait AnswerFixture extends FixtureHelper with ActiveProjectFixture with FormFixture with UserFixture {
   self: FixtureSupport =>
 
   val Answers = Seq(
-    Answer.Form(
-      form = NamedEntity(1, "first"),
-      answers = Set(
+    Answer(
+      1,
+      1,
+      Some(3),
+      NamedEntity(1),
+      Answer.Status.Answered,
+      isAnonymous = true,
+      Set(
         Answer.Element(
           elementId = 1,
           text = Some("first answer"),
@@ -26,22 +31,23 @@ trait AnswerFixture extends FixtureHelper with EventFixture with ProjectFixture 
           valuesIds = Some(Set(1)),
           comment = None
         )
-      ),
-      isAnonymous = true
+      )
     ),
-    Answer.Form(
-      form = NamedEntity(2, "second"),
-      answers = Set(),
-      isAnonymous = false
+    Answer(
+      2,
+      1,
+      None,
+      NamedEntity(2),
+      Answer.Status.New
     )
   )
 
   addFixtureOperation {
     sequenceOf(
       insertInto("form_answer")
-        .columns("id", "event_id", "project_id", "user_from_id", "user_to_id", "form_id", "is_anonymous")
-        .scalaValues(1, 1, 1, 1, 3, 1, true)
-        .scalaValues(2, 1, 1, 1, null, 2, false)
+        .columns("id", "active_project_id", "user_from_id", "user_to_id", "form_id", "is_anonymous", "status")
+        .scalaValues(1, 1, 1, 3, 1, true, 1)
+        .scalaValues(2, 2, 1, null, 2, false, 0)
         .build,
       insertInto("form_element_answer")
         .columns("id", "answer_id", "form_element_id", "text", "comment")

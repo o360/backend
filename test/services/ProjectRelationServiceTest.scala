@@ -1,12 +1,10 @@
 package services
 
-import java.sql.Timestamp
-
-import models.{ListWithTotal, NamedEntity}
 import models.dao.{EventDao, ProjectRelationDao}
 import models.event.Event
 import models.form.Form
 import models.project.Relation
+import models.{ListWithTotal, NamedEntity}
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
 import testutils.fixture.{FormFixture, ProjectRelationFixture, UserFixture}
@@ -14,8 +12,8 @@ import testutils.generator.ProjectRelationGenerator
 import utils.errors.{ApplicationError, BadRequestError, ConflictError, NotFoundError}
 import utils.listmeta.ListMeta
 
+import scalaz.Scalaz.ToEitherOps
 import scalaz._
-import Scalaz.ToEitherOps
 
 /**
   * Test for project relation service.
@@ -125,7 +123,8 @@ class ProjectRelationServiceTest
           optStatus = eqTo(Some(Event.Status.InProgress)),
           optProjectId = eqTo(Some(relation.project.id)),
           optFormId = any[Option[Long]],
-          optGroupFromIds = any[Option[Seq[Long]]]
+          optGroupFromIds = any[Option[Seq[Long]]],
+          optUserId = any[Option[Long]],
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       when(fixture.formService.getById(relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
@@ -146,7 +145,8 @@ class ProjectRelationServiceTest
           optStatus = eqTo(Some(Event.Status.InProgress)),
           optProjectId = eqTo(Some(relation.project.id)),
           optFormId = any[Option[Long]],
-          optGroupFromIds = any[Option[Seq[Long]]]
+          optGroupFromIds = any[Option[Seq[Long]]],
+          optUserId = any[Option[Long]],
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](1, Nil)))
       val result = wait(fixture.service.create(relation)(admin).run)
 
@@ -168,7 +168,8 @@ class ProjectRelationServiceTest
           optStatus = eqTo(Some(Event.Status.InProgress)),
           optProjectId = eqTo(Some(relation.project.id)),
           optFormId = any[Option[Long]],
-          optGroupFromIds = any[Option[Seq[Long]]]
+          optGroupFromIds = any[Option[Seq[Long]]],
+          optUserId = any[Option[Long]],
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       when(fixture.formService.getById(relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
@@ -192,7 +193,8 @@ class ProjectRelationServiceTest
           optStatus = eqTo(Some(Event.Status.InProgress)),
           optProjectId = eqTo(Some(relation.project.id)),
           optFormId = any[Option[Long]],
-          optGroupFromIds = any[Option[Seq[Long]]]
+          optGroupFromIds = any[Option[Seq[Long]]],
+          optUserId = any[Option[Long]],
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       when(fixture.formService.getById(relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
@@ -240,7 +242,8 @@ class ProjectRelationServiceTest
           optStatus = eqTo(Some(Event.Status.InProgress)),
           optProjectId = eqTo(Some(relation.project.id)),
           optFormId = any[Option[Long]],
-          optGroupFromIds = any[Option[Seq[Long]]]
+          optGroupFromIds = any[Option[Seq[Long]]],
+          optUserId = any[Option[Long]],
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       val result = wait(fixture.service.update(relation)(admin).run)
 
@@ -262,7 +265,8 @@ class ProjectRelationServiceTest
           optStatus = eqTo(Some(Event.Status.InProgress)),
           optProjectId = eqTo(Some(relation.project.id)),
           optFormId = any[Option[Long]],
-          optGroupFromIds = any[Option[Seq[Long]]]
+          optGroupFromIds = any[Option[Seq[Long]]],
+          optUserId = any[Option[Long]],
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       when(fixture.formService.getById(relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
@@ -284,7 +288,8 @@ class ProjectRelationServiceTest
           optStatus = eqTo(Some(Event.Status.InProgress)),
           optProjectId = eqTo(Some(relation.project.id)),
           optFormId = any[Option[Long]],
-          optGroupFromIds = any[Option[Seq[Long]]]
+          optGroupFromIds = any[Option[Seq[Long]]],
+          optUserId = any[Option[Long]],
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](1, Nil)))
       val result = wait(fixture.service.update(relation)(admin).run)
 
@@ -307,7 +312,8 @@ class ProjectRelationServiceTest
           optStatus = eqTo(Some(Event.Status.InProgress)),
           optProjectId = eqTo(Some(relation.project.id)),
           optFormId = any[Option[Long]],
-          optGroupFromIds = any[Option[Seq[Long]]]
+          optGroupFromIds = any[Option[Seq[Long]]],
+          optUserId = any[Option[Long]],
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       when(fixture.formService.getById(relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
@@ -332,7 +338,8 @@ class ProjectRelationServiceTest
           optStatus = eqTo(Some(Event.Status.InProgress)),
           optProjectId = eqTo(Some(relation.project.id)),
           optFormId = any[Option[Long]],
-          optGroupFromIds = any[Option[Seq[Long]]]
+          optGroupFromIds = any[Option[Seq[Long]]],
+          optUserId = any[Option[Long]],
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       when(fixture.formService.getById(relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
@@ -369,7 +376,8 @@ class ProjectRelationServiceTest
             optStatus = eqTo(Some(Event.Status.InProgress)),
             optProjectId = eqTo(Some(ProjectRelations(0).project.id)),
             optFormId = any[Option[Long]],
-            optGroupFromIds = any[Option[Seq[Long]]]
+            optGroupFromIds = any[Option[Seq[Long]]],
+            optUserId = any[Option[Long]],
           )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
 
         val result = wait(fixture.service.delete(id)(admin).run)

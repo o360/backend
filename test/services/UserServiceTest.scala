@@ -8,6 +8,7 @@ import models.user.{User => UserModel}
 import org.davidbild.tristate.Tristate
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
+import org.scalatest.mockito.MockitoSugar
 import silhouette.CustomSocialProfile
 import testutils.fixture.{GroupFixture, UserFixture}
 import testutils.generator.{SocialProfileGenerator, TristateGenerator, UserGenerator}
@@ -25,7 +26,8 @@ class UserServiceTest
   with SocialProfileGenerator
   with UserFixture
   with TristateGenerator
-  with GroupFixture {
+  with GroupFixture
+  with MockitoSugar {
 
   private val admin = UserFixture.admin
 
@@ -165,6 +167,7 @@ class UserServiceTest
               optGroupIds = eqTo(groupId.map(Seq(_))),
               optName = eqTo(name),
               optEmail = any[Option[String]],
+              optProjectIdAuditor = any[Option[Long]],
               includeDeleted = any[Boolean]
             )(eqTo(ListMeta.default)))
             .thenReturn(toFuture(ListWithTotal(total, users)))
@@ -196,6 +199,7 @@ class UserServiceTest
               optGroupIds = eqTo(Tristate.Present(childGroups :+ groupId)),
               optName = any[Option[String]],
               optEmail = any[Option[String]],
+              optProjectIdAuditor = any[Option[Long]],
               includeDeleted = eqTo(includeDeleted)
             )(eqTo(ListMeta.default))).thenReturn(toFuture(ListWithTotal(total, users)))
 
@@ -353,6 +357,7 @@ class UserServiceTest
           optGroupIds = eqTo(Tristate.Present(firstGroupChild :+ 1L)),
           optName = any[Option[String]],
           optEmail = any[Option[String]],
+          optProjectIdAuditor = any[Option[Long]],
           includeDeleted = eqTo(includeDeleted)
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(2, usersOfFirstGroup)))
       when(
@@ -363,6 +368,7 @@ class UserServiceTest
           optGroupIds = eqTo(Tristate.Present(secondGroupChild :+ 2L)),
           optName = any[Option[String]],
           optEmail = any[Option[String]],
+          optProjectIdAuditor = any[Option[Long]],
           includeDeleted = eqTo(includeDeleted)
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(2, usersOfSecondGroup)))
 

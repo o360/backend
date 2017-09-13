@@ -57,7 +57,7 @@ trait EventJobComponent extends NotificationComponent { self: HasDatabaseConfigP
         )
         EventJob.SendNotification(id, eventId, notification, status)
       case 2 =>
-        EventJob.CreateFreezedForms(id, eventId, time, status)
+        EventJob.EventStart(id, eventId, time, status)
     }
   }
 
@@ -67,7 +67,7 @@ trait EventJobComponent extends NotificationComponent { self: HasDatabaseConfigP
         DbEventJob(j.id, j.eventId, j.time, j.status, None, None, 0)
       case j: EventJob.SendNotification =>
         DbEventJob(j.id, j.eventId, j.time, j.status, Some(j.notification.kind), Some(j.notification.recipient), 1)
-      case j: EventJob.CreateFreezedForms =>
+      case j: EventJob.EventStart =>
         DbEventJob(j.id, j.eventId, j.time, j.status, None, None, 2)
     }
   }

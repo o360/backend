@@ -3,13 +3,11 @@ package services
 import javax.inject.{Inject, Singleton}
 
 import models.assessment.Answer
-import models.dao.{AnswerDao, ProjectRelationDao}
+import models.dao.{AnswerDao, UserDao}
 import models.form.Form
-import models.project.Relation
 import models.report._
-import models.user.User
-import services.ReportService.Combination
 import utils.Logger
+import utils.implicits.RichEitherT._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -18,187 +16,55 @@ import scala.concurrent.{ExecutionContext, Future}
   */
 @Singleton
 class ReportService @Inject()(
-  userService: UserService,
-  relationDao: ProjectRelationDao,
+  userDao: UserDao,
   formService: FormService,
   answerDao: AnswerDao,
   implicit val ec: ExecutionContext
 ) extends Logger {
 
-  /**
-    * Returns reports for all assessed users in given event and project.
-    *
-    * @param eventId   ID of event
-    * @param projectId ID of project
-    */
-  def getReport(eventId: Long, projectId: Long): Future[Seq[Report]] = {
-    log.trace("getting report")
-
-    /**
-      * Returns all possible combinations of users.
-      *
-      * @param relations relations
-      */
-    def createCombinations(relations: Seq[Relation]): Future[Seq[Combination]] = {
-      log.trace(s"\tcreating combinations for ${relations.map(r =>
-        s"from ${r.groupFrom.id} to ${r.groupTo.map(_.id)} form: ${r.form.id}")}")
-
-      /**
-        * Map from groupId to sequence of group users.
-        */
-      val getGroupToUsersMap: Future[Map[Long, Seq[User]]] = {
-        val allGroups = (relations.map(_.groupFrom.id) ++ relations.flatMap(_.groupTo.map(_.id))).distinct
-        log.trace(s"\tcreating GroupToUsersMap, allGroups = $allGroups")
-        userService.getGroupIdToUsersMap(allGroups, includeDeleted = true)
-      }
-
-      /**
-        * Map from templateId to Freezed Form.
-        */
-      val getTemplateIdToFreezedFormMap: Future[Map[Long, Form]] = {
-        val allTemplates = relations.map(_.form.id).distinct
-        log.trace(s"\tcreating TemplateIdToFreezedFormMap, allTEmplates = $allTemplates")
-        futureSeqToMap {
-          allTemplates.map { templateId =>
-            log.trace(s"\t\tgetting freezed form for template $templateId")
-            formService
-              .getOrCreateFreezedForm(eventId, templateId)
-              .run
-              .map { maybeForm =>
-                val form = maybeForm.getOrElse(throw new NoSuchElementException("missed form"))
-                (templateId, form)
-              }
-          }
-        }
-      }
-
-      /**
-        * Returns combinations of users from relations using given maps.
-        */
-      def getCombinations(groupToUsers: Map[Long, Seq[User]],
-                          templateIdToFreezedForm: Map[Long, Form]): Seq[Combination] = {
-        relations.flatMap { relation =>
-          for {
-            userFrom <- groupToUsers(relation.groupFrom.id)
-            userTo <- relation.groupTo match {
-              case Some(groupTo) => groupToUsers(groupTo.id).map(Some(_))
-              case None => Seq(None)
-            }
-          } yield {
-            val form = templateIdToFreezedForm(relation.form.id)
-
-            log.trace(s"\treturning Combination userFrom:${userFrom.id}, userTo:${userTo.map(_.id)}, form:${form.id}")
-            Combination(userFrom, userTo, form)
-          }
-        }
-      }
-
-      for {
-        groupToUsersMap <- getGroupToUsersMap
-        templateIdToFreezedFormMap <- getTemplateIdToFreezedFormMap
-      } yield getCombinations(groupToUsersMap, templateIdToFreezedFormMap)
-    }
-
-    /**
-      * Returns report for the assessed user.
-      *
-      * @param assessedUser             assessed user (userTo)
-      * @param assessedUserCombinations combinations with assessed user
-      */
-    def getReportForAssessedUser(assessedUser: Option[User], assessedUserCombinations: Seq[Combination]) = {
-      log.trace(s"creating report for assessed user:${assessedUser.map(_.id)}, combinations:${assessedUserCombinations
-        .map(c => s"userFrom ${c.userFrom.id} userTo ${c.userTo.map(_.id)} form ${c.form.id}")}")
-
-      /**
-        * Returns pairs of users with their answers.
-        *
-        * @param form      form to get answers for
-        * @param usersFrom list of users from groupFrom
-        */
-      def getUserFromToAnswer(form: Form, usersFrom: Seq[User]) = {
-        log.trace(s"\tcreating UserFromToAnswerMap for form:${form.id}, usersFroms:${usersFrom.map(_.id)}")
-
-        val maybeAnswersSeqFuture = Future.sequence {
-          usersFrom.map { userFrom =>
-            log.trace(
-              s"\t\tgetting answer for userFrom:${userFrom.id}, userTo:${assessedUser.map(_.id)}, form:${form.id}")
-            answerDao
-              .getAnswer(eventId, projectId, userFrom.id, assessedUser.map(_.id), form.id)
-              .map {
-                case Some(answer) => Some((userFrom, answer))
-                case None => None
-              }
-          }
-        }
-
-        maybeAnswersSeqFuture.map { maybeAnswersSeq =>
-          maybeAnswersSeq.collect { case (Some(v)) => v }
-        }
-      }
-
-      /**
-        * Returns report for single form.
-        *
-        * @param form              form to return report for
-        * @param userFromToAnswers pairs of users with their answers
-        */
-      def getFormReport(form: Form, userFromToAnswers: Seq[(User, Answer.Form)]) = {
-        log.trace(
-          s"\tcreating form report userTo:${assessedUser.map(_.id)}, form:${form.id}, userAnswers:${userFromToAnswers
-            .map(x => s"userFrom:${x._1.id}, answer: ${x._2}")}")
-        val formElementIdToUserAnswerMap =
-          userFromToAnswers
-            .flatMap { x =>
-              x._2.answers
-                .map { answer =>
-                  (answer.elementId, (x._1, answer, x._2.isAnonymous))
-                }
-            }
-
-        import Report._
-
-        val formAnswers = form.elements.map { formElement =>
-          val answers = formElementIdToUserAnswerMap
-            .filter(_._1 == formElement.id)
-            .map {
-              case (_, (user, answer, isAnonymous)) =>
-                FormElementAnswerReport(user, answer, isAnonymous)
-            }
-          FormElementReport(formElement, answers)
-        }
-        FormReport(form, formAnswers)
-      }
-
-      /**
-        * Map from form to combinations with its form.
-        */
-      val formsToCombinations: Map[Form, Seq[Combination]] = assessedUserCombinations.groupBy(_.form)
-
-      Future
-        .sequence {
-          formsToCombinations.map {
-            case (form, formsCombinations) =>
-              getUserFromToAnswer(form, formsCombinations.map(_.userFrom).distinct).map { userFromToAnswersMap =>
-                getFormReport(form, userFromToAnswersMap)
-              }
-          }
-        }
-        .map { formReports =>
-          Report(assessedUser, formReports.toSeq)
-        }
-    }
+  def getReport(activeProjectId: Long): Future[Seq[Report]] = {
 
     for {
-      relations <- relationDao.getList(optProjectId = Some(projectId))
-      combinations <- createCombinations(relations.data)
-      assesedUserToCombinations = combinations.groupBy(x => x.userTo)
-      reports <- Future.sequence {
-        assesedUserToCombinations.map {
-          case (assessedUser, userCombinations) => getReportForAssessedUser(assessedUser, userCombinations)
-        }
+      answers <- answerDao.getList(optActiveProjectId = Some(activeProjectId))
+      allUsersIds = (answers.map(_.userFromId) ++ answers.flatMap(_.userToId)).distinct
+      allUsersMap <- userDao
+        .getList(optIds = Some(allUsersIds), includeDeleted = true)
+        .map(_.data.map(u => (u.id, u)).toMap)
+
+      allFormsMap <- answers
+        .map(_.form.id)
+        .map(formService.getById)
+        .sequenced
+        .run
+        .map(_.getOrElse(throw new NoSuchElementException("missed form")))
+        .map(_.map(f => (f.id, f)).toMap)
+
+      reports = answers.groupBy(_.userToId).map {
+        case (userToId, userAnswers) =>
+          val userTo = userToId.flatMap(allUsersMap.get)
+
+          val formReports = userAnswers
+            .groupBy(_.form.id)
+            .map {
+              case (formId, formAnswers) =>
+                val form = allFormsMap(formId)
+                val formElementsReport = form.elements.map { formElement =>
+                  val elementAnswerReport = formAnswers.flatMap { answer =>
+                    answer.elements.filter(_.elementId == formElement.id).map { elementAnswer =>
+                      val userFrom = allUsersMap(answer.userFromId)
+                      Report.FormElementAnswerReport(userFrom, elementAnswer, answer.isAnonymous)
+                    }
+                  }
+                  Report.FormElementReport(formElement, elementAnswerReport)
+                }
+                Report.FormReport(form, formElementsReport)
+            }
+            .toSeq
+          Report(userTo, formReports)
       }
+
     } yield {
-      log.debug(s"report for event:$eventId project: $projectId created!")
+      log.debug(s"report for active project: $activeProjectId created!")
       reports.toSeq
     }
   }
@@ -282,24 +148,4 @@ class ReportService @Inject()(
     }
     AggregatedReport(report.assessedUser, forms)
   }
-
-  /**
-    * Converts seq of futures of pairs to future of map.
-    */
-  private def futureSeqToMap[A, T, U](futures: Seq[Future[A]])(implicit ev: A <:< (T, U)): Future[Map[T, U]] = {
-    Future.sequence(futures).map(_.toMap)
-  }
-}
-
-object ReportService {
-
-  /**
-    * A combination of user from groupTo, user from groupFrom and form.    *
-    *
-    * @param userTo      user from groupTo
-    * @param userFrom    user from groupFrom
-    * @param form        freezed form
-    */
-  case class Combination(userFrom: User, userTo: Option[User], form: Form)
-
 }

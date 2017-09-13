@@ -11,7 +11,7 @@ import org.mockito.Mockito._
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import services.EventService
+import services.event.EventService
 import silhouette.DefaultEnv
 import testutils.fixture.UserFixture
 import testutils.generator.EventGenerator
@@ -45,7 +45,7 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
       forAll { (id: Long) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.eventServiceMock.getById(id)(admin))
+        when(fixture.eventServiceMock.getById(id))
           .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Event(id)): ApplicationError \/ Event)))
         val request = authenticated(FakeRequest(), env)
 
@@ -58,7 +58,7 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
       forAll { (id: Long, event: Event) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.eventServiceMock.getById(id)(admin))
+        when(fixture.eventServiceMock.getById(id))
           .thenReturn(EitherT.eitherT(toFuture(\/-(event): ApplicationError \/ Event)))
         val request = authenticated(FakeRequest(), env)
 
@@ -81,7 +81,7 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
         ) =>
           val env = fakeEnvironment(admin)
           val fixture = getFixture(env)
-          when(fixture.eventServiceMock.list(optStatus, projectId, false)(admin, ListMeta.default))
+          when(fixture.eventServiceMock.list(optStatus, projectId)(ListMeta.default))
             .thenReturn(
               EitherT.eitherT(toFuture(\/-(ListWithTotal(total, events)): ApplicationError \/ ListWithTotal[Event])))
           val request = authenticated(FakeRequest(), env)
@@ -104,7 +104,7 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
       forAll { (event: Event) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.eventServiceMock.update(event)(admin))
+        when(fixture.eventServiceMock.update(event))
           .thenReturn(EitherT.eitherT(toFuture(\/-(event): ApplicationError \/ Event)))
 
         val partialEvent = ApiPartialEvent(
@@ -135,7 +135,7 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
       forAll { (event: Event) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.eventServiceMock.create(event.copy(id = 0))(admin))
+        when(fixture.eventServiceMock.create(event.copy(id = 0)))
           .thenReturn(EitherT.eitherT(toFuture(\/-(event): ApplicationError \/ Event)))
 
         val partialEvent = ApiPartialEvent(

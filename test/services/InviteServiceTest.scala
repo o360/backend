@@ -89,6 +89,7 @@ class InviteServiceTest
           optGroupIds = any[Tristate[Seq[Long]]],
           optName = any[Option[String]],
           optEmail = eqTo(Some(email)),
+          optProjectIdAuditor = any[Option[Long]],
           includeDeleted = any[Boolean]
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[User](0, Nil)))
       when(fixture.groupDao.findById(group.id)).thenReturn(toFuture(None))
@@ -113,6 +114,7 @@ class InviteServiceTest
           optGroupIds = any[Tristate[Seq[Long]]],
           optName = any[Option[String]],
           optEmail = eqTo(Some(email)),
+          optProjectIdAuditor = any[Option[Long]],
           includeDeleted = any[Boolean]
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[User](0, Nil)))
       when(fixture.groupDao.findById(group.id)).thenReturn(toFuture(Some(Groups(0))))

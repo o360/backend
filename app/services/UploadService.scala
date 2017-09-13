@@ -1,19 +1,17 @@
 package services
 
-import java.sql.Timestamp
 import javax.inject.{Inject, Singleton}
 
 import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetRequest
-import models.dao.{EventDao, ProjectDao, ProjectRelationDao, UserDao}
+import models.dao._
 import models.event.{Event, EventJob}
-import models.form.Form
-import models.project.{Project, Relation}
+import models.project.ActiveProject
 import models.user.User
 import services.UploadService.UploadModel
-
-import scala.concurrent.{ExecutionContext, Future}
 import services.spreadsheet.SpreadsheetService
 import utils.implicits.FutureLifting._
+
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * Upload service.
@@ -21,14 +19,11 @@ import utils.implicits.FutureLifting._
 @Singleton
 class UploadService @Inject()(
   eventDao: EventDao,
-  projectDao: ProjectDao,
+  activeProjectDao: ActiveProjectDao,
   reportService: ReportService,
   spreadsheetService: SpreadsheetService,
-  formService: FormService,
-  relationDao: ProjectRelationDao,
-  userService: UserService,
-  googleDriveService: GoogleDriveService,
   userDao: UserDao,
+  googleDriveService: GoogleDriveService,
   implicit val ec: ExecutionContext
 ) {
 
@@ -48,26 +43,12 @@ class UploadService @Inject()(
   def getGroupedUploadModels(eventId: Long): Future[Map[User, Seq[UploadModel]]] = {
 
     /**
-      * Returns forms for given relations and event.
-      */
-    def getForms(relations: Seq[Relation], eventId: Long): Future[Seq[Form]] = {
-      Future.sequence {
-        relations.map(_.form.id).distinct.map { formTemplateId =>
-          formService
-            .getOrCreateFreezedForm(eventId, formTemplateId)
-            .run
-            .map(_.getOrElse(throw new NoSuchElementException("missed form")))
-        }
-      }
-    }
-
-    /**
       * Returns events with its projects.
       */
-    def withProjects(events: Seq[Event]): Future[Seq[(Event, Project)]] = {
+    def withProjects(events: Seq[Event]): Future[Seq[(Event, ActiveProject)]] = {
       Future.sequence {
         events.map { event =>
-          projectDao
+          activeProjectDao
             .getList(optEventId = Some(event.id))
             .map { projects =>
               projects.data.map((event, _))
@@ -79,14 +60,12 @@ class UploadService @Inject()(
     /**
       * Returns upload models for given events with projects.
       */
-    def getUploadModels(eventsWithProjects: Seq[(Event, Project)]): Future[Seq[UploadModel]] = {
+    def getUploadModels(eventsWithProjects: Seq[(Event, ActiveProject)]): Future[Seq[UploadModel]] = {
       Future.sequence {
         eventsWithProjects.map {
           case (event, project) =>
             for {
-              relations <- relationDao.getList(optProjectId = Some(project.id))
-              reports <- reportService.getReport(event.id, project.id)
-              forms <- getForms(relations.data, event.id)
+              reports <- reportService.getReport(project.id)
             } yield {
               val sortedReports = reports.sortWith { (left, right) =>
                 val leftName = left.assessedUser.flatMap(_.name)
@@ -100,7 +79,7 @@ class UploadService @Inject()(
               }
 
               val aggregatedReports = sortedReports.map(reportService.getAggregatedReport)
-              val batchUpdate = spreadsheetService.getBatchUpdateRequest(sortedReports, aggregatedReports, forms)
+              val batchUpdate = spreadsheetService.getBatchUpdateRequest(sortedReports, aggregatedReports)
               UploadModel(event, project, batchUpdate)
             }
         }
@@ -115,15 +94,18 @@ class UploadService @Inject()(
       /**
         * Map from groupId to sequence of group users.
         */
-      val getGroupToUsersMap: Future[Map[Long, Seq[User]]] = {
-        val allGroups = uploadModels.map(_.project.groupAuditor.id).distinct
-        userService.getGroupIdToUsersMap(allGroups, includeDeleted = false)
+      val getProjectToUsersMap: Future[Map[Long, Seq[User]]] = {
+        val allProjectsIds = uploadModels.map(_.project.id).distinct
+        Future
+          .sequence(
+            allProjectsIds.map(id => userDao.getList(optProjectIdAuditor = Some(id)).map(list => (id, list.data))))
+          .map(_.toMap)
       }
 
-      getGroupToUsersMap.map { groupToUsersMap =>
+      getProjectToUsersMap.map { projectToUsersMap =>
         uploadModels
           .flatMap { uploadModel =>
-            val users = groupToUsersMap(uploadModel.project.groupAuditor.id)
+            val users = projectToUsersMap(uploadModel.project.id)
             users.map((_, uploadModel))
           }
           .groupBy(_._1)
@@ -188,5 +170,5 @@ object UploadService {
     * @param project          project
     * @param spreadSheetBatch batch spreadsheet update with report content
     */
-  case class UploadModel(event: Event, project: Project, spreadSheetBatch: BatchUpdateSpreadsheetRequest)
+  case class UploadModel(event: Event, project: ActiveProject, spreadSheetBatch: BatchUpdateSpreadsheetRequest)
 }

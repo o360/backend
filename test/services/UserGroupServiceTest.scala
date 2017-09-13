@@ -5,6 +5,7 @@ import models.group.Group
 import models.user.User
 import org.mockito.ArgumentMatchers.{eq => eqTo}
 import org.mockito.Mockito._
+import org.scalatest.mockito.MockitoSugar
 import testutils.fixture.{UserFixture, UserGroupFixture}
 import testutils.generator.TristateGenerator
 import utils.errors.{ApplicationError, ConflictError, NotFoundError}
@@ -14,7 +15,7 @@ import scalaz.{-\/, \/, \/-, EitherT}
 /**
   * Test for user-group service.
   */
-class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with UserGroupFixture {
+class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with UserGroupFixture with MockitoSugar {
 
   private val admin = UserFixture.admin
 

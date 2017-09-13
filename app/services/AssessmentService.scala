@@ -3,14 +3,14 @@ package services
 import javax.inject.{Inject, Singleton}
 
 import models.{ListWithTotal, NamedEntity}
-import models.assessment.{Answer, Assessment}
+import models.assessment.{Answer, Assessment, PartialAssessment}
 import models.dao._
-import models.event.Event
-import models.form.Form
-import models.project.Relation
-import models.user.{User, UserShort}
-import utils.errors.{ApplicationError, BadRequestError, ConflictError, NotFoundError}
+import models.project.ActiveProject
+import models.user.User
+import services.event.ActiveProjectService
+import utils.errors.{ApplicationError, BadRequestError, ConflictError}
 import utils.implicits.FutureLifting._
+import utils.implicits.RichEitherT._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scalaz._
@@ -22,155 +22,36 @@ import Scalaz._
 @Singleton
 class AssessmentService @Inject()(
   protected val formService: FormService,
-  protected val userService: UserService,
-  protected val groupDao: GroupDao,
-  protected val eventDao: EventDao,
-  protected val relationDao: ProjectRelationDao,
+  protected val userDao: UserDao,
   protected val answerDao: AnswerDao,
-  protected val projectDao: ProjectDao,
+  protected val activeProjectService: ActiveProjectService,
   implicit val ec: ExecutionContext
 ) extends ServiceResults[Assessment] {
 
   /**
     * Returns list of assessment objects available to proccess.
-    *
-    * @param eventId   ID of event
-    * @param projectId Id of project
     */
-  def getList(eventId: Long, projectId: Long)(implicit account: User): ListResult = {
+  def getList(activeProjectId: Long)(implicit account: User): ListResult = {
 
-    /**
-      * Returns forms paired with answers.
-      *
-      * @param forms IDs of the forms
-      * @param user    assessed user, none for survey forms
-      */
-    def getAnswersForForms(forms: Seq[NamedEntity],
-                           user: Option[User] = None): Future[Seq[(NamedEntity, Option[Answer.Form])]] = {
-      Future.sequence {
-        forms.distinct
-          .map { form =>
-            answerDao
-              .getAnswer(eventId, projectId, account.id, user.map(_.id), form.id)
-              .map((form, _))
-          }
-      }
-    }
-
-    /**
-      * Maps survey relations to assessment object.
-      */
-    def surveyRelationsToAssessments(relations: Seq[Relation]): Future[Option[Assessment]] = {
-      val forms =
-        relations
-          .filter(_.kind == Relation.Kind.Survey)
-          .map(_.form)
-
-      getAnswersForForms(forms).map { formsWithAnswers =>
-        if (formsWithAnswers.isEmpty) None
-        else Some(Assessment(formsWithAnswers))
-      }
-    }
-
-    /**
-      * Maps classic relations to assessment objects.
-      */
-    def classicRelationsToAssessments(relations: Seq[Relation]): Future[Seq[Assessment]] = {
-
-      /**
-        * Returns assessed users for relation.
-        */
-      def getUsersForRelation(relation: Relation): Future[Seq[User]] = {
-        userService
-          .listByGroupId(
-            relation.groupTo.getOrElse(throw new NoSuchElementException("group to is not defined")).id,
-            includeDeleted = false
-          )
-          .map(_.data)
-          .run
-          .map(_.getOrElse(Nil))
-      }
-
-      /**
-        * Maps relation-users tuple to assessments objects.
-        */
-      def userWithRelationToAssessments(usersWithRelation: Seq[(Seq[User], Relation)]): Future[Seq[Assessment]] = {
-        Future.sequence {
-          usersWithRelation
-            .flatMap {
-              case (users, relation) =>
-                users.map((_, relation))
-            }
-            .filter { case (user, relation) => user.id != account.id || relation.canSelfVote }
-            .groupBy { case (user, _) => user }
-            .map {
-              case (user, relationsWithUsers) =>
-                val forms = relationsWithUsers.map { case (_, relation) => relation.form }.distinct
-
-                getAnswersForForms(forms, Some(user)).map { formsWithAnswers =>
-                  Assessment(formsWithAnswers, Some(user))
-                }
-            }
-            .toSeq
-        }
-      }
-
-      val usersWithRelation = relations
-        .filter(x => x.kind == Relation.Kind.Classic && x.groupTo.isDefined)
-        .map { relation =>
-          getUsersForRelation(relation).map((_, relation))
-        }
-
-      Future.sequence(usersWithRelation).flatMap(userWithRelationToAssessments)
-    }
-
-    /**
-      * Replace form templates ids with freezed ids forms in relations.
-      */
-    def replaceTemplatesWithFreezedForms(relations: Seq[Relation]) = {
-      val formIds = relations.map(_.form.id).distinct
-      val templateIdTofreezedForm: Future[Map[Long, Form]] = Future
-        .sequence {
-          formIds.map { formId =>
-            formService
-              .getOrCreateFreezedForm(eventId, formId)
-              .run
-              .map(x => (formId, x.getOrElse(throw new NoSuchElementException("Missed freezed form"))))
-          }
-        }
-        .map(_.toMap)
-
-      templateIdTofreezedForm.map { mapping =>
-        relations.map { relation =>
-          val freezedForm = mapping(relation.form.id)
-          relation.copy(form = NamedEntity(freezedForm.id, freezedForm.name))
-        }
+    def getAssessments(answers: Seq[Answer]) = {
+      val grouped = answers.groupBy(_.userToId)
+      val usersIds = grouped.keys.toSeq.collect { case Some(v) => v }.distinct
+      for {
+        users <- userDao.getList(optIds = Some(usersIds), includeDeleted = true)
+      } yield {
+        grouped.map {
+          case (userToId, answers) =>
+            val user = userToId.flatMap(uid => users.data.find(_.id == uid))
+            Assessment(user, answers)
+        }.toSeq
       }
     }
 
     for {
-      userGroups <- groupDao.findGroupIdsByUserId(account.id).lift
-
-      events <- eventDao
-        .getList(
-          optId = Some(eventId),
-          optProjectId = Some(projectId),
-          optGroupFromIds = Some(userGroups)
-        )
-        .lift
-      _ <- ensure(events.total == 1) {
-        NotFoundError.Assessment(eventId, projectId, account.id)
-      }
-
-      relations <- relationDao.getList(optProjectId = Some(projectId)).lift
-
-      userRelations <- replaceTemplatesWithFreezedForms(
-        relations.data.filter(x => userGroups.contains(x.groupFrom.id))).lift
-
-      surveyAssessment <- surveyRelationsToAssessments(userRelations).lift
-      classicAssessments <- classicRelationsToAssessments(userRelations).lift
-      assessments = surveyAssessment.toSeq ++ classicAssessments
-    } yield ListWithTotal(assessments.length, assessments)
+      activeProject <- activeProjectService.getById(activeProjectId)
+      answers <- answerDao.getList(optActiveProjectId = Some(activeProjectId), optUserFromId = Some(account.id)).lift
+      assessments <- getAssessments(answers).lift
+    } yield ListWithTotal(assessments)
   }
 
   /**
@@ -182,128 +63,52 @@ class AssessmentService @Inject()(
     * @param account     logged in user
     * @return none in success case, error otherwise
     */
-  def bulkSubmit(eventId: Long, projectId: Long, assessments: Seq[Assessment])(implicit account: User): UnitResult = {
-    type UserAnswer = (Option[Long], Answer.Form, Boolean, String, String)
+  def bulkSubmit(activeProjectId: Long, assessments: Seq[PartialAssessment])(implicit account: User) = {
 
-    def validateAssessment(assessment: Assessment): Future[Validation[ApplicationError, UserAnswer]] = {
-      val invalidForm = BadRequestError.Assessment.InvalidForm(_)
-      val userToId = assessment.user.map(_.id)
-      val answer = assessment.forms.headOption.getOrElse(throw new NoSuchElementException("missed form in assessment"))
-
-      /**
-        * Checks ability of user to submit assessment with given user and form IDs.
-        */
-      def validateAssessment(userGroups: Seq[Long]): EitherT[Future, ApplicationError, Unit] = {
-
-        def validateRelation(relation: Relation): Future[Boolean] = {
-          val groupFromIsOk = userGroups.contains(relation.groupFrom.id)
-          val selfVotingIsOk = !userToId.contains(account.id) || relation.canSelfVote
-          val eitherT = for {
-            groupToIsOk <- (relation.groupTo, userToId) match {
-              case (Some(groupTo), Some(userId)) =>
-                userService.listByGroupId(groupTo.id, includeDeleted = false).map(_.data.exists(_.id == userId))
-              case (None, None) => true.lift
-              case _ => false.lift
-            }
-            freezedForm <- formService.getOrCreateFreezedForm(eventId, relation.form.id)
-          } yield groupFromIsOk && groupToIsOk && freezedForm.id == answer.form.id && selfVotingIsOk
-          eitherT.getOrElse(false)
-        }
-
-        for {
-          relations <- relationDao
-            .getList(
-              optProjectId = Some(projectId),
-              optKind = Some(if (userToId.isDefined) Relation.Kind.Classic else Relation.Kind.Survey)
-            )
-            .lift
-          validationResults <- Future.sequence(relations.data.map(validateRelation)).lift
-          _ <- ensure(validationResults.contains(true)) {
-            ConflictError.Assessment.WrongParameters
-          }
-        } yield ()
+    def assessmentToAnswers(project: ActiveProject, assessment: PartialAssessment) = {
+      assessment.answers.map { partial =>
+        Answer(
+          activeProjectId,
+          account.id,
+          assessment.userToId,
+          NamedEntity(partial.formId),
+          Answer.Status.Answered,
+          partial.isAnonymous && project.isAnonymous,
+          partial.elements
+        )
       }
+    }
 
+    def validateAnswer(project: ActiveProject, answer: Answer): EitherT[Future, ApplicationError, Unit] = {
       val result = for {
-        userGroups <- groupDao.findGroupIdsByUserId(account.id).lift
-
-        events <- eventDao
-          .getList(
-            optId = Some(eventId),
-            optProjectId = Some(projectId),
-            optGroupFromIds = Some(userGroups),
-            optStatus = Some(Event.Status.InProgress)
-          )
-          .lift
-        _ <- ensure(events.total == 1) {
-          NotFoundError.Assessment(eventId, projectId, account.id)
+        existedAnswer <- answerDao.getAnswer(activeProjectId, answer.userFromId, answer.userToId, answer.form.id).lift
+        _ <- ensure(existedAnswer.nonEmpty) {
+          ConflictError.Assessment.WrongParameters
         }
-        event = events.data.head
-
-        project <- projectDao.findById(projectId).lift
-
-        _ <- ensure(project.nonEmpty) {
-          NotFoundError.Assessment(eventId, projectId, account.id)
-        }
-
-        existedAnswer <- answerDao.getAnswer(eventId, projectId, account.id, userToId, answer.form.id).lift
-        _ <- ensure(existedAnswer.isEmpty || project.get.canRevote) {
+        _ <- ensure(existedAnswer.get.status == Answer.Status.New || project.canRevote) {
           ConflictError.Assessment.CantRevote
         }
-
         form <- formService.getById(answer.form.id)
-        _ <- answer.validateUsing(form)(invalidForm, BadRequestError.Assessment.RequiredAnswersMissed).liftLeft
+        _ <- answer
+          .validateUsing(form)(BadRequestError.Assessment.InvalidForm(_),
+                               BadRequestError.Assessment.RequiredAnswersMissed)
+          .liftLeft
 
-        _ <- if (existedAnswer.isEmpty) validateAssessment(userGroups) else ().lift
-      } yield
-        (
-          userToId,
-          answer,
-          project.getOrElse(throw new NoSuchElementException("Project not found")).isAnonymous,
-          project.getOrElse(throw new NoSuchElementException("Project not found")).machineName,
-          form.machineName
-        )
-
-      result.fold(
-        error => Failure(BadRequestError.Assessment.WithUserFormInfo(error, userToId, answer.form.id)),
-        Success(_)
-      )
+      } yield ()
+      result.leftMap(BadRequestError.Assessment.WithUserFormInfo(_, answer.userToId, answer.form.id))
     }
 
-    val validationResult = Future
-      .sequence {
-        assessments.map(validateAssessment)
-      }
-      .map { validateAssessments =>
-        validateAssessments.foldLeft(Seq.empty[UserAnswer].success[Seq[ApplicationError]]) {
-          case (Failure(acc), Failure(current)) => Failure(acc :+ current)
-          case (acc @ Failure(_), _) => acc
-          case (Success(acc), Success(el)) => Success(acc :+ el)
-          case (_, Failure(error)) => Failure(Seq(error))
-        }
+    for {
+      project <- activeProjectService.getById(activeProjectId)
+
+      answers = assessments.flatMap(assessmentToAnswers(project, _))
+
+      _ <- answers.map(validateAnswer(project, _)).collected.leftMap { applicationErrors =>
+        BadRequestError.Assessment.Composite(applicationErrors): ApplicationError
       }
 
-    EitherT.eitherT {
-      validationResult.flatMap {
-        case Success(answers) =>
-          Future
-            .sequence {
-              answers.map {
-                case (userToId, answer, isAnonymous, projectMachineName, formMachineName) =>
-                  answerDao.saveAnswer(
-                    eventId,
-                    projectId,
-                    account.id,
-                    userToId,
-                    answer.copy(isAnonymous = isAnonymous && answer.isAnonymous),
-                    projectMachineName,
-                    formMachineName
-                  )
-              }
-            }
-            .map(_ => ().right)
-        case Failure(errors) => BadRequestError.Assessment.Composite(errors).left.toFuture
-      }
-    }
+      _ <- Future.sequence(answers.map(answerDao.saveAnswer)).lift
+    } yield ()
+
   }
 }

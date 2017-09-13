@@ -7,6 +7,13 @@ scalaVersion := "2.12.3"
 lazy val root =
   (project in file(".")).enablePlugins(PlayScala, SwaggerPlugin, DockerPlugin)
 
+scalacOptions ++= Seq(
+  "-Ywarn-dead-code",
+  "-Ywarn-inaccessible",
+  "-Ywarn-unused",
+  "-Ywarn-unused-import"
+)
+
 libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-slick" % "3.0.0",
   "org.postgresql" % "postgresql" % "42.0.0",

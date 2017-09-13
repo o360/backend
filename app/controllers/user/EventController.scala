@@ -6,9 +6,9 @@ import com.mohiva.play.silhouette.api.Silhouette
 import controllers.BaseController
 import controllers.api.Response
 import controllers.api.event.ApiEvent
-import controllers.authorization.{AllowedRole, AllowedStatus}
+import controllers.authorization.AllowedStatus
 import play.api.mvc.ControllerComponents
-import services.EventService
+import services.event.EventService
 import silhouette.DefaultEnv
 import utils.implicits.FutureLifting._
 import utils.listmeta.actions.ListActions
@@ -36,7 +36,7 @@ class EventController @Inject()(
   def getById(id: Long) = silhouette.SecuredAction(AllowedStatus.approved).async { implicit request =>
     toResult(Ok) {
       eventService
-        .getById(id)
+        .userGetById(id)
         .map(ApiEvent(_))
     }
   }
@@ -44,18 +44,16 @@ class EventController @Inject()(
   /**
     * Returns filtered events list.
     */
-  def getList(
-    status: Option[ApiEvent.EventStatus],
-    projectId: Option[Long]
-  ) = (silhouette.SecuredAction(AllowedStatus.approved) andThen ListAction).async { implicit request =>
-    toResult(Ok) {
-      eventService
-        .list(status.map(_.value), projectId, onlyAvailable = true)
-        .map { events =>
-          Response.List(events) { event =>
-            ApiEvent(event)
+  def getList(status: Option[ApiEvent.EventStatus]) =
+    (silhouette.SecuredAction(AllowedStatus.approved) andThen ListAction).async { implicit request =>
+      toResult(Ok) {
+        eventService
+          .userList(status.map(_.value))
+          .map { events =>
+            Response.List(events) { event =>
+              ApiEvent(event)
+            }
           }
-        }
+      }
     }
-  }
 }

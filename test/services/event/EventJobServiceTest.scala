@@ -7,6 +7,7 @@ import models.dao.{EventDao, EventJobDao}
 import models.event.{Event, EventJob}
 import models.notification.Notification
 import org.mockito.Mockito._
+import services.event.{EventJobService, EventStartService}
 import testutils.fixture.EventFixture
 
 /**
@@ -19,7 +20,7 @@ class EventJobServiceTest extends BaseServiceTest with EventFixture {
     eventDao: EventDao,
     notificationService: NotificationService,
     uploadService: UploadService,
-    formService: FormService,
+    eventStartService: EventStartService,
     service: EventJobService
   )
 
@@ -28,9 +29,9 @@ class EventJobServiceTest extends BaseServiceTest with EventFixture {
     val eventDao = mock[EventDao]
     val notificationService = mock[NotificationService]
     val uploadService = mock[UploadService]
-    val formService = mock[FormService]
-    val service = new EventJobService(eventJobDao, eventDao, notificationService, uploadService, formService, ec)
-    Fixture(eventJobDao, eventDao, notificationService, uploadService, formService, service)
+    val eventStartService = mock[EventStartService]
+    val service = new EventJobService(eventJobDao, eventDao, notificationService, uploadService, eventStartService, ec)
+    Fixture(eventJobDao, eventDao, notificationService, uploadService, eventStartService, service)
   }
 
   "create" should {
@@ -55,7 +56,7 @@ class EventJobServiceTest extends BaseServiceTest with EventFixture {
 
       val job1 = EventJob.Upload(0, event.id, event.end, EventJob.Status.New)
       val job2 = EventJob.SendNotification(0, event.id, event.notifications(0), EventJob.Status.New)
-      val job3 = EventJob.CreateFreezedForms(0, event.id, event.start, EventJob.Status.New)
+      val job3 = EventJob.EventStart(0, event.id, event.start, EventJob.Status.New)
 
       when(fixture.eventJobDao.createJob(job1)).thenReturn(toFuture(()))
       when(fixture.eventJobDao.createJob(job2)).thenReturn(toFuture(()))
@@ -123,13 +124,13 @@ class EventJobServiceTest extends BaseServiceTest with EventFixture {
 
       val actualJob1 = EventJob.Upload(1, event.id, event.end, EventJob.Status.New)
       val actualJob2 = EventJob.SendNotification(2, event.id, event.notifications(0), EventJob.Status.New)
-      val actualJob3 = EventJob.CreateFreezedForms(3, event.id, event.start, EventJob.Status.New)
+      val actualJob3 = EventJob.EventStart(3, event.id, event.start, EventJob.Status.New)
 
       val jobs = Seq(actualJob1, actualJob2, actualJob3)
 
       when(fixture.uploadService.execute(actualJob1)).thenReturn(toFuture(()))
       when(fixture.notificationService.execute(actualJob2)).thenReturn(toFuture(()))
-      when(fixture.formService.execute(actualJob3)).thenReturn(toFuture(()))
+      when(fixture.eventStartService.execute(actualJob3)).thenReturn(toFuture(()))
       when(fixture.eventJobDao.updateStatus(1, EventJob.Status.Success)).thenReturn(toFuture(()))
       when(fixture.eventJobDao.updateStatus(2, EventJob.Status.Success)).thenReturn(toFuture(()))
       when(fixture.eventJobDao.updateStatus(3, EventJob.Status.Success)).thenReturn(toFuture(()))

@@ -1,16 +1,17 @@
 package services
 
-import java.sql.{SQLException, Timestamp}
+import java.sql.SQLException
 
 import models.ListWithTotal
-import models.dao.{EventDao, EventProjectDao, GroupDao, ProjectDao}
+import models.dao._
 import models.event.Event
 import models.project.Project
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
+import services.event.{EventJobService, EventService}
 import testutils.fixture.{EventFixture, UserFixture}
 import testutils.generator.EventGenerator
-import utils.errors.{BadRequestError, ConflictError, NotFoundError}
+import utils.errors.{BadRequestError, NotFoundError}
 import utils.listmeta.ListMeta
 
 import scala.concurrent.Future
@@ -28,6 +29,7 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
     projectDao: ProjectDao,
     eventProjectDao: EventProjectDao,
     eventJobService: EventJobService,
+    answerDao: AnswerDao,
     service: EventService
   )
 
@@ -37,8 +39,9 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
     val projectDao = mock[ProjectDao]
     val eventProjectDao = mock[EventProjectDao]
     val eventJobService = mock[EventJobService]
-    val service = new EventService(daoMock, groupDao, projectDao, eventProjectDao, eventJobService, ec)
-    TestFixture(daoMock, groupDao, projectDao, eventProjectDao, eventJobService, service)
+    val answerDao = mock[AnswerDao]
+    val service = new EventService(daoMock, groupDao, projectDao, eventProjectDao, eventJobService, answerDao, ec)
+    TestFixture(daoMock, groupDao, projectDao, eventProjectDao, eventJobService, answerDao, service)
   }
 
   "getById" should {
@@ -47,7 +50,7 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
       forAll { (id: Long) =>
         val fixture = getFixture
         when(fixture.eventDaoMock.findById(id)).thenReturn(toFuture(None))
-        val result = wait(fixture.service.getById(id)(admin).run)
+        val result = wait(fixture.service.getById(id).run)
 
         result mustBe 'left
         result.swap.toOption.get mustBe a[NotFoundError]
@@ -61,7 +64,7 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
       forAll { (event: Event, id: Long) =>
         val fixture = getFixture
         when(fixture.eventDaoMock.findById(id)).thenReturn(toFuture(Some(event)))
-        val result = wait(fixture.service.getById(id)(admin).run)
+        val result = wait(fixture.service.getById(id).run)
 
         result mustBe 'right
         result.toOption.get mustBe event
@@ -73,13 +76,12 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
   }
 
   "list" should {
-    "return list of events from db for admin" in {
+    "return list of events from db" in {
       forAll {
         (
           projectId: Option[Long],
           status: Option[Event.Status],
           events: Seq[Event],
-          total: Int
         ) =>
           val fixture = getFixture
           when(
@@ -88,41 +90,14 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
               optStatus = eqTo(status),
               optProjectId = eqTo(projectId),
               optFormId = any[Option[Long]],
-              optGroupFromIds = eqTo(None)
-            )(eqTo(ListMeta.default)))
-            .thenReturn(toFuture(ListWithTotal(total, events)))
-          val result = wait(fixture.service.list(status, projectId)(admin, ListMeta.default).run)
+              optGroupFromIds = any[Option[Seq[Long]]],
+              optUserId = any[Option[Long]],
+            )(any[ListMeta]))
+            .thenReturn(toFuture(ListWithTotal(events)))
+          val result = wait(fixture.service.list(status, projectId)(ListMeta.default).run)
 
           result mustBe 'right
-          result.toOption.get mustBe ListWithTotal(total, events)
-      }
-    }
-
-    "filter events by groupFrom for user" in {
-      val user = UserFixture.user
-      forAll {
-        (
-          projectId: Option[Long],
-          status: Option[Event.Status],
-          userGroups: Seq[Long],
-          events: Seq[Event],
-          total: Int
-        ) =>
-          val fixture = getFixture
-          when(
-            fixture.eventDaoMock.getList(
-              optId = any[Option[Long]],
-              optStatus = eqTo(status),
-              optProjectId = eqTo(projectId),
-              optFormId = any[Option[Long]],
-              optGroupFromIds = eqTo(Some(userGroups))
-            )(eqTo(ListMeta.default)))
-            .thenReturn(toFuture(ListWithTotal(total, events)))
-          when(fixture.groupDao.findGroupIdsByUserId(user.id)).thenReturn(toFuture(userGroups))
-          val result = wait(fixture.service.list(status, projectId)(user, ListMeta.default).run)
-
-          result mustBe 'right
-          result.toOption.get mustBe ListWithTotal(total, events)
+          result.toOption.get mustBe ListWithTotal(events)
       }
     }
   }
@@ -135,7 +110,7 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
             event.notifications.map(x => (x.kind, x.recipient)).distinct.length != event.notifications.length) {
           val fixture = getFixture
 
-          val result = wait(fixture.service.create(event)(admin).run)
+          val result = wait(fixture.service.create(event).run)
 
           result mustBe 'left
           result.swap.toOption.get mustBe a[BadRequestError]
@@ -149,7 +124,7 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
       val fixture = getFixture
       when(fixture.eventDaoMock.create(event.copy(id = 0))).thenReturn(toFuture(event))
       when(fixture.eventJobService.createJobs(event)).thenReturn(toFuture(()))
-      val result = wait(fixture.service.create(event.copy(id = 0))(admin).run)
+      val result = wait(fixture.service.create(event.copy(id = 0)).run)
 
       result mustBe 'right
       result.toOption.get mustBe event
@@ -165,7 +140,7 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
           val fixture = getFixture
           when(fixture.eventDaoMock.findById(event.id)).thenReturn(toFuture(Some(event)))
           when(fixture.eventDaoMock.update(any[Event])).thenReturn(Future.failed(new SQLException("", "2300")))
-          val result = wait(fixture.service.update(event.copy(id = 0))(admin).run)
+          val result = wait(fixture.service.update(event.copy(id = 0)).run)
 
           result mustBe 'left
           result.swap.toOption.get mustBe a[BadRequestError]
@@ -177,7 +152,7 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
       forAll { (event: Event) =>
         val fixture = getFixture
         when(fixture.eventDaoMock.findById(event.id)).thenReturn(toFuture(None))
-        val result = wait(fixture.service.update(event)(admin).run)
+        val result = wait(fixture.service.update(event).run)
 
         result mustBe 'left
         result.swap.toOption.get mustBe a[NotFoundError]
@@ -193,7 +168,7 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
       when(fixture.eventDaoMock.findById(event.id)).thenReturn(toFuture(Some(event)))
       when(fixture.eventDaoMock.update(event)).thenReturn(toFuture(event))
       when(fixture.eventJobService.createJobs(event)).thenReturn(toFuture(()))
-      val result = wait(fixture.service.update(event)(admin).run)
+      val result = wait(fixture.service.update(event).run)
 
       result mustBe 'right
       result.toOption.get mustBe event

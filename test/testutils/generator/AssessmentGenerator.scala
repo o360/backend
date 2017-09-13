@@ -1,7 +1,7 @@
 package testutils.generator
 
 import models.assessment.{Answer, Assessment}
-import models.user.UserShort
+import models.user.User
 import org.scalacheck.Arbitrary
 
 /**
@@ -11,8 +11,8 @@ trait AssessmentGenerator extends UserGenerator with AnswerGenerator {
 
   implicit val assessmentArb = Arbitrary {
     for {
-      user <- Arbitrary.arbitrary[Option[UserShort]]
-      forms <- Arbitrary.arbitrary[Seq[Answer.Form]]
+      user <- Arbitrary.arbitrary[Option[User]]
+      forms <- Arbitrary.arbitrary[Seq[Answer]]
     } yield Assessment(user, forms)
   }
 }

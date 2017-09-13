@@ -1,14 +1,10 @@
 package controllers.user
 
-import com.mohiva.play.silhouette.api.exceptions.SilhouetteException
 import com.mohiva.play.silhouette.api.{LoginInfo, Silhouette}
-import com.mohiva.play.silhouette.impl.providers.{SocialProvider, SocialProviderRegistry}
 import com.mohiva.play.silhouette.test._
 import controllers.BaseControllerTest
 import controllers.api.user.ApiUser
 import models.user.{User => UserModel}
-import org.mockito.ArgumentMatchers._
-import org.mockito.Mockito._
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test._
@@ -16,14 +12,11 @@ import services.UserService
 import silhouette.DefaultEnv
 import testutils.generator.UserGenerator
 
-import scala.concurrent.Future
-
 /**
   * Authentication controller test.
   */
 class UserControllerTest extends BaseControllerTest with UserGenerator {
 
-  private val silhouetteMock = mock[Silhouette[DefaultEnv]]
   private val userServiceMock = mock[UserService]
 
   "GET /users/current" should {

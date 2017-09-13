@@ -27,7 +27,7 @@ class ProjectService @Inject()(
   /**
     * Returns project by ID
     */
-  def getById(id: Long)(implicit account: User): SingleResult = {
+  def getById(id: Long): SingleResult = {
     projectDao
       .findById(id)
       .liftRight {
@@ -38,24 +38,11 @@ class ProjectService @Inject()(
   /**
     * Returns projects list.
     */
-  def getList(eventId: Option[Long], groupId: Option[Long], onlyAvailable: Boolean)(implicit account: User,
-                                                                                    meta: ListMeta): ListResult = {
+  def getList(eventId: Option[Long] = None, groupId: Option[Long] = None)(implicit meta: ListMeta): ListResult = {
 
-    val groupFromFilter =
-      if (!onlyAvailable && account.role == User.Role.Admin) None.toFuture
-      else groupDao.findGroupIdsByUserId(account.id).map(Some(_))
-
-    for {
-      groupFromIds <- groupFromFilter.lift
-      projects <- projectDao
-        .getList(
-          optId = None,
-          optEventId = eventId,
-          optGroupFromIds = groupFromIds,
-          optAnyRelatedGroupId = groupId
-        )
-        .lift
-    } yield projects
+    projectDao
+      .getList(optId = None, optEventId = eventId, optAnyRelatedGroupId = groupId)
+      .lift
   }
 
   /**
@@ -63,7 +50,7 @@ class ProjectService @Inject()(
     *
     * @param project project model
     */
-  def create(project: Project)(implicit account: User): SingleResult = {
+  def create(project: Project): SingleResult = {
     projectDao.create(project).lift(ExceptionHandler.sql)
   }
 
@@ -72,7 +59,7 @@ class ProjectService @Inject()(
     *
     * @param draft project draft
     */
-  def update(draft: Project)(implicit account: User): SingleResult = {
+  def update(draft: Project): SingleResult = {
     for {
       _ <- getById(draft.id)
 

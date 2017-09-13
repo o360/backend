@@ -1,18 +1,16 @@
 package services
 
 import models.assessment.Answer
-import models.dao.{AnswerDao, ProjectDao, ProjectRelationDao}
+import models.dao.{AnswerDao, UserDao}
 import models.form.Form
-import models.project.Relation
 import models.report.{AggregatedReport, Report}
+import models.user.User
 import models.{ListWithTotal, NamedEntity}
+import org.davidbild.tristate.Tristate
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
 import testutils.fixture.{FormFixture, ProjectFixture, UserFixture}
-import utils.errors.ApplicationError
 import utils.listmeta.ListMeta
-
-import scalaz.{\/, \/-, EitherT}
 
 /**
   * Test for report service.
@@ -20,84 +18,71 @@ import scalaz.{\/, \/-, EitherT}
 class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixture with ProjectFixture {
 
   private case class Fixture(
-    userService: UserService,
-    relationDao: ProjectRelationDao,
+    userDao: UserDao,
     formService: FormService,
     answerDao: AnswerDao,
     service: ReportService
   )
 
   private def getFixture = {
-    val userService = mock[UserService]
-    val relationDao = mock[ProjectRelationDao]
+    val userDao = mock[UserDao]
     val formService = mock[FormService]
     val answerDao = mock[AnswerDao]
-    val service = new ReportService(userService, relationDao, formService, answerDao, ec)
-    Fixture(userService, relationDao, formService, answerDao, service)
+    val service = new ReportService(userDao, formService, answerDao, ec)
+    Fixture(userDao, formService, answerDao, service)
   }
 
   "getReport" should {
     "return report" in {
       val fixture = getFixture
 
-      val eventId = 1
-      val projectId = 2
-      val groupFromId = 3L
-      val groupToId = 4L
-      val formTemplateId = 5
-      val freezedForm = Forms(0).copy(id = 6)
-      val userFrom = Users(0).copy(id = 7)
-      val userTo = Users(1).copy(id = 8)
+      val activeProjectId = 1
+      val form = Forms(0).copy(id = 2)
 
-      val relation = Relation(
-        id = 1,
-        project = NamedEntity(projectId),
-        groupFrom = NamedEntity(groupFromId),
-        groupTo = Some(NamedEntity(groupToId)),
-        form = NamedEntity(formTemplateId),
-        kind = Relation.Kind.Classic,
-        templates = Nil,
-        hasInProgressEvents = false,
-        canSelfVote = false
+      val userFrom = Users(0)
+      val userTo = Users(1)
+
+      val answer = Answer(
+      activeProjectId,
+        userFrom.id,
+        Some(userTo.id),
+        NamedEntity(form.id),
+        Answer.Status.Answered,
+        isAnonymous = true,
+        Set(Answer.Element(form.elements(0).id, Some("text"), None, None))
       )
-
-      val answer = Answer.Form(
-        NamedEntity(freezedForm.id),
-        Set(Answer.Element(freezedForm.elements(0).id, Some("text"), None, None))
-      )
-
+      when(fixture.answerDao.getList(
+        optEventId = any[Option[Long]],
+        optActiveProjectId = eqTo(Some(activeProjectId)),
+        optUserFromId = any[Option[Long]],
+        optFormId = any[Option[Long]],
+        optUserToId = any[Tristate[Long]],
+      )).thenReturn(toFuture(Seq(answer)))
       when(
-        fixture.relationDao.getList(
-          optId = any[Option[Long]],
-          optProjectId = eqTo(Some(projectId)),
-          optKind = any[Option[Relation.Kind]],
-          optFormId = any[Option[Long]],
-          optGroupFromId = any[Option[Long]],
-          optGroupToId = any[Option[Long]],
-          optEmailTemplateId = any[Option[Long]]
-        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Seq(relation))))
+        fixture.userDao.getList(
+          optIds = eqTo(Some(Seq(userFrom.id, userTo.id))),
+          optRole = any[Option[User.Role]],
+          optStatus = any[Option[User.Status]],
+          optGroupIds = any[Tristate[Seq[Long]]],
+          optName = any[Option[String]],
+          optEmail = any[Option[String]],
+          optProjectIdAuditor = any[Option[Long]],
+          includeDeleted = eqTo(true),
+        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(Seq(userFrom, userTo))))
+      when(fixture.formService.getById(form.id)).thenReturn(toSuccessResult(form))
 
-      when(fixture.userService.getGroupIdToUsersMap(Seq(groupFromId, groupToId), true))
-        .thenReturn(toFuture(Map(groupFromId -> Seq(userFrom), groupToId -> Seq(userTo))))
-
-      when(fixture.formService.getOrCreateFreezedForm(eventId, formTemplateId))
-        .thenReturn(EitherT.eitherT(toFuture(\/-(freezedForm): ApplicationError \/ Form)))
-
-      when(fixture.answerDao.getAnswer(eventId, projectId, userFrom.id, Some(userTo.id), freezedForm.id))
-        .thenReturn(toFuture(Some(answer)))
-
-      val result = wait(fixture.service.getReport(eventId, projectId))
+      val result = wait(fixture.service.getReport(activeProjectId))
 
       val expectedResult =
         Seq(
           Report(
             Some(userTo),
             Seq(Report.FormReport(
-              freezedForm,
+              form,
               Seq(
-                Report.FormElementReport(freezedForm.elements(0),
-                                         Seq(Report.FormElementAnswerReport(userFrom, answer.answers.head, false))),
-                Report.FormElementReport(freezedForm.elements(1), Seq())
+                Report.FormElementReport(form.elements(0),
+                                         Seq(Report.FormElementAnswerReport(userFrom, answer.elements.head, isAnonymous = true))),
+                Report.FormElementReport(form.elements(1), Seq())
               )
             ))
           ))
@@ -120,10 +105,6 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
       val form = Forms(0).copy(id = 1, elements = elementsWithAnswers.map(_._1))
       val userTo = Users(1).copy(id = 2)
       val userFrom = Users(0).copy(id = 3)
-      val answer = Answer.Form(
-        NamedEntity(form.id),
-        elementsWithAnswers.map(_._2).toSet
-      )
 
       val report =
         Report(

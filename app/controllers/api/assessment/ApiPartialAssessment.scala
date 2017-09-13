@@ -1,7 +1,6 @@
 package controllers.api.assessment
 
-import models.assessment.Assessment
-import models.user.UserShort
+import models.assessment.PartialAssessment
 import play.api.libs.json.Json
 
 /**
@@ -11,8 +10,8 @@ case class ApiPartialAssessment(
   userId: Option[Long],
   form: ApiPartialFormAnswer
 ) {
-  def toModel = Assessment(
-    userId.map(UserShort(_)),
+  def toModel = PartialAssessment(
+    userId,
     Seq(form.toModel)
   )
 }

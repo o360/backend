@@ -7,8 +7,8 @@ import controllers.api.export.{ApiAnswerExport, ApiEventExport, ApiExportCode, A
 import controllers.api.form.ApiForm
 import controllers.api.user.ApiShortUser
 import models.user.UserShort
-import play.api.mvc.{Action, ControllerComponents}
-import services.EventResultExportService
+import play.api.mvc.ControllerComponents
+import services.event.EventResultExportService
 import utils.Config
 import utils.implicits.FutureLifting._
 import utils.listmeta.actions.ListActions

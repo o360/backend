@@ -530,7 +530,7 @@ POST /admin/groups-users/remove controllers.admin.UserGroupController.bulkRemove
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET /forms/:id controllers.user.FormController.getById(id: Long, projectId: Long, eventId: Long)
+GET /forms/:id controllers.user.FormController.getById(id: Long)
 
 ###
 # summary: Returns form template with elements by ID for admin
@@ -729,7 +729,7 @@ GET /admin/projects/:id controllers.admin.ProjectController.getById(id: Long)
 GET /admin/projects controllers.admin.ProjectController.getList(eventId: Option[Long], groupId: Option[Long])
 
 ###
-# summary: Returns list of projects
+# summary: Returns list of active projects
 # tags:
 #   - Project
 # parameters:
@@ -751,7 +751,7 @@ GET /admin/projects controllers.admin.ProjectController.getList(eventId: Option[
 #               data:
 #                   type: array
 #                   items:
-#                       $ref: '#/definitions/controllers.api.project.ApiProject'
+#                       $ref: '#/definitions/controllers.api.project.ApiActiveProject'
 #   401:
 #       $ref: '#/responses/Unauthorized'
 #   403:
@@ -759,8 +759,27 @@ GET /admin/projects controllers.admin.ProjectController.getList(eventId: Option[
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET /projects controllers.user.ProjectController.getList(eventId: Option[Long], groupId: Option[Long])
+GET /projects controllers.user.ActiveProjectController.getList(eventId: Option[Long])
 
+###
+# summary: Returns active project by ID
+# tags:
+#   - Project
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.project.ApiActiveProject'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /projects/:id controllers.user.ActiveProjectController.getById(id: Long)
 
 ###
 # summary: Creates project
@@ -1075,7 +1094,7 @@ GET /admin/events controllers.admin.EventController.getList(status: Option[contr
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET /events controllers.user.EventController.getList(status: Option[controllers.api.event.ApiEvent.EventStatus], projectId: Option[Long])
+GET /events controllers.user.EventController.getList(status: Option[controllers.api.event.ApiEvent.EventStatus])
 
 
 ###
@@ -1384,7 +1403,7 @@ POST /admin/templates/:id/clone controllers.admin.TemplateController.cloneTempla
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-GET /assessments controllers.user.AssessmentController.getList(eventId: Long, projectId: Long)
+GET /assessments controllers.user.AssessmentController.getList(projectId: Long)
 
 ###
 # summary: Bulk submits answers
@@ -1408,7 +1427,7 @@ GET /assessments controllers.user.AssessmentController.getList(eventId: Long, pr
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-POST /assessments controllers.user.AssessmentController.bulkSubmit(eventId: Long, projectId: Long)
+POST /assessments controllers.user.AssessmentController.bulkSubmit(projectId: Long)
 
 ###
 # summary: Returns list of events

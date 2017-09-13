@@ -1,10 +1,11 @@
-package services
+package services.event
 
 import javax.inject.{Inject, Singleton}
 
 import models.dao.EventProjectDao
 import models.event.Event
 import models.user.User
+import services.{ProjectService, ServiceResults}
 import utils.errors.AuthorizationError
 import utils.implicits.FutureLifting._
 
