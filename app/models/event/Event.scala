@@ -9,19 +9,14 @@ import utils.TimestampConverter
 
 /**
   * Event model.
-  *
-  * @param id            DB ID
-  * @param description   description
-  * @param start         start date-time
-  * @param end           end date-time
-  * @param notifications collection of notification types along with time and recipient type
   */
 case class Event(
   id: Long,
   description: Option[String],
   start: Timestamp,
   end: Timestamp,
-  notifications: Seq[Event.NotificationTime]
+  notifications: Seq[Event.NotificationTime],
+  userInfo: Option[Event.UserInfo] = None
 ) {
   private val currentTime = TimestampConverter.now
 
@@ -80,4 +75,12 @@ object Event {
       */
     case object Completed extends Status
   }
+
+  /**
+    * User related info.
+    */
+  case class UserInfo(
+    totalFormsCount: Int,
+    answeredFormsCount: Int
+  )
 }

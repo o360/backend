@@ -19,7 +19,8 @@ case class ApiEvent(
   start: LocalDateTime,
   end: LocalDateTime,
   notifications: Option[Seq[ApiEvent.NotificationTime]],
-  status: ApiEvent.EventStatus
+  status: ApiEvent.EventStatus,
+  userInfo: Option[ApiEvent.ApiUserInfo]
 ) extends Response
 
 object ApiEvent {
@@ -39,10 +40,11 @@ object ApiEvent {
       TimestampConverter.fromUtc(e.start, account.timezone).toLocalDateTime,
       TimestampConverter.fromUtc(e.end, account.timezone).toLocalDateTime,
       notifications,
-      EventStatus(e.status)
+      EventStatus(e.status),
+      e.userInfo.map(ApiUserInfo(_))
     )
   }
-
+  implicit val userInfoWrites = Json.writes[ApiUserInfo]
   implicit val notificationTimeFormat = Json.format[NotificationTime]
   implicit val eventWrites = Json.writes[ApiEvent]
 
@@ -90,5 +92,16 @@ object ApiEvent {
       "inProgress" -> InProgress,
       "completed" -> Completed
     )
+  }
+
+  /**
+    * User related info API model.
+    */
+  case class ApiUserInfo(
+    totalFormsCount: Int,
+    answeredFormsCount: Int
+  )
+  object ApiUserInfo {
+    def apply(info: Event.UserInfo): ApiUserInfo = ApiUserInfo(info.totalFormsCount, info.answeredFormsCount)
   }
 }

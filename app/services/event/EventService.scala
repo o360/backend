@@ -4,6 +4,7 @@ import java.sql.Timestamp
 import javax.inject.{Inject, Singleton}
 
 import models.ListWithTotal
+import models.assessment.Answer
 import models.dao._
 import models.event.Event
 import models.user.User
@@ -44,11 +45,11 @@ class EventService @Inject()(
   def userGetById(id: Long)(implicit account: User): SingleResult = {
     for {
       event <- getById(id)
-      answers <- answerDao.getList(optEventId = Some(event.id)).lift
+      answers <- answerDao.getList(optEventId = Some(event.id), optUserFromId = Some(account.id)).lift
       _ <- ensure(answers.nonEmpty || event.status == Event.Status.NotStarted) {
         NotFoundError.Event(id)
       }
-    } yield event
+    } yield event.copy(userInfo = Some(getUserInfo(answers)))
   }
 
   /**
@@ -81,10 +82,19 @@ class EventService @Inject()(
         case _ => ListWithTotal(Seq.empty[Event]).toFuture
       }
       anotherEvents <- eventDao.getList(optStatus = status, optUserId = Some(account.id))
-    } yield ListWithTotal(notStartedEvents.data ++ anotherEvents.data)
+
+      withUserInfo <- Future.sequence(anotherEvents.data.map { event =>
+        answerDao.getList(optEventId = Some(event.id), optUserFromId = Some(account.id)).map { eventAnswers =>
+          event.copy(userInfo = Some(getUserInfo(eventAnswers)))
+        }
+      })
+    } yield ListWithTotal(notStartedEvents.data ++ withUserInfo)
 
     result.lift
   }
+
+  private def getUserInfo(answers: Seq[Answer]) =
+    Event.UserInfo(answers.length, answers.count(_.status == Answer.Status.Answered))
 
   /**
     * Creates new event.
