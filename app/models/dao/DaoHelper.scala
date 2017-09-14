@@ -12,7 +12,6 @@ import utils.listmeta.pagination.Pagination.{WithPages, WithoutPages}
 import utils.listmeta.sorting.Sorting
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.language.higherKinds
 
 /**
   * Trait with helper methods for DAO's.
@@ -36,7 +35,7 @@ trait DaoHelper { self: HasDatabaseConfigProvider[JdbcProfile] =>
     def applyFilter(
       f: E => Seq[Option[Rep[Boolean]]],
       allIfNoCriteria: Boolean = true
-    )(implicit ec: ExecutionContext): Query[E, U, Seq] = {
+    ): Query[E, U, Seq] = {
       query.filter {
         f(_)
           .collect {
@@ -53,7 +52,7 @@ trait DaoHelper { self: HasDatabaseConfigProvider[JdbcProfile] =>
       * @param pagination pagination model
       * @return slick query
       */
-    def applyPagination(pagination: Pagination)(implicit ec: ExecutionContext): Query[E, U, Seq] = pagination match {
+    def applyPagination(pagination: Pagination): Query[E, U, Seq] = pagination match {
       case p @ WithPages(size, _) =>
         query
           .drop(p.offset)
@@ -67,8 +66,7 @@ trait DaoHelper { self: HasDatabaseConfigProvider[JdbcProfile] =>
       *
       * @param mapping mapping between field names and slick columns
       */
-    def applySorting(sorting: Sorting)(mapping: E => PartialFunction[Symbol, Rep[_]])(
-      implicit ec: ExecutionContext): Query[E, U, Seq] = {
+    def applySorting(sorting: Sorting)(mapping: E => PartialFunction[Symbol, Rep[_]]): Query[E, U, Seq] = {
       def getSortedQuery(fields: Seq[Sorting.Field]): Query[E, U, Seq] = fields match {
         case Seq() => query
         case Sorting.Field(field, direction) +: tail =>
@@ -107,9 +105,9 @@ trait DaoHelper { self: HasDatabaseConfigProvider[JdbcProfile] =>
       meta.pagination match {
         case Pagination.WithoutPages =>
           ListWithTotal(resultSize, elements).toFuture
-        case p @ Pagination.WithPages(size, number) if resultSize < size && resultSize > 0 =>
+        case p @ Pagination.WithPages(size, _) if resultSize < size && resultSize > 0 =>
           ListWithTotal(p.offset + resultSize, elements).toFuture
-        case p @ Pagination.WithPages(size, number) =>
+        case Pagination.WithPages(_, _) =>
           db.run(query.length.result).map(ListWithTotal(_, elements))
       }
     }
@@ -121,8 +119,7 @@ trait DaoHelper { self: HasDatabaseConfigProvider[JdbcProfile] =>
     * @param column column to compare
     * @param value  value to compare
     */
-  def like(column: Rep[String], value: String, ignoreCase: Boolean = false)(
-    implicit ec: ExecutionContext): Rep[Boolean] = {
+  def like(column: Rep[String], value: String, ignoreCase: Boolean = false): Rep[Boolean] = {
     val escapedValue = value.replace("%", "\\%") // postgres specific % escape
     val condition = s"%$escapedValue%"
 

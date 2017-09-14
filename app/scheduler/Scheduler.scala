@@ -22,7 +22,7 @@ class Scheduler @Inject()(
 
   if (config.schedulerSettings.enabled) {
     val interval = config.schedulerSettings.intervalMilliseconds
-    val cancellable = system.scheduler.schedule(
+    system.scheduler.schedule(
       initialDelay = 30.seconds,
       interval = interval.milliseconds,
       receiver = schedulerActor,

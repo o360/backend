@@ -10,7 +10,6 @@ import utils.listmeta.pagination.PaginationRequestParser
 import utils.listmeta.sorting.{Sorting, SortingRequestParser}
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.language.implicitConversions
 
 /**
   * Actions for list requests.

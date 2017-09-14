@@ -1,6 +1,6 @@
 package controllers.user
 
-import com.mohiva.play.silhouette.api.{LoginInfo, Silhouette}
+import com.mohiva.play.silhouette.api.LoginInfo
 import com.mohiva.play.silhouette.test._
 import controllers.BaseControllerTest
 import controllers.api.user.ApiUser

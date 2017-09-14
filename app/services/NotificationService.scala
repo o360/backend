@@ -1,6 +1,5 @@
 package services
 
-import java.sql.Timestamp
 import javax.inject.{Inject, Singleton}
 
 import models.dao.{EventDao, ProjectDao, ProjectRelationDao, TemplateDao}

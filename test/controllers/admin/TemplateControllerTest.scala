@@ -49,7 +49,7 @@ class TemplateControllerTest extends BaseControllerTest with TemplateGenerator {
       forAll { (id: Long) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.templateServiceMock.getById(id)(admin))
+        when(fixture.templateServiceMock.getById(id))
           .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Template(id)): ApplicationError \/ Template)))
         val request = authenticated(FakeRequest(), env)
 
@@ -62,7 +62,7 @@ class TemplateControllerTest extends BaseControllerTest with TemplateGenerator {
       forAll { (id: Long, template: Template) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.templateServiceMock.getById(id)(admin))
+        when(fixture.templateServiceMock.getById(id))
           .thenReturn(EitherT.eitherT(toFuture(\/-(template): ApplicationError \/ Template)))
         val request = authenticated(FakeRequest(), env)
 
@@ -85,7 +85,7 @@ class TemplateControllerTest extends BaseControllerTest with TemplateGenerator {
         ) =>
           val env = fakeEnvironment(admin)
           val fixture = getFixture(env)
-          when(fixture.templateServiceMock.getList(kind, recipient)(admin, ListMeta.default))
+          when(fixture.templateServiceMock.getList(kind, recipient)(ListMeta.default))
             .thenReturn(EitherT.eitherT(
               toFuture(\/-(ListWithTotal(total, templates)): ApplicationError \/ ListWithTotal[Template])))
           val request = authenticated(FakeRequest(), env)
@@ -116,7 +116,7 @@ class TemplateControllerTest extends BaseControllerTest with TemplateGenerator {
       forAll { (template: Template) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.templateServiceMock.update(template)(admin))
+        when(fixture.templateServiceMock.update(template))
           .thenReturn(EitherT.eitherT(toFuture(\/-(template): ApplicationError \/ Template)))
 
         val partialTemplate = ApiPartialTemplate(
@@ -148,7 +148,7 @@ class TemplateControllerTest extends BaseControllerTest with TemplateGenerator {
       forAll { (template: Template) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.templateServiceMock.create(template.copy(id = 0))(admin))
+        when(fixture.templateServiceMock.create(template.copy(id = 0)))
           .thenReturn(EitherT.eitherT(toFuture(\/-(template): ApplicationError \/ Template)))
 
         val partialTemplate = ApiPartialTemplate(
@@ -180,7 +180,7 @@ class TemplateControllerTest extends BaseControllerTest with TemplateGenerator {
       forAll { (id: Long) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.templateServiceMock.delete(id)(admin))
+        when(fixture.templateServiceMock.delete(id))
           .thenReturn(EitherT.eitherT(toFuture(\/-(()): ApplicationError \/ Unit)))
         val request = authenticated(FakeRequest(), env)
 
@@ -195,7 +195,7 @@ class TemplateControllerTest extends BaseControllerTest with TemplateGenerator {
       forAll { (id: Long) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.templateServiceMock.getById(id)(admin))
+        when(fixture.templateServiceMock.getById(id))
           .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Template(id)): ApplicationError \/ Template)))
 
         val request = authenticated(FakeRequest(), env)
@@ -209,9 +209,9 @@ class TemplateControllerTest extends BaseControllerTest with TemplateGenerator {
       forAll { (id: Long, template: Template) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.templateServiceMock.getById(id)(admin))
+        when(fixture.templateServiceMock.getById(id))
           .thenReturn(EitherT.eitherT(toFuture(\/-(template.copy(id = id)): ApplicationError \/ Template)))
-        when(fixture.templateServiceMock.create(template.copy(id = 0))(admin))
+        when(fixture.templateServiceMock.create(template.copy(id = 0)))
           .thenReturn(EitherT.eitherT(toFuture(\/-(template): ApplicationError \/ Template)))
         val request = authenticated(FakeRequest(), env)
 

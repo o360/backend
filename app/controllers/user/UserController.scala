@@ -6,7 +6,7 @@ import com.mohiva.play.silhouette.api.Silhouette
 import controllers.BaseController
 import controllers.api.Response
 import controllers.api.user.{ApiShortUser, ApiUser}
-import controllers.authorization.{AllowedRole, AllowedStatus}
+import controllers.authorization.AllowedStatus
 import models.user.{User, UserShort}
 import org.davidbild.tristate.Tristate
 import play.api.mvc.ControllerComponents

@@ -40,7 +40,7 @@ class UserGroupControllerTest extends BaseControllerTest with TristateGenerator 
       forAll { (groupId: Long, userId: Long) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.userGroupServiceMock.add(groupId, userId)(admin))
+        when(fixture.userGroupServiceMock.add(groupId, userId))
           .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Group(groupId)): ApplicationError \/ Unit)))
 
         val request = authenticated(FakeRequest(), env)
@@ -53,7 +53,7 @@ class UserGroupControllerTest extends BaseControllerTest with TristateGenerator 
       forAll { (groupId: Long, userId: Long) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.userGroupServiceMock.add(groupId, userId)(admin))
+        when(fixture.userGroupServiceMock.add(groupId, userId))
           .thenReturn(EitherT.eitherT(toFuture(\/-(()): ApplicationError \/ Unit)))
 
         val request = authenticated(FakeRequest(), env)
@@ -68,7 +68,7 @@ class UserGroupControllerTest extends BaseControllerTest with TristateGenerator 
       forAll { (groupId: Long, userId: Long) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.userGroupServiceMock.remove(groupId, userId)(admin))
+        when(fixture.userGroupServiceMock.remove(groupId, userId))
           .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Group(groupId)): ApplicationError \/ Unit)))
 
         val request = authenticated(FakeRequest(), env)
@@ -81,7 +81,7 @@ class UserGroupControllerTest extends BaseControllerTest with TristateGenerator 
       forAll { (groupId: Long, userId: Long) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.userGroupServiceMock.remove(groupId, userId)(admin))
+        when(fixture.userGroupServiceMock.remove(groupId, userId))
           .thenReturn(EitherT.eitherT(toFuture(\/-(()): ApplicationError \/ Unit)))
 
         val request = authenticated(FakeRequest(), env)
@@ -96,7 +96,7 @@ class UserGroupControllerTest extends BaseControllerTest with TristateGenerator 
       forAll { groupsUsers: Seq[(Long, Long)] =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.userGroupServiceMock.bulkAdd(groupsUsers)(admin))
+        when(fixture.userGroupServiceMock.bulkAdd(groupsUsers))
           .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Group(123)): ApplicationError \/ Unit)))
 
         val request = authenticated(
@@ -115,7 +115,7 @@ class UserGroupControllerTest extends BaseControllerTest with TristateGenerator 
       forAll { groupsUsers: Seq[(Long, Long)] =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.userGroupServiceMock.bulkAdd(groupsUsers)(admin))
+        when(fixture.userGroupServiceMock.bulkAdd(groupsUsers))
           .thenReturn(EitherT.eitherT(toFuture(\/-(()): ApplicationError \/ Unit)))
 
         val request = authenticated(
@@ -136,7 +136,7 @@ class UserGroupControllerTest extends BaseControllerTest with TristateGenerator 
       forAll { groupsUsers: Seq[(Long, Long)] =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.userGroupServiceMock.bulkRemove(groupsUsers)(admin))
+        when(fixture.userGroupServiceMock.bulkRemove(groupsUsers))
           .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Group(123)): ApplicationError \/ Unit)))
 
         val request = authenticated(
@@ -155,7 +155,7 @@ class UserGroupControllerTest extends BaseControllerTest with TristateGenerator 
       forAll { groupsUsers: Seq[(Long, Long)] =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.userGroupServiceMock.bulkRemove(groupsUsers)(admin))
+        when(fixture.userGroupServiceMock.bulkRemove(groupsUsers))
           .thenReturn(EitherT.eitherT(toFuture(\/-(()): ApplicationError \/ Unit)))
 
         val request = authenticated(

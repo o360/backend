@@ -4,7 +4,6 @@ import models.ListWithTotal
 import utils.errors.ApplicationError
 
 import scala.concurrent.Future
-import scala.language.implicitConversions
 import scalaz.EitherT
 
 /**

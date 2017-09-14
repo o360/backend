@@ -5,8 +5,7 @@ import javax.inject.{Inject, Singleton}
 import models.ListWithTotal
 import models.dao.{GroupDao, ProjectDao, ProjectRelationDao, UserGroupDao}
 import models.group.{Group => GroupModel}
-import models.project.{Project, Relation}
-import models.user.User
+import models.project.Project
 import org.davidbild.tristate.Tristate
 import utils.errors.{ConflictError, ExceptionHandler, NotFoundError}
 import utils.implicits.FutureLifting._
@@ -31,7 +30,7 @@ class GroupService @Inject()(
   /**
     * Returns group by ID
     */
-  def getById(id: Long)(implicit account: User): SingleResult = {
+  def getById(id: Long): SingleResult = {
     groupDao
       .findById(id)
       .liftRight {
@@ -51,7 +50,7 @@ class GroupService @Inject()(
     userId: Option[Long],
     name: Option[String],
     levels: Option[String]
-  )(implicit account: User, meta: ListMeta): ListResult = {
+  )(implicit meta: ListMeta): ListResult = {
 
     val levelsParsed = levels.flatMap { l =>
       Try(l.split(",")).map(_.toSeq.map(_.toInt)).toOption
@@ -96,7 +95,7 @@ class GroupService @Inject()(
     *
     * @param group group model
     */
-  def create(group: GroupModel)(implicit account: User): SingleResult = {
+  def create(group: GroupModel): SingleResult = {
     for {
       _ <- validateParentId(group)
       created <- groupDao.create(group).lift(ExceptionHandler.sql)
@@ -108,7 +107,7 @@ class GroupService @Inject()(
     *
     * @param draft group draft
     */
-  def update(draft: GroupModel)(implicit account: User): SingleResult = {
+  def update(draft: GroupModel): SingleResult = {
     for {
       _ <- getById(draft.id)
       _ <- validateParentId(draft)
@@ -122,7 +121,7 @@ class GroupService @Inject()(
     *
     * @param id group ID
     */
-  def delete(id: Long)(implicit account: User): UnitResult = {
+  def delete(id: Long): UnitResult = {
 
     def getConflictedEntities = {
       for {
@@ -159,7 +158,7 @@ class GroupService @Inject()(
     * @param group group model
     * @return either error or unit
     */
-  private def validateParentId(group: GroupModel)(implicit account: User): UnitResult = {
+  private def validateParentId(group: GroupModel): UnitResult = {
     val groupIsNew = group.id == 0
 
     group.parentId match {

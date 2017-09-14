@@ -5,9 +5,8 @@ import javax.inject.Inject
 import com.mohiva.play.silhouette.api.Silhouette
 import com.mohiva.play.silhouette.api.exceptions.SilhouetteException
 import com.mohiva.play.silhouette.impl.providers.{SocialProvider, SocialProviderRegistry}
-import controllers.api.user.ApiUser
 import play.api.libs.json.Json
-import play.api.mvc.{Action, ControllerComponents, Result}
+import play.api.mvc.{ControllerComponents, Result}
 import services.UserService
 import silhouette.{CustomSocialProfile, DefaultEnv}
 import utils.errors.AuthenticationError

@@ -141,7 +141,7 @@ class EventService @Inject()(
     *
     * @param id event ID
     */
-  def delete(id: Long)(implicit account: User): UnitResult = {
+  def delete(id: Long): UnitResult = {
     for {
       _ <- getById(id)
 
@@ -152,7 +152,7 @@ class EventService @Inject()(
   /**
     * Clones event with projects and notifications.
     */
-  def cloneEvent(id: Long)(implicit account: User): SingleResult = {
+  def cloneEvent(id: Long): SingleResult = {
 
     /**
       * Moves all event dates to the future.

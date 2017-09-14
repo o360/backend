@@ -1,7 +1,7 @@
 package services
 
 import java.io.FileInputStream
-import javax.inject.{Inject, Singleton}
+import javax.inject.Singleton
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
 import com.google.api.client.http.javanet.NetHttpTransport
@@ -10,7 +10,6 @@ import com.google.api.services.drive.model.{File, Permission}
 import com.google.api.services.drive.{Drive, DriveScopes}
 import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetRequest
 import com.google.api.services.sheets.v4.{Sheets, SheetsScopes}
-import play.api.Environment
 import utils.Logger
 
 import scala.collection.JavaConverters._
@@ -20,9 +19,7 @@ import scala.util.control.NonFatal
   * Google drive service.
   */
 @Singleton
-class GoogleDriveService @Inject()(
-  env: Environment
-) extends Logger {
+class GoogleDriveService extends Logger {
 
   private lazy val credential = GoogleCredential
     .fromStream(new FileInputStream("conf/drive_service_key.json"))

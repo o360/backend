@@ -7,7 +7,7 @@ import models.project.Relation
 import models.{ListWithTotal, NamedEntity}
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
-import testutils.fixture.{FormFixture, ProjectRelationFixture, UserFixture}
+import testutils.fixture.{FormFixture, ProjectRelationFixture}
 import testutils.generator.ProjectRelationGenerator
 import utils.errors.{ApplicationError, BadRequestError, ConflictError, NotFoundError}
 import utils.listmeta.ListMeta
@@ -23,8 +23,6 @@ class ProjectRelationServiceTest
   with ProjectRelationGenerator
   with ProjectRelationFixture
   with FormFixture {
-
-  private val admin = UserFixture.admin
 
   private case class TestFixture(
     relationDaoMock: ProjectRelationDao,
@@ -50,7 +48,7 @@ class ProjectRelationServiceTest
       forAll { (id: Long) =>
         val fixture = getFixture
         when(fixture.relationDaoMock.findById(id)).thenReturn(toFuture(None))
-        val result = wait(fixture.service.getById(id)(admin).run)
+        val result = wait(fixture.service.getById(id).run)
 
         result mustBe 'left
         result.swap.toOption.get mustBe a[NotFoundError]
@@ -64,7 +62,7 @@ class ProjectRelationServiceTest
       forAll { (relation: Relation, id: Long) =>
         val fixture = getFixture
         when(fixture.relationDaoMock.findById(id)).thenReturn(toFuture(Some(relation)))
-        val result = wait(fixture.service.getById(id)(admin).run)
+        val result = wait(fixture.service.getById(id).run)
 
         result mustBe 'right
         result.toOption.get mustBe relation
@@ -94,7 +92,7 @@ class ProjectRelationServiceTest
               optGroupToId = any[Option[Long]],
               optEmailTemplateId = any[Option[Long]]
             )(eqTo(ListMeta.default))).thenReturn(toFuture(ListWithTotal(total, relations)))
-          val result = wait(fixture.service.getList(projectId)(admin, ListMeta.default).run)
+          val result = wait(fixture.service.getList(projectId)(ListMeta.default).run)
 
           result mustBe 'right
           result.toOption.get mustBe ListWithTotal(total, relations)
@@ -107,7 +105,7 @@ class ProjectRelationServiceTest
       val fixture = getFixture
       val relation = fixture.relation
 
-      val result = wait(fixture.service.create(relation)(admin).run)
+      val result = wait(fixture.service.create(relation).run)
 
       result mustBe 'left
       result.swap.toOption.get mustBe a[BadRequestError]
@@ -130,7 +128,7 @@ class ProjectRelationServiceTest
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       when(fixture.formService.getById(relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
-      val result = wait(fixture.service.create(relation)(admin).run)
+      val result = wait(fixture.service.create(relation).run)
 
       result mustBe 'left
       result.swap.toOption.get mustBe a[BadRequestError]
@@ -150,7 +148,7 @@ class ProjectRelationServiceTest
           optGroupFromIds = any[Option[Seq[Long]]],
           optUserId = any[Option[Long]],
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](1, Nil)))
-      val result = wait(fixture.service.create(relation)(admin).run)
+      val result = wait(fixture.service.create(relation).run)
 
       result mustBe 'left
       result.swap.toOption.get mustBe a[ConflictError]
@@ -175,7 +173,7 @@ class ProjectRelationServiceTest
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       when(fixture.formService.getById(relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
-      val result = wait(fixture.service.create(relation.copy(id = 0))(admin).run)
+      val result = wait(fixture.service.create(relation.copy(id = 0)).run)
 
       result mustBe 'left
       result.swap.toOption.get mustBe a[ConflictError]
@@ -200,7 +198,7 @@ class ProjectRelationServiceTest
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       when(fixture.formService.getById(relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
-      val result = wait(fixture.service.create(relation.copy(id = 0))(admin).run)
+      val result = wait(fixture.service.create(relation.copy(id = 0)).run)
 
       result mustBe 'right
       result.toOption.get mustBe relation
@@ -214,7 +212,7 @@ class ProjectRelationServiceTest
 
       when(fixture.relationDaoMock.findById(relation.id)).thenReturn(toFuture(None))
 
-      val result = wait(fixture.service.update(relation)(admin).run)
+      val result = wait(fixture.service.update(relation).run)
 
       result mustBe 'left
       result.swap.toOption.get mustBe a[NotFoundError]
@@ -226,7 +224,7 @@ class ProjectRelationServiceTest
 
       when(fixture.relationDaoMock.findById(relation.id))
         .thenReturn(toFuture(Some(relation.copy(project = NamedEntity(999)))))
-      val result = wait(fixture.service.update(relation)(admin).run)
+      val result = wait(fixture.service.update(relation).run)
 
       result mustBe 'left
       result.swap.toOption.get mustBe a[BadRequestError]
@@ -246,7 +244,7 @@ class ProjectRelationServiceTest
           optGroupFromIds = any[Option[Seq[Long]]],
           optUserId = any[Option[Long]],
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
-      val result = wait(fixture.service.update(relation)(admin).run)
+      val result = wait(fixture.service.update(relation).run)
 
       result mustBe 'left
       result.swap.toOption.get mustBe a[BadRequestError]
@@ -271,7 +269,7 @@ class ProjectRelationServiceTest
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       when(fixture.formService.getById(relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
-      val result = wait(fixture.service.update(relation)(admin).run)
+      val result = wait(fixture.service.update(relation).run)
 
       result mustBe 'left
       result.swap.toOption.get mustBe a[BadRequestError]
@@ -292,7 +290,7 @@ class ProjectRelationServiceTest
           optGroupFromIds = any[Option[Seq[Long]]],
           optUserId = any[Option[Long]],
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](1, Nil)))
-      val result = wait(fixture.service.update(relation)(admin).run)
+      val result = wait(fixture.service.update(relation).run)
 
       result mustBe 'left
       result.swap.toOption.get mustBe a[ConflictError]
@@ -318,7 +316,7 @@ class ProjectRelationServiceTest
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       when(fixture.formService.getById(relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
-      val result = wait(fixture.service.update(relation)(admin).run)
+      val result = wait(fixture.service.update(relation).run)
 
       result mustBe 'left
       result.swap.toOption.get mustBe a[ConflictError]
@@ -344,7 +342,7 @@ class ProjectRelationServiceTest
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       when(fixture.formService.getById(relation.form.id))
         .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
-      val result = wait(fixture.service.update(relation)(admin).run)
+      val result = wait(fixture.service.update(relation).run)
 
       result mustBe 'right
       result.toOption.get mustBe relation
@@ -356,7 +354,7 @@ class ProjectRelationServiceTest
       forAll { (id: Long) =>
         val fixture = getFixture
         when(fixture.relationDaoMock.findById(id)).thenReturn(toFuture(None))
-        val result = wait(fixture.service.delete(id)(admin).run)
+        val result = wait(fixture.service.delete(id).run)
 
         result mustBe 'left
         result.swap.toOption.get mustBe a[NotFoundError]
@@ -381,7 +379,7 @@ class ProjectRelationServiceTest
             optUserId = any[Option[Long]],
           )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
 
-        val result = wait(fixture.service.delete(id)(admin).run)
+        val result = wait(fixture.service.delete(id).run)
 
         result mustBe 'right
       }

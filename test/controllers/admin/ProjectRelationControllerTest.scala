@@ -49,7 +49,7 @@ class ProjectRelationControllerTest extends BaseControllerTest with ProjectRelat
       forAll { (id: Long) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.projectServiceMock.getById(id)(admin))
+        when(fixture.projectServiceMock.getById(id))
           .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.ProjectRelation(id)): ApplicationError \/ Relation)))
         val request = authenticated(FakeRequest(), env)
 
@@ -62,7 +62,7 @@ class ProjectRelationControllerTest extends BaseControllerTest with ProjectRelat
       forAll { (id: Long, relation: Relation) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.projectServiceMock.getById(id)(admin))
+        when(fixture.projectServiceMock.getById(id))
           .thenReturn(EitherT.eitherT(toFuture(\/-(relation): ApplicationError \/ Relation)))
         val request = authenticated(FakeRequest(), env)
 
@@ -84,7 +84,7 @@ class ProjectRelationControllerTest extends BaseControllerTest with ProjectRelat
         ) =>
           val env = fakeEnvironment(admin)
           val fixture = getFixture(env)
-          when(fixture.projectServiceMock.getList(projectId)(admin, ListMeta.default))
+          when(fixture.projectServiceMock.getList(projectId)(ListMeta.default))
             .thenReturn(EitherT.eitherT(
               toFuture(\/-(ListWithTotal(total, relations)): ApplicationError \/ ListWithTotal[Relation])))
           val request = authenticated(FakeRequest(), env)
@@ -114,7 +114,7 @@ class ProjectRelationControllerTest extends BaseControllerTest with ProjectRelat
       forAll { (relation: Relation) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.projectServiceMock.update(relation)(admin))
+        when(fixture.projectServiceMock.update(relation))
           .thenReturn(EitherT.eitherT(toFuture(\/-(relation): ApplicationError \/ Relation)))
 
         val partialRelation = getPartialRelation(relation)
@@ -153,7 +153,7 @@ class ProjectRelationControllerTest extends BaseControllerTest with ProjectRelat
       forAll { (relation: Relation) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.projectServiceMock.create(relation.copy(id = 0))(admin))
+        when(fixture.projectServiceMock.create(relation.copy(id = 0)))
           .thenReturn(EitherT.eitherT(toFuture(\/-(relation): ApplicationError \/ Relation)))
 
         val partialRelation = getPartialRelation(relation)
@@ -180,7 +180,7 @@ class ProjectRelationControllerTest extends BaseControllerTest with ProjectRelat
       forAll { (id: Long) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.projectServiceMock.delete(id)(admin))
+        when(fixture.projectServiceMock.delete(id))
           .thenReturn(EitherT.eitherT(toFuture(\/-(()): ApplicationError \/ Unit)))
         val request = authenticated(FakeRequest(), env)
 

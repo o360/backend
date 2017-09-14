@@ -7,7 +7,7 @@ import models.project.{Project, Relation}
 import models.template.Template
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
-import testutils.fixture.{ProjectFixture, TemplateFixture, UserFixture}
+import testutils.fixture.{ProjectFixture, TemplateFixture}
 import testutils.generator.TemplateGenerator
 import utils.errors.{ConflictError, NotFoundError}
 import utils.listmeta.ListMeta
@@ -16,8 +16,6 @@ import utils.listmeta.ListMeta
   * Test for template service.
   */
 class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with TemplateFixture with ProjectFixture {
-
-  private val admin = UserFixture.admin
 
   private case class TestFixture(
     templateDaoMock: TemplateDao,
@@ -42,7 +40,7 @@ class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with Te
       forAll { (id: Long) =>
         val fixture = getFixture
         when(fixture.templateDaoMock.findById(id)).thenReturn(toFuture(None))
-        val result = wait(fixture.service.getById(id)(admin).run)
+        val result = wait(fixture.service.getById(id).run)
 
         result mustBe 'left
         result.swap.toOption.get mustBe a[NotFoundError]
@@ -56,7 +54,7 @@ class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with Te
       forAll { (template: Template, id: Long) =>
         val fixture = getFixture
         when(fixture.templateDaoMock.findById(id)).thenReturn(toFuture(Some(template)))
-        val result = wait(fixture.service.getById(id)(admin).run)
+        val result = wait(fixture.service.getById(id).run)
 
         result mustBe 'right
         result.toOption.get mustBe template
@@ -84,7 +82,7 @@ class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with Te
               optRecipient = eqTo(recipient)
             )(eqTo(ListMeta.default)))
             .thenReturn(toFuture(ListWithTotal(total, templates)))
-          val result = wait(fixture.service.getList(kind, recipient)(admin, ListMeta.default).run)
+          val result = wait(fixture.service.getList(kind, recipient)(ListMeta.default).run)
 
           result mustBe 'right
           result.toOption.get mustBe ListWithTotal(total, templates)
@@ -98,7 +96,7 @@ class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with Te
 
       val fixture = getFixture
       when(fixture.templateDaoMock.create(template.copy(id = 0))).thenReturn(toFuture(template))
-      val result = wait(fixture.service.create(template.copy(id = 0))(admin).run)
+      val result = wait(fixture.service.create(template.copy(id = 0)).run)
 
       result mustBe 'right
       result.toOption.get mustBe template
@@ -110,7 +108,7 @@ class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with Te
       forAll { (template: Template) =>
         val fixture = getFixture
         when(fixture.templateDaoMock.findById(template.id)).thenReturn(toFuture(None))
-        val result = wait(fixture.service.update(template)(admin).run)
+        val result = wait(fixture.service.update(template).run)
 
         result mustBe 'left
         result.swap.toOption.get mustBe a[NotFoundError]
@@ -125,7 +123,7 @@ class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with Te
       val fixture = getFixture
       when(fixture.templateDaoMock.findById(template.id)).thenReturn(toFuture(Some(template)))
       when(fixture.templateDaoMock.update(template)).thenReturn(toFuture(template))
-      val result = wait(fixture.service.update(template)(admin).run)
+      val result = wait(fixture.service.update(template).run)
 
       result mustBe 'right
       result.toOption.get mustBe template
@@ -137,7 +135,7 @@ class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with Te
       forAll { (id: Long) =>
         val fixture = getFixture
         when(fixture.templateDaoMock.findById(id)).thenReturn(toFuture(None))
-        val result = wait(fixture.service.delete(id)(admin).run)
+        val result = wait(fixture.service.delete(id).run)
 
         result mustBe 'left
         result.swap.toOption.get mustBe a[NotFoundError]
@@ -172,7 +170,7 @@ class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with Te
             optEmailTemplateId = eqTo(Some(id))
           )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
 
-        val result = wait(fixture.service.delete(id)(admin).run)
+        val result = wait(fixture.service.delete(id).run)
 
         result mustBe 'left
         result.swap.toOption.get mustBe a[ConflictError]
@@ -206,7 +204,7 @@ class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with Te
 
         when(fixture.templateDaoMock.delete(id)).thenReturn(toFuture(1))
 
-        val result = wait(fixture.service.delete(id)(admin).run)
+        val result = wait(fixture.service.delete(id).run)
 
         result mustBe 'right
       }
