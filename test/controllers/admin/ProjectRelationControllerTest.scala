@@ -144,7 +144,8 @@ class ProjectRelationControllerTest extends BaseControllerTest with ProjectRelat
       ApiRelation.Kind(relation.kind),
       relation.templates.map(t =>
         ApiPartialTemplateBinding(t.template.id, ApiNotificationKind(t.kind), ApiNotificationRecipient(t.recipient))),
-      relation.canSelfVote
+      relation.canSelfVote,
+      relation.canSkipAnswers
     )
   }
   "POST /relations" should {

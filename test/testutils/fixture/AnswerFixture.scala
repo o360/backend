@@ -16,6 +16,7 @@ trait AnswerFixture extends FixtureHelper with ActiveProjectFixture with FormFix
       1,
       Some(3),
       NamedEntity(1),
+      canSkip = true,
       Answer.Status.Answered,
       isAnonymous = true,
       Set(
@@ -38,6 +39,7 @@ trait AnswerFixture extends FixtureHelper with ActiveProjectFixture with FormFix
       1,
       None,
       NamedEntity(2),
+      canSkip = false,
       Answer.Status.New
     )
   )
@@ -45,9 +47,9 @@ trait AnswerFixture extends FixtureHelper with ActiveProjectFixture with FormFix
   addFixtureOperation {
     sequenceOf(
       insertInto("form_answer")
-        .columns("id", "active_project_id", "user_from_id", "user_to_id", "form_id", "is_anonymous", "status")
-        .scalaValues(1, 1, 1, 3, 1, true, 1)
-        .scalaValues(2, 2, 1, null, 2, false, 0)
+        .columns("id", "active_project_id", "user_from_id", "user_to_id", "form_id", "is_anonymous", "status", "can_skip")
+        .scalaValues(1, 1, 1, 3, 1, true, 1, true)
+        .scalaValues(2, 2, 1, null, 2, false, 0, false)
         .build,
       insertInto("form_element_answer")
         .columns("id", "answer_id", "form_element_id", "text", "comment")

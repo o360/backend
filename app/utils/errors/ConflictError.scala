@@ -83,6 +83,10 @@ object ConflictError {
       extends ConflictError("CONFLICT-ASSESSMENT-1", "Can't find relation matched user and form ids")
 
     case object CantRevote extends ConflictError("CONFLICT-ASSESSMENT-2", "Revoting is forbidden")
+
+    case object CantSkip extends ConflictError("CONFLICT-ASSESSMENT-3", "Skipping is forbidden")
+
+    case object InactiveEvent extends ConflictError("CONFLICT-ASSESSMENT-4", "Event is not in progress")
   }
 
   object Invite {

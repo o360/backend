@@ -103,7 +103,7 @@ class ReportService @Inject()(
         .map(_.getOrElse(throw new NoSuchElementException("missed form")))
         .map(_.map(f => (f.id, f)).toMap)
 
-      reports = answers.groupBy(_.userToId).map {
+      reports = answers.filter(_.status == Answer.Status.Answered).groupBy(_.userToId).map {
         case (userToId, userAnswers) =>
           val userTo = userToId.flatMap(allUsersMap.get)
 

@@ -14,7 +14,8 @@ case class ApiPartialRelation(
   formId: Long,
   kind: ApiRelation.Kind,
   templates: Seq[ApiPartialTemplateBinding],
-  canSelfVote: Boolean
+  canSelfVote: Boolean,
+  canSkip: Boolean
 ) {
 
   def toModel(id: Long = 0) = Relation(
@@ -26,7 +27,8 @@ case class ApiPartialRelation(
     kind.value,
     templates.map(_.toModel),
     hasInProgressEvents = false,
-    canSelfVote
+    canSelfVote,
+    canSkip
   )
 }
 

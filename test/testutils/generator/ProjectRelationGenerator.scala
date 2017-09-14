@@ -22,6 +22,7 @@ trait ProjectRelationGenerator extends TemplateBindingGenerator {
       kind <- Arbitrary.arbitrary[Relation.Kind]
       templates <- Arbitrary.arbitrary[Seq[TemplateBinding]]
       canSelfVote <- Arbitrary.arbitrary[Boolean]
+      canSkip <- Arbitrary.arbitrary[Boolean]
     } yield
       Relation(
         0,
@@ -32,7 +33,8 @@ trait ProjectRelationGenerator extends TemplateBindingGenerator {
         kind,
         templates,
         hasInProgressEvents = false,
-        canSelfVote
+        canSelfVote,
+        canSkip
       )
   }
 }

@@ -11,6 +11,7 @@ case class Answer(
   userFromId: Long,
   userToId: Option[Long],
   form: NamedEntity,
+  canSkip: Boolean,
   status: Answer.Status = Answer.Status.New,
   isAnonymous: Boolean = false,
   elements: Set[Answer.Element] = Set()
@@ -120,5 +121,10 @@ object Answer {
       * Answered answer.
       */
     case object Answered extends Status
+
+    /**
+      * Skipped answer.
+      */
+    case object Skipped extends Status
   }
 }

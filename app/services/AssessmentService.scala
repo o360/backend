@@ -5,10 +5,11 @@ import javax.inject.{Inject, Singleton}
 import models.{ListWithTotal, NamedEntity}
 import models.assessment.{Answer, Assessment, PartialAssessment}
 import models.dao._
+import models.event.Event
 import models.project.ActiveProject
 import models.user.User
 import services.event.ActiveProjectService
-import utils.errors.{ApplicationError, BadRequestError, ConflictError}
+import utils.errors.{ApplicationError, BadRequestError, ConflictError, NotFoundError}
 import utils.implicits.FutureLifting._
 import utils.implicits.RichEitherT._
 
@@ -25,6 +26,7 @@ class AssessmentService @Inject()(
   protected val userDao: UserDao,
   protected val answerDao: AnswerDao,
   protected val activeProjectService: ActiveProjectService,
+  protected val eventDao: EventDao,
   implicit val ec: ExecutionContext
 ) extends ServiceResults[Assessment] {
 
@@ -67,26 +69,39 @@ class AssessmentService @Inject()(
 
     def assessmentToAnswers(project: ActiveProject, assessment: PartialAssessment) = {
       assessment.answers.map { partial =>
+        val (status, elements) =
+          if (partial.isSkipped) {
+            (Answer.Status.Skipped, Set.empty[Answer.Element])
+          } else {
+            (Answer.Status.Answered, partial.elements)
+          }
         Answer(
           activeProjectId,
           account.id,
           assessment.userToId,
           NamedEntity(partial.formId),
-          Answer.Status.Answered,
+          true,
+          status,
           partial.isAnonymous && project.isAnonymous,
-          partial.elements
+          elements
         )
       }
     }
 
-    def validateAnswer(project: ActiveProject, answer: Answer): EitherT[Future, ApplicationError, Unit] = {
+    def validateAnswer(project: ActiveProject, answer: Answer): EitherT[Future, ApplicationError, Answer] = {
       val result = for {
-        existedAnswer <- answerDao.getAnswer(activeProjectId, answer.userFromId, answer.userToId, answer.form.id).lift
-        _ <- ensure(existedAnswer.nonEmpty) {
+        maybeExistedAnswer <- answerDao
+          .getAnswer(activeProjectId, answer.userFromId, answer.userToId, answer.form.id)
+          .lift
+        _ <- ensure(maybeExistedAnswer.nonEmpty) {
           ConflictError.Assessment.WrongParameters
         }
-        _ <- ensure(existedAnswer.get.status == Answer.Status.New || project.canRevote) {
+        existedAnswer = maybeExistedAnswer.get
+        _ <- ensure(existedAnswer.status != Answer.Status.Answered || project.canRevote) {
           ConflictError.Assessment.CantRevote
+        }
+        _ <- ensure(answer.status != Answer.Status.Skipped || existedAnswer.canSkip) {
+          ConflictError.Assessment.CantSkip
         }
         form <- formService.getById(answer.form.id)
         _ <- answer
@@ -94,20 +109,24 @@ class AssessmentService @Inject()(
                                BadRequestError.Assessment.RequiredAnswersMissed)
           .liftLeft
 
-      } yield ()
+      } yield answer.copy(canSkip = existedAnswer.canSkip)
       result.leftMap(BadRequestError.Assessment.WithUserFormInfo(_, answer.userToId, answer.form.id))
     }
 
     for {
       project <- activeProjectService.getById(activeProjectId)
+      event <- eventDao.findById(project.eventId).liftRight(NotFoundError.Event(project.eventId))
+      _ <- ensure(event.status == Event.Status.InProgress) {
+        ConflictError.Assessment.InactiveEvent
+      }
 
       answers = assessments.flatMap(assessmentToAnswers(project, _))
 
-      _ <- answers.map(validateAnswer(project, _)).collected.leftMap { applicationErrors =>
+      validatedAnswers <- answers.map(validateAnswer(project, _)).collected.leftMap { applicationErrors =>
         BadRequestError.Assessment.Composite(applicationErrors): ApplicationError
       }
 
-      _ <- Future.sequence(answers.map(answerDao.saveAnswer)).lift
+      _ <- Future.sequence(validatedAnswers.map(answerDao.saveAnswer)).lift
     } yield ()
 
   }

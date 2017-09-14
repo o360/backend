@@ -27,6 +27,7 @@ trait AnswerGenerator {
       formId <- Arbitrary.arbitrary[Long]
       isAnonymous <- Arbitrary.arbitrary[Boolean]
       answers <- Arbitrary.arbitrary[Set[Answer.Element]]
-    } yield Answer(activeProjectId, userFromId, userToId, NamedEntity(formId), Answer.Status.New, isAnonymous, answers)
+      canSkip <- Arbitrary.arbitrary[Boolean]
+    } yield Answer(activeProjectId, userFromId, userToId, NamedEntity(formId), canSkip, Answer.Status.New, isAnonymous, answers)
   }
 }

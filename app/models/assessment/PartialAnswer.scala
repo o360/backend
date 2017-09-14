@@ -6,5 +6,6 @@ package models.assessment
 case class PartialAnswer(
   formId: Long,
   isAnonymous: Boolean,
-  elements: Set[Answer.Element]
+  elements: Set[Answer.Element],
+  isSkipped: Boolean = false
 )
