@@ -47,7 +47,7 @@ class UserControllerTest extends BaseControllerTest with UserGenerator with Tris
       forAll { (id: Long) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.userServiceMock.getById(id)(admin))
+        when(fixture.userServiceMock.getById(id))
           .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.User(id)): ApplicationError \/ User)))
         val request = authenticated(FakeRequest(), env)
 
@@ -60,7 +60,7 @@ class UserControllerTest extends BaseControllerTest with UserGenerator with Tris
       forAll { (id: Long, user: User) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.userServiceMock.getById(id)(admin))
+        when(fixture.userServiceMock.getById(id))
           .thenReturn(EitherT.eitherT(toFuture(\/-(user): ApplicationError \/ User)))
         val request = authenticated(FakeRequest(), env)
 
@@ -141,7 +141,7 @@ class UserControllerTest extends BaseControllerTest with UserGenerator with Tris
       forAll { (id: Long) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.userServiceMock.delete(id)(admin))
+        when(fixture.userServiceMock.delete(id))
           .thenReturn(EitherT.eitherT(toFuture(\/-(()): ApplicationError \/ Unit)))
         val request = authenticated(FakeRequest(), env)
 
