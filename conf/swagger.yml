@@ -1,7 +1,7 @@
 ---
   swagger: "2.0"
   info:
-    title: "Bitworks assessment API"
+    title: "Open360 API"
     version: "1.0"
   consumes:
     - application/json

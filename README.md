@@ -1,4 +1,4 @@
-# BW Staff Assessment System Backend
+# Open360 Backend
 ## Dependencies
 - java
 - sbt
@@ -25,7 +25,7 @@ Execute `sbt docker:publishLocal`
 
 ### Run container
 ```shell
-docker run -d --name bw-assessment-api --restart=always -p 9000:9000 \
+docker run -d --name open360-api --restart=always -p 9000:9000 \
    -e DATABASE_USER=${DATABASE_USER} \
     -e DATABASE_PASSWORD=${DATABASE_PASSWORD} \
     -e DATABASE_URL=${DATABASE_URL} \
@@ -43,7 +43,7 @@ docker run -d --name bw-assessment-api --restart=always -p 9000:9000 \
     -v $(pwd)/user_approved.html:/opt/docker/templates/user_approved.html \
     -v $(pwd)/user_invited.html:/opt/docker/templates/user_invited.html \
     -v ${USER_FILES_PATH}:/opt/docker/uploads
-    bw-assessment/api:latest
+    open360/api:latest
 ```
 > It is possible to directly replace application.conf file with preconfigured one instead of using 
 environment variables. *application.conf* path inside container - `/opt/docker/conf/application.conf`

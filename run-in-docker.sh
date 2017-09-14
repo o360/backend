@@ -37,9 +37,9 @@ sbt coverageReport
 sbt flywayMigrate
 sbt docker:publishLocal
 
-docker rm -f private-bw-assessment-api || true
+docker rm -f private-open360-api || true
 
-docker run -d --name private-bw-assessment-api --restart=always -p 9000:9000 \
+docker run -d --name private-open360-api --restart=always -p 9000:9000 \
 	-e DATABASE_USER=${DATABASE_USER} \
     -e DATABASE_PASSWORD=${DATABASE_PASSWORD} \
     -e DATABASE_URL=${DATABASE_URL} \
@@ -58,4 +58,4 @@ docker run -d --name private-bw-assessment-api --restart=always -p 9000:9000 \
     -v $(pwd)/user_approved.html:/opt/docker/templates/user_approved.html \
     -v $(pwd)/user_invited.html:/opt/docker/templates/user_invited.html \
     -v ${USER_FILES_PATH}:/opt/docker/uploads \
-    bw-assessment/api:latest
+    open360/api:latest

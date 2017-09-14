@@ -49,7 +49,14 @@ trait ProjectRelationFixture
   addFixtureOperation {
     sequenceOf(
       insertInto("relation")
-        .columns("id", "project_id", "group_from_id", "group_to_id", "form_id", "kind", "can_self_vote", "can_skip_answers")
+        .columns("id",
+                 "project_id",
+                 "group_from_id",
+                 "group_to_id",
+                 "form_id",
+                 "kind",
+                 "can_self_vote",
+                 "can_skip_answers")
         .scalaValues(1, 1, 1, 2, 1, 0, true, true)
         .scalaValues(2, 1, 2, null, 2, 1, false, false)
         .build,

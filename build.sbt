@@ -1,4 +1,4 @@
-name := "bw-assessment"
+name := "open360"
 
 version := "1.0"
 
@@ -53,7 +53,7 @@ parallelExecution in Test := false
 coverageExcludedPackages := "<empty>;router\\..*;"
 
 dockerExposedPorts := Seq(9000)
-packageName in Docker := "bw-assessment/api"
+packageName in Docker := "open360/api"
 dockerUpdateLatest := true
 (stage in Docker) := (stage in Docker).dependsOn(swagger).value
 
