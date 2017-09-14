@@ -20,7 +20,8 @@ case class ApiUser(
   role: ApiUser.ApiRole,
   status: ApiUser.ApiStatus,
   timezone: ZoneId,
-  termsApproved: Boolean
+  termsApproved: Boolean,
+  hasPicture: Boolean
 ) extends Response {
 
   def toModel = User(
@@ -60,7 +61,7 @@ object ApiUser {
       (__ \ "status").read[ApiUser.ApiStatus] and
       (__ \ "timezone").read[ZoneId] and
       (__ \ "termsApproved").read[Boolean]
-  )(ApiUser(_, _, _, _, _, _, _, _))
+  )(ApiUser(_, _, _, _, _, _, _, _, false))
 
   implicit val format = Format(reads, Json.writes[ApiUser])
 
@@ -78,7 +79,8 @@ object ApiUser {
     ApiRole(user.role),
     ApiStatus(user.status),
     user.timezone,
-    user.termsApproved
+    user.termsApproved,
+    user.pictureName.nonEmpty
   )
 
   /**

@@ -10,7 +10,8 @@ import play.api.libs.json.Json
 case class ApiShortUser(
   id: Long,
   name: String,
-  gender: ApiUser.ApiGender
+  gender: ApiUser.ApiGender,
+  hasPicture: Boolean
 ) extends Response
 
 object ApiShortUser {
@@ -20,6 +21,7 @@ object ApiShortUser {
   def apply(user: UserShort): ApiShortUser = ApiShortUser(
     user.id,
     user.name,
-    ApiUser.ApiGender(user.gender)
+    ApiUser.ApiGender(user.gender),
+    user.hasPicture
   )
 }
