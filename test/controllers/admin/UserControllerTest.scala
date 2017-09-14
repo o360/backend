@@ -85,7 +85,7 @@ class UserControllerTest extends BaseControllerTest with UserGenerator with Tris
         ) =>
           val env = fakeEnvironment(admin)
           val fixture = getFixture(env)
-          when(fixture.userServiceMock.list(role, st, groupId, name)(admin, ListMeta.default))
+          when(fixture.userServiceMock.list(role, st, groupId, name)(ListMeta.default))
             .thenReturn(
               EitherT.eitherT(toFuture(\/-(ListWithTotal(total, users)): ApplicationError \/ ListWithTotal[User])))
           val request = authenticated(FakeRequest(), env)

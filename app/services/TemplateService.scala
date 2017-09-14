@@ -5,10 +5,9 @@ import javax.inject.{Inject, Singleton}
 import models.NamedEntity
 import models.dao.{EventDao, ProjectDao, ProjectRelationDao, TemplateDao}
 import models.notification.Notification
-import models.project.{Project, Relation}
+import models.project.Project
 import models.template.Template
-import models.user.User
-import utils.errors.{ConflictError, ExceptionHandler, NotFoundError}
+import utils.errors.{ConflictError, NotFoundError}
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
 
@@ -29,7 +28,7 @@ class TemplateService @Inject()(
   /**
     * Returns template by ID
     */
-  def getById(id: Long)(implicit account: User): SingleResult = {
+  def getById(id: Long): SingleResult = {
     templateDao
       .findById(id)
       .liftRight {
@@ -43,7 +42,7 @@ class TemplateService @Inject()(
   def getList(
     kind: Option[Notification.Kind],
     recipient: Option[Notification.Recipient]
-  )(implicit account: User, meta: ListMeta): ListResult =
+  )(implicit meta: ListMeta): ListResult =
     templateDao.getList(optId = None, optKind = kind, optRecipient = recipient).lift
 
   /**
@@ -51,7 +50,7 @@ class TemplateService @Inject()(
     *
     * @param template template model
     */
-  def create(template: Template)(implicit account: User): SingleResult = {
+  def create(template: Template): SingleResult = {
     templateDao.create(template).lift
   }
 
@@ -60,7 +59,7 @@ class TemplateService @Inject()(
     *
     * @param draft template draft
     */
-  def update(draft: Template)(implicit account: User): SingleResult = {
+  def update(draft: Template): SingleResult = {
     for {
       _ <- getById(draft.id)
 
@@ -73,7 +72,7 @@ class TemplateService @Inject()(
     *
     * @param id template ID
     */
-  def delete(id: Long)(implicit account: User): UnitResult = {
+  def delete(id: Long): UnitResult = {
 
     def getConflictedEntities: Future[Option[Map[String, Seq[NamedEntity]]]] = {
       for {

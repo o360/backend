@@ -31,7 +31,7 @@ class UserGroupService @Inject()(
     * @param userId  user ID
     * @return none in case of success, some error otherwise
     */
-  private def validateUserGroup(groupId: Long, userId: Long)(implicit account: User): UnitResult = {
+  private def validateUserGroup(groupId: Long, userId: Long): UnitResult = {
     for {
       user <- userService.getById(userId)
 
@@ -49,7 +49,7 @@ class UserGroupService @Inject()(
     * @param groupId group ID
     * @param userId  user ID
     */
-  def add(groupId: Long, userId: Long)(implicit account: User): UnitResult = {
+  def add(groupId: Long, userId: Long): UnitResult = {
     for {
       _ <- validateUserGroup(groupId, userId)
 
@@ -64,14 +64,14 @@ class UserGroupService @Inject()(
     * @param groupId group ID
     * @param userId  user ID
     */
-  def remove(groupId: Long, userId: Long)(implicit account: User): UnitResult = {
+  def remove(groupId: Long, userId: Long): UnitResult = {
     for {
       _ <- validateUserGroup(groupId, userId)
       _ <- userGroupDao.remove(groupId, userId).lift
     } yield ()
   }
 
-  def bulkAdd(groupUsers: Seq[GroupUser])(implicit account: User): UnitResult = {
+  def bulkAdd(groupUsers: Seq[GroupUser]): UnitResult = {
     bulkAction(
       groupUsers, {
         case (groupId, userId) =>
@@ -84,14 +84,13 @@ class UserGroupService @Inject()(
     )
   }
 
-  def bulkRemove(groupUsers: Seq[GroupUser])(implicit account: User): UnitResult = {
+  def bulkRemove(groupUsers: Seq[GroupUser]): UnitResult = {
     bulkAction(groupUsers, {
       case (groupId, userId) => userGroupDao.remove(groupId, userId)
     })
   }
 
-  private def bulkAction(groupUsers: Seq[GroupUser], action: GroupUser => Future[Unit])(
-    implicit account: User): UnitResult = {
+  private def bulkAction(groupUsers: Seq[GroupUser], action: GroupUser => Future[Unit]): UnitResult = {
     for {
       maybeErrors <- Future.sequence {
         groupUsers.map {

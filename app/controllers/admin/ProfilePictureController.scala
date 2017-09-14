@@ -4,8 +4,7 @@ import javax.inject.Inject
 
 import com.mohiva.play.silhouette.api.Silhouette
 import controllers.BaseController
-import play.api.http.HttpEntity
-import play.api.mvc.{ControllerComponents, ResponseHeader, Result}
+import play.api.mvc.ControllerComponents
 import services.{FileService, UserService}
 import silhouette.DefaultEnv
 import utils.errors.{ApplicationError, BadRequestError}

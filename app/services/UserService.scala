@@ -93,7 +93,7 @@ class UserService @Inject()(
     status: Option[UserModel.Status],
     groupId: Tristate[Long],
     name: Option[String]
-  )(implicit account: UserModel, meta: ListMeta): ListResult = {
+  )(implicit meta: ListMeta): ListResult = {
     userDao
       .getList(
         optIds = None,

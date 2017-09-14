@@ -6,7 +6,6 @@ import models.dao.{EventDao, ProjectRelationDao}
 import models.event.Event
 import models.form.Form
 import models.project.Relation
-import models.user.User
 import utils.errors._
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
@@ -27,7 +26,7 @@ class ProjectRelationService @Inject()(
   /**
     * Returns relation by ID
     */
-  def getById(id: Long)(implicit account: User): SingleResult = {
+  def getById(id: Long): SingleResult = {
     projectRelationDao
       .findById(id)
       .liftRight {
@@ -38,7 +37,7 @@ class ProjectRelationService @Inject()(
   /**
     * Returns relations list.
     */
-  def getList(projectId: Option[Long])(implicit account: User, meta: ListMeta): ListResult = {
+  def getList(projectId: Option[Long])(implicit meta: ListMeta): ListResult = {
     projectRelationDao.getList(optId = None, optProjectId = projectId).lift
   }
 
@@ -47,7 +46,7 @@ class ProjectRelationService @Inject()(
     *
     * @param relation relation model
     */
-  def create(relation: Relation)(implicit account: User): SingleResult = {
+  def create(relation: Relation): SingleResult = {
     for {
       validated <- validateRelation(relation)
 
@@ -64,7 +63,7 @@ class ProjectRelationService @Inject()(
     *
     * @param draft relation draft
     */
-  def update(draft: Relation)(implicit account: User): SingleResult = {
+  def update(draft: Relation): SingleResult = {
     def isSameRelations(left: Relation, right: Relation) = {
       left.copy(id = 0, templates = Nil) == right.copy(id = 0, templates = Nil)
     }
@@ -93,7 +92,7 @@ class ProjectRelationService @Inject()(
     *
     * @param id relation ID
     */
-  def delete(id: Long)(implicit account: User): UnitResult = {
+  def delete(id: Long): UnitResult = {
     for {
       relation <- getById(id)
 
@@ -115,7 +114,7 @@ class ProjectRelationService @Inject()(
   /**
     * Validate relation and returns either new relation or error.
     */
-  private def validateRelation(relation: Relation)(implicit account: User): SingleResult = {
+  private def validateRelation(relation: Relation): SingleResult = {
     val needGroupTo = relation.kind == Relation.Kind.Classic
     val isEmptyGroupTo = relation.groupTo.isEmpty
     val validatedRelation = if (!needGroupTo && !isEmptyGroupTo) relation.copy(groupTo = None) else relation

@@ -252,12 +252,10 @@ class UserDao @Inject()(
       .join(UserLogins)
       .on(_.id === _.userId)
       .filter {
-        case (user, userLogin) =>
-          userLogin.providerId === providerId && userLogin.providerKey === providerKey
+        case (_, userLogin) => userLogin.providerId === providerId && userLogin.providerKey === providerKey
       }
       .map {
-        case (user, userLogin) =>
-          user
+        case (user, _) => user
       }
       .result
       .headOption

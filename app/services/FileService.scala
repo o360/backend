@@ -5,7 +5,7 @@ import java.nio.file.{Files, Path, Paths}
 import javax.inject.Inject
 
 import org.apache.commons.io.FilenameUtils
-import utils.errors.{ApplicationError, BadRequestError, NotFoundError}
+import utils.errors.{ApplicationError, BadRequestError}
 import utils.{Config, RandomGenerator}
 
 import scalaz.Scalaz.ToEitherOps

@@ -9,7 +9,7 @@ import models.project.Project
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
 import services.event.{EventJobService, EventService}
-import testutils.fixture.{EventFixture, UserFixture}
+import testutils.fixture.EventFixture
 import testutils.generator.EventGenerator
 import utils.errors.{BadRequestError, NotFoundError}
 import utils.listmeta.ListMeta
@@ -20,8 +20,6 @@ import scala.concurrent.Future
   * Test for event service.
   */
 class EventServiceTest extends BaseServiceTest with EventGenerator with EventFixture {
-
-  private val admin = UserFixture.admin
 
   private case class TestFixture(
     eventDaoMock: EventDao,
@@ -180,7 +178,7 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
       forAll { (id: Long) =>
         val fixture = getFixture
         when(fixture.eventDaoMock.findById(id)).thenReturn(toFuture(None))
-        val result = wait(fixture.service.delete(id)(admin).run)
+        val result = wait(fixture.service.delete(id).run)
 
         result mustBe 'left
         result.swap.toOption.get mustBe a[NotFoundError]
@@ -196,7 +194,7 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
         when(fixture.eventDaoMock.findById(id)).thenReturn(toFuture(Some(Events(0))))
         when(fixture.eventDaoMock.delete(id)).thenReturn(toFuture(1))
 
-        val result = wait(fixture.service.delete(id)(admin).run)
+        val result = wait(fixture.service.delete(id).run)
 
         result mustBe 'right
       }
@@ -208,7 +206,7 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
       forAll { (eventId: Long) =>
         val fixture = getFixture
         when(fixture.eventDaoMock.findById(eventId)).thenReturn(toFuture(None))
-        val result = wait(fixture.service.cloneEvent(eventId)(admin).run)
+        val result = wait(fixture.service.cloneEvent(eventId).run)
 
         result mustBe 'left
         result.swap.toOption.get mustBe a[NotFoundError]
@@ -234,7 +232,7 @@ class EventServiceTest extends BaseServiceTest with EventGenerator with EventFix
         )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Project](0, Nil)))
       when(fixture.eventJobService.createJobs(createdEvent)).thenReturn(toFuture(()))
 
-      val result = wait(fixture.service.cloneEvent(event.id)(admin).run)
+      val result = wait(fixture.service.cloneEvent(event.id).run)
 
       result mustBe 'right
       result.toOption.get mustBe createdEvent

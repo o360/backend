@@ -4,7 +4,6 @@ import javax.inject.{Inject, Singleton}
 
 import models.dao.EventProjectDao
 import models.event.Event
-import models.user.User
 import services.{ProjectService, ServiceResults}
 import utils.errors.AuthorizationError
 import utils.implicits.FutureLifting._
@@ -30,7 +29,7 @@ class EventProjectService @Inject()(
     * @param projectId  project ID
     * @return none in case of success, some error otherwise
     */
-  private def validateEventProject(eventId: Long, projectId: Long)(implicit account: User): UnitResult = {
+  private def validateEventProject(eventId: Long, projectId: Long): UnitResult = {
     for {
       _ <- projectService.getById(projectId)
       event <- eventService.getById(eventId)
@@ -47,7 +46,7 @@ class EventProjectService @Inject()(
     * @param eventId event ID
     * @param projectId  project ID
     */
-  def add(eventId: Long, projectId: Long)(implicit account: User): UnitResult = {
+  def add(eventId: Long, projectId: Long): UnitResult = {
     for {
       _ <- validateEventProject(eventId, projectId)
 
@@ -62,7 +61,7 @@ class EventProjectService @Inject()(
     * @param eventId event ID
     * @param projectId  project ID
     */
-  def remove(eventId: Long, projectId: Long)(implicit account: User): UnitResult = {
+  def remove(eventId: Long, projectId: Long): UnitResult = {
     for {
       _ <- validateEventProject(eventId, projectId)
       _ <- eventProjectDao.remove(eventId, projectId).lift

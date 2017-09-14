@@ -171,7 +171,7 @@ class UserServiceTest
               includeDeleted = any[Boolean]
             )(eqTo(ListMeta.default)))
             .thenReturn(toFuture(ListWithTotal(total, users)))
-          val result = wait(fixture.service.list(role, status, groupId, name)(admin, ListMeta.default).run)
+          val result = wait(fixture.service.list(role, status, groupId, name)(ListMeta.default).run)
 
           result mustBe 'isRight
           result.toOption.get mustBe ListWithTotal(total, users)

@@ -167,7 +167,7 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
       forAll { (id: Long) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.eventServiceMock.delete(id)(admin))
+        when(fixture.eventServiceMock.delete(id))
           .thenReturn(EitherT.eitherT(toFuture(\/-(()): ApplicationError \/ Unit)))
         val request = authenticated(FakeRequest(), env)
 
@@ -182,7 +182,7 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
       forAll { (id: Long, event: Event) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.eventServiceMock.cloneEvent(id)(admin))
+        when(fixture.eventServiceMock.cloneEvent(id))
           .thenReturn(EitherT.eitherT(toFuture(\/-(event): ApplicationError \/ Event)))
         val request = authenticated(FakeRequest(), env)
 

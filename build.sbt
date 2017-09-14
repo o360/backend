@@ -8,7 +8,6 @@ lazy val root =
   (project in file(".")).enablePlugins(PlayScala, SwaggerPlugin, DockerPlugin)
 
 scalacOptions ++= Seq(
-  "-Ywarn-dead-code",
   "-Ywarn-inaccessible",
   "-Ywarn-unused",
   "-Ywarn-unused-import"

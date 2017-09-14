@@ -1,7 +1,5 @@
 package controllers.api.project
 
-import java.util.UUID
-
 import models.NamedEntity
 import models.project.Project
 import play.api.libs.functional.syntax._

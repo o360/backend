@@ -1,7 +1,6 @@
 package services
 
 import java.io.FileInputStream
-import java.time.format.DateTimeFormatter
 import javax.inject.Singleton
 
 import models.event.Event

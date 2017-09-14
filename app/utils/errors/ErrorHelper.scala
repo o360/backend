@@ -1,6 +1,6 @@
 package utils.errors
 
-import controllers.api.{ApiNamedEntity, Response}
+import controllers.api.ApiNamedEntity
 import controllers.api.Response.Error
 import play.api.libs.json.Json
 import play.api.mvc.Result

@@ -39,7 +39,7 @@ class EventProjectControllerTest extends BaseControllerTest with TristateGenerat
       forAll { (eventId: Long, projectId: Long) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.eventProjectServiceMock.add(eventId, projectId)(admin))
+        when(fixture.eventProjectServiceMock.add(eventId, projectId))
           .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Event(eventId)): ApplicationError \/ Unit)))
 
         val request = authenticated(FakeRequest(), env)
@@ -52,7 +52,7 @@ class EventProjectControllerTest extends BaseControllerTest with TristateGenerat
       forAll { (eventId: Long, projectId: Long) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.eventProjectServiceMock.add(eventId, projectId)(admin))
+        when(fixture.eventProjectServiceMock.add(eventId, projectId))
           .thenReturn(EitherT.eitherT(toFuture(\/-(()): ApplicationError \/ Unit)))
 
         val request = authenticated(FakeRequest(), env)
@@ -67,7 +67,7 @@ class EventProjectControllerTest extends BaseControllerTest with TristateGenerat
       forAll { (eventId: Long, projectId: Long) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.eventProjectServiceMock.remove(eventId, projectId)(admin))
+        when(fixture.eventProjectServiceMock.remove(eventId, projectId))
           .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Event(eventId)): ApplicationError \/ Unit)))
 
         val request = authenticated(FakeRequest(), env)
@@ -80,7 +80,7 @@ class EventProjectControllerTest extends BaseControllerTest with TristateGenerat
       forAll { (eventId: Long, projectId: Long) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.eventProjectServiceMock.remove(eventId, projectId)(admin))
+        when(fixture.eventProjectServiceMock.remove(eventId, projectId))
           .thenReturn(EitherT.eitherT(toFuture(\/-(()): ApplicationError \/ Unit)))
 
         val request = authenticated(FakeRequest(), env)

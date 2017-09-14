@@ -164,7 +164,7 @@ object SpreadsheetApi {
     text: String,
     alignment: Option[Cell.Alignment] = None,
     format: Option[Cell.Format.ValueSet] = None,
-    color: Option[Element.Color] = None
+    color: Option[Element.Color]
   ) = {
 
     val cell = new CellData()
