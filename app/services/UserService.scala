@@ -140,7 +140,7 @@ class UserService @Inject()(
   private def sendAppprovalEmail(user: UserModel) = {
     try {
       val bodyTemplate = templateEngineService.loadStaticTemplate("user_approved.html")
-      val subject = "Assessment system information"
+      val subject = "Open360 information"
       val context = templateEngineService.getContext(user, None)
       val body = templateEngineService.render(bodyTemplate, context)
       mailService.send(subject, user, body)

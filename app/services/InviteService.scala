@@ -51,7 +51,7 @@ class InviteService @Inject()(
   def createInvites(invites: Seq[Invite]): UnitResult = {
     def sendEmail(invite: Invite): Unit = {
       val bodyTemplate = templateEngineService.loadStaticTemplate("user_invited.html")
-      val subject = "Assessment system invite"
+      val subject = "Open360 invite"
       val body = templateEngineService.render(bodyTemplate, Map("code" -> invite.code))
       mailService.send(subject, invite.email, invite.email, body)
     }

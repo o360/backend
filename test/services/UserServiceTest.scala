@@ -268,7 +268,7 @@ class UserServiceTest
         verify(fixture.userDaoMock, times(1)).findById(user.id)
         verify(fixture.userDaoMock, times(1)).update(updatedUser)
         if (user.status == UserModel.Status.New) {
-          verify(fixture.mailService, times(1)).send("Assessment system information", updatedUser, renderedTemplate)
+          verify(fixture.mailService, times(1)).send("Open360 information", updatedUser, renderedTemplate)
         }
         verifyNoMoreInteractions(fixture.userDaoMock)
       }
