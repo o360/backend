@@ -55,7 +55,7 @@ class ProfilePictureController @Inject()(
   /**
     * Returns user profile picture by user ID.
     */
-  def get(userId: Long) = silhouette.SecuredAction.async { implicit request =>
+  def get(userId: Long) = Action.async { _ =>
     userService
       .getById(userId)
       .fold(

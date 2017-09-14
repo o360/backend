@@ -38,7 +38,7 @@ class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with U
     "return error if user not found" in {
       forAll { (groupId: Long, userId: Long) =>
         val fixture = getFixture
-        when(fixture.userServiceMock.getById(userId)(admin))
+        when(fixture.userServiceMock.getById(userId))
           .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.User(userId)): ApplicationError \/ User)))
         val result = wait(fixture.service.add(groupId, userId)(admin).run)
 
@@ -50,7 +50,7 @@ class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with U
     "return error if group not found" in {
       forAll { (groupId: Long, userId: Long) =>
         val fixture = getFixture
-        when(fixture.userServiceMock.getById(userId)(admin))
+        when(fixture.userServiceMock.getById(userId))
           .thenReturn(EitherT.eitherT(toFuture(\/-(admin): ApplicationError \/ User)))
         when(fixture.groupServiceMock.getById(groupId)(admin))
           .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Group(groupId)): ApplicationError \/ Group)))
@@ -64,7 +64,7 @@ class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with U
     "return error if user is unapproved" in {
       forAll { (groupId: Long, userId: Long) =>
         val fixture = getFixture
-        when(fixture.userServiceMock.getById(userId)(admin))
+        when(fixture.userServiceMock.getById(userId))
           .thenReturn(EitherT.eitherT(toFuture(\/-(admin.copy(status = User.Status.New)): ApplicationError \/ User)))
         when(fixture.groupServiceMock.getById(groupId)(admin))
           .thenReturn(EitherT.eitherT(toFuture(\/-(Groups(0)): ApplicationError \/ Group)))
@@ -79,7 +79,7 @@ class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with U
     "not add if user already in group" in {
       forAll { (groupId: Long, userId: Long) =>
         val fixture = getFixture
-        when(fixture.userServiceMock.getById(userId)(admin))
+        when(fixture.userServiceMock.getById(userId))
           .thenReturn(EitherT.eitherT(toFuture(\/-(admin): ApplicationError \/ User)))
         when(fixture.groupServiceMock.getById(groupId)(admin))
           .thenReturn(EitherT.eitherT(toFuture(\/-(Groups(0)): ApplicationError \/ Group)))
@@ -96,7 +96,7 @@ class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with U
     "add user to group" in {
       forAll { (groupId: Long, userId: Long) =>
         val fixture = getFixture
-        when(fixture.userServiceMock.getById(userId)(admin))
+        when(fixture.userServiceMock.getById(userId))
           .thenReturn(EitherT.eitherT(toFuture(\/-(admin): ApplicationError \/ User)))
         when(fixture.groupServiceMock.getById(groupId)(admin))
           .thenReturn(EitherT.eitherT(toFuture(\/-(Groups(0)): ApplicationError \/ Group)))
@@ -116,7 +116,7 @@ class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with U
     "return error if user not found" in {
       forAll { (groupId: Long, userId: Long) =>
         val fixture = getFixture
-        when(fixture.userServiceMock.getById(userId)(admin))
+        when(fixture.userServiceMock.getById(userId))
           .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.User(userId)): ApplicationError \/ User)))
         val result = wait(fixture.service.remove(groupId, userId)(admin).run)
 
@@ -128,7 +128,7 @@ class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with U
     "return error if group not found" in {
       forAll { (groupId: Long, userId: Long) =>
         val fixture = getFixture
-        when(fixture.userServiceMock.getById(userId)(admin))
+        when(fixture.userServiceMock.getById(userId))
           .thenReturn(EitherT.eitherT(toFuture(\/-(admin): ApplicationError \/ User)))
         when(fixture.groupServiceMock.getById(groupId)(admin))
           .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Group(groupId)): ApplicationError \/ Group)))
@@ -142,7 +142,7 @@ class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with U
     "return error if user is unapproved" in {
       forAll { (groupId: Long, userId: Long) =>
         val fixture = getFixture
-        when(fixture.userServiceMock.getById(userId)(admin))
+        when(fixture.userServiceMock.getById(userId))
           .thenReturn(EitherT.eitherT(toFuture(\/-(admin.copy(status = User.Status.New)): ApplicationError \/ User)))
         when(fixture.groupServiceMock.getById(groupId)(admin))
           .thenReturn(EitherT.eitherT(toFuture(\/-(Groups(0)): ApplicationError \/ Group)))
@@ -157,7 +157,7 @@ class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with U
     "remove user from group" in {
       forAll { (groupId: Long, userId: Long) =>
         val fixture = getFixture
-        when(fixture.userServiceMock.getById(userId)(admin))
+        when(fixture.userServiceMock.getById(userId))
           .thenReturn(EitherT.eitherT(toFuture(\/-(admin): ApplicationError \/ User)))
         when(fixture.groupServiceMock.getById(groupId)(admin))
           .thenReturn(EitherT.eitherT(toFuture(\/-(Groups(0)): ApplicationError \/ Group)))
@@ -174,7 +174,7 @@ class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with U
     "bulk add users to groups" in {
       forAll { (groupId: Long, userId: Long) =>
         val fixture = getFixture
-        when(fixture.userServiceMock.getById(userId)(admin))
+        when(fixture.userServiceMock.getById(userId))
           .thenReturn(EitherT.eitherT(toFuture(\/-(admin): ApplicationError \/ User)))
         when(fixture.groupServiceMock.getById(groupId)(admin))
           .thenReturn(EitherT.eitherT(toFuture(\/-(Groups(0)): ApplicationError \/ Group)))
@@ -194,7 +194,7 @@ class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with U
     "bulk remove users from groups" in {
       forAll { (groupId: Long, userId: Long) =>
         val fixture = getFixture
-        when(fixture.userServiceMock.getById(userId)(admin))
+        when(fixture.userServiceMock.getById(userId))
           .thenReturn(EitherT.eitherT(toFuture(\/-(admin): ApplicationError \/ User)))
         when(fixture.groupServiceMock.getById(groupId)(admin))
           .thenReturn(EitherT.eitherT(toFuture(\/-(Groups(0)): ApplicationError \/ Group)))

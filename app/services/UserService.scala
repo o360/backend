@@ -55,14 +55,23 @@ class UserService @Inject()(
     * Returns user by id.
     *
     * @param id      user ID
-    * @param account logged in user
     * @return
     */
-  def getById(id: Long)(implicit account: UserModel): SingleResult = {
+  def getById(id: Long): SingleResult = {
     for {
       user <- userDao.findById(id).liftRight {
         NotFoundError.User(id)
       }
+
+    } yield user
+  }
+
+  /**
+    * Returns user by id with authorization checks.
+    */
+  def userGetById(id: Long)(implicit account: UserModel): SingleResult = {
+    for {
+      user <- getById(id)
       _ <- ensure(account.role == UserModel.Role.Admin || user.status == UserModel.Status.Approved || account.id == id) {
         AuthorizationError.General
       }
@@ -153,9 +162,8 @@ class UserService @Inject()(
     * Deletes user.
     *
     * @param id      user id
-    * @param account logged in user
     */
-  def delete(id: Long)(implicit account: UserModel): UnitResult = {
+  def delete(id: Long): UnitResult = {
 
     def getConflictedEntities = {
       for {

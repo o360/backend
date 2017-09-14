@@ -38,7 +38,8 @@ trait UserGenerator {
     for {
       name <- Arbitrary.arbitrary[String]
       gender <- Arbitrary.arbitrary[User.Gender]
-    } yield UserShort(0, name, gender)
+      hasPicture <- Arbitrary.arbitrary[Boolean]
+    } yield UserShort(0, name, gender, hasPicture)
   }
 
 }

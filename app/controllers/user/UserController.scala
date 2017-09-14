@@ -38,7 +38,7 @@ class UserController @Inject()(
   def getById(id: Long) = silhouette.SecuredAction(AllowedStatus.approved).async { implicit request =>
     toResult(Ok) {
       userService
-        .getById(id)
+        .userGetById(id)
         .map(x => ApiShortUser(UserShort.fromUser(x)))
     }
   }

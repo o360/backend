@@ -122,7 +122,7 @@ class UserServiceTest
       forAll { (id: Long) =>
         val fixture = getFixture
         when(fixture.userDaoMock.findById(id)).thenReturn(toFuture(None))
-        val result = wait(fixture.service.getById(id)(admin).run)
+        val result = wait(fixture.service.getById(id).run)
 
         result mustBe 'isLeft
         result.swap.toOption.get mustBe a[NotFoundError]
@@ -136,7 +136,7 @@ class UserServiceTest
       forAll { (user: UserModel, id: Long) =>
         val fixture = getFixture
         when(fixture.userDaoMock.findById(id)).thenReturn(toFuture(Some(user)))
-        val result = wait(fixture.service.getById(id)(admin).run)
+        val result = wait(fixture.service.getById(id).run)
 
         result mustBe 'isRight
         result.toOption.get mustBe user
@@ -280,7 +280,7 @@ class UserServiceTest
       forAll { (id: Long) =>
         val fixture = getFixture
         when(fixture.userDaoMock.findById(id)).thenReturn(toFuture(None))
-        val result = wait(fixture.service.delete(id)(admin).run)
+        val result = wait(fixture.service.delete(id).run)
 
         result mustBe 'isLeft
         result.swap.toOption.get mustBe a[NotFoundError]
@@ -301,7 +301,7 @@ class UserServiceTest
             optName = any[Option[String]],
             optLevels = any[Option[Seq[Int]]]
           )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Groups.take(1))))
-        val result = wait(fixture.service.delete(id)(admin).run)
+        val result = wait(fixture.service.delete(id).run)
 
         result mustBe 'left
         result.swap.toOption.get mustBe a[ConflictError]
@@ -321,7 +321,7 @@ class UserServiceTest
             optLevels = any[Option[Seq[Int]]]
           )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Group](0, Nil)))
         when(fixture.userDaoMock.delete(id)).thenReturn(toFuture(()))
-        val result = wait(fixture.service.delete(id)(admin).run)
+        val result = wait(fixture.service.delete(id).run)
 
         result mustBe 'isRight
 
