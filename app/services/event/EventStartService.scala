@@ -50,12 +50,14 @@ class EventStartService @Inject()(
         }
       } yield {
         usersFrom.data.flatMap { userFrom =>
+          val createAnswer =
+            Answer(activeProject.id, userFrom.id, _: Option[Long], relation.form, relation.canSkipAnswers)
           usersTo match {
             case Some(users) =>
               users
                 .filter(u => u.id != userFrom.id || relation.canSelfVote)
-                .map(u => Answer(activeProject.id, userFrom.id, Some(u.id), relation.form))
-            case None => Seq(Answer(activeProject.id, userFrom.id, None, relation.form))
+                .map(u => createAnswer(Some(u.id)))
+            case None => Seq(createAnswer(None))
           }
         }
       }

@@ -94,7 +94,7 @@ class EventService @Inject()(
   }
 
   private def getUserInfo(answers: Seq[Answer]) =
-    Event.UserInfo(answers.length, answers.count(_.status == Answer.Status.Answered))
+    Event.UserInfo(answers.length, answers.count(_.status != Answer.Status.New))
 
   /**
     * Creates new event.

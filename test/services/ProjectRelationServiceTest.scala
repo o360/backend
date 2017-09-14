@@ -31,7 +31,10 @@ class ProjectRelationServiceTest
     eventDaoMock: EventDao,
     formService: FormService,
     service: ProjectRelationService
-  )
+  ) {
+    def relation =
+      Relation(1, NamedEntity(1), NamedEntity(1), None, NamedEntity(2), Relation.Kind.Classic, Nil, false, false, false)
+  }
 
   private def getFixture = {
     val daoMock = mock[ProjectRelationDao]
@@ -102,8 +105,7 @@ class ProjectRelationServiceTest
   "create" should {
     "return bad request if can't validate relations" in {
       val fixture = getFixture
-      val relation =
-        Relation(1, NamedEntity(1), NamedEntity(1), None, NamedEntity(2), Relation.Kind.Classic, Nil, false, false)
+      val relation = fixture.relation
 
       val result = wait(fixture.service.create(relation)(admin).run)
 
@@ -232,8 +234,7 @@ class ProjectRelationServiceTest
 
     "return bad request if can't validate relations" in {
       val fixture = getFixture
-      val relation =
-        Relation(1, NamedEntity(1), NamedEntity(1), None, NamedEntity(2), Relation.Kind.Classic, Nil, false, false)
+      val relation = fixture.relation
 
       when(fixture.relationDaoMock.findById(relation.id)).thenReturn(toFuture(Some(relation)))
       when(

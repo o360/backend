@@ -21,9 +21,11 @@ trait AnswerComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
     {
       case Answer.Status.New => 0
       case Answer.Status.Answered => 1
+      case Answer.Status.Skipped => 2
     }, {
       case 0 => Answer.Status.New
       case 1 => Answer.Status.Answered
+      case 2 => Answer.Status.Skipped
     }
   )
 
@@ -37,13 +39,15 @@ trait AnswerComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
     userToId: Option[Long],
     formId: Long,
     isAnonymous: Boolean,
-    status: Answer.Status
+    status: Answer.Status,
+    canSkip: Boolean
   ) {
     def toModel(answers: Seq[Answer.Element], formName: String) = Answer(
       activeProjectId,
       userFromId,
       userToId,
       NamedEntity(formId, formName),
+      canSkip,
       status,
       isAnonymous,
       answers.toSet
@@ -58,7 +62,8 @@ trait AnswerComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
       answer.userToId,
       answer.form.id,
       answer.isAnonymous,
-      answer.status
+      answer.status,
+      answer.canSkip
     )
   }
 
@@ -71,9 +76,10 @@ trait AnswerComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
     def formId = column[Long]("form_id")
     def isAnonymous = column[Boolean]("is_anonymous")
     def status = column[Answer.Status]("status")
+    def canSkip = column[Boolean]("can_skip")
 
     def * =
-      (id, activeProjectId, userFromId, userToId, formId, isAnonymous, status) <> ((DbAnswer.apply _).tupled, DbAnswer.unapply)
+      (id, activeProjectId, userFromId, userToId, formId, isAnonymous, status, canSkip) <> ((DbAnswer.apply _).tupled, DbAnswer.unapply)
   }
 
   val Answers = TableQuery[AnswerTable]

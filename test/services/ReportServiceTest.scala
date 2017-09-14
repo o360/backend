@@ -47,6 +47,7 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
         userFrom.id,
         Some(userTo.id),
         NamedEntity(form.id),
+        true,
         Answer.Status.Answered,
         isAnonymous = true,
         Set(Answer.Element(form.elements(0).id, Some("text"), None, None))

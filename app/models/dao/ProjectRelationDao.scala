@@ -29,7 +29,8 @@ trait ProjectRelationComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
     groupToId: Option[Long],
     formId: Long,
     kind: Relation.Kind,
-    canSelfVote: Boolean
+    canSelfVote: Boolean,
+    canSkipAnswers: Boolean
   ) {
 
     def toModel(
@@ -48,7 +49,8 @@ trait ProjectRelationComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
       kind,
       templates,
       isEventsExists,
-      canSelfVote
+      canSelfVote,
+      canSkipAnswers
     )
   }
 
@@ -60,7 +62,8 @@ trait ProjectRelationComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
       r.groupTo.map(_.id),
       r.form.id,
       r.kind,
-      r.canSelfVote
+      r.canSelfVote,
+      r.canSkipAnswers
     )
   }
 
@@ -83,9 +86,10 @@ trait ProjectRelationComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
     def formId = column[Long]("form_id")
     def kind = column[Relation.Kind]("kind")
     def canSelfVote = column[Boolean]("can_self_vote")
+    def canSkipAnswers = column[Boolean]("can_skip_answers")
 
     def * =
-      (id, projectId, groupFromId, groupToId, formId, kind, canSelfVote) <> ((DbRelation.apply _).tupled, DbRelation.unapply)
+      (id, projectId, groupFromId, groupToId, formId, kind, canSelfVote, canSkipAnswers) <> ((DbRelation.apply _).tupled, DbRelation.unapply)
   }
 
   val Relations = TableQuery[RelationTable]

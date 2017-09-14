@@ -13,7 +13,7 @@ import org.scalacheck.Gen
 import services.event.ActiveProjectService
 import testutils.fixture._
 import utils.errors.BadRequestError.Assessment.WithUserFormInfo
-import utils.errors.NotFoundError
+import utils.errors.{ConflictError, NotFoundError}
 import utils.listmeta.ListMeta
 
 /**
@@ -33,6 +33,7 @@ class AssessmentServiceTest
     userDao: UserDao,
     answerDao: AnswerDao,
     activeProjectService: ActiveProjectService,
+    eventDao: EventDao,
     service: AssessmentService
   )
 
@@ -41,8 +42,9 @@ class AssessmentServiceTest
     val userDao = mock[UserDao]
     val answerDao = mock[AnswerDao]
     val activeProjectService = mock[ActiveProjectService]
-    val service = new AssessmentService(formService, userDao, answerDao, activeProjectService, ec)
-    Fixture(formService, userDao, answerDao, activeProjectService, service)
+    val eventDao = mock[EventDao]
+    val service = new AssessmentService(formService, userDao, answerDao, activeProjectService, eventDao, ec)
+    Fixture(formService, userDao, answerDao, activeProjectService, eventDao, service)
   }
 
   "getList" should {
@@ -117,15 +119,48 @@ class AssessmentServiceTest
       result.swap.toOption.get mustBe a[NotFoundError]
     }
 
+    "return error if event not found" in {
+      val fixture = getFixture
+      val user = UserFixture.user
+      val activeProject = ActiveProjects(0)
+
+      when(fixture.activeProjectService.getById(activeProject.id)(user))
+        .thenReturn(toSuccessResult(activeProject))
+      when(fixture.eventDao.findById(activeProject.eventId)).thenReturn(toFuture(None))
+
+      val result = wait(fixture.service.bulkSubmit(activeProject.id, Seq())(user).run)
+
+      result mustBe 'left
+      result.swap.toOption.get mustBe a[NotFoundError]
+    }
+
+    "return error if event not in progress" in {
+      val fixture = getFixture
+      val user = UserFixture.user
+      val activeProject = ActiveProjects(0)
+      val event = Events(1)
+
+      when(fixture.activeProjectService.getById(activeProject.id)(user))
+        .thenReturn(toSuccessResult(activeProject))
+      when(fixture.eventDao.findById(activeProject.eventId)).thenReturn(toFuture(Some(event)))
+
+      val result = wait(fixture.service.bulkSubmit(activeProject.id, Seq())(user).run)
+
+      result mustBe 'left
+      result.swap.toOption.get mustBe a[ConflictError.Assessment.InactiveEvent.type]
+    }
+
     "return error if there is no existed answer" in {
       val fixture = getFixture
       val user = UserFixture.user
       val activeProject = ActiveProjects(0)
+      val event = Events(3)
       val formId = 1
       val assessment = PartialAssessment(None, Seq(PartialAnswer(formId, false, Set())))
 
       when(fixture.activeProjectService.getById(activeProject.id)(user))
         .thenReturn(toSuccessResult(activeProject))
+      when(fixture.eventDao.findById(activeProject.eventId)).thenReturn(toFuture(Some(event)))
 
       when(fixture.answerDao.getAnswer(activeProject.id, user.id, None, formId)).thenReturn(toFuture(None))
 
@@ -139,12 +174,35 @@ class AssessmentServiceTest
       val fixture = getFixture
       val user = UserFixture.user
       val activeProject = ActiveProjects(0).copy(canRevote = false)
+      val event = Events(3)
       val formId = 1
       val assessment = PartialAssessment(None, Seq(PartialAnswer(formId, false, Set())))
-      val answer = Answer(activeProject.id, user.id, None, NamedEntity(formId), Answer.Status.Answered)
+      val answer = Answer(activeProject.id, user.id, None, NamedEntity(formId), true, Answer.Status.Answered)
 
       when(fixture.activeProjectService.getById(activeProject.id)(user))
         .thenReturn(toSuccessResult(activeProject))
+      when(fixture.eventDao.findById(activeProject.eventId)).thenReturn(toFuture(Some(event)))
+
+      when(fixture.answerDao.getAnswer(activeProject.id, user.id, None, formId)).thenReturn(toFuture(Some(answer)))
+
+      val result = wait(fixture.service.bulkSubmit(activeProject.id, Seq(assessment))(user).run)
+
+      result mustBe 'left
+      result.swap.toOption.get.getInnerErrors.get.head mustBe a[WithUserFormInfo]
+    }
+
+    "return error if cant skip" in {
+      val fixture = getFixture
+      val user = UserFixture.user
+      val activeProject = ActiveProjects(0)
+      val event = Events(3)
+      val formId = 1
+      val assessment = PartialAssessment(None, Seq(PartialAnswer(formId, false, Set(), true)))
+      val answer = Answer(activeProject.id, user.id, None, NamedEntity(formId), false, Answer.Status.New)
+
+      when(fixture.activeProjectService.getById(activeProject.id)(user))
+        .thenReturn(toSuccessResult(activeProject))
+      when(fixture.eventDao.findById(activeProject.eventId)).thenReturn(toFuture(Some(event)))
 
       when(fixture.answerDao.getAnswer(activeProject.id, user.id, None, formId)).thenReturn(toFuture(Some(answer)))
 
@@ -156,7 +214,7 @@ class AssessmentServiceTest
 
     "return error if can't validate form" in {
       val baseForm = Form(1, "", Seq(), Form.Kind.Freezed, true, "machine name")
-      val createAnswer = Answer(1, 1, None, NamedEntity(1), Answer.Status.Answered, false, _: Set[Answer.Element])
+      val createAnswer = Answer(1, 1, None, NamedEntity(1), false, Answer.Status.Answered, false, _: Set[Answer.Element])
 
       val invalidFormsWithAnswers = Seq(
         // Duplicate answers
@@ -185,11 +243,13 @@ class AssessmentServiceTest
           val fixture = getFixture
           val user = UserFixture.user
           val activeProject = ActiveProjects(0)
+          val event = Events(3)
 
-          val dummyAnswer = Answer(1, 1, None, NamedEntity(1))
+          val dummyAnswer = Answer(1, 1, None, NamedEntity(1), true)
 
           when(fixture.activeProjectService.getById(activeProject.id)(user))
             .thenReturn(toSuccessResult(activeProject))
+          when(fixture.eventDao.findById(activeProject.eventId)).thenReturn(toFuture(Some(event)))
 
           when(fixture.answerDao.getAnswer(activeProject.id, user.id, None, form.id))
             .thenReturn(toFuture(Some(dummyAnswer)))
@@ -205,15 +265,17 @@ class AssessmentServiceTest
       val fixture = getFixture
       val user = UserFixture.user
       val activeProject = ActiveProjects(0)
+      val event = Events(3)
 
       val form =
         Form(1, "", Seq(Form.Element(1, Form.ElementKind.TextField, "", false, Nil)), Form.Kind.Freezed, true, "")
 
-      val answer = Answer(activeProject.id, user.id, None, NamedEntity(form.id), Answer.Status.Answered)
+      val answer = Answer(activeProject.id, user.id, None, NamedEntity(form.id), true, Answer.Status.Answered)
       val assessment = PartialAssessment(None, Seq(PartialAnswer(form.id, false, Set())))
 
       when(fixture.activeProjectService.getById(activeProject.id)(user))
         .thenReturn(toSuccessResult(activeProject))
+      when(fixture.eventDao.findById(activeProject.eventId)).thenReturn(toFuture(Some(event)))
 
       when(fixture.answerDao.getAnswer(activeProject.id, user.id, None, form.id)).thenReturn(toFuture(Some(answer)))
       when(fixture.formService.getById(form.id)).thenReturn(toSuccessResult(form))

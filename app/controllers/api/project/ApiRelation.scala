@@ -16,7 +16,8 @@ case class ApiRelation(
   kind: ApiRelation.Kind,
   templates: Seq[ApiTemplateBinding],
   hasInProgressEvents: Boolean,
-  canSelfVote: Boolean
+  canSelfVote: Boolean,
+  canSkipAnswers: Boolean
 ) extends Response
 
 object ApiRelation {
@@ -29,7 +30,8 @@ object ApiRelation {
     Kind(r.kind),
     r.templates.map(ApiTemplateBinding(_)),
     r.hasInProgressEvents,
-    r.canSelfVote
+    r.canSelfVote,
+    r.canSkipAnswers
   )
 
   case class Kind(value: Relation.Kind) extends EnumFormat[Relation.Kind]

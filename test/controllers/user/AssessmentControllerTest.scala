@@ -72,7 +72,7 @@ class AssessmentControllerTest extends BaseControllerTest {
       when(fixture.assessmentServiceMock.bulkSubmit(1, Seq(assessment))(admin))
         .thenReturn(EitherT.eitherT(toFuture(\/-(()): ApplicationError \/ Unit)))
 
-      val partialAssessment = ApiPartialAssessment(Some(1), ApiPartialFormAnswer(1, Seq(), false))
+      val partialAssessment = ApiPartialAssessment(Some(1), ApiPartialFormAnswer(1, Seq(), false, false))
 
       val request = authenticated(
         FakeRequest("POST", "/assessments")

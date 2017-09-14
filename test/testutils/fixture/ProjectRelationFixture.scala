@@ -29,7 +29,8 @@ trait ProjectRelationFixture
         TemplateBinding(NamedEntity(2, "secondname"), Notification.Kind.End, Notification.Recipient.Auditor)
       ),
       hasInProgressEvents = false,
-      canSelfVote = true
+      canSelfVote = true,
+      canSkipAnswers = true
     ),
     Relation(
       id = 2,
@@ -40,16 +41,17 @@ trait ProjectRelationFixture
       kind = Relation.Kind.Survey,
       templates = Nil,
       hasInProgressEvents = false,
-      canSelfVote = false
+      canSelfVote = false,
+      canSkipAnswers = false
     )
   )
 
   addFixtureOperation {
     sequenceOf(
       insertInto("relation")
-        .columns("id", "project_id", "group_from_id", "group_to_id", "form_id", "kind", "can_self_vote")
-        .scalaValues(1, 1, 1, 2, 1, 0, true)
-        .scalaValues(2, 1, 2, null, 2, 1, false)
+        .columns("id", "project_id", "group_from_id", "group_to_id", "form_id", "kind", "can_self_vote", "can_skip_answers")
+        .scalaValues(1, 1, 1, 2, 1, 0, true, true)
+        .scalaValues(2, 1, 2, null, 2, 1, false, false)
         .build,
       insertInto("relation_email_template")
         .columns("relation_id", "template_id", "kind", "recipient_kind")

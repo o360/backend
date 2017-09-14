@@ -67,3 +67,10 @@
   - type: java\.time\.ZoneId
     specAsParameter:
       - type: string
+  - type: .*.assessment\.ApiFormAnswer\.AnswerStatus
+    specAsParameter:
+      - type: string
+        enum:
+          - "new"
+          - "answered"
+          - "skipped"

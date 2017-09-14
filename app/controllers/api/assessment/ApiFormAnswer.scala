@@ -1,6 +1,7 @@
 package controllers.api.assessment
 
-import controllers.api.{ApiNamedEntity, Response}
+import controllers.api.assessment.ApiFormAnswer.AnswerStatus
+import controllers.api.{ApiNamedEntity, EnumFormat, EnumFormatHelper, Response}
 import models.assessment.Answer
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
@@ -12,7 +13,9 @@ import play.api.libs.json._
 case class ApiFormAnswer(
   form: ApiNamedEntity,
   answers: Seq[ApiFormAnswer.ElementAnswer],
-  isAnonymous: Boolean
+  isAnonymous: Boolean,
+  canSkip: Boolean,
+  status: AnswerStatus
 ) extends Response
 
 object ApiFormAnswer {
@@ -23,7 +26,9 @@ object ApiFormAnswer {
   def apply(answer: Answer): ApiFormAnswer = ApiFormAnswer(
     ApiNamedEntity(answer.form),
     answer.elements.toSeq.map(ElementAnswer(_)),
-    answer.isAnonymous
+    answer.isAnonymous,
+    answer.canSkip,
+    AnswerStatus(answer.status)
   )
 
   case class ElementAnswer(
@@ -53,6 +58,17 @@ object ApiFormAnswer {
       element.text,
       element.valuesIds.map(_.toSeq),
       element.comment
+    )
+  }
+
+  case class AnswerStatus(value: Answer.Status) extends EnumFormat[Answer.Status]
+  object AnswerStatus extends EnumFormatHelper[Answer.Status, AnswerStatus]("answer.status") {
+    import Answer.Status._
+
+    override protected def mapping: Map[String, Answer.Status] = Map(
+      "new" -> New,
+      "answered" -> Answered,
+      "skipped" -> Skipped
     )
   }
 }
