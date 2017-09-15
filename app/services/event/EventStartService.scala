@@ -95,7 +95,7 @@ class EventStartService @Inject()(
         .map {
           case (_, conflictedAnswers) =>
             val canSkip = conflictedAnswers.map(_.canSkip).fold(false)(_ || _)
-            answers.head.copy(canSkip = canSkip)
+            conflictedAnswers.head.copy(canSkip = canSkip)
         }
         .toSeq
 
