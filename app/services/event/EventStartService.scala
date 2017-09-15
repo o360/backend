@@ -89,10 +89,21 @@ class EventStartService @Inject()(
       } yield answers.map(a => a.copy(form = NamedEntity(mapping(a.form.id))))
     }
 
+    def distinctAnswers(answers: Seq[Answer]): Seq[Answer] =
+      answers
+        .groupBy(_.getUniqueComponent)
+        .map {
+          case (_, conflictedAnswers) =>
+            val canSkip = conflictedAnswers.map(_.canSkip).fold(false)(_ || _)
+            answers.head.copy(canSkip = canSkip)
+        }
+        .toSeq
+
     val result = for {
       projects <- projectDao.getList(optEventId = Some(job.eventId)).lift
       allAnswers <- projects.data.map(getAnswersForProject).sequenced
-      withReplacedForms <- createAndReplaceForms(allAnswers.flatten)
+      withoutDuplicates = distinctAnswers(allAnswers.flatten)
+      withReplacedForms <- createAndReplaceForms(withoutDuplicates)
       _ <- Future.sequence(withReplacedForms.map(answerDao.saveAnswer)).lift
     } yield ()
 
