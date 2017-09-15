@@ -18,6 +18,8 @@ case class Answer(
   elements: Set[Answer.Element] = Set()
 ) {
 
+  def getUniqueComponent = (activeProjectId, userFromId, userToId, form.id)
+
   /**
     * Validates form. Returns none in case of success.
     */
