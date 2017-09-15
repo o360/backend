@@ -1,5 +1,7 @@
 package models.form
 
+import models.form.element.ElementKind
+
 /**
   * Form template model.
   *
@@ -44,24 +46,6 @@ object Form {
     required: Boolean,
     values: Seq[ElementValue]
   )
-
-  /**
-    * Kind of form element.
-    *
-    * @param needValues is list of values needed
-    */
-  sealed abstract class ElementKind(val needValues: Boolean) {
-    val isValuesNeeded = needValues
-  }
-  object ElementKind {
-    case object TextField extends ElementKind(false)
-    case object TextArea extends ElementKind(false)
-    case object Checkbox extends ElementKind(false)
-    case object CheckboxGroup extends ElementKind(true)
-    case object Radio extends ElementKind(true)
-    case object Select extends ElementKind(true)
-    case object LikeDislike extends ElementKind(true)
-  }
 
   /**
     * Form element value.

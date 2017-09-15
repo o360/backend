@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 
 import com.ninja_squad.dbsetup.Operations._
 import models.event.Event
-import models.notification.Notification
+import models.notification._
 
 /**
   * Event model fixture.
@@ -21,18 +21,18 @@ trait EventFixture extends FixtureHelper { self: FixtureSupport =>
       Seq(
         Event.NotificationTime(
           Timestamp.valueOf(LocalDateTime.of(2017, 1, 2, 12, 0)),
-          Notification.Kind.PreBegin,
-          Notification.Recipient.Respondent
+          PreBegin,
+          Respondent
         ),
         Event.NotificationTime(
           Timestamp.valueOf(LocalDateTime.of(2017, 1, 2, 12, 30)),
-          Notification.Kind.Begin,
-          Notification.Recipient.Respondent
+          Begin,
+          Respondent
         ),
         Event.NotificationTime(
           Timestamp.valueOf(LocalDateTime.of(2017, 1, 5, 12, 30)),
-          Notification.Kind.End,
-          Notification.Recipient.Auditor
+          End,
+          Auditor
         )
       )
     ),

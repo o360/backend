@@ -3,6 +3,7 @@ package controllers.api.user
 import controllers.api.Response
 import models.user.UserShort
 import play.api.libs.json.Json
+import io.scalaland.chimney.dsl._
 
 /**
   * Short user API model.
@@ -18,10 +19,9 @@ object ApiShortUser {
 
   implicit val shortUserWrites = Json.writes[ApiShortUser]
 
-  def apply(user: UserShort): ApiShortUser = ApiShortUser(
-    user.id,
-    user.name,
-    ApiUser.ApiGender(user.gender),
-    user.hasPicture
-  )
+  def apply(user: UserShort): ApiShortUser =
+    user
+      .into[ApiShortUser]
+      .withFieldComputed(_.gender, x => ApiUser.ApiGender(x.gender))
+      .transform
 }

@@ -9,6 +9,7 @@ import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
+import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -33,31 +34,20 @@ trait ProjectComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
     machineName: String
   ) {
 
-    def toModel(groupAuditorName: String, templates: Seq[TemplateBinding], hasInProgressEvent: Boolean) = Project(
-      id,
-      name,
-      description,
-      NamedEntity(groupAuditorId, groupAuditorName),
-      templates,
-      formsOnSamePage,
-      canRevote,
-      isAnonymous,
-      hasInProgressEvent,
-      machineName
-    )
+    def toModel(groupAuditorName: String, templates: Seq[TemplateBinding], hasInProgressEvent: Boolean) =
+      this
+        .into[Project]
+        .withFieldConst(_.groupAuditor, NamedEntity(groupAuditorId, groupAuditorName))
+        .withFieldConst(_.templates, templates)
+        .withFieldConst(_.hasInProgressEvents, hasInProgressEvent)
+        .transform
   }
 
   object DbProject {
-    def fromModel(p: Project) = DbProject(
-      p.id,
-      p.name,
-      p.description,
-      p.groupAuditor.id,
-      p.formsOnSamePage,
-      p.canRevote,
-      p.isAnonymous,
-      p.machineName
-    )
+    def fromModel(p: Project) =
+      p.into[DbProject]
+        .withFieldComputed(_.groupAuditorId, _.groupAuditor.id)
+        .transform
   }
 
   class ProjectTable(tag: Tag) extends Table[DbProject](tag, "project") {

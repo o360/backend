@@ -7,6 +7,8 @@ import models.project.ActiveProject
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 import utils.listmeta.ListMeta
+import io.scalaland.chimney.dsl._
+import scalaz.std.option._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -28,31 +30,15 @@ trait ActiveProjectComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
     machineName: String,
     parentProjectId: Option[Long]
   ) {
-    def toModel = ActiveProject(
-      id,
-      eventId,
-      name,
-      description,
-      formsOnSamePage,
-      canRevote,
-      isAnonymous,
-      machineName,
-      parentProjectId
-    )
+    def toModel =
+      this
+        .into[ActiveProject]
+        .withFieldConst(_.userInfo, none[ActiveProject.UserInfo])
+        .transform
   }
 
   object DbActiveProject {
-    def fromModel(ap: ActiveProject) = DbActiveProject(
-      ap.id,
-      ap.eventId,
-      ap.name,
-      ap.description,
-      ap.formsOnSamePage,
-      ap.canRevote,
-      ap.isAnonymous,
-      ap.machineName,
-      ap.parentProjectId
-    )
+    def fromModel(ap: ActiveProject) = ap.transformInto[DbActiveProject]
   }
 
   class ActiveProjectTable(tag: Tag) extends Table[DbActiveProject](tag, "active_project") {

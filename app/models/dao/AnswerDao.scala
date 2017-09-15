@@ -7,6 +7,7 @@ import models.assessment.Answer
 import org.davidbild.tristate.Tristate
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
+import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -42,29 +43,21 @@ trait AnswerComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
     status: Answer.Status,
     canSkip: Boolean
   ) {
-    def toModel(answers: Seq[Answer.Element], formName: String) = Answer(
-      activeProjectId,
-      userFromId,
-      userToId,
-      NamedEntity(formId, formName),
-      canSkip,
-      status,
-      isAnonymous,
-      answers.toSet
-    )
+    def toModel(answers: Seq[Answer.Element], formName: String) =
+      this
+        .into[Answer]
+        .withFieldComputed(_.form, x => NamedEntity(x.formId, formName))
+        .withFieldConst(_.elements, answers.toSet)
+        .transform
   }
 
   object DbAnswer {
-    def fromModel(answer: Answer): DbAnswer = DbAnswer(
-      0,
-      answer.activeProjectId,
-      answer.userFromId,
-      answer.userToId,
-      answer.form.id,
-      answer.isAnonymous,
-      answer.status,
-      answer.canSkip
-    )
+    def fromModel(answer: Answer): DbAnswer =
+      answer
+        .into[DbAnswer]
+        .withFieldConst(_.id, 0L)
+        .withFieldComputed(_.formId, _.form.id)
+        .transform
   }
 
   class AnswerTable(tag: Tag) extends Table[DbAnswer](tag, "form_answer") {
@@ -94,22 +87,21 @@ trait AnswerComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
     text: Option[String],
     comment: Option[String]
   ) {
-    def toModel(values: Option[Seq[Long]]) = Answer.Element(
-      elementId,
-      text,
-      values.map(_.toSet),
-      comment
-    )
+    def toModel(values: Option[Seq[Long]]) =
+      this
+        .into[Answer.Element]
+        .withFieldConst(_.valuesIds, values.map(_.toSet))
+        .transform
+
   }
 
   object DbFormElementAnswer {
-    def fromModel(el: Answer.Element, answerId: Long) = DbFormElementAnswer(
-      0,
-      answerId,
-      el.elementId,
-      el.text,
-      el.comment
-    )
+    def fromModel(el: Answer.Element, answerId: Long) =
+      el.into[DbFormElementAnswer]
+        .withFieldConst(_.id, 0L)
+        .withFieldConst(_.answerId, answerId)
+        .transform
+
   }
 
   class FormElementAnswerTable(tag: Tag) extends Table[DbFormElementAnswer](tag, "form_element_answer") {

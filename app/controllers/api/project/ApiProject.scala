@@ -4,6 +4,7 @@ import controllers.api.{ApiNamedEntity, Response}
 import models.project.Project
 import models.user.User
 import play.api.libs.json.Json
+import io.scalaland.chimney.dsl._
 
 /**
   * Project API model.
@@ -33,17 +34,10 @@ object ApiProject {
         (None, None)
     }
 
-    ApiProject(
-      project.id,
-      project.name,
-      project.description,
-      groupAuditor,
-      templates,
-      project.formsOnSamePage,
-      project.canRevote,
-      project.isAnonymous,
-      project.hasInProgressEvents,
-      project.machineName
-    )
+    project
+      .into[ApiProject]
+      .withFieldConst(_.groupAuditor, groupAuditor)
+      .withFieldConst(_.templates, templates)
+      .transform
   }
 }

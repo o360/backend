@@ -6,6 +6,7 @@ import models.assessment.Answer
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
+import io.scalaland.chimney.dsl._
 
 /**
   * Api model for form answer.
@@ -37,12 +38,11 @@ object ApiFormAnswer {
     valuesIds: Option[Seq[Long]],
     comment: Option[String]
   ) {
-    def toModel = Answer.Element(
-      elementId,
-      text,
-      valuesIds.map(_.toSet),
-      comment
-    )
+    def toModel =
+      this
+        .into[Answer.Element]
+        .withFieldComputed(_.valuesIds, _.valuesIds.map(_.toSet))
+        .transform
   }
 
   object ElementAnswer {
@@ -53,12 +53,11 @@ object ApiFormAnswer {
         (__ \ "comment").readNullable[String]
     )(ElementAnswer(_, _, _, _))
 
-    def apply(element: Answer.Element): ElementAnswer = ElementAnswer(
-      element.elementId,
-      element.text,
-      element.valuesIds.map(_.toSeq),
-      element.comment
-    )
+    def apply(element: Answer.Element): ElementAnswer =
+      element
+        .into[ElementAnswer]
+        .withFieldComputed(_.valuesIds, _.valuesIds.map(_.toSeq))
+        .transform
   }
 
   case class AnswerStatus(value: Answer.Status) extends EnumFormat[Answer.Status]

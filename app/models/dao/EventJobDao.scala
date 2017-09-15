@@ -4,7 +4,7 @@ import java.sql.Timestamp
 import javax.inject.{Inject, Singleton}
 
 import models.event.{Event, EventJob}
-import models.notification.Notification
+import models.notification._
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 
@@ -41,8 +41,8 @@ trait EventJobComponent extends NotificationComponent { self: HasDatabaseConfigP
     eventId: Long,
     time: Timestamp,
     status: EventJob.Status,
-    kind: Option[Notification.Kind],
-    recipient: Option[Notification.Recipient],
+    kind: Option[NotificationKind],
+    recipient: Option[NotificationRecipient],
     jobType: Byte
   ) {
     def toModel: EventJob = jobType match {
@@ -78,8 +78,8 @@ trait EventJobComponent extends NotificationComponent { self: HasDatabaseConfigP
     def eventId = column[Long]("event_id")
     def time = column[Timestamp]("time")
     def status = column[EventJob.Status]("status")
-    def kind = column[Option[Notification.Kind]]("notification_kind")
-    def recipient = column[Option[Notification.Recipient]]("notification_recipient_kind")
+    def kind = column[Option[NotificationKind]]("notification_kind")
+    def recipient = column[Option[NotificationRecipient]]("notification_recipient_kind")
     def jobType = column[Byte]("job_type")
 
     def * = (id, eventId, time, status, kind, recipient, jobType) <> ((DbEventJob.apply _).tupled, DbEventJob.unapply)

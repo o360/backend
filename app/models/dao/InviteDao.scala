@@ -9,6 +9,7 @@ import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
+import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -26,23 +27,19 @@ trait InviteComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
     activationTime: Option[Timestamp],
     creationTime: Timestamp
   ) {
-    def toModel(groups: Seq[NamedEntity]) = Invite(
-      code,
-      email,
-      groups.toSet,
-      activationTime,
-      creationTime
-    )
+    def toModel(groups: Seq[NamedEntity]) =
+      this
+        .into[Invite]
+        .withFieldConst(_.groups, groups.toSet)
+        .transform
   }
 
   object DbInvite {
-    def fromModel(invite: Invite): DbInvite = DbInvite(
-      0,
-      invite.code,
-      invite.email,
-      invite.activationTime,
-      invite.creationTime
-    )
+    def fromModel(invite: Invite): DbInvite =
+      invite
+        .into[DbInvite]
+        .withFieldConst(_.id, 0L)
+        .transform
   }
 
   class InviteTable(tag: Tag) extends Table[DbInvite](tag, "invite") {

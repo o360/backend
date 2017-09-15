@@ -9,6 +9,7 @@ import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 import utils.Transliteration
 import utils.listmeta.ListMeta
+import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -34,11 +35,7 @@ trait GroupComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
   }
 
   object DbGroup {
-    def fromModel(group: Group) = DbGroup(
-      group.id,
-      group.parentId,
-      group.name
-    )
+    def fromModel(group: Group) = group.transformInto[DbGroup]
   }
 
   class GroupTable(tag: Tag) extends Table[DbGroup](tag, "orgstructure") {

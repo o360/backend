@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 
 import models.dao.{EventDao, EventJobDao}
 import models.event.{Event, EventJob}
-import models.notification.Notification
+import models.notification._
 import org.mockito.Mockito._
 import services.event.{EventJobService, EventStartService}
 import testutils.fixture.EventFixture
@@ -42,13 +42,13 @@ class EventJobServiceTest extends BaseServiceTest with EventFixture {
         notifications = Seq(
           Event.NotificationTime(
             Timestamp.valueOf(LocalDateTime.of(2040, 1, 2, 12, 0)),
-            Notification.Kind.PreBegin,
-            Notification.Recipient.Respondent
+            PreBegin,
+            Respondent
           ),
           Event.NotificationTime(
             Timestamp.valueOf(LocalDateTime.of(0, 1, 2, 12, 30)),
-            Notification.Kind.Begin,
-            Notification.Recipient.Respondent
+            Begin,
+            Respondent
           )
         ),
         end = Timestamp.valueOf(LocalDateTime.of(2040, 1, 2, 11, 4))

@@ -3,7 +3,7 @@ package models.dao
 import javax.inject.{Inject, Singleton}
 
 import models.ListWithTotal
-import models.notification.Notification
+import models.notification._
 import models.template.Template
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
@@ -24,8 +24,8 @@ trait TemplateComponent extends NotificationComponent { self: HasDatabaseConfigP
     def name = column[String]("name")
     def subject = column[String]("subject")
     def body = column[String]("body")
-    def kind = column[Notification.Kind]("kind")
-    def recipient = column[Notification.Recipient]("recipient_kind")
+    def kind = column[NotificationKind]("kind")
+    def recipient = column[NotificationRecipient]("recipient_kind")
 
     def * = (id, name, subject, body, kind, recipient) <> ((Template.apply _).tupled, Template.unapply)
   }
@@ -67,8 +67,8 @@ class TemplateDao @Inject()(
     */
   def getList(
     optId: Option[Long] = None,
-    optKind: Option[Notification.Kind] = None,
-    optRecipient: Option[Notification.Recipient] = None
+    optKind: Option[NotificationKind] = None,
+    optRecipient: Option[NotificationRecipient] = None
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Template]] = {
     val query = Templates
       .applyFilter { x =>

@@ -1,6 +1,6 @@
 package models.dao
 
-import models.notification.Notification
+import models.notification._
 import models.template.Template
 import org.scalacheck.Gen
 import testutils.fixture.TemplateFixture
@@ -19,7 +19,7 @@ class TemplateDaoTest extends BaseDaoTest with TemplateFixture with TemplateGene
         Gen.option(Gen.choose(0L, 3L)),
         Gen.option(notificationKindArb.arbitrary),
         Gen.option(notificationRecipientArb.arbitrary)
-      ) { (id: Option[Long], kind: Option[Notification.Kind], recipient: Option[Notification.Recipient]) =>
+      ) { (id: Option[Long], kind: Option[NotificationKind], recipient: Option[NotificationRecipient]) =>
         val templates = wait(dao.getList(id, kind, recipient))
         val expectedTemplates =
           Templates.filter(t => id.forall(_ == t.id) && kind.forall(_ == t.kind) && recipient.forall(_ == t.recipient))

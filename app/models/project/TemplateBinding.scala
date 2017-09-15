@@ -1,7 +1,7 @@
 package models.project
 
 import models.NamedEntity
-import models.notification.Notification
+import models.notification._
 
 /**
   * Email template binding.
@@ -9,6 +9,6 @@ import models.notification.Notification
   */
 case class TemplateBinding(
   template: NamedEntity,
-  kind: Notification.Kind,
-  recipient: Notification.Recipient
+  kind: NotificationKind,
+  recipient: NotificationRecipient
 )

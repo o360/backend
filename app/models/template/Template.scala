@@ -1,6 +1,6 @@
 package models.template
 
-import models.notification.Notification
+import models.notification._
 
 /**
   * Email template model.
@@ -17,8 +17,8 @@ case class Template(
   name: String,
   subject: String,
   body: String,
-  kind: Notification.Kind,
-  recipient: Notification.Recipient
+  kind: NotificationKind,
+  recipient: NotificationRecipient
 )
 
 object Template {

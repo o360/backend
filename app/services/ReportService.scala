@@ -5,6 +5,7 @@ import javax.inject.{Inject, Singleton}
 import models.assessment.Answer
 import models.dao.{AnswerDao, UserDao}
 import models.form.Form
+import models.form.element._
 import models.report._
 import models.user.User
 import utils.errors.{ApplicationError, AuthorizationError}
@@ -200,7 +201,6 @@ class ReportService @Inject()(
     val forms = report.forms.filter(_.form.showInAggregation).map { formReport =>
       val elements = formReport.answers.map { answerReport =>
         val answers = answerReport.elementAnswers.map(_.answer)
-        import Form.ElementKind._
         val result = answerReport.formElement.kind match {
           case TextArea | TextField => aggregateAnswersCount(answers)
           case Checkbox => aggregateEachTextPercent(answers)

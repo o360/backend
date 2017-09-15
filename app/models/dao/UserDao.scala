@@ -10,6 +10,7 @@ import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 import utils.{Logger, Transliteration}
 import utils.listmeta.ListMeta
+import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
@@ -106,35 +107,23 @@ trait UserComponent extends Logger { self: HasDatabaseConfigProvider[JdbcProfile
     pictureName: Option[String],
     isDeleted: Boolean
   ) {
-    def toModel = User(
-      id,
-      name,
-      email,
-      gender,
-      role,
-      status,
-      Try(ZoneId.of(timezone)).getOrElse {
-        log.error(s"User $id has incorrect timezone $timezone, UTC used instead")
-        ZoneOffset.UTC
-      },
-      termsApproved,
-      pictureName
-    )
+    def toModel =
+      this
+        .into[User]
+        .withFieldConst(_.timezone, Try(ZoneId.of(timezone)).getOrElse {
+          log.error(s"User $id has incorrect timezone $timezone, UTC used instead")
+          ZoneOffset.UTC
+        })
+        .transform
   }
 
   object DbUser {
-    def fromModel(user: User) = DbUser(
-      user.id,
-      user.name,
-      user.email,
-      user.gender,
-      user.role,
-      user.status,
-      user.timezone.getId,
-      user.termsApproved,
-      user.pictureName,
-      isDeleted = false
-    )
+    def fromModel(user: User) =
+      user
+        .into[DbUser]
+        .withFieldComputed(_.timezone, _.timezone.getId)
+        .withFieldConst(_.isDeleted, false)
+        .transform
   }
 
   class UserTable(tag: Tag) extends Table[DbUser](tag, "account") {

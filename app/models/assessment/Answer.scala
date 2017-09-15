@@ -2,6 +2,7 @@ package models.assessment
 
 import models.NamedEntity
 import models.form.{Form => FormTemplate}
+import models.form.element._
 
 /**
   * Assessment answer.
@@ -29,7 +30,7 @@ case class Answer(
           lazy val needValues = formElement.kind.needValues
           lazy val answerValuesMatchFormValues =
             answerElement.valuesIds.getOrElse(Nil).toSet.subsetOf(formElement.values.map(_.id).toSet)
-          lazy val validCheckboxAnswer = formElement.kind != FormTemplate.ElementKind.Checkbox ||
+          lazy val validCheckboxAnswer = formElement.kind != Checkbox ||
             answerElement.text.exists(t => t == "true" || t == "false")
 
           if (!needValues && answerIsValues) Some(invalidForm("Text element contains values answer"))
@@ -84,7 +85,6 @@ object Answer {
       * @param element associated element
       */
     def getText(element: FormTemplate.Element): String = {
-      import FormTemplate.ElementKind._
 
       def getValuesText = {
         def findCaption(id: Long) = element.values.find(_.id == id).map(_.caption)

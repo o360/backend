@@ -2,7 +2,9 @@ package controllers.api.form
 
 import controllers.api.{EnumFormat, EnumFormatHelper, Response}
 import models.form.{Form, FormShort}
+import models.form.element._
 import play.api.libs.json._
+import io.scalaland.chimney.dsl._
 
 /**
   * Api form model.
@@ -22,26 +24,22 @@ object ApiForm {
     *
     * @param form form
     */
-  def apply(form: Form): ApiForm = ApiForm(
-    form.id,
-    form.name,
-    form.elements.map(Element(_)),
-    form.showInAggregation,
-    form.machineName
-  )
+  def apply(form: Form): ApiForm =
+    form
+      .into[ApiForm]
+      .withFieldComputed(_.elements, _.elements.map(Element(_)))
+      .transform
 
   /**
     * Converts short form to ApiForm.
     *
     * @param form short form
     */
-  def apply(form: FormShort): ApiForm = ApiForm(
-    form.id,
-    form.name,
-    Nil,
-    form.showInAggregation,
-    form.machineName
-  )
+  def apply(form: FormShort): ApiForm =
+    form
+      .into[ApiForm]
+      .withFieldConst(_.elements, Seq.empty[ApiForm.Element])
+      .transform
 
   implicit val elementValueWrites = Json.writes[ElementValue]
   implicit val elementWrites = Json.writes[Element]
@@ -52,7 +50,7 @@ object ApiForm {
     */
   case class Element(
     id: Long,
-    kind: ElementKind,
+    kind: ApiElementKind,
     caption: String,
     required: Boolean,
     values: Option[Seq[ElementValue]]
@@ -72,7 +70,7 @@ object ApiForm {
       }
       Element(
         element.id,
-        ElementKind(element.kind),
+        ApiElementKind(element.kind),
         element.caption,
         element.required,
         if (values.isEmpty) None else Some(values)
@@ -83,12 +81,10 @@ object ApiForm {
   /**
     * Element kind api model.
     */
-  case class ElementKind(value: Form.ElementKind) extends EnumFormat[Form.ElementKind]
-  object ElementKind extends EnumFormatHelper[Form.ElementKind, ElementKind]("element kind") {
+  case class ApiElementKind(value: ElementKind) extends EnumFormat[ElementKind]
+  object ApiElementKind extends EnumFormatHelper[ElementKind, ApiElementKind]("element kind") {
 
-    import Form.ElementKind._
-
-    override protected def mapping: Map[String, Form.ElementKind] = Map(
+    override protected def mapping: Map[String, ElementKind] = Map(
       "textfield" -> TextField,
       "textarea" -> TextArea,
       "checkbox" -> Checkbox,

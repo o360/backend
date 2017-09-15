@@ -2,7 +2,7 @@ package services
 
 import models.ListWithTotal
 import models.dao.{EventDao, ProjectDao, ProjectRelationDao, TemplateDao}
-import models.notification.Notification
+import models.notification._
 import models.project.{Project, Relation}
 import models.template.Template
 import org.mockito.ArgumentMatchers.{eq => eqTo, _}
@@ -69,8 +69,8 @@ class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with Te
     "return list of templates from db" in {
       forAll {
         (
-          kind: Option[Notification.Kind],
-          recipient: Option[Notification.Recipient],
+          kind: Option[NotificationKind],
+          recipient: Option[NotificationRecipient],
           templates: Seq[Template],
           total: Int
         ) =>

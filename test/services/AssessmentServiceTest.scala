@@ -3,6 +3,7 @@ package services
 import models.assessment.{Answer, Assessment, PartialAnswer, PartialAssessment}
 import models.dao._
 import models.form.Form
+import models.form.element._
 import models.project.ActiveProject
 import models.user.User
 import models.{ListWithTotal, NamedEntity}
@@ -221,20 +222,20 @@ class AssessmentServiceTest
         baseForm ->
           createAnswer(Set(Answer.Element(2, Some(""), None, None), Answer.Element(2, Some(""), None, None))),
         // Missed required answer
-        baseForm.copy(elements = Seq(Form.Element(1, Form.ElementKind.TextArea, "", required = true, Nil))) ->
+        baseForm.copy(elements = Seq(Form.Element(1, TextArea, "", required = true, Nil))) ->
           createAnswer(Set()),
         // Text element contains values answer
-        baseForm.copy(elements = Seq(Form.Element(1, Form.ElementKind.TextArea, "", required = true, Nil))) ->
+        baseForm.copy(elements = Seq(Form.Element(1, TextArea, "", required = true, Nil))) ->
           createAnswer(Set(Answer.Element(1, None, Some(Set(1)), None))),
         // Values answer contains unknown element
         baseForm.copy(elements =
-          Seq(Form.Element(1, Form.ElementKind.Select, "", required = true, Seq(Form.ElementValue(3, ""))))) ->
+          Seq(Form.Element(1, Select, "", required = true, Seq(Form.ElementValue(3, ""))))) ->
           createAnswer(Set(Answer.Element(1, None, Some(Set(1)), None))),
         // Text answer is missed
-        baseForm.copy(elements = Seq(Form.Element(1, Form.ElementKind.TextArea, "", required = true, Nil))) ->
+        baseForm.copy(elements = Seq(Form.Element(1, TextArea, "", required = true, Nil))) ->
           createAnswer(Set(Answer.Element(1, None, None, None))),
         // Answer for unknown element id
-        baseForm.copy(elements = Seq(Form.Element(1, Form.ElementKind.TextArea, "", required = false, Nil))) ->
+        baseForm.copy(elements = Seq(Form.Element(1, TextArea, "", required = false, Nil))) ->
           createAnswer(Set(Answer.Element(2, Some(""), None, None)))
       )
 
@@ -268,7 +269,7 @@ class AssessmentServiceTest
       val event = Events(3)
 
       val form =
-        Form(1, "", Seq(Form.Element(1, Form.ElementKind.TextField, "", false, Nil)), Form.Kind.Freezed, true, "")
+        Form(1, "", Seq(Form.Element(1, TextField, "", false, Nil)), Form.Kind.Freezed, true, "")
 
       val answer = Answer(activeProject.id, user.id, None, NamedEntity(form.id), true, Answer.Status.Answered)
       val assessment = PartialAssessment(None, Seq(PartialAnswer(form.id, false, Set())))

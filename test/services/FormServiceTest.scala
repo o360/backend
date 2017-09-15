@@ -141,7 +141,7 @@ class FormServiceTest
 
   "create" should {
     "return conflict if form is incorrect" in {
-      val form = Forms(0).copy(elements = Seq(Form.Element(1, Form.ElementKind.Radio, "", false, Nil)))
+      val form = Forms(0).copy(elements = Seq(Form.Element(1, models.form.element.Radio, "", false, Nil)))
 
       val fixture = getFixture
       val result = wait(fixture.service.create(form).run)
@@ -180,7 +180,7 @@ class FormServiceTest
     }
 
     "return conflict if form is incorrect" in {
-      val form = Forms(0).copy(elements = Seq(Form.Element(1, Form.ElementKind.Radio, "", false, Nil)))
+      val form = Forms(0).copy(elements = Seq(Form.Element(1, models.form.element.Radio, "", false, Nil)))
       val fixture = getFixture
       when(fixture.formDaoMock.findById(form.id)).thenReturn(toFuture(Some(form)))
       when(
