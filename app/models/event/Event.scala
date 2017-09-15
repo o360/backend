@@ -4,7 +4,7 @@ import java.sql.Timestamp
 import java.time.ZoneId
 
 import models.NamedEntity
-import models.notification.Notification
+import models.notification._
 import utils.TimestampConverter
 
 /**
@@ -50,8 +50,8 @@ object Event {
     */
   case class NotificationTime(
     time: Timestamp,
-    kind: Notification.Kind,
-    recipient: Notification.Recipient
+    kind: NotificationKind,
+    recipient: NotificationRecipient
   )
 
   /**

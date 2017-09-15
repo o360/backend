@@ -1,6 +1,7 @@
 package testutils.generator
 
 import models.form.{Form, FormShort}
+import models.form.element._
 import org.scalacheck.{Arbitrary, Gen}
 
 /**
@@ -12,14 +13,13 @@ trait FormGenerator {
     Arbitrary.arbitrary[String].map(Form.ElementValue(0, _))
   }
 
-  implicit val elementKindArb = Arbitrary[Form.ElementKind] {
-    import Form.ElementKind._
+  implicit val elementKindArb = Arbitrary[ElementKind] {
     Gen.oneOf(TextField, TextArea, Checkbox, CheckboxGroup, Radio, Select)
   }
 
   implicit val elementArb = Arbitrary {
     for {
-      kind <- Arbitrary.arbitrary[Form.ElementKind]
+      kind <- Arbitrary.arbitrary[ElementKind]
       caption <- Arbitrary.arbitrary[String]
       required <- Arbitrary.arbitrary[Boolean]
       values <- Arbitrary.arbitrary[Seq[Form.ElementValue]]

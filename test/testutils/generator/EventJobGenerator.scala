@@ -3,7 +3,7 @@ package testutils.generator
 import java.sql.Timestamp
 
 import models.event.{Event, EventJob}
-import models.notification.Notification
+import models.notification._
 import org.scalacheck.{Arbitrary, Gen}
 
 /**
@@ -27,8 +27,8 @@ trait EventJobGenerator extends NotificationGenerator {
       eventId <- Arbitrary.arbitrary[Long]
       time <- Gen.choose(1L, 10000L)
       status <- Arbitrary.arbitrary[EventJob.Status]
-      kind <- Arbitrary.arbitrary[Notification.Kind]
-      recipient <- Arbitrary.arbitrary[Notification.Recipient]
+      kind <- Arbitrary.arbitrary[NotificationKind]
+      recipient <- Arbitrary.arbitrary[NotificationRecipient]
     } yield EventJob.SendNotification(0, eventId, Event.NotificationTime(new Timestamp(time), kind, recipient), status)
 
     Gen.oneOf(uploadJobGen, sendNotificationJobGen)

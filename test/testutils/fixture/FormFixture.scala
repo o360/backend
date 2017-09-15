@@ -2,6 +2,7 @@ package testutils.fixture
 
 import com.ninja_squad.dbsetup.Operations._
 import models.form.Form
+import models.form.element._
 
 /**
   * Form model fixture.
@@ -15,14 +16,14 @@ trait FormFixture extends FixtureHelper { self: FixtureSupport =>
       Seq(
         Form.Element(
           1,
-          Form.ElementKind.TextField,
+          TextField,
           "cap1",
           required = true,
           Nil
         ),
         Form.Element(
           2,
-          Form.ElementKind.Radio,
+          Radio,
           "cap2",
           required = false,
           Seq(
@@ -55,14 +56,14 @@ trait FormFixture extends FixtureHelper { self: FixtureSupport =>
       Seq(
         Form.Element(
           3,
-          Form.ElementKind.TextField,
+          TextField,
           "cap1",
           required = true,
           Nil
         ),
         Form.Element(
           4,
-          Form.ElementKind.Radio,
+          Radio,
           "cap2",
           required = false,
           Seq(

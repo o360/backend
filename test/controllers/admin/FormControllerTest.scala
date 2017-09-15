@@ -105,7 +105,7 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
   private def toApiPartialForm(form: Form) = ApiPartialForm(
     form.name,
     Some(form.elements.map { element =>
-      ApiPartialForm.Element(ApiForm.ElementKind(element.kind),
+      ApiPartialForm.Element(ApiForm.ApiElementKind(element.kind),
                              element.caption,
                              element.required,
                              Some(element.values.map(value => ApiPartialForm.ElementValue(value.caption))))

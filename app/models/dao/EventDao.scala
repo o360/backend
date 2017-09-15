@@ -5,12 +5,13 @@ import javax.inject.{Inject, Singleton}
 
 import models.ListWithTotal
 import models.event.Event
-import models.notification.Notification
+import models.notification._
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 import utils.TimestampConverter
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
+import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -21,27 +22,27 @@ trait NotificationComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import profile.api._
 
-  implicit val eventKindMappedType = MappedColumnType.base[Notification.Kind, Byte](
+  implicit val eventKindMappedType = MappedColumnType.base[NotificationKind, Byte](
     {
-      case Notification.Kind.PreBegin => 0
-      case Notification.Kind.Begin => 1
-      case Notification.Kind.PreEnd => 2
-      case Notification.Kind.End => 3
+      case PreBegin => 0
+      case Begin => 1
+      case PreEnd => 2
+      case End => 3
     }, {
-      case 0 => Notification.Kind.PreBegin
-      case 1 => Notification.Kind.Begin
-      case 2 => Notification.Kind.PreEnd
-      case 3 => Notification.Kind.End
+      case 0 => PreBegin
+      case 1 => Begin
+      case 2 => PreEnd
+      case 3 => End
     }
   )
 
-  implicit val eventRecipient = MappedColumnType.base[Notification.Recipient, Byte](
+  implicit val eventRecipient = MappedColumnType.base[NotificationRecipient, Byte](
     {
-      case Notification.Recipient.Respondent => 0
-      case Notification.Recipient.Auditor => 1
+      case Respondent => 0
+      case Auditor => 1
     }, {
-      case 0 => Notification.Recipient.Respondent
-      case 1 => Notification.Recipient.Auditor
+      case 0 => Respondent
+      case 1 => Auditor
     }
   )
 }
@@ -64,12 +65,7 @@ trait EventComponent extends NotificationComponent { self: HasDatabaseConfigProv
   )
 
   object DbEvent {
-    def fromModel(event: Event) = DbEvent(
-      event.id,
-      event.description,
-      event.start,
-      event.end
-    )
+    def fromModel(event: Event) = event.transformInto[DbEvent]
   }
 
   class EventTable(tag: Tag) extends Table[DbEvent](tag, "event") {
@@ -91,18 +87,17 @@ trait EventComponent extends NotificationComponent { self: HasDatabaseConfigProv
     id: Long,
     eventId: Long,
     time: Timestamp,
-    kind: Notification.Kind,
-    recipient: Notification.Recipient
+    kind: NotificationKind,
+    recipient: NotificationRecipient
   )
 
   object DbEventNotification {
-    def fromModel(eventId: Long, notification: Event.NotificationTime) = DbEventNotification(
-      0,
-      eventId,
-      notification.time,
-      notification.kind,
-      notification.recipient
-    )
+    def fromModel(eventId: Long, notification: Event.NotificationTime) =
+      notification
+        .into[DbEventNotification]
+        .withFieldConst(_.id, 0L)
+        .withFieldConst(_.eventId, eventId)
+        .transform
   }
 
   class EventNotificationTable(tag: Tag) extends Table[DbEventNotification](tag, "event_notification") {
@@ -110,8 +105,8 @@ trait EventComponent extends NotificationComponent { self: HasDatabaseConfigProv
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def eventId = column[Long]("event_id")
     def time = column[Timestamp]("time")
-    def kind = column[Notification.Kind]("kind")
-    def recipient = column[Notification.Recipient]("recipient_kind")
+    def kind = column[NotificationKind]("kind")
+    def recipient = column[NotificationRecipient]("recipient_kind")
 
     def * = (id, eventId, time, kind, recipient) <> ((DbEventNotification.apply _).tupled, DbEventNotification.unapply)
   }

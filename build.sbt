@@ -25,6 +25,7 @@ libraryDependencies ++= Seq(
   "com.google.apis" % "google-api-services-sheets" % "v4-rev473-1.22.0",
   "com.google.apis" % "google-api-services-drive" % "v3-rev74-1.22.0",
   "org.flywaydb" % "flyway-core" % "4.1.2",
+  "io.scalaland" %% "chimney" % "0.1.6",
   filters,
   guice
 )

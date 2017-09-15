@@ -1,7 +1,7 @@
 package testutils.generator
 
 import models.NamedEntity
-import models.notification.Notification
+import models.notification._
 import models.project.TemplateBinding
 import org.scalacheck.{Arbitrary, Gen}
 
@@ -13,8 +13,8 @@ trait TemplateBindingGenerator extends NotificationGenerator {
   implicit val templateBindingArb = Arbitrary {
     for {
       template <- Gen.oneOf(NamedEntity(1, "firstname"), NamedEntity(2, "secondname"), NamedEntity(3, "thirdname"))
-      kind <- Arbitrary.arbitrary[Notification.Kind]
-      recipient <- Arbitrary.arbitrary[Notification.Recipient]
+      kind <- Arbitrary.arbitrary[NotificationKind]
+      recipient <- Arbitrary.arbitrary[NotificationRecipient]
     } yield TemplateBinding(template, kind, recipient)
   }
 }

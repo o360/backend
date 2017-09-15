@@ -3,7 +3,7 @@ package testutils.generator
 import java.sql.Timestamp
 
 import models.event.Event
-import models.notification.Notification
+import models.notification._
 import org.scalacheck.{Arbitrary, Gen}
 
 /**
@@ -18,8 +18,8 @@ trait EventGenerator extends NotificationGenerator with TimestampGenerator {
   implicit val notificationTimeArb = Arbitrary {
     for {
       time <- Arbitrary.arbitrary[Timestamp]
-      kind <- Arbitrary.arbitrary[Notification.Kind]
-      recipient <- Arbitrary.arbitrary[Notification.Recipient]
+      kind <- Arbitrary.arbitrary[NotificationKind]
+      recipient <- Arbitrary.arbitrary[NotificationRecipient]
     } yield Event.NotificationTime(time, kind, recipient)
   }
 

@@ -4,9 +4,11 @@ import javax.inject.{Inject, Singleton}
 
 import models.ListWithTotal
 import models.form.{Form, FormShort}
+import models.form.element._
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 import utils.listmeta.ListMeta
+import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -35,24 +37,16 @@ trait FormComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
     showInAggregation: Boolean,
     machineName: String
   ) {
-    def toModel = FormShort(
-      id,
-      name,
-      kind,
-      showInAggregation,
-      machineName
-    )
+    def toModel = this.transformInto[FormShort]
   }
 
   object DbForm {
-    def fromModel(form: FormShort) = DbForm(
-      form.id,
-      form.name,
-      form.kind,
-      isDeleted = false,
-      form.showInAggregation,
-      form.machineName
-    )
+    def fromModel(form: FormShort) =
+      form
+        .into[DbForm]
+        .withFieldConst(_.isDeleted, false)
+        .transform
+
   }
 
   class FormTable(tag: Tag) extends Table[DbForm](tag, "form") {
@@ -69,8 +63,7 @@ trait FormComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   val Forms = TableQuery[FormTable]
 
-  private val kindMapping: Map[Int, Form.ElementKind] = {
-    import Form.ElementKind._
+  private val kindMapping: Map[Int, ElementKind] = {
     Map(
       0 -> TextField,
       1 -> TextArea,
@@ -81,7 +74,7 @@ trait FormComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
       6 -> LikeDislike
     )
   }
-  implicit lazy val kindColumnType = MappedColumnType.base[Form.ElementKind, Byte](
+  implicit lazy val kindColumnType = MappedColumnType.base[ElementKind, Byte](
     x => kindMapping.find(_._2 == x).get._1.toByte,
     kindMapping(_)
   )
@@ -92,38 +85,34 @@ trait FormComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
   case class DbFormElement(
     id: Long,
     formId: Long,
-    kind: Form.ElementKind,
+    kind: ElementKind,
     caption: String,
     required: Boolean,
     order: Int
   ) {
 
-    def toModel(values: Seq[Form.ElementValue]) = Form.Element(
-      id,
-      kind,
-      caption,
-      required,
-      values
-    )
+    def toModel(values: Seq[Form.ElementValue]) =
+      this
+        .into[Form.Element]
+        .withFieldConst(_.values, values)
+        .transform
   }
 
   object DbFormElement {
 
-    def fromModel(formId: Long, element: Form.Element, order: Int): DbFormElement = DbFormElement(
-      element.id,
-      formId,
-      element.kind,
-      element.caption,
-      element.required,
-      order
-    )
+    def fromModel(formId: Long, element: Form.Element, order: Int): DbFormElement =
+      element
+        .into[DbFormElement]
+        .withFieldConst(_.formId, formId)
+        .withFieldConst(_.order, order)
+        .transform
   }
 
   class FormElementTable(tag: Tag) extends Table[DbFormElement](tag, "form_element") {
 
     def id = column[Long]("id", O.AutoInc, O.PrimaryKey)
     def formId = column[Long]("form_id")
-    def kind = column[Form.ElementKind]("kind")
+    def kind = column[ElementKind]("kind")
     def caption = column[String]("caption")
     def required = column[Boolean]("required")
     def order = column[Int]("ord")

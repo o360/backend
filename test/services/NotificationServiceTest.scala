@@ -5,7 +5,7 @@ import java.sql.Timestamp
 import models.{ListWithTotal, NamedEntity}
 import models.dao.{EventDao, ProjectDao, ProjectRelationDao, TemplateDao}
 import models.event.{Event, EventJob}
-import models.notification.Notification
+import models.notification._
 import models.project.{Project, Relation, TemplateBinding}
 import org.mockito.ArgumentMatchers.any
 import testutils.generator.{EventGenerator, ListWithTotalGenerator}
@@ -63,7 +63,7 @@ class NotificationServiceTest
   }
 
   private val notificationFixture =
-    Event.NotificationTime(new Timestamp(123), Notification.Kind.Begin, Notification.Recipient.Respondent)
+    Event.NotificationTime(new Timestamp(123), Begin, Respondent)
   private val jobFixture = EventJob.SendNotification(0, 1, notificationFixture, EventJob.Status.New)
 
   "execute" should {
@@ -118,7 +118,7 @@ class NotificationServiceTest
 
     "send emails to auditor" in {
       val fixture = getFixture
-      val notification = notificationFixture.copy(recipient = Notification.Recipient.Auditor)
+      val notification = notificationFixture.copy(recipient = Auditor)
       val event = Events(0).copy(notifications = Seq(notification))
       val project = Projects(0).copy(
         templates = Seq(
@@ -188,7 +188,7 @@ class NotificationServiceTest
 
     "send emails to respondent" in {
       val fixture = getFixture
-      val notification = notificationFixture.copy(recipient = Notification.Recipient.Respondent)
+      val notification = notificationFixture.copy(recipient = Respondent)
 
       val event = Events(0).copy(notifications = Seq(notification))
       val project = Projects(0).copy(

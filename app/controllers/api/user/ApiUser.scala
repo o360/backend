@@ -8,6 +8,8 @@ import models.user.User.Status
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
+import io.scalaland.chimney.dsl._
+import scalaz.std.option._
 
 /**
   * User format model.
@@ -24,17 +26,14 @@ case class ApiUser(
   hasPicture: Boolean
 ) extends Response {
 
-  def toModel = User(
-    id,
-    name,
-    email,
-    gender.map(_.value),
-    role.value,
-    status.value,
-    timezone,
-    termsApproved,
-    pictureName = None
-  )
+  def toModel =
+    this
+      .into[User]
+      .withFieldComputed(_.gender, _.gender.map(_.value))
+      .withFieldComputed(_.role, _.role.value)
+      .withFieldComputed(_.status, _.status.value)
+      .withFieldConst(_.pictureName, none[String])
+      .transform
 }
 
 object ApiUser {
@@ -71,17 +70,14 @@ object ApiUser {
     * @param user user
     * @return user response
     */
-  def apply(user: User): ApiUser = ApiUser(
-    user.id,
-    user.name,
-    user.email,
-    user.gender.map(ApiGender(_)),
-    ApiRole(user.role),
-    ApiStatus(user.status),
-    user.timezone,
-    user.termsApproved,
-    user.pictureName.nonEmpty
-  )
+  def apply(user: User): ApiUser =
+    user
+      .into[ApiUser]
+      .withFieldComputed(_.gender, _.gender.map(ApiGender(_)))
+      .withFieldComputed(_.role, x => ApiRole(x.role))
+      .withFieldComputed(_.status, x => ApiStatus(x.status))
+      .withFieldComputed(_.hasPicture, _.pictureName.nonEmpty)
+      .transform
 
   /**
     * Format for user role.

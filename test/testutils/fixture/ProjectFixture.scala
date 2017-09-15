@@ -2,7 +2,7 @@ package testutils.fixture
 
 import com.ninja_squad.dbsetup.Operations._
 import models.NamedEntity
-import models.notification.Notification
+import models.notification._
 import models.project.{Project, TemplateBinding}
 
 /**
@@ -17,9 +17,9 @@ trait ProjectFixture extends FixtureHelper with GroupFixture with TemplateFixtur
       Some("description"),
       NamedEntity(3, Groups.find(_.id == 3).get.name),
       Seq(
-        TemplateBinding(NamedEntity(1, "firstname"), Notification.Kind.Begin, Notification.Recipient.Respondent),
-        TemplateBinding(NamedEntity(2, "secondname"), Notification.Kind.End, Notification.Recipient.Respondent),
-        TemplateBinding(NamedEntity(2, "secondname"), Notification.Kind.End, Notification.Recipient.Auditor)
+        TemplateBinding(NamedEntity(1, "firstname"), Begin, Respondent),
+        TemplateBinding(NamedEntity(2, "secondname"), End, Respondent),
+        TemplateBinding(NamedEntity(2, "secondname"), End, Auditor)
       ),
       formsOnSamePage = true,
       canRevote = true,

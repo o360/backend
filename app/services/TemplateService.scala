@@ -4,7 +4,7 @@ import javax.inject.{Inject, Singleton}
 
 import models.NamedEntity
 import models.dao.{EventDao, ProjectDao, ProjectRelationDao, TemplateDao}
-import models.notification.Notification
+import models.notification._
 import models.project.Project
 import models.template.Template
 import utils.errors.{ConflictError, NotFoundError}
@@ -40,8 +40,8 @@ class TemplateService @Inject()(
     * Returns templates list.
     */
   def getList(
-    kind: Option[Notification.Kind],
-    recipient: Option[Notification.Recipient]
+    kind: Option[NotificationKind],
+    recipient: Option[NotificationRecipient]
   )(implicit meta: ListMeta): ListResult =
     templateDao.getList(optId = None, optKind = kind, optRecipient = recipient).lift
 

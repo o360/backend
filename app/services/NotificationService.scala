@@ -4,7 +4,7 @@ import javax.inject.{Inject, Singleton}
 
 import models.dao.{EventDao, ProjectDao, ProjectRelationDao, TemplateDao}
 import models.event.{Event, EventJob}
-import models.notification.Notification
+import models.notification._
 import models.project.{Project, Relation, TemplateBinding}
 import models.template.Template
 
@@ -106,9 +106,9 @@ class NotificationService @Inject()(
       templateDao.findById(templateBinding.template.id).flatMap { emailTemplate =>
         val template = emailTemplate.getOrElse(throw new NoSuchElementException("email template not found"))
         templateBinding.recipient match {
-          case Notification.Recipient.Auditor =>
+          case Auditor =>
             sendToUsersInGroup(auditorGroupId, template)
-          case Notification.Recipient.Respondent =>
+          case Respondent =>
             Future.sequence {
               respondentGroupIds.map(sendToUsersInGroup(_, template))
             }

@@ -1,7 +1,7 @@
 package models.dao
 
 import models.NamedEntity
-import models.notification.Notification
+import models.notification._
 import models.project.TemplateBinding
 import play.api.db.slick.HasDatabaseConfigProvider
 import slick.jdbc.JdbcProfile
@@ -19,8 +19,8 @@ trait TemplateBindingComponent extends NotificationComponent { self: HasDatabase
   case class DbTemplateBinding(
     ownerId: Long,
     templateId: Long,
-    kind: Notification.Kind,
-    recipient: Notification.Recipient
+    kind: NotificationKind,
+    recipient: NotificationRecipient
   ) {
     def toModel(templateName: String) = TemplateBinding(
       NamedEntity(templateId, templateName),
@@ -42,8 +42,8 @@ trait TemplateBindingComponent extends NotificationComponent { self: HasDatabase
 
     def projectId = column[Long]("project_id")
     def templateId = column[Long]("template_id")
-    def kind = column[Notification.Kind]("kind")
-    def recipient = column[Notification.Recipient]("recipient_kind")
+    def kind = column[NotificationKind]("kind")
+    def recipient = column[NotificationRecipient]("recipient_kind")
 
     def * = (projectId, templateId, kind, recipient) <> ((DbTemplateBinding.apply _).tupled, DbTemplateBinding.unapply)
   }
@@ -54,8 +54,8 @@ trait TemplateBindingComponent extends NotificationComponent { self: HasDatabase
 
     def relationId = column[Long]("relation_id")
     def templateId = column[Long]("template_id")
-    def kind = column[Notification.Kind]("kind")
-    def recipient = column[Notification.Recipient]("recipient_kind")
+    def kind = column[NotificationKind]("kind")
+    def recipient = column[NotificationRecipient]("recipient_kind")
 
     def * =
       (relationId, templateId, kind, recipient) <> ((DbTemplateBinding.apply _).tupled, DbTemplateBinding.unapply)

@@ -7,7 +7,7 @@ import controllers.api.Response
 import controllers.api.notification.{ApiNotificationKind, ApiNotificationRecipient}
 import controllers.api.template.{ApiPartialTemplate, ApiTemplate}
 import models.ListWithTotal
-import models.notification.Notification
+import models.notification._
 import models.template.Template
 import models.user.User
 import org.mockito.Mockito._
@@ -78,8 +78,8 @@ class TemplateControllerTest extends BaseControllerTest with TemplateGenerator {
     "return templates list from service" in {
       forAll {
         (
-          kind: Option[Notification.Kind],
-          recipient: Option[Notification.Recipient],
+          kind: Option[NotificationKind],
+          recipient: Option[NotificationRecipient],
           total: Int,
           templates: Seq[Template]
         ) =>

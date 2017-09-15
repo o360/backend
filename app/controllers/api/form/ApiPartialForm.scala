@@ -1,12 +1,13 @@
 package controllers.api.form
 
 import controllers.api.Response
-import controllers.api.form.ApiForm.ElementKind
+import controllers.api.form.ApiForm.ApiElementKind
 import models.form.Form
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
 import utils.RandomGenerator
+import io.scalaland.chimney.dsl._
 
 /**
   * Api partial form model.
@@ -18,14 +19,14 @@ case class ApiPartialForm(
   machineName: Option[String]
 ) {
 
-  def toModel(id: Long = 0) = Form(
-    id,
-    name,
-    elements.getOrElse(Nil).map(_.toModel),
-    Form.Kind.Active,
-    showInAggregation,
-    machineName.getOrElse(RandomGenerator.generateMachineName)
-  )
+  def toModel(id: Long = 0) =
+    this
+      .into[Form]
+      .withFieldConst(_.id, id)
+      .withFieldComputed(_.elements, _.elements.getOrElse(Seq.empty[ApiPartialForm.Element]).map(_.toModel))
+      .withFieldConst(_.kind, Form.Kind.Active: Form.Kind)
+      .withFieldComputed(_.machineName, _.machineName.getOrElse(RandomGenerator.generateMachineName))
+      .transform
 }
 
 object ApiPartialForm {
@@ -34,7 +35,7 @@ object ApiPartialForm {
     (__ \ "caption").read[String](maxLength[String](1024)).map(ElementValue)
 
   implicit val elementReads: Reads[Element] = (
-    (__ \ "kind").read[ElementKind] and
+    (__ \ "kind").read[ApiElementKind] and
       (__ \ "caption").read[String](maxLength[String](1024)) and
       (__ \ "required").read[Boolean] and
       (__ \ "values").readNullable[Seq[ElementValue]]
@@ -51,19 +52,19 @@ object ApiPartialForm {
     * Form element api model.
     */
   case class Element(
-    kind: ElementKind,
+    kind: ApiElementKind,
     caption: String,
     required: Boolean,
     values: Option[Seq[ElementValue]]
   ) extends Response {
 
-    def toModel = Form.Element(
-      0,
-      kind.value,
-      caption,
-      required,
-      values.getOrElse(Nil).map(_.toModel)
-    )
+    def toModel =
+      this
+        .into[Form.Element]
+        .withFieldConst(_.id, 0L)
+        .withFieldComputed(_.kind, _.kind.value)
+        .withFieldComputed(_.values, _.values.getOrElse(Seq.empty[ApiPartialForm.ElementValue]).map(_.toModel))
+        .transform
   }
 
   /**

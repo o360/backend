@@ -3,6 +3,7 @@ package controllers.api.project
 import controllers.api.Response
 import models.project.ActiveProject
 import play.api.libs.json.Json
+import io.scalaland.chimney.dsl._
 
 /**
   * Active project API model.
@@ -22,15 +23,11 @@ object ApiActiveProject {
   implicit val userInfoWrites = Json.writes[ApiUserInfo]
   implicit val writes = Json.writes[ApiActiveProject]
 
-  def apply(project: ActiveProject): ApiActiveProject = ApiActiveProject(
-    project.id,
-    project.name,
-    project.description,
-    project.formsOnSamePage,
-    project.canRevote,
-    project.isAnonymous,
-    project.userInfo.map(x => ApiUserInfo(x.isAuditor))
-  )
+  def apply(project: ActiveProject): ApiActiveProject =
+    project
+      .into[ApiActiveProject]
+      .withFieldComputed(_.userInfo, _.userInfo.map(x => ApiUserInfo(x.isAuditor)))
+      .transform
 
   case class ApiUserInfo(isAuditor: Boolean)
 }

@@ -5,6 +5,7 @@ import models.template.Template
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
+import io.scalaland.chimney.dsl._
 
 /**
   * Partial API template model.
@@ -17,14 +18,13 @@ case class ApiPartialTemplate(
   recipient: ApiNotificationRecipient
 ) {
 
-  def toModel(id: Long = 0) = Template(
-    id,
-    name,
-    subject,
-    body,
-    kind.value,
-    recipient.value
-  )
+  def toModel(id: Long = 0) =
+    this
+      .into[Template]
+      .withFieldConst(_.id, id)
+      .withFieldComputed(_.kind, _.kind.value)
+      .withFieldComputed(_.recipient, _.recipient.value)
+      .transform
 }
 
 object ApiPartialTemplate {

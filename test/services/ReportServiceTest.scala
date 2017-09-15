@@ -3,6 +3,7 @@ package services
 import models.assessment.Answer
 import models.dao.{AnswerDao, UserDao}
 import models.form.Form
+import models.form.element._
 import models.report.{AggregatedReport, Report}
 import models.user.User
 import models.{ListWithTotal, NamedEntity}
@@ -96,11 +97,11 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
     "return aggregated report" in {
       val fixture = getFixture
       val elementsWithAnswers = Seq(
-        Form.Element(1, Form.ElementKind.TextArea, "", false, Nil) ->
+        Form.Element(1, TextArea, "", false, Nil) ->
           Answer.Element(1, Some("text"), None, None),
-        Form.Element(2, Form.ElementKind.Checkbox, "", false, Nil) ->
+        Form.Element(2, Checkbox, "", false, Nil) ->
           Answer.Element(2, Some("true"), None, None),
-        Form.Element(3, Form.ElementKind.Radio, "", false, Seq(Form.ElementValue(10, "radioval"))) ->
+        Form.Element(3, Radio, "", false, Seq(Form.ElementValue(10, "radioval"))) ->
           Answer.Element(3, None, Some(Set(10)), None)
       )
       val form = Forms(0).copy(id = 1, elements = elementsWithAnswers.map(_._1))

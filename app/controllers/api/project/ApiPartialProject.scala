@@ -6,6 +6,7 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
 import utils.RandomGenerator
+import io.scalaland.chimney.dsl._
 
 /**
   * Project partial API model.
@@ -21,18 +22,15 @@ case class ApiPartialProject(
   machineName: Option[String]
 ) {
 
-  def toModel(id: Long = 0) = Project(
-    id,
-    name,
-    description,
-    NamedEntity(groupAuditorId),
-    templates.map(_.toModel),
-    formsOnSamePage,
-    canRevote,
-    isAnonymous,
-    hasInProgressEvents = false,
-    machineName.getOrElse(RandomGenerator.generateMachineName)
-  )
+  def toModel(id: Long = 0) =
+    this
+      .into[Project]
+      .withFieldConst(_.id, id)
+      .withFieldComputed(_.groupAuditor, x => NamedEntity(x.groupAuditorId))
+      .withFieldComputed(_.templates, _.templates.map(_.toModel))
+      .withFieldConst(_.hasInProgressEvents, false)
+      .withFieldComputed(_.machineName, _.machineName.getOrElse(RandomGenerator.generateMachineName))
+      .transform
 }
 
 object ApiPartialProject {

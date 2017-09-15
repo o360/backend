@@ -1,18 +1,16 @@
 package controllers.api.notification
 
 import controllers.api.{EnumFormat, EnumFormatHelper}
-import models.notification.Notification
+import models.notification._
 
 /**
   * Kind of notification recipient.
   */
-case class ApiNotificationRecipient(value: Notification.Recipient) extends EnumFormat[Notification.Recipient]
+case class ApiNotificationRecipient(value: NotificationRecipient) extends EnumFormat[NotificationRecipient]
 object ApiNotificationRecipient
-  extends EnumFormatHelper[Notification.Recipient, ApiNotificationRecipient]("notification recipient") {
+  extends EnumFormatHelper[NotificationRecipient, ApiNotificationRecipient]("notification recipient") {
 
-  import Notification.Recipient._
-
-  override protected def mapping: Map[String, Notification.Recipient] = Map(
+  override protected def mapping: Map[String, NotificationRecipient] = Map(
     "respondent" -> Respondent,
     "auditor" -> Auditor
   )

@@ -1,6 +1,6 @@
 package testutils.generator
 
-import models.notification.Notification
+import models.notification._
 import models.template.Template
 import org.scalacheck.Arbitrary
 
@@ -14,8 +14,8 @@ trait TemplateGenerator extends NotificationGenerator {
       name <- Arbitrary.arbitrary[String]
       subject <- Arbitrary.arbitrary[String]
       body <- Arbitrary.arbitrary[String]
-      kind <- Arbitrary.arbitrary[Notification.Kind]
-      recipient <- Arbitrary.arbitrary[Notification.Recipient]
+      kind <- Arbitrary.arbitrary[NotificationKind]
+      recipient <- Arbitrary.arbitrary[NotificationRecipient]
     } yield Template(0, name, subject, body, kind, recipient)
   }
 }

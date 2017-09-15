@@ -1,6 +1,6 @@
 package testutils.generator
 
-import models.notification.Notification
+import models.notification._
 import org.scalacheck.{Arbitrary, Gen}
 
 /**
@@ -8,13 +8,11 @@ import org.scalacheck.{Arbitrary, Gen}
   */
 trait NotificationGenerator {
 
-  implicit val notificationKindArb = Arbitrary[Notification.Kind] {
-    import Notification.Kind._
+  implicit val notificationKindArb = Arbitrary[NotificationKind] {
     Gen.oneOf(PreBegin, Begin, PreEnd, End)
   }
 
-  implicit val notificationRecipientArb = Arbitrary[Notification.Recipient] {
-    import Notification.Recipient._
+  implicit val notificationRecipientArb = Arbitrary[NotificationRecipient] {
     Gen.oneOf(Respondent, Auditor)
   }
 }
