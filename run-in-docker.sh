@@ -32,10 +32,7 @@ if [ ! -f user_invited.html ]; then
 echo "user_invited.html NOT FOUND"
 fi
 
-sbt clean coverage test
-sbt coverageReport
-sbt flywayMigrate
-sbt docker:publishLocal
+sbt clean coverage test coverageReport flywayMigrate docker:publishLocal
 
 docker rm -f private-open360-api || true
 

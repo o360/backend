@@ -33,4 +33,9 @@ object NotFoundError {
 
   case class ActiveProject(id: Long)
     extends NotFoundError("NOTFOUND-ACTIVEPROJECT", s"Can't find active project with id:$id")
+
+  case class Competence(id: Long) extends NotFoundError("NOTFOUND-COMPETENCE", s"Can't find competence with id:$id")
+
+  case class CompetenceGroup(id: Long)
+    extends NotFoundError("NOTFOUND-COMPETENCEGROUP", s"Can't find competence group with id:$id")
 }
