@@ -50,7 +50,7 @@ class FormController @Inject()(
     toResult(Ok) {
       formService
         .getById(id)
-        .map(ApiForm(_))
+        .map(ApiForm(_, includeCompetencies = true))
     }
   }
 
@@ -62,7 +62,7 @@ class FormController @Inject()(
       val form = request.body.toModel()
       formService
         .create(form)
-        .map(ApiForm(_))
+        .map(ApiForm(_, includeCompetencies = true))
     }
   }
 
@@ -75,7 +75,7 @@ class FormController @Inject()(
         val form = request.body.toModel(id)
         formService
           .update(form)
-          .map(ApiForm(_))
+          .map(ApiForm(_, includeCompetencies = true))
       }
   }
 
@@ -99,7 +99,7 @@ class FormController @Inject()(
       for {
         original <- formService.getById(id)
         created <- formService.create(original.copy(id = 0))
-      } yield ApiForm(created)
+      } yield ApiForm(created, includeCompetencies = true)
     }
   }
 }

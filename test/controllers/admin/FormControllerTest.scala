@@ -67,7 +67,7 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
         val response = fixture.controller.getById(id)(request)
         status(response) mustBe OK
         val formJson = contentAsJson(response)
-        formJson mustBe Json.toJson(ApiForm(form))
+        formJson mustBe Json.toJson(ApiForm(form, includeCompetencies = true))
       }
     }
   }
@@ -105,10 +105,13 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
   private def toApiPartialForm(form: Form) = ApiPartialForm(
     form.name,
     Some(form.elements.map { element =>
-      ApiPartialForm.Element(ApiForm.ApiElementKind(element.kind),
-                             element.caption,
-                             element.required,
-                             Some(element.values.map(value => ApiPartialForm.ElementValue(value.caption))))
+      ApiPartialForm.Element(
+        ApiForm.ApiElementKind(element.kind),
+        element.caption,
+        element.required,
+        Some(element.values.map(value => ApiPartialForm.ElementValue(value.caption))),
+        None
+      )
     }),
     form.showInAggregation,
     Some(form.machineName)
@@ -132,7 +135,7 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
 
         val response = fixture.controller.update(form.id).apply(request)
         val responseJson = contentAsJson(response)
-        val expectedJson = Json.toJson(ApiForm(form))
+        val expectedJson = Json.toJson(ApiForm(form, includeCompetencies = true))
 
         status(response) mustBe OK
         responseJson mustBe expectedJson
@@ -159,7 +162,7 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
 
         val response = fixture.controller.create.apply(request)
         val responseJson = contentAsJson(response)
-        val expectedJson = Json.toJson(ApiForm(form))
+        val expectedJson = Json.toJson(ApiForm(form, includeCompetencies = true))
 
         status(response) mustBe CREATED
         responseJson mustBe expectedJson
@@ -210,7 +213,7 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
         val response = fixture.controller.cloneForm(id)(request)
         status(response) mustBe CREATED
         val formJson = contentAsJson(response)
-        formJson mustBe Json.toJson(ApiForm(form))
+        formJson mustBe Json.toJson(ApiForm(form, includeCompetencies = true))
       }
     }
   }

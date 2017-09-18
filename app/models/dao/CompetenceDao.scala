@@ -27,7 +27,7 @@ trait CompetenceComponent { _: HasDatabaseConfigProvider[JdbcProfile] =>
     def * = (id, groupId, name, description) <> ((Competence.apply _).tupled, Competence.unapply)
   }
 
-  val CompetenceQ = TableQuery[CompetenceTable]
+  val Competencies = TableQuery[CompetenceTable]
 }
 
 /**
@@ -45,16 +45,16 @@ class CompetenceDao @Inject()(
   import profile.api._
 
   def create(c: Competence): Future[Competence] =
-    db.run(CompetenceQ.returning(CompetenceQ.map(_.id)) += c)
+    db.run(Competencies.returning(Competencies.map(_.id)) += c)
       .map(id => c.copy(id = id))
 
   def getById(id: Long): Future[Option[Competence]] = {
-    db.run(CompetenceQ.filter(_.id === id).result.headOption)
+    db.run(Competencies.filter(_.id === id).result.headOption)
   }
 
   def getList(optGroupId: Option[Long] = None)(
     implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Competence]] = {
-    val query = CompetenceQ.applyFilter { c =>
+    val query = Competencies.applyFilter { c =>
       Seq(
         optGroupId.map(c.groupId === _)
       )
@@ -71,11 +71,11 @@ class CompetenceDao @Inject()(
   }
 
   def update(c: Competence): Future[Competence] =
-    db.run(CompetenceQ.filter(_.id === c.id).update(c))
+    db.run(Competencies.filter(_.id === c.id).update(c))
       .map(_ => c)
 
   def delete(id: Long): Future[Unit] =
-    db.run(CompetenceQ.filter(_.id === id).delete)
+    db.run(Competencies.filter(_.id === id).delete)
       .map(_ => ())
 
 }

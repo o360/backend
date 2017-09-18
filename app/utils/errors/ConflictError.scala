@@ -97,4 +97,11 @@ object ConflictError {
 
     case object CodeAlreadyUsed extends ConflictError("CONFLICT-INVITE-3", s"Code already used")
   }
+
+  object Competence {
+    case object CompetenceIdNotExists extends ConflictError("CONFLICT-COMPETENCE-1", "Competence not exists")
+
+    case object DuplicateElementCompetence
+      extends ConflictError("CONFLICT-COMPETENCE-2", "Duplicate element competence")
+  }
 }

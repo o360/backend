@@ -19,6 +19,7 @@ trait FormFixture extends FixtureHelper { self: FixtureSupport =>
           TextField,
           "cap1",
           required = true,
+          Nil,
           Nil
         ),
         Form.Element(
@@ -35,7 +36,8 @@ trait FormFixture extends FixtureHelper { self: FixtureSupport =>
               2,
               "cap2"
             )
-          )
+          ),
+          Nil
         )
       ),
       Form.Kind.Active,
@@ -59,6 +61,7 @@ trait FormFixture extends FixtureHelper { self: FixtureSupport =>
           TextField,
           "cap1",
           required = true,
+          Nil,
           Nil
         ),
         Form.Element(
@@ -75,7 +78,8 @@ trait FormFixture extends FixtureHelper { self: FixtureSupport =>
               4,
               "cap2"
             )
-          )
+          ),
+          Nil
         )
       ),
       Form.Kind.Freezed,

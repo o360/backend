@@ -141,7 +141,7 @@ class FormServiceTest
 
   "create" should {
     "return conflict if form is incorrect" in {
-      val form = Forms(0).copy(elements = Seq(Form.Element(1, models.form.element.Radio, "", false, Nil)))
+      val form = Forms(0).copy(elements = Seq(Form.Element(1, models.form.element.Radio, "", false, Nil, Nil)))
 
       val fixture = getFixture
       val result = wait(fixture.service.create(form).run)
@@ -153,9 +153,7 @@ class FormServiceTest
     "create form in db" in {
       val form = Forms(0)
       val fixture = getFixture
-      when(fixture.formDaoMock.create(form.toShort)).thenReturn(toFuture(form.toShort))
-      when(fixture.formDaoMock.createElements(eqTo(form.id), any[Seq[Form.Element]]))
-        .thenReturn(toFuture(form.elements))
+      when(fixture.formDaoMock.create(form)).thenReturn(toFuture(form))
 
       val result = wait(fixture.service.create(form).run)
 
@@ -180,7 +178,7 @@ class FormServiceTest
     }
 
     "return conflict if form is incorrect" in {
-      val form = Forms(0).copy(elements = Seq(Form.Element(1, models.form.element.Radio, "", false, Nil)))
+      val form = Forms(0).copy(elements = Seq(Form.Element(1, models.form.element.Radio, "", false, Nil, Nil)))
       val fixture = getFixture
       when(fixture.formDaoMock.findById(form.id)).thenReturn(toFuture(Some(form)))
       when(
@@ -203,10 +201,7 @@ class FormServiceTest
       val form = Forms(0)
       val fixture = getFixture
       when(fixture.formDaoMock.findById(form.id)).thenReturn(toFuture(Some(form)))
-      when(fixture.formDaoMock.update(form.toShort)).thenReturn(toFuture(form.toShort))
-      when(fixture.formDaoMock.deleteElements(form.id)).thenReturn(toFuture(form.elements.length))
-      when(fixture.formDaoMock.createElements(eqTo(form.id), any[Seq[Form.Element]]))
-        .thenReturn(toFuture(form.elements))
+      when(fixture.formDaoMock.update(form)).thenReturn(toFuture(form))
       when(
         fixture.eventDao.getList(
           optId = any[Option[Long]],

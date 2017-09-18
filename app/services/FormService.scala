@@ -74,9 +74,8 @@ class FormService @Inject()(
   def create(form: Form): SingleResult = {
     for {
       elements <- validateElements(form.elements).lift
-      createdForm <- formDao.create(form.toShort).lift
-      createdElements <- formDao.createElements(createdForm.id, elements).lift
-    } yield createdForm.withElements(createdElements)
+      createdForm <- formDao.create(form.copy(elements = elements)).lift(ExceptionHandler.sql)
+    } yield createdForm
   }
 
   /**
@@ -100,11 +99,9 @@ class FormService @Inject()(
       }
 
       elements <- validateElements(form.elements).lift
-      _ <- formDao.update(form.toShort).lift
-      _ <- formDao.deleteElements(form.id).lift
-      createdElements <- formDao.createElements(form.id, elements).lift
+      updatedForm <- formDao.update(form.copy(elements = elements)).lift(ExceptionHandler.sql)
 
-    } yield form.copy(elements = createdElements)
+    } yield updatedForm
   }
 
   /**

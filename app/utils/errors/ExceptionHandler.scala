@@ -18,7 +18,9 @@ object ExceptionHandler {
         "relation_email_template_template_id_fk" -> ConflictError.Template.RelationExists,
         "relation_group_from_id_fk" -> ConflictError.Group.RelationExists,
         "orgstructure_name_uindex" -> ConflictError.Group.DuplicateName,
-        "project_name_uindex" -> ConflictError.Project.DuplicateName
+        "project_name_uindex" -> ConflictError.Project.DuplicateName,
+        "form_element_competence_competence_id_fk" -> ConflictError.Competence.CompetenceIdNotExists,
+        "form_element_competence_element_id_competence_id_pk" -> ConflictError.Competence.DuplicateElementCompetence,
       )
 
       val message = e.getMessage

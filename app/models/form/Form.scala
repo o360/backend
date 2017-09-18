@@ -1,5 +1,6 @@
 package models.form
 
+import models.NamedEntity
 import models.form.element.ElementKind
 
 /**
@@ -38,13 +39,15 @@ object Form {
     * @param caption      caption
     * @param required     is element required
     * @param values       list of element values
+    * @param competencies element competencies
     */
   case class Element(
     id: Long,
     kind: ElementKind,
     caption: String,
     required: Boolean,
-    values: Seq[ElementValue]
+    values: Seq[ElementValue],
+    competencies: Seq[ElementCompetence]
   )
 
   /**
@@ -74,4 +77,12 @@ object Form {
       */
     case object Freezed extends Kind
   }
+
+  /**
+    * Element competence.
+    */
+  case class ElementCompetence(
+    competence: NamedEntity,
+    factor: Double
+  )
 }
