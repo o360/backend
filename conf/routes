@@ -635,7 +635,7 @@ POST /admin/forms controllers.admin.FormController.create
 #   500:
 #       $ref: '#/responses/InternalServerError'
 ###
-PUT /amdin/forms/:id controllers.admin.FormController.update(id: Long)
+PUT /admin/forms/:id controllers.admin.FormController.update(id: Long)
 
 ###
 # summary: Removes form template by ID

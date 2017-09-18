@@ -1,6 +1,6 @@
 package controllers.api.form
 
-import controllers.api.{EnumFormat, EnumFormatHelper, Response}
+import controllers.api.{ApiNamedEntity, EnumFormat, EnumFormatHelper, Response}
 import models.form.{Form, FormShort}
 import models.form.element._
 import play.api.libs.json._
@@ -24,10 +24,10 @@ object ApiForm {
     *
     * @param form form
     */
-  def apply(form: Form): ApiForm =
+  def apply(form: Form, includeCompetencies: Boolean = false): ApiForm =
     form
       .into[ApiForm]
-      .withFieldComputed(_.elements, _.elements.map(Element(_)))
+      .withFieldComputed(_.elements, _.elements.map(Element(_, includeCompetencies)))
       .transform
 
   /**
@@ -41,6 +41,7 @@ object ApiForm {
       .withFieldConst(_.elements, Seq.empty[ApiForm.Element])
       .transform
 
+  implicit val competenceWrites = Json.writes[ElementCompetence]
   implicit val elementValueWrites = Json.writes[ElementValue]
   implicit val elementWrites = Json.writes[Element]
   implicit val formWrites = Json.writes[ApiForm]
@@ -53,7 +54,8 @@ object ApiForm {
     kind: ApiElementKind,
     caption: String,
     required: Boolean,
-    values: Option[Seq[ElementValue]]
+    values: Option[Seq[ElementValue]],
+    competencies: Option[Seq[ElementCompetence]]
   ) extends Response
 
   object Element {
@@ -61,7 +63,11 @@ object ApiForm {
     /**
       * Converts form element to api form element.
       */
-    def apply(element: Form.Element): Element = {
+    def apply(element: Form.Element, includeCompetencies: Boolean = false): Element = {
+      val competencies = if (includeCompetencies) {
+        Some(element.competencies.map(ElementCompetence.fromModel))
+      } else None
+
       val values = element.values.map { value =>
         ElementValue(
           value.id,
@@ -73,7 +79,8 @@ object ApiForm {
         ApiElementKind(element.kind),
         element.caption,
         element.required,
-        if (values.isEmpty) None else Some(values)
+        if (values.isEmpty) None else Some(values),
+        competencies
       )
     }
   }
@@ -101,11 +108,20 @@ object ApiForm {
   case class ElementValue(
     id: Long,
     caption: String
-  ) extends Response {
+  ) extends Response
 
-    def toModel = Form.ElementValue(
-      id,
-      caption
+  /**
+    * Form element competence API model.
+    */
+  case class ElementCompetence(
+    competence: ApiNamedEntity,
+    factor: Double
+  ) extends Response
+
+  object ElementCompetence {
+    def fromModel(ec: Form.ElementCompetence) = ElementCompetence(
+      ApiNamedEntity(ec.competence),
+      ec.factor
     )
   }
 }

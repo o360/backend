@@ -23,7 +23,7 @@ trait FormGenerator {
       caption <- Arbitrary.arbitrary[String]
       required <- Arbitrary.arbitrary[Boolean]
       values <- Arbitrary.arbitrary[Seq[Form.ElementValue]]
-    } yield Form.Element(0, kind, caption, required, values)
+    } yield Form.Element(0, kind, caption, required, values, Nil)
   }
 
   implicit val formKindArb = Arbitrary[Form.Kind] {

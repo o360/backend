@@ -2,13 +2,13 @@ package models.dao
 
 import javax.inject.{Inject, Singleton}
 
+import io.scalaland.chimney.dsl._
 import models.ListWithTotal
-import models.form.{Form, FormShort}
 import models.form.element._
+import models.form.{Form, FormShort}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 import utils.listmeta.ListMeta
-import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -18,7 +18,7 @@ trait FormComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   implicit lazy val formKindColumnType = MappedColumnType.base[Form.Kind, Byte](
     {
-      case Form.Kind.Active => 0
+      case Form.Kind.Active  => 0
       case Form.Kind.Freezed => 1
     }, {
       case 0 => Form.Kind.Active
@@ -91,10 +91,11 @@ trait FormComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
     order: Int
   ) {
 
-    def toModel(values: Seq[Form.ElementValue]) =
+    def toModel(values: Seq[Form.ElementValue], competencies: Seq[Form.ElementCompetence]) =
       this
         .into[Form.Element]
         .withFieldConst(_.values, values)
+        .withFieldConst(_.competencies, competencies)
         .transform
   }
 
@@ -164,6 +165,8 @@ class FormDao @Inject()(
   with FormComponent
   with ProjectRelationComponent
   with EventProjectComponent
+  with FormElementCompetenceComponent
+  with CompetenceComponent
   with DaoHelper {
 
   import profile.api._
@@ -198,7 +201,7 @@ class FormDao @Inject()(
 
     runListQuery(query) { form =>
       {
-        case 'id => form.id
+        case 'id   => form.id
         case 'name => form.name
       }
     }.map { case ListWithTotal(total, data) => ListWithTotal(total, data.map(_.toModel)) }
@@ -206,12 +209,21 @@ class FormDao @Inject()(
 
   /**
     * Creates form.
-    *
-    * @param form form model
-    * @return created form model with ID
     */
-  def create(form: FormShort): Future[FormShort] = {
-    db.run(Forms.returning(Forms.map(_.id)).into((item, id) => item.copy(id = id).toModel) += DbForm.fromModel(form))
+  def create(form: Form): Future[Form] = {
+    val createForm = {
+      Forms.returning(Forms.map(_.id)) += DbForm.fromModel(form.toShort)
+    }
+
+    val actions = for {
+      formId <- createForm
+      _ <- createElementsIO(formId, form.elements)
+    } yield formId
+
+    for {
+      id <- db.run(actions.transactionally)
+      formById <- findById(id)
+    } yield formById.getOrElse(form.copy(id = id))
   }
 
   /**
@@ -226,9 +238,17 @@ class FormDao @Inject()(
           .on {
             case (element, value) => element.id === value.elementId
           }
+          .joinLeft {
+            FormElementCompetencies
+              .join(Competencies)
+              .on(_.competenceId === _.id)
+          }
+          .on {
+            case ((element, _), (competence, _)) => element.id === competence.elementId
+          }
       }
       .on {
-        case (form, (element, _)) => form.id === element.formId
+        case (form, ((element, _), _)) => form.id === element.formId
       }
 
     db.run(query.result).map { flatResults =>
@@ -236,17 +256,29 @@ class FormDao @Inject()(
         case (form, _) =>
           val elements = flatResults
             .collect { case (_, Some(elementWithValues)) => elementWithValues }
-            .groupBy { case (element, _) => element }
+            .groupBy { case ((element, _), _) => element }
             .toSeq
             .sortBy { case (element, _) => element.order }
             .map {
-              case (element, valuesWithElements) =>
-                val values = valuesWithElements
-                  .collect { case (_, Some(value)) => value }
+              case (element, flatResult) =>
+                val values = flatResult
+                  .collect { case ((_, Some(value)), _) => value }
+                  .distinct
                   .sortBy(_.order)
                   .map(_.toModel)
+                val competencies = flatResult
+                  .collect { case (_, Some(competence)) => competence }
+                  .distinct
+                  .map {
+                    case (elementCompetence, competence) => {
+                      Form.ElementCompetence(
+                        competence.toNamedEntity,
+                        elementCompetence.factor
+                      )
+                    }
+                  }
 
-                element.toModel(values)
+                element.toModel(values, competencies)
             }
           form.toModel.withElements(elements)
       }
@@ -254,40 +286,47 @@ class FormDao @Inject()(
   }
 
   /**
-    * Creates form elements.
-    *
-    * @param formId   ID of form template.
-    * @param elements elements
-    * @return created elements
+    * DBIO for creating elements.
     */
-  def createElements(formId: Long, elements: Seq[Form.Element]): Future[Seq[Form.Element]] = {
-
-    val dbModels = elements.zipWithIndex
-      .map {
-        case (element, index) =>
-          val values = element.values.zipWithIndex
-            .map {
-              case (value, valueIndex) =>
-                DbFormElementValue(id = 0, elementId = 0, value.caption, valueIndex)
-            }
-
-          (DbFormElement.fromModel(formId, element, index), values)
-      }
-
-    val results = dbModels.map {
-      case (element, values) =>
-        val elementId = db.run(FormElements.returning(FormElements.map(_.id)) += element)
-        if (values.nonEmpty) {
-          elementId.flatMap { elementId: Long =>
-            db.run(FormElementValues ++= values.map(_.copy(elementId = elementId)))
-          }
-        } else elementId
+  private def createElementsIO(formId: Long, elements: Seq[Form.Element]) = {
+    def createValue(elId: Long, value: Form.ElementValue, order: Int) = {
+      FormElementValues += DbFormElementValue(0, elId, value.caption, order)
     }
 
-    for {
-      _ <- Future.sequence(results)
-      form <- findById(formId)
-    } yield form.getOrElse(throw new NoSuchElementException("form not found")).elements
+    def createValues(elId: Long, values: Seq[Form.ElementValue]) = {
+      DBIO.sequence {
+        values.zipWithIndex.map {
+          case (value, index) =>
+            createValue(elId, value, index)
+        }
+      }
+    }
+
+    def createCompetence(elId: Long, elC: Form.ElementCompetence) = {
+      FormElementCompetencies += DbFormElementCompetence(elId, elC.competence.id, elC.factor)
+    }
+
+    def createCompetencies(elId: Long, c: Seq[Form.ElementCompetence]) = {
+      DBIO.sequence(c.map(createCompetence(elId, _)))
+    }
+
+    def createElement(el: Form.Element, order: Int) = {
+      for {
+        elId <- FormElements.returning(FormElements.map(_.id)) += DbFormElement.fromModel(formId, el, order)
+        _ <- createValues(elId, el.values)
+        _ <- createCompetencies(elId, el.competencies)
+      } yield ()
+    }
+
+    val createElements = DBIO
+      .sequence {
+        elements.zipWithIndex.map {
+          case (element, index) =>
+            createElement(element, index)
+        }
+      }
+
+    createElements.map(_ => ())
   }
 
   /**
@@ -301,23 +340,18 @@ class FormDao @Inject()(
   }
 
   /**
-    * Deletes form elements.
-    *
-    * @param formId form template ID
-    */
-  def deleteElements(formId: Long): Future[Int] = db.run {
-    FormElements.filter(_.formId === formId).delete
-  }
-
-  /**
     * Updates form.
-    *
-    * @param form form model
-    * @return updated form
     */
-  def update(form: FormShort): Future[FormShort] =
-    db.run {
-        Forms.filter(_.id === form.id).update(DbForm.fromModel(form))
-      }
-      .map(_ => form)
+  def update(form: Form): Future[Form] = {
+    val actions = for {
+      _ <- Forms.filter(_.id === form.id).update(DbForm.fromModel(form.toShort))
+      _ <- FormElements.filter(_.formId === form.id).delete
+      _ <- createElementsIO(form.id, form.elements)
+    } yield ()
+
+    for {
+      _ <- db.run(actions.transactionally)
+      formById <- findById(form.id)
+    } yield formById.getOrElse(form)
+  }
 }

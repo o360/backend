@@ -34,31 +34,17 @@ class FormDaoTest extends BaseDaoTest with FormFixture with FormGenerator {
 
   "create" should {
     "create form" in {
-      forAll { (form: FormShort) =>
+      forAll { (form: Form) =>
         val created = wait(dao.create(form))
 
-        val formFromDb = wait(dao.findById(created.id)).map(_.toShort)
-        formFromDb mustBe defined
-        created mustBe formFromDb.get
-      }
-    }
-  }
-
-  "createElements" should {
-    "create elements in db" in {
-      forAll { (form: Form) =>
-        val created = wait(dao.create(form.toShort))
-
-        wait(dao.createElements(created.id, form.elements))
-
         val formFromDb = wait(dao.findById(created.id))
-        val preparedForm = formFromDb.get.copy(elements = formFromDb.get.elements.map { element =>
+        val preparedForm = formFromDb.get.copy(id = 0, elements = formFromDb.get.elements.map { element =>
           element.copy(
             id = 0,
             values = element.values.map(_.copy(id = 0))
           )
         })
-        preparedForm mustBe form.copy(id = created.id)
+        preparedForm mustBe form
       }
     }
   }
@@ -66,8 +52,7 @@ class FormDaoTest extends BaseDaoTest with FormFixture with FormGenerator {
   "delete" should {
     "delete form with elements" in {
       forAll { (form: Form) =>
-        val created = wait(dao.create(form.toShort))
-        wait(dao.createElements(created.id, form.elements))
+        val created = wait(dao.create(form))
 
         val rowsDeleted = wait(dao.delete(created.id))
 
@@ -78,35 +63,24 @@ class FormDaoTest extends BaseDaoTest with FormFixture with FormGenerator {
     }
   }
 
-  "delete elements" should {
-    "delete form elements" in {
-      forAll { (form: Form) =>
-        val created = wait(dao.create(form.toShort))
-        wait(dao.createElements(created.id, form.elements))
-
-        val rowsDeleted = wait(dao.deleteElements(created.id))
-
-        val formFromDb = wait(dao.findById(created.id))
-        rowsDeleted mustBe form.elements.length
-        formFromDb mustBe defined
-        formFromDb.get.elements mustBe empty
-      }
-    }
-  }
-
   "update" should {
     "update form" in {
-      val newFormId = wait(dao.create(FormsShort(0))).id
+      val newFormId = wait(dao.create(Forms(0))).id
 
-      forAll { (form: FormShort) =>
+      forAll { (form: Form) =>
         val formWithId = form.copy(id = newFormId)
 
         wait(dao.update(formWithId))
 
         val updatedFromDb = wait(dao.findById(newFormId))
+        val preparedForm = updatedFromDb.get.copy(id = 0, elements = updatedFromDb.get.elements.map { element =>
+          element.copy(
+            id = 0,
+            values = element.values.map(_.copy(id = 0))
+          )
+        })
 
-        updatedFromDb mustBe defined
-        updatedFromDb.get.toShort mustBe formWithId
+        preparedForm mustBe form
       }
     }
   }
