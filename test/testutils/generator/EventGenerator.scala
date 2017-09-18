@@ -29,7 +29,7 @@ trait EventGenerator extends NotificationGenerator with TimestampGenerator {
       start <- Arbitrary.arbitrary[Timestamp]
       end <- Arbitrary.arbitrary[Timestamp]
       notifications <- Arbitrary.arbitrary[Seq[Event.NotificationTime]]
-
-    } yield Event(0, description, start, end, notifications)
+      isPreparing <- Arbitrary.arbitrary[Boolean]
+    } yield Event(0, description, start, end, notifications, isPreparing = isPreparing)
   }
 }

@@ -4,7 +4,7 @@ import javax.inject.{Inject, Singleton}
 
 import models.NamedEntity
 import models.assessment.Answer
-import models.dao.{AnswerDao, ProjectDao, ProjectRelationDao}
+import models.dao.{AnswerDao, EventDao, ProjectDao, ProjectRelationDao}
 import models.event.EventJob
 import models.form.Form
 import models.project.{ActiveProject, Project, Relation}
@@ -24,6 +24,7 @@ import scala.concurrent.{ExecutionContext, Future}
   */
 @Singleton
 class EventStartService @Inject()(
+  eventDao: EventDao,
   formService: FormService,
   projectDao: ProjectDao,
   relationDao: ProjectRelationDao,
@@ -100,11 +101,13 @@ class EventStartService @Inject()(
         .toSeq
 
     val result = for {
+      _ <- eventDao.setIsPreparing(job.eventId, isPreparing = true).lift
       projects <- projectDao.getList(optEventId = Some(job.eventId)).lift
       allAnswers <- projects.data.map(getAnswersForProject).sequenced
       withoutDuplicates = distinctAnswers(allAnswers.flatten)
       withReplacedForms <- createAndReplaceForms(withoutDuplicates)
-      _ <- Future.sequence(withReplacedForms.map(answerDao.saveAnswer)).lift
+      _ <- Future.sequence(withReplacedForms.map(answerDao.createAnswer)).lift
+      _ <- eventDao.setIsPreparing(job.eventId, isPreparing = false).lift
     } yield ()
 
     result.leftMap[Unit](e => throw new RuntimeException(e.getMessage)).run.map(_ => ())

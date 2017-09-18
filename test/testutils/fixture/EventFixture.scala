@@ -48,7 +48,8 @@ trait EventFixture extends FixtureHelper { self: FixtureSupport =>
       Some("notStarted"),
       new Timestamp(Long.MaxValue - 500),
       new Timestamp(Long.MaxValue),
-      Nil
+      Nil,
+      isPreparing = true
     ),
     Event(
       4,
@@ -62,11 +63,11 @@ trait EventFixture extends FixtureHelper { self: FixtureSupport =>
   addFixtureOperation {
     sequenceOf(
       insertInto("event")
-        .columns("id", "start_time", "end_time", "description")
-        .scalaValues(1, Events(0).start, Events(0).end, "description")
-        .scalaValues(2, Events(1).start, Events(1).end, "completed")
-        .scalaValues(3, Events(2).start, Events(2).end, "notStarted")
-        .scalaValues(4, Events(3).start, Events(3).end, "inProgress")
+        .columns("id", "start_time", "end_time", "description", "is_preparing")
+        .scalaValues(1, Events(0).start, Events(0).end, "description", false)
+        .scalaValues(2, Events(1).start, Events(1).end, "completed", false)
+        .scalaValues(3, Events(2).start, Events(2).end, "notStarted", true)
+        .scalaValues(4, Events(3).start, Events(3).end, "inProgress", false)
         .build,
       insertInto("event_notification")
         .columns("id", "event_id", "time", "kind", "recipient_kind")

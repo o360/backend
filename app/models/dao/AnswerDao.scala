@@ -268,4 +268,8 @@ class AnswerDao @Inject()(
 
     db.run(actions.transactionally).map(_ => answer)
   }
+
+  def createAnswer(answer: Answer): Future[Unit] = {
+    db.run(Answers += DbAnswer.fromModel(answer)).map(_ => ())
+  }
 }

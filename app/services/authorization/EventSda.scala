@@ -30,7 +30,7 @@ object EventSda {
     */
   private def getValidationRules(original: Event, draft: Event) = Seq(
     ValidationRule("start", original.start != draft.start) {
-      original.status != Event.Status.InProgress
+      original.status != Event.Status.InProgress && !original.isPreparing
     }
   )
 

@@ -12,6 +12,7 @@ import utils.TimestampConverter
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
 import io.scalaland.chimney.dsl._
+import scalaz.std.option._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -61,8 +62,16 @@ trait EventComponent extends NotificationComponent { self: HasDatabaseConfigProv
     id: Long,
     description: Option[String],
     start: Timestamp,
-    end: Timestamp
-  )
+    end: Timestamp,
+    isPreparing: Boolean
+  ) {
+    def toModel(notifications: Seq[Event.NotificationTime]) =
+      this
+        .into[Event]
+        .withFieldConst(_.notifications, notifications)
+        .withFieldConst(_.userInfo, none[Event.UserInfo])
+        .transform
+  }
 
   object DbEvent {
     def fromModel(event: Event) = event.transformInto[DbEvent]
@@ -74,8 +83,9 @@ trait EventComponent extends NotificationComponent { self: HasDatabaseConfigProv
     def description = column[Option[String]]("description")
     def start = column[Timestamp]("start_time")
     def end = column[Timestamp]("end_time")
+    def isPreparing = column[Boolean]("is_preparing")
 
-    def * = (id, description, start, end) <> ((DbEvent.apply _).tupled, DbEvent.unapply)
+    def * = (id, description, start, end, isPreparing) <> ((DbEvent.apply _).tupled, DbEvent.unapply)
   }
 
   val Events = TableQuery[EventTable]
@@ -116,8 +126,8 @@ trait EventComponent extends NotificationComponent { self: HasDatabaseConfigProv
   def statusFilter(event: EventTable, status: Event.Status) = {
     val currentTime = TimestampConverter.now
     status match {
-      case Event.Status.NotStarted => event.start > currentTime
-      case Event.Status.InProgress => event.start <= currentTime && event.end > currentTime
+      case Event.Status.NotStarted => event.start > currentTime || event.isPreparing
+      case Event.Status.InProgress => event.start <= currentTime && event.end > currentTime && !event.isPreparing
       case Event.Status.Completed => event.end <= currentTime
     }
   }
@@ -245,7 +255,7 @@ class EventDao @Inject()(
           case (event, notificationsWithEvent) =>
             val notifications = notificationsWithEvent
               .collect { case (_, Some(n)) => Event.NotificationTime(n.time, n.kind, n.recipient) }
-            Event(event.id, event.description, event.start, event.end, notifications)
+            event.toModel(notifications)
         }
 
       ListWithTotal(count, data)
@@ -283,5 +293,12 @@ class EventDao @Inject()(
     */
   def delete(eventId: Long): Future[Int] = db.run {
     Events.filter(_.id === eventId).delete
+  }
+
+  /**
+    * Sets isPreparing flag.
+    */
+  def setIsPreparing(eventId: Long, isPreparing: Boolean): Future[Unit] = {
+    db.run(Events.filter(_.id === eventId).map(_.isPreparing).update(isPreparing)).map(_ => ())
   }
 }
