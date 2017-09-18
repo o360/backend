@@ -20,7 +20,8 @@ case class ApiEvent(
   end: LocalDateTime,
   notifications: Option[Seq[ApiEvent.NotificationTime]],
   status: ApiEvent.EventStatus,
-  userInfo: Option[ApiEvent.ApiUserInfo]
+  userInfo: Option[ApiEvent.ApiUserInfo],
+  isPreparing: Boolean
 ) extends Response
 
 object ApiEvent {
@@ -41,7 +42,8 @@ object ApiEvent {
       TimestampConverter.fromUtc(e.end, account.timezone).toLocalDateTime,
       notifications,
       EventStatus(e.status),
-      e.userInfo.map(ApiUserInfo(_))
+      e.userInfo.map(ApiUserInfo(_)),
+      e.isPreparing
     )
   }
   implicit val userInfoWrites = Json.writes[ApiUserInfo]

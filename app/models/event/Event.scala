@@ -16,7 +16,8 @@ case class Event(
   start: Timestamp,
   end: Timestamp,
   notifications: Seq[Event.NotificationTime],
-  userInfo: Option[Event.UserInfo] = None
+  userInfo: Option[Event.UserInfo] = None,
+  isPreparing: Boolean = false
 ) {
   private val currentTime = TimestampConverter.now
 
@@ -24,7 +25,7 @@ case class Event(
     * Status of event.
     */
   val status: Event.Status =
-    if (currentTime.before(start)) Event.Status.NotStarted
+    if (currentTime.before(start) || isPreparing) Event.Status.NotStarted
     else if (currentTime.before(end)) Event.Status.InProgress
     else Event.Status.Completed
 
