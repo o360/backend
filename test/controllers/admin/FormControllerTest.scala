@@ -109,7 +109,7 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
         ApiForm.ApiElementKind(element.kind),
         element.caption,
         element.required,
-        Some(element.values.map(value => ApiPartialForm.ElementValue(value.caption))),
+        Some(element.values.map(value => ApiPartialForm.ElementValue(value.caption, value.competenceWeight))),
         None
       )
     }),
