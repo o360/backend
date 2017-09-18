@@ -1667,3 +1667,245 @@ GET /users/:userId/picture controllers.user.ProfilePictureController.get(userId:
 #       $ref: '#/responses/InternalServerError'
 ###
 GET /projects/:projectId/report controllers.user.ReportController.getAuditorReport(projectId: Long)
+
+###
+# summary: Returns competence group by ID
+# tags:
+#   - Competence
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.competence.ApiCompetenceGroup'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /admin/competence-groups/:id controllers.admin.CompetenceGroupController.getById(id: Long)
+
+###
+# summary: Returns list of competence groups
+# tags:
+#   - Competence
+# parameters:
+#   - name: sort
+#     in: query
+#     type: string
+#     pattern: '^-?\w+(,-?\w+)*$'
+#     description: 'Available fields: id, name, description. Format: field1,-field2,...'
+#   - $ref: '#/parameters/pageSize'
+#   - $ref: '#/parameters/pageNumber'
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.competence.ApiCompetenceGroup'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /admin/competence-groups controllers.admin.CompetenceGroupController.getList
+
+###
+# summary: Creates competence group
+# tags:
+#   - Competence
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.competence.ApiPartialCompetenceGroup'
+# responses:
+#   201:
+#       description: Competence group created
+#       schema:
+#           $ref: '#/definitions/controllers.api.competence.ApiCompetenceGroup'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST /admin/competence-groups controllers.admin.CompetenceGroupController.create
+
+###
+# summary: Updates competence group
+# tags:
+#   - Competence
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.competence.ApiPartialCompetenceGroup'
+# responses:
+#   200:
+#       description: Competence group updated
+#       schema:
+#           $ref: '#/definitions/controllers.api.competence.ApiCompetenceGroup'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+PUT /admin/competence-groups/:id controllers.admin.CompetenceGroupController.update(id: Long)
+
+###
+# summary: Removes competence group
+# tags:
+#   - Competence
+# responses:
+#   204:
+#       description: Competence group deleted successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+DELETE /admin/competence-groups/:id controllers.admin.CompetenceGroupController.delete(id: Long)
+
+###
+# summary: Returns competence by ID
+# tags:
+#   - Competence
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.competence.ApiCompetence'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /admin/competence/:id controllers.admin.CompetenceController.getById(id: Long)
+
+###
+# summary: Returns list of competence
+# tags:
+#   - Competence
+# parameters:
+#   - name: sort
+#     in: query
+#     type: string
+#     pattern: '^-?\w+(,-?\w+)*$'
+#     description: 'Available fields: id, name, groupId, description. Format: field1,-field2,...'
+#   - $ref: '#/parameters/pageSize'
+#   - $ref: '#/parameters/pageNumber'
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.competence.ApiCompetence'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /admin/competence controllers.admin.CompetenceController.getList(groupId: Option[Long])
+
+###
+# summary: Creates competence
+# tags:
+#   - Competence
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.competence.ApiPartialCompetence'
+# responses:
+#   201:
+#       description: Competence created
+#       schema:
+#           $ref: '#/definitions/controllers.api.competence.ApiCompetence'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST /admin/competence controllers.admin.CompetenceController.create
+
+###
+# summary: Updates competence
+# tags:
+#   - Competence
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.competence.ApiPartialCompetence'
+# responses:
+#   200:
+#       description: Competence updated
+#       schema:
+#           $ref: '#/definitions/controllers.api.competence.ApiCompetence'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+PUT /admin/competence/:id controllers.admin.CompetenceController.update(id: Long)
+
+###
+# summary: Removes competence
+# tags:
+#   - Competence
+# responses:
+#   204:
+#       description: Competence deleted successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+DELETE /admin/competence/:id controllers.admin.CompetenceController.delete(id: Long)
