@@ -104,7 +104,7 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
       forAll { (event: Event) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.eventServiceMock.update(event))
+        when(fixture.eventServiceMock.update(event.copy(isPreparing = false)))
           .thenReturn(EitherT.eitherT(toFuture(\/-(event): ApplicationError \/ Event)))
 
         val partialEvent = ApiPartialEvent(
@@ -135,7 +135,7 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
       forAll { (event: Event) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.eventServiceMock.create(event.copy(id = 0)))
+        when(fixture.eventServiceMock.create(event.copy(id = 0, isPreparing = false)))
           .thenReturn(EitherT.eitherT(toFuture(\/-(event): ApplicationError \/ Event)))
 
         val partialEvent = ApiPartialEvent(
