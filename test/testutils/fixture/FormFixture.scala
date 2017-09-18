@@ -30,11 +30,13 @@ trait FormFixture extends FixtureHelper { self: FixtureSupport =>
           Seq(
             Form.ElementValue(
               1,
-              "cap1"
+              "cap1",
+              Some(15)
             ),
             Form.ElementValue(
               2,
-              "cap2"
+              "cap2",
+              Some(27.5)
             )
           ),
           Nil
@@ -72,11 +74,13 @@ trait FormFixture extends FixtureHelper { self: FixtureSupport =>
           Seq(
             Form.ElementValue(
               3,
-              "cap1"
+              "cap1",
+              None
             ),
             Form.ElementValue(
               4,
-              "cap2"
+              "cap2",
+              None
             )
           ),
           Nil
@@ -106,11 +110,11 @@ trait FormFixture extends FixtureHelper { self: FixtureSupport =>
         .scalaValues(4, 3, 4, "cap2", false, 2)
         .build,
       insertInto("form_element_value")
-        .columns("id", "element_id", "caption", "ord")
-        .scalaValues(1, 2, "cap1", 1)
-        .scalaValues(2, 2, "cap2", 2)
-        .scalaValues(3, 4, "cap1", 1)
-        .scalaValues(4, 4, "cap2", 2)
+        .columns("id", "element_id", "caption", "ord", "competence_weight")
+        .scalaValues(1, 2, "cap1", 1, 15)
+        .scalaValues(2, 2, "cap2", 2, 27.5)
+        .scalaValues(3, 4, "cap1", 1, null)
+        .scalaValues(4, 4, "cap2", 2, null)
         .build
     )
   }

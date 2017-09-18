@@ -34,8 +34,10 @@ object ApiPartialForm {
 
   implicit val elementCompetenceReads = Json.reads[ElementCompetence]
 
-  implicit val elementValueReads: Reads[ElementValue] =
-    (__ \ "caption").read[String](maxLength[String](1024)).map(ElementValue)
+  implicit val elementValueReads: Reads[ElementValue] = (
+    (__ \ "caption").read[String](maxLength[String](1024)) and
+      (__ \ "competenceWeight").readNullable[Double]
+  )(ElementValue)
 
   implicit val elementReads: Reads[Element] = (
     (__ \ "kind").read[ApiElementKind] and
@@ -77,12 +79,14 @@ object ApiPartialForm {
     * Form element value api model.
     */
   case class ElementValue(
-    caption: String
+    caption: String,
+    competenceWeight: Option[Double]
   ) extends Response {
 
     def toModel = Form.ElementValue(
       0,
-      caption
+      caption,
+      competenceWeight
     )
   }
 

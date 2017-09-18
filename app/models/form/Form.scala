@@ -53,12 +53,14 @@ object Form {
   /**
     * Form element value.
     *
-    * @param id      DB ID
-    * @param caption caption
+    * @param id               DB ID
+    * @param caption          caption
+    * @param competenceWeight competence weight value for element
     */
   case class ElementValue(
     id: Long,
-    caption: String
+    caption: String,
+    competenceWeight: Option[Double] = None
   )
 
   /**

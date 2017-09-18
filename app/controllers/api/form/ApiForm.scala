@@ -68,12 +68,7 @@ object ApiForm {
         Some(element.competencies.map(ElementCompetence.fromModel))
       } else None
 
-      val values = element.values.map { value =>
-        ElementValue(
-          value.id,
-          value.caption
-        )
-      }
+      val values = element.values.map(_.transformInto[ElementValue])
       Element(
         element.id,
         ApiElementKind(element.kind),
@@ -107,7 +102,8 @@ object ApiForm {
     */
   case class ElementValue(
     id: Long,
-    caption: String
+    caption: String,
+    competenceWeight: Option[Double]
   ) extends Response
 
   /**

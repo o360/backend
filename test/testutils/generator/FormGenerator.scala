@@ -10,7 +10,10 @@ import org.scalacheck.{Arbitrary, Gen}
 trait FormGenerator {
 
   implicit val elementValueArb = Arbitrary {
-    Arbitrary.arbitrary[String].map(Form.ElementValue(0, _))
+    for {
+      value <- Arbitrary.arbitrary[String]
+      weight <- Arbitrary.arbitrary[Option[Double]]
+    } yield Form.ElementValue(0, value, weight)
   }
 
   implicit val elementKindArb = Arbitrary[ElementKind] {

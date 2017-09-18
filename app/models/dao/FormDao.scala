@@ -18,7 +18,7 @@ trait FormComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   implicit lazy val formKindColumnType = MappedColumnType.base[Form.Kind, Byte](
     {
-      case Form.Kind.Active  => 0
+      case Form.Kind.Active => 0
       case Form.Kind.Freezed => 1
     }, {
       case 0 => Form.Kind.Active
@@ -132,12 +132,14 @@ trait FormComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
     id: Long,
     elementId: Long,
     caption: String,
-    order: Int
+    order: Int,
+    competenceWeight: Option[Double]
   ) {
 
     def toModel = Form.ElementValue(
       id,
-      caption
+      caption,
+      competenceWeight
     )
   }
 
@@ -147,8 +149,10 @@ trait FormComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
     def elementId = column[Long]("element_id")
     def caption = column[String]("caption")
     def order = column[Int]("ord")
+    def competenceWeight = column[Option[Double]]("competence_weight")
 
-    def * = (id, elementId, caption, order) <> ((DbFormElementValue.apply _).tupled, DbFormElementValue.unapply)
+    def * =
+      (id, elementId, caption, order, competenceWeight) <> ((DbFormElementValue.apply _).tupled, DbFormElementValue.unapply)
   }
 
   val FormElementValues = TableQuery[FormElementValueTable]
@@ -201,7 +205,7 @@ class FormDao @Inject()(
 
     runListQuery(query) { form =>
       {
-        case 'id   => form.id
+        case 'id => form.id
         case 'name => form.name
       }
     }.map { case ListWithTotal(total, data) => ListWithTotal(total, data.map(_.toModel)) }
@@ -290,7 +294,7 @@ class FormDao @Inject()(
     */
   private def createElementsIO(formId: Long, elements: Seq[Form.Element]) = {
     def createValue(elId: Long, value: Form.ElementValue, order: Int) = {
-      FormElementValues += DbFormElementValue(0, elId, value.caption, order)
+      FormElementValues += DbFormElementValue(0, elId, value.caption, order, value.competenceWeight)
     }
 
     def createValues(elId: Long, values: Seq[Form.ElementValue]) = {
