@@ -10,7 +10,8 @@ case class Competence(
   groupId: Long,
   name: String,
   description: Option[String],
-  kind: EntityKind
+  kind: EntityKind,
+  machineName: String
 ) {
   def toNamedEntity = NamedEntity(id, name)
 }

@@ -44,7 +44,8 @@ object ApiPartialForm {
       (__ \ "caption").read[String](maxLength[String](1024)) and
       (__ \ "required").read[Boolean] and
       (__ \ "values").readNullable[Seq[ElementValue]] and
-      (__ \ "competencies").readNullable[Seq[ElementCompetence]]
+      (__ \ "competencies").readNullable[Seq[ElementCompetence]] and
+      (__ \ "machineName").readNullable[String]
   )(Element)
 
   implicit val formReads: Reads[ApiPartialForm] = (
@@ -52,7 +53,7 @@ object ApiPartialForm {
       (__ \ "elements").readNullable[Seq[ApiPartialForm.Element]] and
       (__ \ "showInAggregation").read[Boolean] and
       (__ \ "machineName").readNullable[String]
-  )(ApiPartialForm(_, _, _, _))
+  )(ApiPartialForm.apply _)
 
   /**
     * Form element api model.
@@ -62,7 +63,8 @@ object ApiPartialForm {
     caption: String,
     required: Boolean,
     values: Option[Seq[ElementValue]],
-    competencies: Option[Seq[ElementCompetence]]
+    competencies: Option[Seq[ElementCompetence]],
+    machineName: Option[String]
   ) extends Response {
 
     def toModel =
@@ -72,6 +74,7 @@ object ApiPartialForm {
         .withFieldComputed(_.kind, _.kind.value)
         .withFieldComputed(_.values, _.values.getOrElse(Seq.empty[ApiPartialForm.ElementValue]).map(_.toModel))
         .withFieldComputed(_.competencies, _.competencies.toSeq.flatMap(_.map(_.toModel)))
+        .withFieldComputed(_.machineName, _.machineName.getOrElse(RandomGenerator.generateMachineName))
         .transform
   }
 

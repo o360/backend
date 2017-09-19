@@ -24,8 +24,9 @@ trait CompetenceComponent extends EntityKindColumnMapper { _: HasDatabaseConfigP
     def name = column[String]("name")
     def description = column[Option[String]]("description")
     def kind = column[EntityKind]("kind")
+    def machineName = column[String]("machine_name")
 
-    def * = (id, groupId, name, description, kind) <> ((Competence.apply _).tupled, Competence.unapply)
+    def * = (id, groupId, name, description, kind, machineName) <> ((Competence.apply _).tupled, Competence.unapply)
   }
 
   val Competencies = TableQuery[CompetenceTable]

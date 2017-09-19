@@ -11,7 +11,8 @@ import models.competence.CompetenceGroup
 case class ApiCompetenceGroup(
   id: Long,
   name: String,
-  description: Option[String]
+  description: Option[String],
+  machineName: String
 ) extends Response
 
 object ApiCompetenceGroup {

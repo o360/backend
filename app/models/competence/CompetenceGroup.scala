@@ -9,7 +9,8 @@ case class CompetenceGroup(
   id: Long,
   name: String,
   description: Option[String],
-  kind: EntityKind
+  kind: EntityKind,
+  machineName: String
 )
 
 object CompetenceGroup {

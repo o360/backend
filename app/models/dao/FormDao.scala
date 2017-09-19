@@ -74,7 +74,8 @@ trait FormComponent extends EnumColumnMapper { self: HasDatabaseConfigProvider[J
     kind: ElementKind,
     caption: String,
     required: Boolean,
-    order: Int
+    order: Int,
+    machineName: String
   ) {
 
     def toModel(values: Seq[Form.ElementValue], competencies: Seq[Form.ElementCompetence]) =
@@ -103,9 +104,10 @@ trait FormComponent extends EnumColumnMapper { self: HasDatabaseConfigProvider[J
     def caption = column[String]("caption")
     def required = column[Boolean]("required")
     def order = column[Int]("ord")
+    def machineName = column[String]("machine_name")
 
     def * =
-      (id, formId, kind, caption, required, order) <>
+      (id, formId, kind, caption, required, order, machineName) <>
         ((DbFormElement.apply _).tupled, DbFormElement.unapply)
   }
 
