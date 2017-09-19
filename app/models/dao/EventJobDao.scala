@@ -13,24 +13,16 @@ import scala.concurrent.{ExecutionContext, Future}
 /**
   * Component for event_job table.
   */
-trait EventJobComponent extends NotificationComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
+trait EventJobComponent extends NotificationComponent with EnumColumnMapper { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import profile.api._
 
-  implicit val jobStatusColumnType = MappedColumnType.base[EventJob.Status, Byte](
-    {
-      case EventJob.Status.New => 0
-      case EventJob.Status.Success => 1
-      case EventJob.Status.Failure => 2
-      case EventJob.Status.Cancelled => 3
-      case EventJob.Status.InProgress => 4
-    }, {
-      case 0 => EventJob.Status.New
-      case 1 => EventJob.Status.Success
-      case 2 => EventJob.Status.Failure
-      case 3 => EventJob.Status.Cancelled
-      case 4 => EventJob.Status.InProgress
-    }
+  implicit lazy val jobStatusColumnType = mappedEnumSeq[EventJob.Status](
+    EventJob.Status.New,
+    EventJob.Status.Success,
+    EventJob.Status.Failure,
+    EventJob.Status.Cancelled,
+    EventJob.Status.InProgress,
   )
 
   /**

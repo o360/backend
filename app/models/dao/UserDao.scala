@@ -58,39 +58,15 @@ trait UserMetaComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 /**
   * Component for 'account' table.
   */
-trait UserComponent extends Logger { self: HasDatabaseConfigProvider[JdbcProfile] =>
+trait UserComponent extends Logger with EnumColumnMapper { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import profile.api._
 
-  implicit lazy val roleColumnType = MappedColumnType.base[User.Role, Byte](
-    {
-      case User.Role.User => 0
-      case User.Role.Admin => 1
-    }, {
-      case 0 => User.Role.User
-      case 1 => User.Role.Admin
-    }
-  )
+  implicit lazy val roleColumnType = mappedEnumSeq[User.Role](User.Role.User, User.Role.Admin)
 
-  implicit lazy val statusColumnType = MappedColumnType.base[User.Status, Byte](
-    {
-      case User.Status.New => 0
-      case User.Status.Approved => 1
-    }, {
-      case 0 => User.Status.New
-      case 1 => User.Status.Approved
-    }
-  )
+  implicit lazy val statusColumnType = mappedEnumSeq[User.Status](User.Status.New, User.Status.Approved)
 
-  implicit lazy val genderColumnType = MappedColumnType.base[User.Gender, Byte](
-    {
-      case User.Gender.Male => 0
-      case User.Gender.Female => 1
-    }, {
-      case 0 => User.Gender.Male
-      case 1 => User.Gender.Female
-    }
-  )
+  implicit lazy val genderColumnType = mappedEnumSeq[User.Gender](User.Gender.Male, User.Gender.Female)
 
   /**
     * Database user model.

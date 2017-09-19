@@ -15,7 +15,7 @@ import utils.implicits.FutureLifting._
 /**
   * Component for relation table.
   */
-trait ProjectRelationComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
+trait ProjectRelationComponent extends EnumColumnMapper { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import profile.api._
 
@@ -67,15 +67,7 @@ trait ProjectRelationComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
     )
   }
 
-  implicit val relationKindColumnType = MappedColumnType.base[Relation.Kind, Byte](
-    {
-      case Relation.Kind.Classic => 0
-      case Relation.Kind.Survey => 1
-    }, {
-      case 0 => Relation.Kind.Classic
-      case 1 => Relation.Kind.Survey
-    }
-  )
+  implicit val relationKindColumnType = mappedEnumSeq[Relation.Kind](Relation.Kind.Classic, Relation.Kind.Survey)
 
   class RelationTable(tag: Tag) extends Table[DbRelation](tag, "relation") {
 

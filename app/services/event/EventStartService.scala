@@ -92,7 +92,8 @@ class EventStartService @Inject()(
 
         groupsMapping <- Future
           .sequence {
-            groups.data.map(cg => competenceGroupDao.create(cg.copy(kind = EntityKind.Freezed)).map(created => (cg.id, created.id)))
+            groups.data.map(cg =>
+              competenceGroupDao.create(cg.copy(kind = EntityKind.Freezed)).map(created => (cg.id, created.id)))
           }
           .map(_.toMap)
 
@@ -101,7 +102,8 @@ class EventStartService @Inject()(
             competencies.data
               .filter(c => groupsMapping.contains(c.groupId))
               .map { competence =>
-                val withReplacedGroup = competence.copy(groupId = groupsMapping(competence.groupId), kind = EntityKind.Freezed)
+                val withReplacedGroup =
+                  competence.copy(groupId = groupsMapping(competence.groupId), kind = EntityKind.Freezed)
                 competenceDao.create(withReplacedGroup).map(created => (competence.id, created.id))
               }
           }
