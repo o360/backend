@@ -2,7 +2,7 @@ package services
 
 import javax.inject.{Inject, Singleton}
 
-import models.NamedEntity
+import models.{EntityKind, NamedEntity}
 import models.competence.{Competence, CompetenceGroup}
 import models.dao.{CompetenceDao, CompetenceGroupDao}
 import utils.errors.{ConflictError, NotFoundError}
@@ -27,11 +27,15 @@ class CompetenceGroupService @Inject()(
     NotFoundError.CompetenceGroup(id)
   }
 
-  def getList(implicit meta: ListMeta): ListResult = competenceGroupDao.getList.lift
+  def getList(implicit meta: ListMeta): ListResult =
+    competenceGroupDao.getList(optKind = Some(EntityKind.Template)).lift
 
   def update(cg: CompetenceGroup): SingleResult = {
     for {
-      _ <- getById(cg.id)
+      existed <- getById(cg.id)
+      _ <- ensure(existed.kind == cg.kind) {
+        ConflictError.Competence.ChangeKind
+      }
       updated <- competenceGroupDao.update(cg).lift
     } yield updated
   }
@@ -48,7 +52,10 @@ class CompetenceGroupService @Inject()(
     }
 
     for {
-      _ <- getById(id)
+      existed <- getById(id)
+      _ <- ensure(existed.kind == EntityKind.Template) {
+        ConflictError.Competence.DeleteFreezed
+      }
       conflictedEntities <- getConflictedEntities.lift
       _ <- ensure(conflictedEntities.isEmpty) {
         ConflictError.General(Some(CompetenceGroup.nameSingular), conflictedEntities)
