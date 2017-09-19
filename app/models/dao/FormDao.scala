@@ -12,19 +12,11 @@ import utils.listmeta.ListMeta
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait FormComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
+trait FormComponent extends EnumColumnMapper { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import profile.api._
 
-  implicit lazy val formKindColumnType = MappedColumnType.base[Form.Kind, Byte](
-    {
-      case Form.Kind.Active => 0
-      case Form.Kind.Freezed => 1
-    }, {
-      case 0 => Form.Kind.Active
-      case 1 => Form.Kind.Freezed
-    }
-  )
+  implicit lazy val formKindColumnType = mappedEnumSeq[Form.Kind](Form.Kind.Active, Form.Kind.Freezed)
 
   /**
     * Form DB model.
@@ -63,20 +55,14 @@ trait FormComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   val Forms = TableQuery[FormTable]
 
-  private val kindMapping: Map[Int, ElementKind] = {
-    Map(
-      0 -> TextField,
-      1 -> TextArea,
-      2 -> Checkbox,
-      3 -> CheckboxGroup,
-      4 -> Radio,
-      5 -> Select,
-      6 -> LikeDislike
-    )
-  }
-  implicit lazy val kindColumnType = MappedColumnType.base[ElementKind, Byte](
-    x => kindMapping.find(_._2 == x).get._1.toByte,
-    kindMapping(_)
+  implicit lazy val kindColumnType = mappedEnumSeq[ElementKind](
+    TextField,
+    TextArea,
+    Checkbox,
+    CheckboxGroup,
+    Radio,
+    Select,
+    LikeDislike,
   )
 
   /**

@@ -19,33 +19,11 @@ import scala.concurrent.{ExecutionContext, Future}
 /**
   * Component for notification datatypes.
   */
-trait NotificationComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
+trait NotificationComponent extends EnumColumnMapper { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
-  import profile.api._
+  implicit lazy val eventKindMappedType = mappedEnumSeq[NotificationKind](PreBegin, Begin, PreEnd, End)
 
-  implicit val eventKindMappedType = MappedColumnType.base[NotificationKind, Byte](
-    {
-      case PreBegin => 0
-      case Begin => 1
-      case PreEnd => 2
-      case End => 3
-    }, {
-      case 0 => PreBegin
-      case 1 => Begin
-      case 2 => PreEnd
-      case 3 => End
-    }
-  )
-
-  implicit val eventRecipient = MappedColumnType.base[NotificationRecipient, Byte](
-    {
-      case Respondent => 0
-      case Auditor => 1
-    }, {
-      case 0 => Respondent
-      case 1 => Auditor
-    }
-  )
+  implicit lazy val eventRecipient = mappedEnumSeq[NotificationRecipient](Respondent, Auditor)
 }
 
 /**
