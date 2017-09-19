@@ -69,7 +69,7 @@ class UserService @Inject()(
   /**
     * Returns user by id with authorization checks.
     */
-  def userGetById(id: Long)(implicit account: UserModel): SingleResult = {
+  def getByIdWithAuth(id: Long)(implicit account: UserModel): SingleResult = {
     for {
       user <- getById(id)
       _ <- ensure(account.role == UserModel.Role.Admin || user.status == UserModel.Status.Approved || account.id == id) {

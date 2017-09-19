@@ -55,7 +55,7 @@ class FormService @Inject()(
   /**
     * Returns form by ID for user.
     */
-  def userGetById(id: Long)(implicit account: User): SingleResult = {
+  def getByIdWithAuth(id: Long)(implicit account: User): SingleResult = {
     for {
       form <- getById(id)
       answers <- answerDao.getList(optUserFromId = Some(account.id), optFormId = Some(id)).lift
