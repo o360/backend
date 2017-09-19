@@ -2,7 +2,7 @@ package models.dao
 
 import javax.inject.{Inject, Singleton}
 
-import models.ListWithTotal
+import models.{EntityKind, ListWithTotal}
 import models.competence.CompetenceGroup
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
@@ -13,7 +13,8 @@ import scala.concurrent.{ExecutionContext, Future}
 /**
   * Component for 'competence_group' table.
   */
-trait CompetenceGroupComponent { _: HasDatabaseConfigProvider[JdbcProfile] =>
+trait CompetenceGroupComponent extends EntityKindColumnMapper {
+  _: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import profile.api._
 
@@ -22,8 +23,9 @@ trait CompetenceGroupComponent { _: HasDatabaseConfigProvider[JdbcProfile] =>
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def name = column[String]("name")
     def description = column[Option[String]]("description")
+    def kind = column[EntityKind]("kind")
 
-    def * = (id, name, description) <> ((CompetenceGroup.apply _).tupled, CompetenceGroup.unapply)
+    def * = (id, name, description, kind) <> ((CompetenceGroup.apply _).tupled, CompetenceGroup.unapply)
   }
 
   val CompetenceGroups = TableQuery[CompetenceGroupTable]
@@ -50,8 +52,19 @@ class CompetenceGroupDao @Inject()(
     db.run(CompetenceGroups.filter(_.id === id).result.headOption)
   }
 
-  def getList()(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[CompetenceGroup]] = {
-    runListQuery(CompetenceGroups) { cg =>
+  def getList(
+    optKind: Option[EntityKind] = None,
+    optIds: Option[Seq[Long]] = None
+  )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[CompetenceGroup]] = {
+    val query = CompetenceGroups.applyFilter {
+      cg =>
+        Seq(
+          optKind.map(cg.kind === _),
+          optIds.map(cg.id.inSet(_)),
+        )
+    }
+
+    runListQuery(query) { cg =>
       {
         case 'id => cg.id
         case 'name => cg.name

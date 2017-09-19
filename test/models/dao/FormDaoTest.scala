@@ -1,6 +1,6 @@
 package models.dao
 
-import models.form.{Form, FormShort}
+import models.form.Form
 import org.scalacheck.Gen
 import testutils.fixture.FormFixture
 import testutils.generator.FormGenerator

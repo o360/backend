@@ -2,9 +2,10 @@ package services
 
 import javax.inject.{Inject, Singleton}
 
+import models.EntityKind
 import models.competence.Competence
 import models.dao.CompetenceDao
-import utils.errors.NotFoundError
+import utils.errors.{ConflictError, NotFoundError}
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
 
@@ -31,11 +32,20 @@ class CompetenceService @Inject()(
     NotFoundError.Competence(id)
   }
 
-  def getList(groupId: Option[Long])(implicit meta: ListMeta): ListResult = competenceDao.getList(groupId).lift
+  def getList(groupId: Option[Long])(implicit meta: ListMeta): ListResult =
+    competenceDao
+      .getList(
+        optGroupId = groupId,
+        optKind = Some(EntityKind.Template)
+      )
+      .lift
 
   def update(c: Competence): SingleResult = {
     for {
-      _ <- getById(c.id)
+      existed <- getById(c.id)
+      _ <- ensure(existed.kind == c.kind) {
+        ConflictError.Competence.ChangeKind
+      }
       _ <- competenceGroupService.getById(c.groupId)
       updated <- competenceDao.update(c).lift
     } yield updated
@@ -43,7 +53,10 @@ class CompetenceService @Inject()(
 
   def delete(id: Long): UnitResult = {
     for {
-      _ <- getById(id)
+      existed <- getById(id)
+      _ <- ensure(existed.kind == EntityKind.Template) {
+        ConflictError.Competence.DeleteFreezed
+      }
       _ <- competenceDao.delete(id).lift
     } yield ()
   }

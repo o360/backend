@@ -103,5 +103,9 @@ object ConflictError {
 
     case object DuplicateElementCompetence
       extends ConflictError("CONFLICT-COMPETENCE-2", "Duplicate element competence")
+
+    case object ChangeKind extends ConflictError("CONFLICT-COMPETENCE-3", "Can't change competence kind")
+
+    case object DeleteFreezed extends ConflictError("CONFLICT-COMPETENCE-4", "Can't delete freezed competence")
   }
 }

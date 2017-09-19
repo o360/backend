@@ -2,9 +2,9 @@ package services.event
 
 import javax.inject.{Inject, Singleton}
 
-import models.NamedEntity
+import models.{EntityKind, NamedEntity}
 import models.assessment.Answer
-import models.dao.{AnswerDao, EventDao, ProjectDao, ProjectRelationDao}
+import models.dao._
 import models.event.EventJob
 import models.form.Form
 import models.project.{ActiveProject, Project, Relation}
@@ -31,6 +31,8 @@ class EventStartService @Inject()(
   activeProjectService: ActiveProjectService,
   userService: UserService,
   answerDao: AnswerDao,
+  competenceDao: CompetenceDao,
+  competenceGroupDao: CompetenceGroupDao,
   implicit val ec: ExecutionContext
 ) extends ServiceResults[Unit] {
 
@@ -79,11 +81,55 @@ class EventStartService @Inject()(
       } yield answers
     }
 
+    def createAndReplaceCompetencies(forms: Seq[Form]) = {
+      val competenciesIds = forms.flatMap(_.elements.flatMap(_.competencies)).map(_.competence.id).distinct
+
+      for {
+        competencies <- competenceDao.getList(optIds = Some(competenciesIds))
+
+        groupsIds = competencies.data.map(_.groupId).distinct
+        groups <- competenceGroupDao.getList(optIds = Some(groupsIds))
+
+        groupsMapping <- Future
+          .sequence {
+            groups.data.map(cg => competenceGroupDao.create(cg.copy(kind = EntityKind.Freezed)).map(created => (cg.id, created.id)))
+          }
+          .map(_.toMap)
+
+        mapping <- Future
+          .sequence {
+            competencies.data
+              .filter(c => groupsMapping.contains(c.groupId))
+              .map { competence =>
+                val withReplacedGroup = competence.copy(groupId = groupsMapping(competence.groupId), kind = EntityKind.Freezed)
+                competenceDao.create(withReplacedGroup).map(created => (competence.id, created.id))
+              }
+          }
+          .map(_.toMap)
+      } yield {
+        forms.map { form =>
+          val elements = form.elements.map { element =>
+            val competencies = element.competencies.flatMap { elementCompetence =>
+              mapping
+                .get(elementCompetence.competence.id)
+                .map { newCompetenceId =>
+                  elementCompetence.copy(competence = NamedEntity(newCompetenceId))
+                }
+                .toSeq
+            }
+            element.copy(competencies = competencies)
+          }
+          form.copy(elements = elements)
+        }
+      }
+    }
+
     def createAndReplaceForms(answers: Seq[Answer]) = {
       val formsIds = answers.map(_.form.id).distinct
       for {
         forms <- formsIds.map(formService.getById).sequenced
-        mapping <- forms
+        withCompetencies <- createAndReplaceCompetencies(forms).lift
+        mapping <- withCompetencies
           .map(f => formService.create(f.copy(kind = Form.Kind.Freezed)).map(c => (f.id, c.id)))
           .sequenced
           .map(_.toMap)
