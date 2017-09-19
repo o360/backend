@@ -36,7 +36,7 @@ class EventController @Inject()(
   def getById(id: Long) = silhouette.SecuredAction(AllowedStatus.approved).async { implicit request =>
     toResult(Ok) {
       eventService
-        .userGetById(id)
+        .getByIdWithAuth(id)
         .map(ApiEvent(_))
     }
   }
@@ -48,7 +48,7 @@ class EventController @Inject()(
     (silhouette.SecuredAction(AllowedStatus.approved) andThen ListAction).async { implicit request =>
       toResult(Ok) {
         eventService
-          .userList(status.map(_.value))
+          .listWithAuth(status.map(_.value))
           .map { events =>
             Response.List(events) { event =>
               ApiEvent(event)

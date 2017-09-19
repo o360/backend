@@ -43,7 +43,7 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
       forAll { (id: Long, form: Form) =>
         val env = fakeEnvironment(user)
         val fixture = getFixture(env)
-        when(fixture.formServiceMock.userGetById(id)(user))
+        when(fixture.formServiceMock.getByIdWithAuth(id)(user))
           .thenReturn(EitherT.eitherT(toFuture(\/-(form): ApplicationError \/ Form)))
         val request = authenticated(FakeRequest(), env)
 

@@ -91,7 +91,7 @@ class FormServiceTest
         optUserToId = any[Tristate[Long]],
       )).thenReturn(toFuture(Nil))
 
-      val result = wait(fixture.service.userGetById(formId)(admin).run)
+      val result = wait(fixture.service.getByIdWithAuth(formId)(admin).run)
 
       result mustBe 'left
       result.swap.toOption.get mustBe an[NotFoundError]
@@ -109,7 +109,7 @@ class FormServiceTest
         optUserToId = any[Tristate[Long]],
       )).thenReturn(toFuture(Seq(Answers(0))))
 
-      val result = wait(fixture.service.userGetById(formId)(admin).run)
+      val result = wait(fixture.service.getByIdWithAuth(formId)(admin).run)
 
       result mustBe 'right
       result.toOption.get mustBe Forms(0)

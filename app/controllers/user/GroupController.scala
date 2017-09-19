@@ -39,7 +39,7 @@ class GroupController @Inject()(
 
   def getListByUserId(userId: Long) = silhouette.SecuredAction(AllowedStatus.approved).async { implicit request =>
     toResult(Ok) {
-      userService.userGetById(userId).flatMap { _ =>
+      userService.getByIdWithAuth(userId).flatMap { _ =>
         groupService
           .listByUserId(userId)
           .map { groups =>

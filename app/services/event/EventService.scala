@@ -42,7 +42,7 @@ class EventService @Inject()(
       }
   }
 
-  def userGetById(id: Long)(implicit account: User): SingleResult = {
+  def getByIdWithAuth(id: Long)(implicit account: User): SingleResult = {
     for {
       event <- getById(id)
       answers <- answerDao.getList(optEventId = Some(event.id), optUserFromId = Some(account.id)).lift
@@ -71,7 +71,7 @@ class EventService @Inject()(
       .lift
   }
 
-  def userList(status: Option[Event.Status])(implicit account: User, meta: ListMeta): ListResult = {
+  def listWithAuth(status: Option[Event.Status])(implicit account: User, meta: ListMeta): ListResult = {
     val groupFromFilter = groupDao.findGroupIdsByUserId(account.id)
 
     val result = for {

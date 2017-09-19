@@ -32,7 +32,7 @@ class FormController @Inject()(
   def getById(id: Long) = silhouette.SecuredAction(AllowedStatus.approved).async { implicit request =>
     toResult(Ok) {
       formService
-        .userGetById(id)
+        .getByIdWithAuth(id)
         .map(ApiForm(_))
     }
   }
