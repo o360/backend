@@ -66,7 +66,7 @@ class EventResultExportControllerTest extends BaseControllerTest {
     "return list of answers" in {
       val fixture = getFixture
       when(fixture.config.exportSecret).thenReturn("valid-secret")
-      when(fixture.exportService.exportAnswers(123)).thenReturn(toFuture((Seq.empty, Seq.empty, Seq.empty)))
+      when(fixture.exportService.exportAnswers(123)).thenReturn(toFuture((Seq.empty, Seq.empty, Seq.empty, Seq.empty, Seq.empty)))
 
       val request = FakeRequest().withBody(ApiExportCode("valid-secret"))
       val response = fixture.controller.export(123).apply(request)

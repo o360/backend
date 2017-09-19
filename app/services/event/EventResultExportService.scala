@@ -4,6 +4,7 @@ import javax.inject.Inject
 
 import models.ListWithTotal
 import models.assessment.Answer
+import models.competence.{Competence, CompetenceGroup}
 import models.dao._
 import models.event.Event
 import models.form.Form
@@ -19,10 +20,12 @@ class EventResultExportService @Inject()(
   formDao: FormDao,
   userDao: UserDao,
   eventDao: EventDao,
+  competenceDao: CompetenceDao,
+  competenceGroupDao: CompetenceGroupDao,
   implicit val ec: ExecutionContext
 ) {
 
-  type ExportResult = (Seq[Form], Seq[User], Seq[Answer])
+  type ExportResult = (Seq[Form], Seq[User], Seq[Answer], Seq[Competence], Seq[CompetenceGroup])
 
   def eventsList: Future[ListWithTotal[Event]] = eventDao.getList()
 
@@ -53,10 +56,22 @@ class EventResultExportService @Inject()(
       } yield forms.collect { case Some(form) => form }
     }
 
+    def getCompetencies(forms: Seq[Form]) = {
+      val ids = forms.flatMap(_.elements.flatMap(_.competencies)).map(_.competence.id).distinct
+      competenceDao.getList(optIds = Some(ids)).map(_.data)
+    }
+
+    def getCompetenceGroups(s: Seq[Competence]) = {
+      val ids = s.map(_.groupId).distinct
+      competenceGroupDao.getList(optIds = Some(ids)).map(_.data)
+    }
+
     for {
       answers <- answerDao.getList(optEventId = Some(eventId))
       forms <- getForms(answers)
       users <- getUsers(answers)
-    } yield (forms, users, anonimyzeAnswers(answers))
+      competencies <- getCompetencies(forms)
+      competenceGroups <- getCompetenceGroups(competencies)
+    } yield (forms, users, anonimyzeAnswers(answers), competencies, competenceGroups)
   }
 }

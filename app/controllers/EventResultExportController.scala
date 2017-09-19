@@ -3,6 +3,7 @@ package controllers
 import javax.inject.Inject
 
 import controllers.api.Response
+import controllers.api.competence.{ApiCompetence, ApiCompetenceGroup}
 import controllers.api.export.{ApiAnswerExport, ApiEventExport, ApiExportCode, ApiShortEvent}
 import controllers.api.form.ApiForm
 import controllers.api.user.ApiShortUser
@@ -50,11 +51,13 @@ class EventResultExportController @Inject()(
       exportService
         .exportAnswers(eventId)
         .map {
-          case (forms, users, answers) =>
-            val apiForms = forms.map(ApiForm(_))
+          case (forms, users, answers, competencies, competenceGroups) =>
+            val apiForms = forms.map(ApiForm(_, includeCompetencies = true))
             val apiUsers = users.map(x => ApiShortUser(UserShort.fromUser(x)))
             val apiAnswers = answers.map(ApiAnswerExport(_))
-            ApiEventExport(apiForms, apiUsers, apiAnswers)
+            val apiCompetencies = competencies.map(ApiCompetence.fromModel)
+            val apiCompetenceGroups = competenceGroups.map(ApiCompetenceGroup.fromModel)
+            ApiEventExport(apiForms, apiUsers, apiAnswers, apiCompetencies, apiCompetenceGroups)
         }
         .map(toResult(_))
     }

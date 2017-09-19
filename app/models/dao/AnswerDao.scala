@@ -14,20 +14,14 @@ import scala.concurrent.{ExecutionContext, Future}
 /**
   * Component for form_answer, form_element_answer and form_element_answer_value tables.
   */
-trait AnswerComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
+trait AnswerComponent extends EnumColumnMapper { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import profile.api._
 
-  implicit lazy val answerStatusColumnType = MappedColumnType.base[Answer.Status, Byte](
-    {
-      case Answer.Status.New => 0
-      case Answer.Status.Answered => 1
-      case Answer.Status.Skipped => 2
-    }, {
-      case 0 => Answer.Status.New
-      case 1 => Answer.Status.Answered
-      case 2 => Answer.Status.Skipped
-    }
+  implicit lazy val answerStatusColumnType = mappedEnumSeq[Answer.Status](
+    Answer.Status.New,
+    Answer.Status.Answered,
+    Answer.Status.Skipped,
   )
 
   /**
@@ -156,7 +150,7 @@ class AnswerDao @Inject()(
 
   private def userToFilter(answer: AnswerTable, userToId: Option[Long]) = userToId match {
     case Some(toId) => answer.userToId.fold(false: Rep[Boolean])(_ === toId)
-    case None => answer.userToId.isEmpty
+    case None       => answer.userToId.isEmpty
   }
 
   /**
@@ -171,8 +165,8 @@ class AnswerDao @Inject()(
   ): Future[Seq[Answer]] = {
 
     def userToFilter(answer: AnswerTable) = optUserToId match {
-      case Tristate.Unspecified => None
-      case Tristate.Absent => Some(answer.userToId.isEmpty)
+      case Tristate.Unspecified       => None
+      case Tristate.Absent            => Some(answer.userToId.isEmpty)
       case Tristate.Present(userToId) => Some(answer.userToId.fold(false: Rep[Boolean])(_ === userToId))
     }
 
