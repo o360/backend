@@ -12,7 +12,8 @@ case class ApiCompetence(
   id: Long,
   groupId: Long,
   name: String,
-  description: Option[String]
+  description: Option[String],
+  machineName: String
 ) extends Response
 
 object ApiCompetence {

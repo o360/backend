@@ -5,13 +5,6 @@ import models.form.element.ElementKind
 
 /**
   * Form template model.
-  *
-  * @param id                DB ID
-  * @param name              form name
-  * @param elements          form elements
-  * @param kind              kind of the form
-  * @param showInAggregation if form showed in aggregated report
-  * @param machineName       machine name
   */
 case class Form(
   id: Long,
@@ -33,13 +26,6 @@ object Form {
 
   /**
     * Form element.
-    *
-    * @param id           DB ID
-    * @param kind         type of element(textbox, radio, ...)
-    * @param caption      caption
-    * @param required     is element required
-    * @param values       list of element values
-    * @param competencies element competencies
     */
   case class Element(
     id: Long,
@@ -47,15 +33,12 @@ object Form {
     caption: String,
     required: Boolean,
     values: Seq[ElementValue],
-    competencies: Seq[ElementCompetence]
+    competencies: Seq[ElementCompetence],
+    machineName: String
   )
 
   /**
     * Form element value.
-    *
-    * @param id               DB ID
-    * @param caption          caption
-    * @param competenceWeight competence weight value for element
     */
   case class ElementValue(
     id: Long,

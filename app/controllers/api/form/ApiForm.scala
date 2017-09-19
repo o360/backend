@@ -55,7 +55,8 @@ object ApiForm {
     caption: String,
     required: Boolean,
     values: Option[Seq[ElementValue]],
-    competencies: Option[Seq[ElementCompetence]]
+    competencies: Option[Seq[ElementCompetence]],
+    machineName: String
   ) extends Response
 
   object Element {
@@ -69,14 +70,12 @@ object ApiForm {
       } else None
 
       val values = element.values.map(_.transformInto[ElementValue])
-      Element(
-        element.id,
-        ApiElementKind(element.kind),
-        element.caption,
-        element.required,
-        if (values.isEmpty) None else Some(values),
-        competencies
-      )
+      element
+        .into[Element]
+        .withFieldComputed(_.kind, x => ApiElementKind(x.kind))
+        .withFieldConst(_.values, if (values.isEmpty) None else Some(values))
+        .withFieldConst(_.competencies, competencies)
+        .transform
     }
   }
 
