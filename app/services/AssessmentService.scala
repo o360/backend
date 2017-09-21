@@ -89,6 +89,15 @@ class AssessmentService @Inject()(
     }
 
     def validateAnswer(project: ActiveProject, answer: Answer): EitherT[Future, ApplicationError, Answer] = {
+      def validateForm = formService.getById(answer.form.id).flatMap { form =>
+        if (answer.status != Answer.Status.Skipped) {
+          answer
+            .validateUsing(form)(BadRequestError.Assessment.InvalidForm(_),
+                                 BadRequestError.Assessment.RequiredAnswersMissed)
+            .liftLeft
+        } else ().lift
+      }
+
       val result = for {
         maybeExistedAnswer <- answerDao
           .getAnswer(activeProjectId, answer.userFromId, answer.userToId, answer.form.id)
@@ -103,12 +112,7 @@ class AssessmentService @Inject()(
         _ <- ensure(answer.status != Answer.Status.Skipped || existedAnswer.canSkip) {
           ConflictError.Assessment.CantSkip
         }
-        form <- formService.getById(answer.form.id)
-        _ <- answer
-          .validateUsing(form)(BadRequestError.Assessment.InvalidForm(_),
-                               BadRequestError.Assessment.RequiredAnswersMissed)
-          .liftLeft
-
+        _ <- validateForm
       } yield answer.copy(canSkip = existedAnswer.canSkip)
       result.leftMap(BadRequestError.Assessment.WithUserFormInfo(_, answer.userToId, answer.form.id))
     }
