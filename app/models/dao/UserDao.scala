@@ -258,7 +258,7 @@ class UserDao @Inject()(
     */
   def delete(id: Long): Future[Unit] = {
     val actions = for {
-      _ <- Users.filter(_.id === id).map(_.isDeleted).update(true)
+      _ <- Users.filter(_.id === id).map(x => (x.isDeleted, x.pictureName)).update((true, None))
       _ <- UserLogins.filter(_.userId === id).delete
     } yield ()
     db.run(actions.transactionally)
