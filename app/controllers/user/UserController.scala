@@ -5,7 +5,7 @@ import javax.inject.{Inject, Singleton}
 import com.mohiva.play.silhouette.api.Silhouette
 import controllers.BaseController
 import controllers.api.Response
-import controllers.api.user.{ApiShortUser, ApiUser}
+import controllers.api.user.{ApiPartialUser, ApiShortUser, ApiUser}
 import controllers.authorization.AllowedStatus
 import models.user.{User, UserShort}
 import org.davidbild.tristate.Tristate
@@ -69,12 +69,13 @@ class UserController @Inject()(
   /**
     * Updates user.
     */
-  def update = silhouette.SecuredAction.async(parse.json[ApiUser]) { implicit request =>
+  def update = silhouette.SecuredAction.async(parse.json[ApiPartialUser]) { implicit request =>
     toResult(Ok) {
-      val draft = request.body.copy(id = request.identity.id)
-      userService
-        .update(draft.toModel)
-        .map(ApiUser(_))
+      for {
+        user <- userService.getById(request.identity.id)
+        patched = request.body.applyTo(user)
+        updated <- userService.update(patched)
+      } yield ApiUser(updated)
     }
   }
 }

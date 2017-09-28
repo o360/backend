@@ -179,7 +179,7 @@ GET /admin/users controllers.admin.UserController.getList(role: Option[controlle
 # parameters:
 #   - name: body
 #     schema:
-#       $ref: '#/definitions/controllers.api.user.ApiUser'
+#       $ref: '#/definitions/controllers.api.user.ApiPartialUser'
 # responses:
 #   200:
 #       description: User updated
