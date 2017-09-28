@@ -111,34 +111,10 @@ class ProjectRelationServiceTest
       result.swap.toOption.get mustBe a[BadRequestError]
     }
 
-    "return bad request if relation already exists" in {
-      val fixture = getFixture
-      val relation = ProjectRelations(0)
-      val form = Forms(0).copy(kind = Form.Kind.Active)
-
-      when(fixture.relationDaoMock.exists(relation)).thenReturn(toFuture(true))
-      when(
-        fixture.eventDaoMock.getList(
-          optId = any[Option[Long]],
-          optStatus = eqTo(Some(Event.Status.InProgress)),
-          optProjectId = eqTo(Some(relation.project.id)),
-          optFormId = any[Option[Long]],
-          optGroupFromIds = any[Option[Seq[Long]]],
-          optUserId = any[Option[Long]],
-        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
-      when(fixture.formService.getById(relation.form.id))
-        .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
-      val result = wait(fixture.service.create(relation).run)
-
-      result mustBe 'left
-      result.swap.toOption.get mustBe a[BadRequestError]
-    }
-
     "return conflict if exists events in progress" in {
       val fixture = getFixture
       val relation = ProjectRelations(0)
 
-      when(fixture.relationDaoMock.exists(relation)).thenReturn(toFuture(false))
       when(
         fixture.eventDaoMock.getList(
           optId = any[Option[Long]],
@@ -160,7 +136,6 @@ class ProjectRelationServiceTest
 
       val fixture = getFixture
 
-      when(fixture.relationDaoMock.exists(relation.copy(id = 0))).thenReturn(toFuture(false))
       when(fixture.relationDaoMock.create(relation.copy(id = 0))).thenReturn(toFuture(relation))
       when(
         fixture.eventDaoMock.getList(
@@ -185,7 +160,6 @@ class ProjectRelationServiceTest
 
       val fixture = getFixture
 
-      when(fixture.relationDaoMock.exists(relation.copy(id = 0))).thenReturn(toFuture(false))
       when(fixture.relationDaoMock.create(relation.copy(id = 0))).thenReturn(toFuture(relation))
       when(
         fixture.eventDaoMock.getList(
@@ -250,37 +224,11 @@ class ProjectRelationServiceTest
       result.swap.toOption.get mustBe a[BadRequestError]
     }
 
-    "return bad request if relation already exists" in {
-      val fixture = getFixture
-      val relation = ProjectRelations(0)
-      val form = Forms(0).copy(kind = Form.Kind.Active)
-
-      when(fixture.relationDaoMock.findById(relation.id))
-        .thenReturn(toFuture(Some(relation.copy(groupFrom = NamedEntity(999)))))
-      when(fixture.relationDaoMock.exists(relation)).thenReturn(toFuture(true))
-      when(
-        fixture.eventDaoMock.getList(
-          optId = any[Option[Long]],
-          optStatus = eqTo(Some(Event.Status.InProgress)),
-          optProjectId = eqTo(Some(relation.project.id)),
-          optFormId = any[Option[Long]],
-          optGroupFromIds = any[Option[Seq[Long]]],
-          optUserId = any[Option[Long]],
-        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
-      when(fixture.formService.getById(relation.form.id))
-        .thenReturn(EitherT.eitherT(toFuture(form.right[ApplicationError])))
-      val result = wait(fixture.service.update(relation).run)
-
-      result mustBe 'left
-      result.swap.toOption.get mustBe a[BadRequestError]
-    }
-
     "return conflict if exists events in progress" in {
       val fixture = getFixture
       val relation = ProjectRelations(0)
 
       when(fixture.relationDaoMock.findById(relation.id)).thenReturn(toFuture(Some(relation)))
-      when(fixture.relationDaoMock.exists(relation)).thenReturn(toFuture(false))
       when(
         fixture.eventDaoMock.getList(
           optId = any[Option[Long]],
@@ -303,7 +251,6 @@ class ProjectRelationServiceTest
       val fixture = getFixture
 
       when(fixture.relationDaoMock.findById(relation.id)).thenReturn(toFuture(Some(relation)))
-      when(fixture.relationDaoMock.exists(relation)).thenReturn(toFuture(false))
       when(fixture.relationDaoMock.update(relation)).thenReturn(toFuture(relation))
       when(
         fixture.eventDaoMock.getList(
@@ -329,7 +276,6 @@ class ProjectRelationServiceTest
       val fixture = getFixture
 
       when(fixture.relationDaoMock.findById(relation.id)).thenReturn(toFuture(Some(relation)))
-      when(fixture.relationDaoMock.exists(relation)).thenReturn(toFuture(false))
       when(fixture.relationDaoMock.update(relation)).thenReturn(toFuture(relation))
       when(
         fixture.eventDaoMock.getList(

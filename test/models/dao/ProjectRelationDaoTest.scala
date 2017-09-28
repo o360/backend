@@ -36,28 +36,6 @@ class ProjectRelationDaoTest extends BaseDaoTest with ProjectRelationFixture wit
     }
   }
 
-  "exists" should {
-    "check relation for existing" in {
-      wait(dao.exists(ProjectRelations(0))) mustBe true
-      wait(dao.exists(ProjectRelations(1))) mustBe true
-
-      forAll { (relation: Relation) =>
-        whenever(
-          !ProjectRelations
-            .exists { x =>
-              x.project.id == relation.project.id &&
-              x.groupFrom.id == relation.groupFrom.id &&
-              x.groupTo.map(_.id) == relation.groupTo.map(_.id) &&
-              x.form.id == relation.form.id &&
-              x.kind == relation.kind
-            }) {
-
-          wait(dao.exists(relation)) mustBe false
-        }
-      }
-    }
-  }
-
   "create" should {
     "create relation" in {
       forAll(Gen.oneOf(ProjectRelations)) { (relation: Relation) =>

@@ -50,10 +50,6 @@ class ProjectRelationService @Inject()(
     for {
       validated <- validateRelation(relation)
 
-      _ <- ensure(!projectRelationDao.exists(validated)) {
-        BadRequestError.Relation.DuplicateRelation
-      }
-
       created <- projectRelationDao.create(validated).lift(ExceptionHandler.sql)
     } yield created
   }
@@ -64,10 +60,6 @@ class ProjectRelationService @Inject()(
     * @param draft relation draft
     */
   def update(draft: Relation): SingleResult = {
-    def isSameRelations(left: Relation, right: Relation) = {
-      left.copy(id = 0, templates = Nil) == right.copy(id = 0, templates = Nil)
-    }
-
     for {
       original <- getById(draft.id)
 
@@ -76,12 +68,6 @@ class ProjectRelationService @Inject()(
       }
 
       validated <- validateRelation(draft)
-
-      duplicateExists <- projectRelationDao.exists(validated).lift
-
-      _ <- ensure(!duplicateExists || isSameRelations(original, validated)) {
-        BadRequestError.Relation.DuplicateRelation
-      }
 
       updated <- projectRelationDao.update(validated).lift(ExceptionHandler.sql)
     } yield updated

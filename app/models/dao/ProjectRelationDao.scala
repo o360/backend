@@ -200,29 +200,6 @@ class ProjectRelationDao @Inject()(
   }
 
   /**
-    * Returns true, if relation already exists.
-    */
-  def exists(relation: Relation): Future[Boolean] = {
-    def groupToFilter(x: RelationTable) = relation.groupTo match {
-      case None => x.groupToId.isEmpty
-      case Some(groupTo) => x.groupToId.fold(false: Rep[Boolean])(_ === groupTo.id)
-    }
-
-    db.run {
-      Relations
-        .filter { x =>
-          x.projectId === relation.project.id &&
-          x.groupFromId === relation.groupFrom.id &&
-          groupToFilter(x) &&
-          x.formId === relation.form.id &&
-          x.kind === relation.kind
-        }
-        .exists
-        .result
-    }
-  }
-
-  /**
     * Creates relation.
     *
     * @return created relation with ID
