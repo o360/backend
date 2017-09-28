@@ -224,6 +224,7 @@ class GroupServiceTest
       val fixture = getFixture
       val group = Groups(2)
       when(fixture.groupDaoMock.findById(group.id)).thenReturn(toFuture(Some(group)))
+      when(fixture.groupDaoMock.findChildrenIds(group.id)).thenReturn(toFuture(Nil))
       when(
         fixture.projectDao.getList(
           optId = any[Option[Long]],
@@ -255,6 +256,7 @@ class GroupServiceTest
       val fixture = getFixture
       val group = Groups(2)
       when(fixture.groupDaoMock.findById(group.id)).thenReturn(toFuture(Some(group)))
+      when(fixture.groupDaoMock.findChildrenIds(group.id)).thenReturn(toFuture(Nil))
       when(
         fixture.projectDao.getList(
           optId = any[Option[Long]],
