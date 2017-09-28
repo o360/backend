@@ -124,17 +124,24 @@ class GroupService @Inject()(
   def delete(id: Long): UnitResult = {
 
     def getConflictedEntities = {
-      for {
-        projects <- projectDao.getList(optGroupAuditorId = Some(id))
-        relationsWithGroupFrom <- relationDao.getList(optGroupFromId = Some(id))
-        relationsWithGroupTo <- relationDao.getList(optGroupToId = Some(id))
-      } yield {
-        val allProjects =
-          (projects.data.map(_.toNamedEntity) ++
+      def getForGroup(groupId: Long) = {
+        for {
+          projects <- projectDao.getList(optGroupAuditorId = Some(groupId))
+          relationsWithGroupFrom <- relationDao.getList(optGroupFromId = Some(groupId))
+          relationsWithGroupTo <- relationDao.getList(optGroupToId = Some(groupId))
+        } yield {
+          projects.data.map(_.toNamedEntity) ++
             relationsWithGroupFrom.data.map(_.project) ++
-            relationsWithGroupTo.data.map(_.project)).distinct
+            relationsWithGroupTo.data.map(_.project)
+        }
+      }
+
+      for {
+        childrenIds <- groupDao.findChildrenIds(id)
+        allProjects <- Future.traverse(childrenIds :+ id)(getForGroup)
+      } yield {
         ConflictError.getConflictedEntitiesMap(
-          Project.namePlural -> allProjects
+          Project.namePlural -> allProjects.flatten.distinct
         )
       }
     }
