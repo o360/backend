@@ -8,7 +8,7 @@ import models.user.User
 import org.davidbild.tristate.Tristate
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
-import utils.{Logger, Transliteration}
+import utils.{Logger, Transliterator}
 import utils.listmeta.ListMeta
 import io.scalaland.chimney.dsl._
 
@@ -168,7 +168,7 @@ class UserDao @Inject()(
 
     def filterName(user: UserTable) = optName.map { name =>
       user.name.fold(false: Rep[Boolean]) { nameColumn =>
-        val transliteratedName = Transliteration.transliterate(name)
+        val transliteratedName = Transliterator.transliterate(name)
         val nameLike = like(nameColumn, _: String, true)
         nameLike(name) || nameLike(transliteratedName)
       }

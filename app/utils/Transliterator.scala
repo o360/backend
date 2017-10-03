@@ -2,9 +2,7 @@ package utils
 
 import scala.annotation.tailrec
 
-object Transliteration {
-
-  private val nothing = "\\"
+object Transliterator {
 
   private val ruToEnRules = Seq(
     "А" -> "A",
@@ -35,14 +33,14 @@ object Transliteration {
     "Ш" -> "SH",
     "Щ" -> "SHCH",
     "Ы" -> "Y",
-    "Ь" -> nothing,
+    "Ь" -> "",
     "Ъ" -> "IE",
     "Э" -> "E",
     "Ю" -> "IU",
     "Я" -> "IA"
   )
 
-  private val rules = ruToEnRules ++ ruToEnRules.map(_.swap)
+  private val rules = ruToEnRules ++ ruToEnRules.map(_.swap).filter(_._1.nonEmpty)
 
   /**
     * Transliterates given string from russian to english and backwards.
@@ -65,6 +63,6 @@ object Transliteration {
         }
       }
 
-    helper(str.toUpperCase).toLowerCase.replace(nothing, "")
+    helper(str.toUpperCase).toLowerCase
   }
 }

@@ -7,7 +7,7 @@ import models.group.Group
 import org.davidbild.tristate.Tristate
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
-import utils.Transliteration
+import utils.Transliterator
 import utils.listmeta.ListMeta
 import io.scalaland.chimney.dsl._
 
@@ -103,7 +103,7 @@ class GroupDao @Inject()(
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Group]] = {
 
     def filterName(group: GroupTable) = optName.map { name =>
-      val transliteratedName = Transliteration.transliterate(name)
+      val transliteratedName = Transliterator.transliterate(name)
       val nameLike = like(group.name, _: String, true)
       nameLike(name) || nameLike(transliteratedName)
     }
