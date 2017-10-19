@@ -44,4 +44,6 @@ trait BaseDaoTest
     */
   protected def inject[T: ClassTag]: T = app.injector.instanceOf[T]
 
+  implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
+    PropertyCheckConfiguration(minSuccessful = 6, sizeRange = 15)
 }

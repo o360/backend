@@ -6,7 +6,6 @@ import models.ListWithTotal
 import models.dao.{EventDao, GroupDao, ProjectDao}
 import models.event.Event
 import models.project.Project
-import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
 import testutils.fixture.{ProjectFixture, UserFixture}
 import testutils.generator.ProjectGenerator
@@ -80,12 +79,12 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
           val fixture = getFixture
           when(
             fixture.projectDaoMock.getList(
-              optId = any[Option[Long]],
+              optId = *,
               optEventId = eqTo(eventId),
-              optGroupFromIds = any[Option[Seq[Long]]],
-              optFormId = any[Option[Long]],
-              optGroupAuditorId = any[Option[Long]],
-              optEmailTemplateId = any[Option[Long]],
+              optGroupFromIds = *,
+              optFormId = *,
+              optGroupAuditorId = *,
+              optEmailTemplateId = *,
               optAnyRelatedGroupId = eqTo(groupId)
             )(eqTo(ListMeta.default)))
             .thenReturn(toFuture(ListWithTotal(total, projects)))
@@ -101,7 +100,7 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
     "return conflict if db exception" in {
       forAll { (project: Project) =>
         val fixture = getFixture
-        when(fixture.projectDaoMock.create(any[Project])).thenReturn(Future.failed(new SQLException("", "2300")))
+        when(fixture.projectDaoMock.create(*)).thenReturn(Future.failed(new SQLException("", "2300")))
         val result = wait(fixture.service.create(project.copy(id = 0)).run)
 
         result mustBe 'left
@@ -128,14 +127,14 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
         when(fixture.projectDaoMock.findById(project.id)).thenReturn(toFuture(Some(project)))
         when(
           fixture.eventDaoMock.getList(
-            optId = any[Option[Long]],
+            optId = *,
             optStatus = eqTo(Some(Event.Status.InProgress)),
             optProjectId = eqTo(Some(project.id)),
-            optFormId = any[Option[Long]],
-            optGroupFromIds = any[Option[Seq[Long]]],
-            optUserId = any[Option[Long]],
-          )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
-        when(fixture.projectDaoMock.update(any[Project])).thenReturn(Future.failed(new SQLException("", "2300")))
+            optFormId = *,
+            optGroupFromIds = *,
+            optUserId = *,
+          )(*)).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
+        when(fixture.projectDaoMock.update(*)).thenReturn(Future.failed(new SQLException("", "2300")))
         val result = wait(fixture.service.update(project).run)
 
         result mustBe 'left
@@ -149,13 +148,13 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
         when(fixture.projectDaoMock.findById(project.id)).thenReturn(toFuture(Some(project)))
         when(
           fixture.eventDaoMock.getList(
-            optId = any[Option[Long]],
+            optId = *,
             optStatus = eqTo(Some(Event.Status.InProgress.asInstanceOf[Event.Status])),
             optProjectId = eqTo(Some(project.id)),
-            optFormId = any[Option[Long]],
-            optGroupFromIds = any[Option[Seq[Long]]],
-            optUserId = any[Option[Long]],
-          )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](1, Nil)))
+            optFormId = *,
+            optGroupFromIds = *,
+            optUserId = *,
+          )(*)).thenReturn(toFuture(ListWithTotal[Event](1, Nil)))
         val result = wait(fixture.service.update(project).run)
 
         result mustBe 'left
@@ -183,13 +182,13 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
       when(fixture.projectDaoMock.findById(project.id)).thenReturn(toFuture(Some(project)))
       when(
         fixture.eventDaoMock.getList(
-          optId = any[Option[Long]],
+          optId = *,
           optStatus = eqTo(Some(Event.Status.InProgress)),
           optProjectId = eqTo(Some(project.id)),
-          optFormId = any[Option[Long]],
-          optGroupFromIds = any[Option[Seq[Long]]],
-          optUserId = any[Option[Long]],
-        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
+          optFormId = *,
+          optGroupFromIds = *,
+          optUserId = *,
+        )(*)).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
       when(fixture.projectDaoMock.update(project)).thenReturn(toFuture(project))
       val result = wait(fixture.service.update(project).run)
 
@@ -216,13 +215,13 @@ class ProjectServiceTest extends BaseServiceTest with ProjectGenerator with Proj
         when(fixture.projectDaoMock.findById(id)).thenReturn(toFuture(Some(Projects(0))))
         when(
           fixture.eventDaoMock.getList(
-            optId = any[Option[Long]],
-            optStatus = any[Option[Event.Status]],
+            optId = *,
+            optStatus = *,
             optProjectId = eqTo(Some(id)),
-            optFormId = any[Option[Long]],
-            optGroupFromIds = any[Option[Seq[Long]]],
-            optUserId = any[Option[Long]],
-          )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
+            optFormId = *,
+            optGroupFromIds = *,
+            optUserId = *,
+          )(*)).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
         when(fixture.projectDaoMock.delete(id)).thenReturn(toFuture(1))
 
         val result = wait(fixture.service.delete(id)(admin).run)

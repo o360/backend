@@ -14,11 +14,9 @@ import play.api.test.Helpers._
 import services.AssessmentService
 import silhouette.DefaultEnv
 import testutils.fixture.UserFixture
-import utils.errors.ApplicationError
 import utils.listmeta.ListMeta
 
 import scala.concurrent.ExecutionContext
-import scalaz.{\/, \/-, EitherT}
 
 /**
   * Test for assessment controller.
@@ -48,8 +46,7 @@ class AssessmentControllerTest extends BaseControllerTest {
       val total = 3
       val assessments = Seq(Assessment(None, Nil))
       when(fixture.assessmentServiceMock.getList(projectId)(admin))
-        .thenReturn(EitherT.eitherT(
-          toFuture(\/-(ListWithTotal(total, assessments)): ApplicationError \/ ListWithTotal[Assessment])))
+        .thenReturn(toSuccessResult(ListWithTotal(total, assessments)))
       val request = authenticated(FakeRequest(), env)
 
       val response = fixture.controller.getList(projectId)(request)
@@ -69,8 +66,7 @@ class AssessmentControllerTest extends BaseControllerTest {
       val fixture = getFixture(env)
 
       val assessment = PartialAssessment(Some(admin.id), Seq(PartialAnswer(1, false, Set())))
-      when(fixture.assessmentServiceMock.bulkSubmit(1, Seq(assessment))(admin))
-        .thenReturn(EitherT.eitherT(toFuture(\/-(()): ApplicationError \/ Unit)))
+      when(fixture.assessmentServiceMock.bulkSubmit(1, Seq(assessment))(admin)).thenReturn(toSuccessResult(()))
 
       val partialAssessment = ApiPartialAssessment(Some(1), ApiPartialFormAnswer(1, Seq(), false, false))
 

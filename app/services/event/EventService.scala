@@ -46,7 +46,7 @@ class EventService @Inject()(
     for {
       event <- getById(id)
       answers <- answerDao.getList(optEventId = Some(event.id), optUserFromId = Some(account.id)).lift
-      _ <- ensure(answers.nonEmpty || event.status == Event.Status.NotStarted) {
+      _ <- ensure(answers.nonEmpty || event.status == Event.Status.NotStarted) { // TODO: proper validation for not started events
         NotFoundError.Event(id)
       }
     } yield event.copy(userInfo = Some(getUserInfo(answers)))
@@ -71,7 +71,7 @@ class EventService @Inject()(
       .lift
   }
 
-  def listWithAuth(status: Option[Event.Status])(implicit account: User, meta: ListMeta): ListResult = {
+  def listWithAuth(status: Option[Event.Status])(implicit account: User): ListResult = {
     val groupFromFilter = groupDao.findGroupIdsByUserId(account.id)
 
     val result = for {

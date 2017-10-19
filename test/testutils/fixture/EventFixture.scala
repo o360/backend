@@ -12,7 +12,29 @@ import models.notification._
   */
 trait EventFixture extends FixtureHelper { self: FixtureSupport =>
 
-  val Events = Seq(
+  val Events = EventFixture.values
+
+  addFixtureOperation {
+    sequenceOf(
+      insertInto("event")
+        .columns("id", "start_time", "end_time", "description", "is_preparing")
+        .scalaValues(1, Events(0).start, Events(0).end, "description", false)
+        .scalaValues(2, Events(1).start, Events(1).end, "completed", false)
+        .scalaValues(3, Events(2).start, Events(2).end, "notStarted", true)
+        .scalaValues(4, Events(3).start, Events(3).end, "inProgress", false)
+        .build,
+      insertInto("event_notification")
+        .columns("id", "event_id", "time", "kind", "recipient_kind")
+        .scalaValues(1, 1, Events(0).notifications(0).time, 0, 0)
+        .scalaValues(2, 1, Events(0).notifications(1).time, 1, 0)
+        .scalaValues(3, 1, Events(0).notifications(2).time, 3, 1)
+        .build
+    )
+  }
+}
+
+object EventFixture {
+  val values = Seq(
     Event(
       1,
       Some("description"),
@@ -59,22 +81,4 @@ trait EventFixture extends FixtureHelper { self: FixtureSupport =>
       Nil
     )
   )
-
-  addFixtureOperation {
-    sequenceOf(
-      insertInto("event")
-        .columns("id", "start_time", "end_time", "description", "is_preparing")
-        .scalaValues(1, Events(0).start, Events(0).end, "description", false)
-        .scalaValues(2, Events(1).start, Events(1).end, "completed", false)
-        .scalaValues(3, Events(2).start, Events(2).end, "notStarted", true)
-        .scalaValues(4, Events(3).start, Events(3).end, "inProgress", false)
-        .build,
-      insertInto("event_notification")
-        .columns("id", "event_id", "time", "kind", "recipient_kind")
-        .scalaValues(1, 1, Events(0).notifications(0).time, 0, 0)
-        .scalaValues(2, 1, Events(0).notifications(1).time, 1, 0)
-        .scalaValues(3, 1, Events(0).notifications(2).time, 3, 1)
-        .build
-    )
-  }
 }

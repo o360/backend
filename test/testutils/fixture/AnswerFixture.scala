@@ -10,39 +10,7 @@ import models.assessment.Answer
 trait AnswerFixture extends FixtureHelper with ActiveProjectFixture with FormFixture with UserFixture {
   self: FixtureSupport =>
 
-  val Answers = Seq(
-    Answer(
-      1,
-      1,
-      Some(3),
-      NamedEntity(1),
-      canSkip = true,
-      Answer.Status.Answered,
-      isAnonymous = true,
-      Set(
-        Answer.Element(
-          elementId = 1,
-          text = Some("first answer"),
-          valuesIds = None,
-          comment = Some("comment")
-        ),
-        Answer.Element(
-          elementId = 2,
-          text = None,
-          valuesIds = Some(Set(1)),
-          comment = None
-        )
-      )
-    ),
-    Answer(
-      2,
-      1,
-      None,
-      NamedEntity(2),
-      canSkip = false,
-      Answer.Status.New
-    )
-  )
+  val Answers = AnswerFixture.values
 
   addFixtureOperation {
     sequenceOf(
@@ -69,4 +37,40 @@ trait AnswerFixture extends FixtureHelper with ActiveProjectFixture with FormFix
         .build
     )
   }
+}
+
+object AnswerFixture {
+  val values = Seq(
+    Answer(
+      activeProjectId = 1,
+      userFromId = 1,
+      userToId = Some(3),
+      form = NamedEntity(1),
+      canSkip = true,
+      status = Answer.Status.Answered,
+      isAnonymous = true,
+      elements = Set(
+        Answer.Element(
+          elementId = 1,
+          text = Some("first answer"),
+          valuesIds = None,
+          comment = Some("comment")
+        ),
+        Answer.Element(
+          elementId = 2,
+          text = None,
+          valuesIds = Some(Set(1)),
+          comment = None
+        )
+      )
+    ),
+    Answer(
+      activeProjectId = 2,
+      userFromId = 1,
+      userToId = None,
+      form = NamedEntity(2),
+      canSkip = false,
+      status = Answer.Status.New
+    )
+  )
 }

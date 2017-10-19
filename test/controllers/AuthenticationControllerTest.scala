@@ -25,7 +25,7 @@ class AuthenticationControllerTest extends BaseControllerTest with UserGenerator
   "POST /auth" should {
     "return unauthorized if provider not supported" in {
       forAll { (unsupportedProvider: String) =>
-        when(socialProviderRegistryMock.get[SocialProvider](any[String])(any())).thenReturn(None)
+        when(socialProviderRegistryMock.get[SocialProvider](*[String])(*)).thenReturn(None)
 
         val controller = new Authentication(silhouetteMock, socialProviderRegistryMock, userServiceMock, cc, ec)
 
@@ -37,7 +37,7 @@ class AuthenticationControllerTest extends BaseControllerTest with UserGenerator
     "return unauthorized if exception thrown by silhouette" in {
       val socialProviderMock = mock[SocialProvider]
       when(socialProviderMock.authenticate()(any())).thenReturn(Future.failed(new SilhouetteException("")))
-      when(socialProviderRegistryMock.get[SocialProvider](any[String])(any())).thenReturn(Some(socialProviderMock))
+      when(socialProviderRegistryMock.get[SocialProvider](*[String])(*)).thenReturn(Some(socialProviderMock))
 
       val controller = new Authentication(silhouetteMock, socialProviderRegistryMock, userServiceMock, cc, ec)
 

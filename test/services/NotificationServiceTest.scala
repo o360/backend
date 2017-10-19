@@ -2,21 +2,14 @@ package services
 
 import java.sql.Timestamp
 
-import models.{ListWithTotal, NamedEntity}
 import models.dao.{EventDao, ProjectDao, ProjectRelationDao, TemplateDao}
 import models.event.{Event, EventJob}
 import models.notification._
 import models.project.{Project, Relation, TemplateBinding}
-import org.mockito.ArgumentMatchers.any
-import testutils.generator.{EventGenerator, ListWithTotalGenerator}
-import utils.listmeta.ListMeta
-import org.mockito.ArgumentMatchers.{eq => eqTo, _}
+import models.{ListWithTotal, NamedEntity}
 import org.mockito.Mockito._
 import testutils.fixture.{EventFixture, ProjectFixture, ProjectRelationFixture, UserFixture}
-import utils.errors.ApplicationError
-
-import scalaz._
-import Scalaz.ToEitherOps
+import testutils.generator.{EventGenerator, ListWithTotalGenerator}
 
 /**
   * Test for notification service.
@@ -73,12 +66,12 @@ class NotificationServiceTest
       when(
         fixture.eventDao.getList(
           optId = eqTo(Some(jobFixture.eventId)),
-          optStatus = any[Option[Event.Status]],
-          optProjectId = any[Option[Long]],
-          optFormId = any[Option[Long]],
-          optGroupFromIds = any[Option[Seq[Long]]],
-          optUserId = any[Option[Long]]
-        )(any[ListMeta]))
+          optStatus = *,
+          optProjectId = *,
+          optFormId = *,
+          optGroupFromIds = *,
+          optUserId = *
+        )(*))
         .thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
 
       wait(fixture.service.execute(jobFixture))
@@ -92,24 +85,24 @@ class NotificationServiceTest
       when(
         fixture.eventDao.getList(
           optId = eqTo(Some(jobFixture.eventId)),
-          optStatus = any[Option[Event.Status]],
-          optProjectId = any[Option[Long]],
-          optFormId = any[Option[Long]],
-          optGroupFromIds = any[Option[Seq[Long]]],
-          optUserId = any[Option[Long]]
-        )(any[ListMeta]))
+          optStatus = *,
+          optProjectId = *,
+          optFormId = *,
+          optGroupFromIds = *,
+          optUserId = *
+        )(*))
         .thenReturn(toFuture(ListWithTotal(1, Seq(event))))
 
       when(
         fixture.projectDao.getList(
-          optId = any[Option[Long]],
+          optId = *,
           optEventId = eqTo(Some(event.id)),
-          optGroupFromIds = any[Option[Seq[Long]]],
-          optFormId = any[Option[Long]],
-          optGroupAuditorId = any[Option[Long]],
-          optEmailTemplateId = any[Option[Long]],
-          optAnyRelatedGroupId = any[Option[Long]]
-        )(any[ListMeta]))
+          optGroupFromIds = *,
+          optFormId = *,
+          optGroupAuditorId = *,
+          optEmailTemplateId = *,
+          optAnyRelatedGroupId = *
+        )(*))
         .thenReturn(toFuture(ListWithTotal[Project](0, Nil)))
 
       wait(fixture.service.execute(jobFixture))
@@ -134,45 +127,45 @@ class NotificationServiceTest
       when(
         fixture.eventDao.getList(
           optId = eqTo(Some(job.eventId)),
-          optStatus = any[Option[Event.Status]],
-          optProjectId = any[Option[Long]],
-          optFormId = any[Option[Long]],
-          optGroupFromIds = any[Option[Seq[Long]]],
-          optUserId = any[Option[Long]]
-        )(any[ListMeta]))
+          optStatus = *,
+          optProjectId = *,
+          optFormId = *,
+          optGroupFromIds = *,
+          optUserId = *
+        )(*))
         .thenReturn(toFuture(ListWithTotal(1, Seq(event))))
 
       when(
         fixture.projectDao.getList(
-          optId = any[Option[Long]],
+          optId = *,
           optEventId = eqTo(Some(event.id)),
-          optGroupFromIds = any[Option[Seq[Long]]],
-          optFormId = any[Option[Long]],
-          optGroupAuditorId = any[Option[Long]],
-          optEmailTemplateId = any[Option[Long]],
-          optAnyRelatedGroupId = any[Option[Long]]
-        )(any[ListMeta]))
+          optGroupFromIds = *,
+          optFormId = *,
+          optGroupAuditorId = *,
+          optEmailTemplateId = *,
+          optAnyRelatedGroupId = *
+        )(*))
         .thenReturn(toFuture(ListWithTotal(1, Seq(project))))
 
       when(fixture.templateDao.findById(1)).thenReturn(toFuture(Some(template)))
 
       when(
         fixture.relationDao.getList(
-          optId = any[Option[Long]],
+          optId = *,
           optProjectId = eqTo(Some(project.id)),
-          optKind = any[Option[Relation.Kind]],
-          optFormId = any[Option[Long]],
-          optGroupFromId = any[Option[Long]],
-          optGroupToId = any[Option[Long]],
-          optEmailTemplateId = any[Option[Long]]
-        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
+          optKind = *,
+          optFormId = *,
+          optGroupFromId = *,
+          optGroupToId = *,
+          optEmailTemplateId = *
+        )(*)).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
 
       when(
         fixture.userService.listByGroupId(
           groupId = eqTo(project.groupAuditor.id),
           includeDeleted = eqTo(false)
-        )(any[ListMeta]))
-        .thenReturn(EitherT.eitherT(toFuture(ListWithTotal(1, Seq(user)).right[ApplicationError])))
+        )(*))
+        .thenReturn(toSuccessResult(ListWithTotal(1, Seq(user))))
 
       val context = Map("example" -> "any")
       val renderedSubject = "subject"
@@ -212,45 +205,45 @@ class NotificationServiceTest
       when(
         fixture.eventDao.getList(
           optId = eqTo(Some(job.eventId)),
-          optStatus = any[Option[Event.Status]],
-          optProjectId = any[Option[Long]],
-          optFormId = any[Option[Long]],
-          optGroupFromIds = any[Option[Seq[Long]]],
-          optUserId = any[Option[Long]]
-        )(any[ListMeta]))
+          optStatus = *,
+          optProjectId = *,
+          optFormId = *,
+          optGroupFromIds = *,
+          optUserId = *
+        )(*))
         .thenReturn(toFuture(ListWithTotal(1, Seq(event))))
 
       when(
         fixture.projectDao.getList(
-          optId = any[Option[Long]],
+          optId = *,
           optEventId = eqTo(Some(event.id)),
-          optGroupFromIds = any[Option[Seq[Long]]],
-          optFormId = any[Option[Long]],
-          optGroupAuditorId = any[Option[Long]],
-          optEmailTemplateId = any[Option[Long]],
-          optAnyRelatedGroupId = any[Option[Long]]
-        )(any[ListMeta]))
+          optGroupFromIds = *,
+          optFormId = *,
+          optGroupAuditorId = *,
+          optEmailTemplateId = *,
+          optAnyRelatedGroupId = *
+        )(*))
         .thenReturn(toFuture(ListWithTotal(1, Seq(project))))
 
       when(fixture.templateDao.findById(1)).thenReturn(toFuture(Some(template)))
 
       when(
         fixture.relationDao.getList(
-          optId = any[Option[Long]],
+          optId = *,
           optProjectId = eqTo(Some(project.id)),
-          optKind = any[Option[Relation.Kind]],
-          optFormId = any[Option[Long]],
-          optGroupFromId = any[Option[Long]],
-          optGroupToId = any[Option[Long]],
-          optEmailTemplateId = any[Option[Long]]
-        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Seq(relation))))
+          optKind = *,
+          optFormId = *,
+          optGroupFromId = *,
+          optGroupToId = *,
+          optEmailTemplateId = *
+        )(*)).thenReturn(toFuture(ListWithTotal(1, Seq(relation))))
 
       when(
         fixture.userService.listByGroupId(
           groupId = eqTo(relation.groupFrom.id),
           includeDeleted = eqTo(false)
-        )(any[ListMeta]))
-        .thenReturn(EitherT.eitherT(toFuture(ListWithTotal(1, Seq(user)).right[ApplicationError])))
+        )(*))
+        .thenReturn(toSuccessResult(ListWithTotal(1, Seq(user))))
 
       val context = Map("example" -> "any")
       val renderedSubject = "subject"

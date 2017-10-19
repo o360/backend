@@ -28,8 +28,8 @@ class ActiveProjectService @Inject()(
     activeProjectDao
       .getList(optEventId = eventId, optUserId = Some(account.id))
       .flatMap { projects =>
-        Future.sequence(projects.data.map(getProjectWithUserInfo(_, account.id))).map { projectsWithUserInfo =>
-          ListWithTotal(projectsWithUserInfo)
+        Future.traverse(projects.data)(getProjectWithUserInfo(_, account.id)).map { projectsWithUserInfo =>
+          ListWithTotal(projects.total, projectsWithUserInfo)
         }
       }
       .lift

@@ -9,31 +9,6 @@ import models.project.ActiveProject
 trait ActiveProjectFixture extends FixtureHelper with EventFixture with UserFixture with ProjectFixture {
   self: FixtureSupport =>
 
-  val ActiveProjects = Seq(
-    ActiveProject(
-      1,
-      1,
-      "first",
-      Some("description"),
-      formsOnSamePage = true,
-      canRevote = true,
-      isAnonymous = true,
-      machineName = "some machine name",
-      parentProjectId = Some(1)
-    ),
-    ActiveProject(
-      2,
-      2,
-      "second",
-      None,
-      formsOnSamePage = false,
-      canRevote = false,
-      isAnonymous = false,
-      machineName = "another machine name",
-      parentProjectId = None
-    )
-  )
-
   addFixtureOperation {
     sequenceOf(
       insertInto("active_project")
@@ -56,6 +31,40 @@ trait ActiveProjectFixture extends FixtureHelper with EventFixture with UserFixt
         .scalaValues(1, 2)
         .build
     )
-
   }
+}
+
+object ActiveProjectFixture {
+  val values = Seq(
+    ActiveProject(
+      id = 1,
+      eventId = 1,
+      name = "first",
+      description = Some("description"),
+      formsOnSamePage = true,
+      canRevote = true,
+      isAnonymous = true,
+      machineName = "some machine name",
+      parentProjectId = Some(1)
+    ),
+    ActiveProject(
+      id = 2,
+      eventId = 2,
+      name = "second",
+      description = None,
+      formsOnSamePage = false,
+      canRevote = false,
+      isAnonymous = false,
+      machineName = "another machine name",
+      parentProjectId = None
+    )
+  )
+
+  case class ProjectAuditor(userId: Long, projectId: Long)
+
+  val auditorValues = Seq(
+    ProjectAuditor(1, 1),
+    ProjectAuditor(2, 1),
+    ProjectAuditor(1, 2)
+  )
 }

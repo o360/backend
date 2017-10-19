@@ -24,6 +24,7 @@ trait UserGenerator {
 
   implicit val userArbitrary = Arbitrary {
     for {
+      id <- Arbitrary.arbitrary[Long]
       name <- Arbitrary.arbitrary[Option[String]]
       email <- Arbitrary.arbitrary[Option[String]]
       gender <- Arbitrary.arbitrary[Option[User.Gender]]
@@ -31,15 +32,16 @@ trait UserGenerator {
       status <- Arbitrary.arbitrary[User.Status]
       termsApproved <- Arbitrary.arbitrary[Boolean]
       pictureName <- Arbitrary.arbitrary[Option[String]]
-    } yield User(0, name, email, gender, role, status, ZoneOffset.UTC, termsApproved, pictureName)
+    } yield User(id, name, email, gender, role, status, ZoneOffset.UTC, termsApproved, pictureName)
   }
 
   implicit val userShortArb = Arbitrary {
     for {
+      id <- Arbitrary.arbitrary[Long]
       name <- Arbitrary.arbitrary[String]
       gender <- Arbitrary.arbitrary[User.Gender]
       hasPicture <- Arbitrary.arbitrary[Boolean]
-    } yield UserShort(0, name, gender, hasPicture)
+    } yield UserShort(id, name, gender, hasPicture)
   }
 
 }

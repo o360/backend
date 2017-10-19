@@ -10,36 +10,7 @@ import models.project.{Project, TemplateBinding}
   */
 trait ProjectFixture extends FixtureHelper with GroupFixture with TemplateFixture { self: FixtureSupport =>
 
-  val Projects = Seq(
-    Project(
-      1,
-      "first",
-      Some("description"),
-      NamedEntity(3, Groups.find(_.id == 3).get.name),
-      Seq(
-        TemplateBinding(NamedEntity(1, "firstname"), Begin, Respondent),
-        TemplateBinding(NamedEntity(2, "secondname"), End, Respondent),
-        TemplateBinding(NamedEntity(2, "secondname"), End, Auditor)
-      ),
-      formsOnSamePage = true,
-      canRevote = true,
-      isAnonymous = true,
-      hasInProgressEvents = false,
-      machineName = "some machine name"
-    ),
-    Project(
-      2,
-      "second",
-      None,
-      NamedEntity(1, Groups.find(_.id == 1).get.name),
-      Nil,
-      formsOnSamePage = false,
-      canRevote = false,
-      isAnonymous = false,
-      hasInProgressEvents = false,
-      machineName = "another machine name"
-    )
-  )
+  val Projects = ProjectFixture.values
 
   addFixtureOperation {
     sequenceOf(
@@ -64,4 +35,37 @@ trait ProjectFixture extends FixtureHelper with GroupFixture with TemplateFixtur
     )
 
   }
+}
+
+object ProjectFixture {
+  val values = Seq(
+    Project(
+      1,
+      "first",
+      Some("description"),
+      NamedEntity(3, GroupFixture.values.find(_.id == 3).get.name),
+      Seq(
+        TemplateBinding(NamedEntity(1, "firstname"), Begin, Respondent),
+        TemplateBinding(NamedEntity(2, "secondname"), End, Respondent),
+        TemplateBinding(NamedEntity(2, "secondname"), End, Auditor)
+      ),
+      formsOnSamePage = true,
+      canRevote = true,
+      isAnonymous = true,
+      hasInProgressEvents = false,
+      machineName = "some machine name"
+    ),
+    Project(
+      2,
+      "second",
+      None,
+      NamedEntity(1, GroupFixture.values.find(_.id == 1).get.name),
+      Nil,
+      formsOnSamePage = false,
+      canRevote = false,
+      isAnonymous = false,
+      hasInProgressEvents = false,
+      machineName = "another machine name"
+    )
+  )
 }

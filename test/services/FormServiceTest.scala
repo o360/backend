@@ -5,8 +5,6 @@ import models.dao._
 import models.event.Event
 import models.form.{Form, FormShort}
 import models.project.{Project, Relation}
-import org.davidbild.tristate.Tristate
-import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
 import testutils.fixture._
 import testutils.generator.FormGenerator
@@ -84,11 +82,11 @@ class FormServiceTest
       val formId = 1
       when(fixture.formDaoMock.findById(formId)).thenReturn(toFuture(Some(Forms(0))))
       when(fixture.answerDao.getList(
-        optEventId = any[Option[Long]],
-        optActiveProjectId = any[Option[Long]],
+        optEventId = *,
+        optActiveProjectId = *,
         optUserFromId = eqTo(Some(admin.id)),
         optFormId = eqTo(Some(formId)),
-        optUserToId = any[Tristate[Long]],
+        optUserToId = *,
       )).thenReturn(toFuture(Nil))
 
       val result = wait(fixture.service.getByIdWithAuth(formId)(admin).run)
@@ -102,11 +100,11 @@ class FormServiceTest
       val formId = 1
       when(fixture.formDaoMock.findById(formId)).thenReturn(toFuture(Some(Forms(0))))
       when(fixture.answerDao.getList(
-        optEventId = any[Option[Long]],
-        optActiveProjectId = any[Option[Long]],
+        optEventId = *,
+        optActiveProjectId = *,
         optUserFromId = eqTo(Some(admin.id)),
         optFormId = eqTo(Some(formId)),
-        optUserToId = any[Tristate[Long]],
+        optUserToId = *,
       )).thenReturn(toFuture(Seq(Answers(0))))
 
       val result = wait(fixture.service.getByIdWithAuth(formId)(admin).run)
@@ -126,9 +124,9 @@ class FormServiceTest
           val fixture = getFixture
           when(
             fixture.formDaoMock.getList(
-              optKind = any[Option[Form.Kind]],
-              optEventId = any[Option[Long]],
-              includeDeleted = any[Boolean]
+              optKind = *,
+              optEventId = *,
+              includeDeleted = *
             )(eqTo(ListMeta.default)))
             .thenReturn(toFuture(ListWithTotal(total, forms)))
           val result = wait(fixture.service.getList()(ListMeta.default).run)
@@ -183,13 +181,13 @@ class FormServiceTest
       when(fixture.formDaoMock.findById(form.id)).thenReturn(toFuture(Some(form)))
       when(
         fixture.eventDao.getList(
-          optId = any[Option[Long]],
+          optId = *,
           optStatus = eqTo(Some(Event.Status.InProgress)),
-          optProjectId = any[Option[Long]],
+          optProjectId = *,
           optFormId = eqTo(Some(form.id)),
-          optGroupFromIds = any[Option[Seq[Long]]],
-          optUserId = any[Option[Long]],
-        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
+          optGroupFromIds = *,
+          optUserId = *,
+        )(*)).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
 
       val result = wait(fixture.service.update(form).run)
 
@@ -204,13 +202,13 @@ class FormServiceTest
       when(fixture.formDaoMock.update(form)).thenReturn(toFuture(form))
       when(
         fixture.eventDao.getList(
-          optId = any[Option[Long]],
+          optId = *,
           optStatus = eqTo(Some(Event.Status.InProgress)),
-          optProjectId = any[Option[Long]],
+          optProjectId = *,
           optFormId = eqTo(Some(form.id)),
-          optGroupFromIds = any[Option[Seq[Long]]],
-          optUserId = any[Option[Long]],
-        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
+          optGroupFromIds = *,
+          optUserId = *,
+        )(*)).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
 
       val result = wait(fixture.service.update(form).run)
 
@@ -252,24 +250,24 @@ class FormServiceTest
         when(fixture.formDaoMock.findById(form.id)).thenReturn(toFuture(Some(form.copy(kind = Form.Kind.Active))))
         when(
           fixture.projectDao.getList(
-            optId = any[Option[Long]],
-            optEventId = any[Option[Long]],
-            optGroupFromIds = any[Option[Seq[Long]]],
+            optId = *,
+            optEventId = *,
+            optGroupFromIds = *,
             optFormId = eqTo(Some(form.id)),
-            optGroupAuditorId = any[Option[Long]],
-            optEmailTemplateId = any[Option[Long]],
-            optAnyRelatedGroupId = any[Option[Long]]
-          )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Projects.take(1))))
+            optGroupAuditorId = *,
+            optEmailTemplateId = *,
+            optAnyRelatedGroupId = *
+          )(*)).thenReturn(toFuture(ListWithTotal(1, Projects.take(1))))
         when(
           fixture.relationDao.getList(
-            optId = any[Option[Long]],
-            optProjectId = any[Option[Long]],
-            optKind = any[Option[Relation.Kind]],
+            optId = *,
+            optProjectId = *,
+            optKind = *,
             optFormId = eqTo(Some(form.id)),
-            optGroupFromId = any[Option[Long]],
-            optGroupToId = any[Option[Long]],
-            optEmailTemplateId = any[Option[Long]]
-          )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
+            optGroupFromId = *,
+            optGroupToId = *,
+            optEmailTemplateId = *
+          )(*)).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
 
         val result = wait(fixture.service.delete(form.id).run)
 
@@ -284,24 +282,24 @@ class FormServiceTest
         when(fixture.formDaoMock.findById(form.id)).thenReturn(toFuture(Some(form.copy(kind = Form.Kind.Active))))
         when(
           fixture.projectDao.getList(
-            optId = any[Option[Long]],
-            optEventId = any[Option[Long]],
-            optGroupFromIds = any[Option[Seq[Long]]],
+            optId = *,
+            optEventId = *,
+            optGroupFromIds = *,
             optFormId = eqTo(Some(form.id)),
-            optGroupAuditorId = any[Option[Long]],
-            optEmailTemplateId = any[Option[Long]],
-            optAnyRelatedGroupId = any[Option[Long]]
-          )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Project](0, Nil)))
+            optGroupAuditorId = *,
+            optEmailTemplateId = *,
+            optAnyRelatedGroupId = *
+          )(*)).thenReturn(toFuture(ListWithTotal[Project](0, Nil)))
         when(
           fixture.relationDao.getList(
-            optId = any[Option[Long]],
-            optProjectId = any[Option[Long]],
-            optKind = any[Option[Relation.Kind]],
+            optId = *,
+            optProjectId = *,
+            optKind = *,
             optFormId = eqTo(Some(form.id)),
-            optGroupFromId = any[Option[Long]],
-            optGroupToId = any[Option[Long]],
-            optEmailTemplateId = any[Option[Long]]
-          )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
+            optGroupFromId = *,
+            optGroupToId = *,
+            optEmailTemplateId = *
+          )(*)).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
         when(fixture.formDaoMock.delete(form.id)).thenReturn(toFuture(1))
 
         val result = wait(fixture.service.delete(form.id).run)

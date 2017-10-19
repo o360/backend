@@ -7,6 +7,7 @@ import org.mockito.Mockito._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import services.event.EventResultExportService
+import testutils.fixture.EventFixture
 import utils.Config
 
 import scala.concurrent.ExecutionContext
@@ -43,7 +44,7 @@ class EventResultExportControllerTest extends BaseControllerTest {
     "return list of events" in {
       val fixture = getFixture
       when(fixture.config.exportSecret).thenReturn("valid-secret")
-      when(fixture.exportService.eventsList).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
+      when(fixture.exportService.eventsList).thenReturn(toFuture(ListWithTotal[Event](Seq(EventFixture.values(0)))))
 
       val request = FakeRequest().withBody(ApiExportCode("valid-secret"))
       val response = fixture.controller.listEvents().apply(request)
@@ -66,7 +67,8 @@ class EventResultExportControllerTest extends BaseControllerTest {
     "return list of answers" in {
       val fixture = getFixture
       when(fixture.config.exportSecret).thenReturn("valid-secret")
-      when(fixture.exportService.exportAnswers(123)).thenReturn(toFuture((Seq.empty, Seq.empty, Seq.empty, Seq.empty, Seq.empty)))
+      when(fixture.exportService.exportAnswers(123))
+        .thenReturn(toFuture((Seq.empty, Seq.empty, Seq.empty, Seq.empty, Seq.empty)))
 
       val request = FakeRequest().withBody(ApiExportCode("valid-secret"))
       val response = fixture.controller.export(123).apply(request)

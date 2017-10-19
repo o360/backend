@@ -9,11 +9,13 @@ import models.notification._
 import org.mockito.Mockito._
 import services.event.{EventJobService, EventStartService}
 import testutils.fixture.EventFixture
+import testutils.generator.EventJobGenerator
+import utils.errors.NotFoundError
 
 /**
   * Test for event job service.
   */
-class EventJobServiceTest extends BaseServiceTest with EventFixture {
+class EventJobServiceTest extends BaseServiceTest with EventFixture with EventJobGenerator {
 
   private case class Fixture(
     eventJobDao: EventJobDao,
@@ -138,6 +140,37 @@ class EventJobServiceTest extends BaseServiceTest with EventFixture {
       fixture.service.execute(jobs)
 
       succeed
+    }
+  }
+
+  "runFailedJob" should {
+    "return not found if job not found or not in failure status" in {
+      forAll { (id: Long, maybeJob: Option[EventJob]) =>
+        whenever(!maybeJob.map(_.status).contains(EventJob.Status.Failure)) {
+          val fixture = getFixture
+
+          when(fixture.eventJobDao.find(id)).thenReturn(toFuture(maybeJob))
+
+          val result = wait(fixture.service.runFailedJob(id).run)
+
+          result mustBe 'left
+          result.swap.toOption.get mustBe a[NotFoundError]
+        }
+      }
+    }
+
+    "execute failed job" in {
+      forAll { (id: Long, job: EventJob) =>
+        whenever(job.status == EventJob.Status.Failure) {
+          val fixture = getFixture
+
+          when(fixture.eventJobDao.find(id)).thenReturn(toFuture(Some(job)))
+
+          val result = wait(fixture.service.runFailedJob(id).run)
+
+          result mustBe 'right
+        }
+      }
     }
   }
 }
