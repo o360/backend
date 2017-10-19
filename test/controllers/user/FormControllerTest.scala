@@ -13,10 +13,8 @@ import services.FormService
 import silhouette.DefaultEnv
 import testutils.fixture.UserFixture
 import testutils.generator.FormGenerator
-import utils.errors.ApplicationError
 
 import scala.concurrent.ExecutionContext
-import scalaz._
 
 /**
   * Test for forms controller.
@@ -43,8 +41,7 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
       forAll { (id: Long, form: Form) =>
         val env = fakeEnvironment(user)
         val fixture = getFixture(env)
-        when(fixture.formServiceMock.getByIdWithAuth(id)(user))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(form): ApplicationError \/ Form)))
+        when(fixture.formServiceMock.getByIdWithAuth(id)(user)).thenReturn(toSuccessResult(form))
         val request = authenticated(FakeRequest(), env)
 
         val response = fixture.controller.getById(id)(request)

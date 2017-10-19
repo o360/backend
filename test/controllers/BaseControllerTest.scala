@@ -4,6 +4,7 @@ import com.mohiva.play.silhouette.api.actions.{SecuredAction, UnsecuredAction, U
 import com.mohiva.play.silhouette.api.{Env, Environment, LoginInfo, SilhouetteProvider}
 import com.mohiva.play.silhouette.test._
 import models.user.{User => UserModel}
+import org.scalatest.ParallelTestExecution
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatestplus.play.PlaySpec
@@ -11,7 +12,7 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.test.FakeRequest
 import play.api.test.Helpers.stubControllerComponents
 import silhouette.DefaultEnv
-import testutils.AsyncHelper
+import testutils.{AsyncHelper, MockitoHelper, ServiceResultHelper}
 
 /**
   * Base trait for controllers test.
@@ -22,7 +23,10 @@ trait BaseControllerTest
   with GeneratorDrivenPropertyChecks
   with GuiceOneAppPerSuite
   with AsyncHelper
-  with MockitoSugar {
+  with MockitoSugar
+  with ServiceResultHelper
+  with MockitoHelper
+  with ParallelTestExecution {
 
   implicit val ec = scala.concurrent.ExecutionContext.global
   val cc = stubControllerComponents()
@@ -64,4 +68,7 @@ trait BaseControllerTest
     * Fake login info for silhouette.
     */
   private val fakeLoginInfo = LoginInfo("", "")
+
+  implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
+    PropertyCheckConfiguration(sizeRange = 15, workers = 4)
 }

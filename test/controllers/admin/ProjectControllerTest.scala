@@ -16,11 +16,10 @@ import services.ProjectService
 import silhouette.DefaultEnv
 import testutils.fixture.UserFixture
 import testutils.generator.ProjectGenerator
-import utils.errors.{ApplicationError, NotFoundError}
+import utils.errors.NotFoundError
 import utils.listmeta.ListMeta
 
 import scala.concurrent.ExecutionContext
-import scalaz.{-\/, \/, \/-, EitherT}
 
 /**
   * Test for projects controller.
@@ -47,8 +46,7 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
       forAll { (id: Long) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.projectServiceMock.getById(id))
-          .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Project(id)): ApplicationError \/ Project)))
+        when(fixture.projectServiceMock.getById(id)).thenReturn(toErrorResult[Project](NotFoundError.Project(id)))
         val request = authenticated(FakeRequest(), env)
 
         val response = fixture.controller.getById(id).apply(request)
@@ -60,8 +58,7 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
       forAll { (id: Long, project: Project) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.projectServiceMock.getById(id))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(project): ApplicationError \/ Project)))
+        when(fixture.projectServiceMock.getById(id)).thenReturn(toSuccessResult(project))
         val request = authenticated(FakeRequest(), env)
 
         val response = fixture.controller.getById(id)(request)
@@ -84,8 +81,7 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
           val env = fakeEnvironment(admin)
           val fixture = getFixture(env)
           when(fixture.projectServiceMock.getList(eventId, groupId)(ListMeta.default))
-            .thenReturn(EitherT.eitherT(
-              toFuture(\/-(ListWithTotal(total, projects)): ApplicationError \/ ListWithTotal[Project])))
+            .thenReturn(toSuccessResult(ListWithTotal(total, projects)))
           val request = authenticated(FakeRequest(), env)
 
           val response = fixture.controller.getList(eventId, groupId)(request)
@@ -118,8 +114,7 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
       forAll { (project: Project) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.projectServiceMock.update(project))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(project): ApplicationError \/ Project)))
+        when(fixture.projectServiceMock.update(project)).thenReturn(toSuccessResult(project))
 
         val partialProject = toPartialProject(project)
         val request = authenticated(
@@ -144,8 +139,7 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
       forAll { (project: Project) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.projectServiceMock.create(project.copy(id = 0)))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(project): ApplicationError \/ Project)))
+        when(fixture.projectServiceMock.create(project.copy(id = 0))).thenReturn(toSuccessResult(project))
 
         val partialProject = toPartialProject(project)
         val request = authenticated(
@@ -170,8 +164,7 @@ class ProjectControllerTest extends BaseControllerTest with ProjectGenerator {
       forAll { (id: Long) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.projectServiceMock.delete(id)(admin))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(()): ApplicationError \/ Unit)))
+        when(fixture.projectServiceMock.delete(id)(admin)).thenReturn(toSuccessResult(()))
         val request = authenticated(FakeRequest(), env)
 
         val response = fixture.controller.delete(id)(request)

@@ -25,11 +25,12 @@ trait EventGenerator extends NotificationGenerator with TimestampGenerator {
 
   implicit val eventArb = Arbitrary {
     for {
+      id <- Arbitrary.arbitrary[Long]
       description <- Arbitrary.arbitrary[Option[String]]
       start <- Arbitrary.arbitrary[Timestamp]
       end <- Arbitrary.arbitrary[Timestamp]
       notifications <- Arbitrary.arbitrary[Seq[Event.NotificationTime]]
       isPreparing <- Arbitrary.arbitrary[Boolean]
-    } yield Event(0, description, start, end, notifications, isPreparing = isPreparing)
+    } yield Event(id, description, start, end, notifications, isPreparing = isPreparing)
   }
 }

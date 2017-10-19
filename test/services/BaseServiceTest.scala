@@ -1,15 +1,11 @@
 package services
 
-import org.scalatest.OneInstancePerTest
+import org.scalatest.{OneInstancePerTest, ParallelTestExecution}
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatestplus.play.PlaySpec
-import testutils.AsyncHelper
 import testutils.fixture.FixtureSupport
-import utils.errors.ApplicationError
-
-import scala.concurrent.Future
-import scalaz.{\/, EitherT}
+import testutils.{AsyncHelper, MockitoHelper, ServiceResultHelper}
 
 /**
   * Base trait for service tests.
@@ -20,13 +16,13 @@ trait BaseServiceTest
   with AsyncHelper
   with MockitoSugar
   with FixtureSupport
-  with OneInstancePerTest {
+  with OneInstancePerTest
+  with ServiceResultHelper
+  with MockitoHelper
+  with ParallelTestExecution {
 
   val ec = scala.concurrent.ExecutionContext.global
 
-  def toErrorResult[A](error: ApplicationError): EitherT[Future, ApplicationError, A] =
-    EitherT.eitherT(toFuture(\/.left[ApplicationError, A](error)))
-
-  def toSuccessResult[A](result: A): EitherT[Future, ApplicationError, A] =
-    EitherT.eitherT(toFuture(\/.right[ApplicationError, A](result)))
+  implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
+    PropertyCheckConfiguration(sizeRange = 15, workers = 4)
 }

@@ -37,6 +37,9 @@ class GroupController @Inject()(
       getListByUserId(request.identity.id)(request)
     }
 
+  /**
+    * Returns list of groups user participates in.
+    */
   def getListByUserId(userId: Long) = silhouette.SecuredAction(AllowedStatus.approved).async { implicit request =>
     toResult(Ok) {
       userService.getByIdWithAuth(userId).flatMap { _ =>

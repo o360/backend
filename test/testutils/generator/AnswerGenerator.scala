@@ -2,12 +2,17 @@ package testutils.generator
 
 import models.NamedEntity
 import models.assessment.Answer
-import org.scalacheck.Arbitrary
+import org.scalacheck.{Arbitrary, Gen}
 
 /**
   * Answer generator for scalacheck.
   */
 trait AnswerGenerator {
+
+  implicit val answerStatusArb: Arbitrary[Answer.Status] = Arbitrary {
+    import Answer.Status._
+    Gen.oneOf(New, Answered, Skipped)
+  }
 
   implicit val answerElementArb: Arbitrary[Answer.Element] = Arbitrary {
     for {
@@ -28,14 +33,7 @@ trait AnswerGenerator {
       isAnonymous <- Arbitrary.arbitrary[Boolean]
       answers <- Arbitrary.arbitrary[Set[Answer.Element]]
       canSkip <- Arbitrary.arbitrary[Boolean]
-    } yield
-      Answer(activeProjectId,
-             userFromId,
-             userToId,
-             NamedEntity(formId),
-             canSkip,
-             Answer.Status.New,
-             isAnonymous,
-             answers)
+      status <- answerStatusArb.arbitrary
+    } yield Answer(activeProjectId, userFromId, userToId, NamedEntity(formId), canSkip, status, isAnonymous, answers)
   }
 }

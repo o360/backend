@@ -5,7 +5,6 @@ import models.dao.{GroupDao, ProjectDao, ProjectRelationDao, UserGroupDao}
 import models.group.Group
 import models.project.{Project, Relation}
 import org.davidbild.tristate.Tristate
-import org.mockito.ArgumentMatchers.{eq => eqTo, _}
 import org.mockito.Mockito._
 import testutils.fixture.{GroupFixture, ProjectFixture}
 import testutils.generator.{GroupGenerator, TristateGenerator}
@@ -83,11 +82,11 @@ class GroupServiceTest
           val fixture = getFixture
           when(
             fixture.groupDaoMock.getList(
-              optId = any[Option[Long]],
+              optId = *,
               optParentId = eqTo(parentId),
               optUserId = eqTo(userId),
               optName = eqTo(name),
-              optLevels = any[Option[Seq[Int]]]
+              optLevels = *
             )(eqTo(ListMeta.default)))
             .thenReturn(toFuture(ListWithTotal(total, groups)))
           val result = wait(fixture.service.list(parentId, userId, name, None)(ListMeta.default).run)
@@ -96,12 +95,36 @@ class GroupServiceTest
           result.toOption.get mustBe ListWithTotal(total, groups)
 
           verify(fixture.groupDaoMock, times(1)).getList(
-            optId = any[Option[Long]],
+            optId = *,
             optParentId = eqTo(parentId),
             optUserId = eqTo(userId),
             optName = eqTo(name),
-            optLevels = any[Option[Seq[Int]]]
+            optLevels = *
           )(eqTo(ListMeta.default))
+      }
+    }
+  }
+
+  "listByUserId" should {
+    "return all groups for user ID" in {
+      forAll { (userId: Long, group: Group) =>
+        val fixture = getFixture
+        when(
+          fixture.groupDaoMock.getList(
+            optId = *,
+            optParentId = *,
+            optUserId = eqTo(Some(userId)),
+            optName = *,
+            optLevels = *
+          )(*)).thenReturn(toFuture(ListWithTotal(Seq(group))))
+        group.parentId.foreach { parentId =>
+          when(fixture.groupDaoMock.findById(parentId)).thenReturn(toFuture(Some(group.copy(parentId = None))))
+        }
+
+        val result = wait(fixture.service.listByUserId(userId).run)
+
+        result mustBe 'right
+        result.toOption.get.data mustBe group.parentId.map(_ => group.copy(parentId = None)) ++ Seq(group)
       }
     }
   }
@@ -227,24 +250,24 @@ class GroupServiceTest
       when(fixture.groupDaoMock.findChildrenIds(group.id)).thenReturn(toFuture(Nil))
       when(
         fixture.projectDao.getList(
-          optId = any[Option[Long]],
-          optEventId = any[Option[Long]],
-          optGroupFromIds = any[Option[Seq[Long]]],
-          optFormId = any[Option[Long]],
+          optId = *,
+          optEventId = *,
+          optGroupFromIds = *,
+          optFormId = *,
           optGroupAuditorId = eqTo(Some(group.id)),
-          optEmailTemplateId = any[Option[Long]],
-          optAnyRelatedGroupId = any[Option[Long]]
-        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(1, Projects.take(1))))
+          optEmailTemplateId = *,
+          optAnyRelatedGroupId = *
+        )(*)).thenReturn(toFuture(ListWithTotal(1, Projects.take(1))))
       when(
         fixture.relationDao.getList(
-          optId = any[Option[Long]],
-          optProjectId = any[Option[Long]],
-          optKind = any[Option[Relation.Kind]],
-          optFormId = any[Option[Long]],
-          optGroupFromId = any[Option[Long]],
-          optGroupToId = any[Option[Long]],
-          optEmailTemplateId = any[Option[Long]]
-        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
+          optId = *,
+          optProjectId = *,
+          optKind = *,
+          optFormId = *,
+          optGroupFromId = *,
+          optGroupToId = *,
+          optEmailTemplateId = *
+        )(*)).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
 
       val result = wait(fixture.service.delete(group.id).run)
 
@@ -259,24 +282,24 @@ class GroupServiceTest
       when(fixture.groupDaoMock.findChildrenIds(group.id)).thenReturn(toFuture(Nil))
       when(
         fixture.projectDao.getList(
-          optId = any[Option[Long]],
-          optEventId = any[Option[Long]],
-          optGroupFromIds = any[Option[Seq[Long]]],
-          optFormId = any[Option[Long]],
+          optId = *,
+          optEventId = *,
+          optGroupFromIds = *,
+          optFormId = *,
           optGroupAuditorId = eqTo(Some(group.id)),
-          optEmailTemplateId = any[Option[Long]],
-          optAnyRelatedGroupId = any[Option[Long]]
-        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Project](0, Nil)))
+          optEmailTemplateId = *,
+          optAnyRelatedGroupId = *
+        )(*)).thenReturn(toFuture(ListWithTotal[Project](0, Nil)))
       when(
         fixture.relationDao.getList(
-          optId = any[Option[Long]],
-          optProjectId = any[Option[Long]],
-          optKind = any[Option[Relation.Kind]],
-          optFormId = any[Option[Long]],
-          optGroupFromId = any[Option[Long]],
-          optGroupToId = any[Option[Long]],
-          optEmailTemplateId = any[Option[Long]]
-        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
+          optId = *,
+          optProjectId = *,
+          optKind = *,
+          optFormId = *,
+          optGroupFromId = *,
+          optGroupToId = *,
+          optEmailTemplateId = *
+        )(*)).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
       when(fixture.groupDaoMock.delete(group.id)).thenReturn(toFuture(1))
       val result = wait(fixture.service.delete(group.id).run)
 

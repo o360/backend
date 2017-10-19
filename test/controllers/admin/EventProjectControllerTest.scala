@@ -10,9 +10,7 @@ import services.event.EventProjectService
 import silhouette.DefaultEnv
 import testutils.fixture.UserFixture
 import testutils.generator.TristateGenerator
-import utils.errors.{ApplicationError, NotFoundError}
-
-import scalaz.{-\/, \/, \/-, EitherT}
+import utils.errors.NotFoundError
 
 /**
   * Test for event-project controller.
@@ -40,7 +38,7 @@ class EventProjectControllerTest extends BaseControllerTest with TristateGenerat
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
         when(fixture.eventProjectServiceMock.add(eventId, projectId))
-          .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Event(eventId)): ApplicationError \/ Unit)))
+          .thenReturn(toErrorResult[Unit](NotFoundError.Event(eventId)))
 
         val request = authenticated(FakeRequest(), env)
         val response = fixture.controller.create(eventId, projectId).apply(request)
@@ -52,8 +50,7 @@ class EventProjectControllerTest extends BaseControllerTest with TristateGenerat
       forAll { (eventId: Long, projectId: Long) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.eventProjectServiceMock.add(eventId, projectId))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(()): ApplicationError \/ Unit)))
+        when(fixture.eventProjectServiceMock.add(eventId, projectId)).thenReturn(toSuccessResult(()))
 
         val request = authenticated(FakeRequest(), env)
         val response = fixture.controller.create(eventId, projectId).apply(request)
@@ -68,7 +65,7 @@ class EventProjectControllerTest extends BaseControllerTest with TristateGenerat
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
         when(fixture.eventProjectServiceMock.remove(eventId, projectId))
-          .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Event(eventId)): ApplicationError \/ Unit)))
+          .thenReturn(toErrorResult[Unit](NotFoundError.Event(eventId)))
 
         val request = authenticated(FakeRequest(), env)
         val response = fixture.controller.delete(eventId, projectId).apply(request)
@@ -80,8 +77,7 @@ class EventProjectControllerTest extends BaseControllerTest with TristateGenerat
       forAll { (eventId: Long, projectId: Long) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.eventProjectServiceMock.remove(eventId, projectId))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(()): ApplicationError \/ Unit)))
+        when(fixture.eventProjectServiceMock.remove(eventId, projectId)).thenReturn(toSuccessResult(()))
 
         val request = authenticated(FakeRequest(), env)
         val response = fixture.controller.delete(eventId, projectId).apply(request)

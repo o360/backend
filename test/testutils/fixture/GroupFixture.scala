@@ -8,13 +8,7 @@ import models.group.{Group => GroupModel}
   */
 trait GroupFixture extends FixtureHelper { self: FixtureSupport =>
 
-  val Groups = Seq(
-    GroupModel(1, None, "1", hasChildren = false, level = 0),
-    GroupModel(2, None, "2", hasChildren = true, level = 0),
-    GroupModel(3, Some(2), "2-1", hasChildren = false, level = 0), // actual level is bigger, h2 limitations
-    GroupModel(4, Some(2), "2-2", hasChildren = true, level = 0),
-    GroupModel(5, Some(4), "2-2-1", hasChildren = false, level = 0)
-  )
+  val Groups = GroupFixture.values
 
   addFixtureOperation {
     val builder = insertInto("orgstructure")
@@ -26,4 +20,14 @@ trait GroupFixture extends FixtureHelper { self: FixtureSupport =>
 
     builder.build
   }
+}
+
+object GroupFixture {
+  val values = Seq(
+    GroupModel(1, None, "1", hasChildren = false, level = 0),
+    GroupModel(2, None, "2", hasChildren = true, level = 0),
+    GroupModel(3, Some(2), "2-1", hasChildren = false, level = 0), // actual level is bigger, h2 limitations
+    GroupModel(4, Some(2), "2-2", hasChildren = true, level = 0),
+    GroupModel(5, Some(4), "2-2-1", hasChildren = false, level = 0)
+  )
 }

@@ -5,17 +5,13 @@ import models.dao._
 import models.form.Form
 import models.form.element._
 import models.project.ActiveProject
-import models.user.User
 import models.{ListWithTotal, NamedEntity}
-import org.davidbild.tristate.Tristate
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito._
 import org.scalacheck.Gen
 import services.event.ActiveProjectService
 import testutils.fixture._
 import utils.errors.BadRequestError.Assessment.WithUserFormInfo
 import utils.errors.{ConflictError, NotFoundError}
-import utils.listmeta.ListMeta
 
 /**
   * Test for assessment service.
@@ -26,8 +22,7 @@ class AssessmentServiceTest
   with ProjectRelationFixture
   with UserFixture
   with FormFixture
-  with AnswerFixture
-  with ActiveProjectFixture {
+  with AnswerFixture {
 
   private case class Fixture(
     formService: FormService,
@@ -68,29 +63,29 @@ class AssessmentServiceTest
       val fixture = getFixture
 
       val user = UserFixture.user
-      val activeProject = ActiveProjects(0)
+      val activeProject = ActiveProjectFixture.values(0)
 
       when(fixture.activeProjectService.getById(activeProject.id)(user))
         .thenReturn(toSuccessResult(activeProject))
       when(
         fixture.answerDao.getList(
-          optEventId = any[Option[Long]],
+          optEventId = *,
           optActiveProjectId = eqTo(Some(activeProject.id)),
           optUserFromId = eqTo(Some(user.id)),
-          optFormId = any[Option[Long]],
-          optUserToId = any[Tristate[Long]],
+          optFormId = *,
+          optUserToId = *,
         )).thenReturn(toFuture(Answers))
       when(
         fixture.userDao.getList(
-          optIds = eqTo(Some(Seq(3))),
-          optRole = any[Option[User.Role]],
-          optStatus = any[Option[User.Status]],
-          optGroupIds = any[Tristate[Seq[Long]]],
-          optName = any[Option[String]],
-          optEmail = any[Option[String]],
-          optProjectIdAuditor = any[Option[Long]],
+          optIds = eqTo(Some(Seq(3L))),
+          optRole = *,
+          optStatus = *,
+          optGroupIds = *,
+          optName = *,
+          optEmail = *,
+          optProjectIdAuditor = *,
           includeDeleted = eqTo(true),
-        )(any[ListMeta])).thenReturn(toFuture(ListWithTotal(Seq(user.copy(id = 3)))))
+        )(*)).thenReturn(toFuture(ListWithTotal(Seq(user.copy(id = 3)))))
 
       val result = wait(fixture.service.getList(activeProject.id)(user).run)
 
@@ -123,7 +118,7 @@ class AssessmentServiceTest
     "return error if event not found" in {
       val fixture = getFixture
       val user = UserFixture.user
-      val activeProject = ActiveProjects(0)
+      val activeProject = ActiveProjectFixture.values(0)
 
       when(fixture.activeProjectService.getById(activeProject.id)(user))
         .thenReturn(toSuccessResult(activeProject))
@@ -138,7 +133,7 @@ class AssessmentServiceTest
     "return error if event not in progress" in {
       val fixture = getFixture
       val user = UserFixture.user
-      val activeProject = ActiveProjects(0)
+      val activeProject = ActiveProjectFixture.values(0)
       val event = Events(1)
 
       when(fixture.activeProjectService.getById(activeProject.id)(user))
@@ -154,7 +149,7 @@ class AssessmentServiceTest
     "return error if there is no existed answer" in {
       val fixture = getFixture
       val user = UserFixture.user
-      val activeProject = ActiveProjects(0)
+      val activeProject = ActiveProjectFixture.values(0)
       val event = Events(3)
       val formId = 1
       val assessment = PartialAssessment(None, Seq(PartialAnswer(formId, false, Set())))
@@ -174,7 +169,7 @@ class AssessmentServiceTest
     "return error if cant revote" in {
       val fixture = getFixture
       val user = UserFixture.user
-      val activeProject = ActiveProjects(0).copy(canRevote = false)
+      val activeProject = ActiveProjectFixture.values(0).copy(canRevote = false)
       val event = Events(3)
       val formId = 1
       val assessment = PartialAssessment(None, Seq(PartialAnswer(formId, false, Set())))
@@ -195,7 +190,7 @@ class AssessmentServiceTest
     "return error if cant skip" in {
       val fixture = getFixture
       val user = UserFixture.user
-      val activeProject = ActiveProjects(0)
+      val activeProject = ActiveProjectFixture.values(0)
       val event = Events(3)
       val formId = 1
       val assessment = PartialAssessment(None, Seq(PartialAnswer(formId, false, Set(), true)))
@@ -245,7 +240,7 @@ class AssessmentServiceTest
         case (form, answer) =>
           val fixture = getFixture
           val user = UserFixture.user
-          val activeProject = ActiveProjects(0)
+          val activeProject = ActiveProjectFixture.values(0)
           val event = Events(3)
 
           val dummyAnswer = Answer(1, 1, None, NamedEntity(1), true)
@@ -267,7 +262,7 @@ class AssessmentServiceTest
     "save answer in db" in {
       val fixture = getFixture
       val user = UserFixture.user
-      val activeProject = ActiveProjects(0)
+      val activeProject = ActiveProjectFixture.values(0)
       val event = Events(3)
 
       val form =

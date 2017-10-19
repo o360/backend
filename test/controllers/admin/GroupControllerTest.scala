@@ -17,11 +17,10 @@ import services.GroupService
 import silhouette.DefaultEnv
 import testutils.fixture.UserFixture
 import testutils.generator.{GroupGenerator, TristateGenerator}
-import utils.errors.{ApplicationError, NotFoundError}
+import utils.errors.NotFoundError
 import utils.listmeta.ListMeta
 
 import scala.concurrent.ExecutionContext
-import scalaz.{-\/, \/, \/-, EitherT}
 
 /**
   * Test for groups controller.
@@ -48,8 +47,7 @@ class GroupControllerTest extends BaseControllerTest with GroupGenerator with Tr
       forAll { (id: Long) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.groupServiceMock.getById(id))
-          .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Group(id)): ApplicationError \/ Group)))
+        when(fixture.groupServiceMock.getById(id)).thenReturn(toErrorResult[Group](NotFoundError.Group(id)))
         val request = authenticated(FakeRequest(), env)
 
         val response = fixture.controller.getById(id).apply(request)
@@ -61,8 +59,7 @@ class GroupControllerTest extends BaseControllerTest with GroupGenerator with Tr
       forAll { (id: Long, group: Group) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.groupServiceMock.getById(id))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(group): ApplicationError \/ Group)))
+        when(fixture.groupServiceMock.getById(id)).thenReturn(toSuccessResult(group))
         val request = authenticated(FakeRequest(), env)
 
         val response = fixture.controller.getById(id)(request)
@@ -87,8 +84,7 @@ class GroupControllerTest extends BaseControllerTest with GroupGenerator with Tr
           val env = fakeEnvironment(admin)
           val fixture = getFixture(env)
           when(fixture.groupServiceMock.list(parentId, userId, name, levels)(ListMeta.default))
-            .thenReturn(
-              EitherT.eitherT(toFuture(\/-(ListWithTotal(total, groups)): ApplicationError \/ ListWithTotal[Group])))
+            .thenReturn(toSuccessResult(ListWithTotal(total, groups)))
           val request = authenticated(FakeRequest(), env)
 
           val response = fixture.controller.getList(parentId, userId, name, levels)(request)
@@ -117,7 +113,7 @@ class GroupControllerTest extends BaseControllerTest with GroupGenerator with Tr
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
         when(fixture.groupServiceMock.update(group.copy(hasChildren = false, level = 0)))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(group): ApplicationError \/ Group)))
+          .thenReturn(toSuccessResult(group))
 
         val partialGroup = ApiPartialGroup(group.parentId, group.name)
         val request = authenticated(
@@ -143,7 +139,7 @@ class GroupControllerTest extends BaseControllerTest with GroupGenerator with Tr
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
         when(fixture.groupServiceMock.create(group.copy(id = 0, hasChildren = false, level = 0)))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(group): ApplicationError \/ Group)))
+          .thenReturn(toSuccessResult(group))
 
         val partialGroup = ApiPartialGroup(group.parentId, group.name)
         val request = authenticated(
@@ -168,8 +164,7 @@ class GroupControllerTest extends BaseControllerTest with GroupGenerator with Tr
       forAll { (id: Long) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.groupServiceMock.delete(id))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(()): ApplicationError \/ Unit)))
+        when(fixture.groupServiceMock.delete(id)).thenReturn(toSuccessResult(()))
         val request = authenticated(FakeRequest(), env)
 
         val response = fixture.controller.delete(id)(request)

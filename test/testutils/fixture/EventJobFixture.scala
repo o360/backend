@@ -29,3 +29,7 @@ trait EventJobFixture extends FixtureHelper with EventFixture { _: FixtureSuppor
       .build
   }
 }
+
+object EventJobFixture {
+  val eventStart = EventJob.EventStart(0, 0, new Timestamp(0), EventJob.Status.New)
+}

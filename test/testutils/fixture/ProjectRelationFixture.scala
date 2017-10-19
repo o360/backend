@@ -15,36 +15,7 @@ trait ProjectRelationFixture
   with FormFixture
   with TemplateFixture { self: FixtureSupport =>
 
-  val ProjectRelations = Seq(
-    Relation(
-      id = 1,
-      project = NamedEntity(1, Projects.find(_.id == 1).get.name),
-      groupFrom = NamedEntity(1, Groups.find(_.id == 1).get.name),
-      groupTo = Some(NamedEntity(2, Groups.find(_.id == 2).get.name)),
-      form = NamedEntity(1, Forms.find(_.id == 1).get.name),
-      kind = Relation.Kind.Classic,
-      templates = Seq(
-        TemplateBinding(NamedEntity(1, "firstname"), Begin, Respondent),
-        TemplateBinding(NamedEntity(2, "secondname"), End, Respondent),
-        TemplateBinding(NamedEntity(2, "secondname"), End, Auditor)
-      ),
-      hasInProgressEvents = false,
-      canSelfVote = true,
-      canSkipAnswers = true
-    ),
-    Relation(
-      id = 2,
-      project = NamedEntity(1, Projects.find(_.id == 1).get.name),
-      groupFrom = NamedEntity(2, Groups.find(_.id == 2).get.name),
-      groupTo = None,
-      form = NamedEntity(2, Forms.find(_.id == 2).get.name),
-      kind = Relation.Kind.Survey,
-      templates = Nil,
-      hasInProgressEvents = false,
-      canSelfVote = false,
-      canSkipAnswers = false
-    )
-  )
+  val ProjectRelations = ProjectRelationFixture.values
 
   addFixtureOperation {
     sequenceOf(
@@ -68,4 +39,41 @@ trait ProjectRelationFixture
         .build
     )
   }
+}
+
+object ProjectRelationFixture {
+
+  val classicRelation = Relation(
+    id = 1,
+    project = NamedEntity(1, ProjectFixture.values.find(_.id == 1).get.name),
+    groupFrom = NamedEntity(1, GroupFixture.values.find(_.id == 1).get.name),
+    groupTo = Some(NamedEntity(2, GroupFixture.values.find(_.id == 2).get.name)),
+    form = NamedEntity(1, FormFixture.values.find(_.id == 1).get.name),
+    kind = Relation.Kind.Classic,
+    templates = Seq(
+      TemplateBinding(NamedEntity(1, "firstname"), Begin, Respondent),
+      TemplateBinding(NamedEntity(2, "secondname"), End, Respondent),
+      TemplateBinding(NamedEntity(2, "secondname"), End, Auditor)
+    ),
+    hasInProgressEvents = false,
+    canSelfVote = true,
+    canSkipAnswers = true
+  )
+
+  val surveyRelation = Relation(
+    id = 2,
+    project = NamedEntity(1, ProjectFixture.values.find(_.id == 1).get.name),
+    groupFrom = NamedEntity(2, GroupFixture.values.find(_.id == 2).get.name),
+    groupTo = None,
+    form = NamedEntity(2, FormFixture.values.find(_.id == 2).get.name),
+    kind = Relation.Kind.Survey,
+    templates = Nil,
+    hasInProgressEvents = false,
+    canSelfVote = false,
+    canSkipAnswers = false
+  )
+  val values = Seq(
+    classicRelation,
+    surveyRelation
+  )
 }

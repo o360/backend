@@ -83,7 +83,6 @@ class UserService @Inject()(
     *
     * @param role    role filter
     * @param status  status filter
-    * @param account logged in user
     * @param groupId only users of the group
     * @param name    part of user name
     * @param meta    list meta

@@ -6,7 +6,7 @@ import org.scalacheck.{Arbitrary, Gen}
 /**
   * ListWithTotal generator for scalacheck.
   */
-trait ListWithTotalGenerator extends NotificationGenerator {
+trait ListWithTotalGenerator {
 
   implicit def listWithTotalArb[A](implicit arbitrary: Arbitrary[A]): Arbitrary[ListWithTotal[A]] = Arbitrary {
     for {

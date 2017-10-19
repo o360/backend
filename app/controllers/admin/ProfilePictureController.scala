@@ -4,7 +4,9 @@ import javax.inject.Inject
 
 import com.mohiva.play.silhouette.api.Silhouette
 import controllers.BaseController
-import play.api.mvc.ControllerComponents
+import models.user.User
+import play.api.libs.Files
+import play.api.mvc.{ControllerComponents, MultipartFormData}
 import services.{FileService, UserService}
 import silhouette.DefaultEnv
 import utils.errors.{ApplicationError, BadRequestError}
@@ -19,19 +21,38 @@ import scalaz.Scalaz.ToEitherOps
   */
 class ProfilePictureController @Inject()(
   silhouette: Silhouette[DefaultEnv],
-  fileService: FileService,
-  userService: UserService,
+  val fileService: FileService,
+  val userService: UserService,
   val controllerComponents: ControllerComponents,
   implicit val ec: ExecutionContext
-) extends BaseController {
+) extends BaseController
+  with PictureUploadHelper {
 
-  private val validExtensions = Set("jpg", "jpeg", "gif", "png")
+  val validExtensions = Set("jpg", "jpeg", "gif", "png")
 
   /**
     * Uploads and sets user profile picture.
     */
   def upload(userId: Long) = silhouette.SecuredAction.async(parse.multipartFormData) { implicit request =>
-    request.body
+    uploadInternal(userId, request.body)
+      .fold(
+        toResult(_),
+        _ => NoContent
+      )
+  }
+}
+
+trait PictureUploadHelper {
+  val fileService: FileService
+  val userService: UserService
+  val validExtensions: Set[String]
+  implicit val ec: ExecutionContext
+
+  /**
+    * Uploads and sets user profile picture.
+    */
+  def uploadInternal(userId: Long, body: MultipartFormData[Files.TemporaryFile])(implicit account: User) = {
+    body
       .file("picture")
       .map { file =>
         for {
@@ -45,9 +66,5 @@ class ProfilePictureController @Inject()(
         val error: ApplicationError = BadRequestError.File.Request
         EitherT.eitherT(error.left.toFuture)
       }
-      .fold(
-        toResult(_),
-        _ => NoContent
-      )
   }
 }

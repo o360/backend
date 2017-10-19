@@ -15,10 +15,8 @@ import services.event.EventService
 import silhouette.DefaultEnv
 import testutils.fixture.UserFixture
 import testutils.generator.EventGenerator
-import utils.errors.{ApplicationError, NotFoundError}
+import utils.errors.NotFoundError
 import utils.listmeta.ListMeta
-
-import scalaz.{-\/, \/, \/-, EitherT}
 
 /**
   * Test for event controller.
@@ -45,8 +43,7 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
       forAll { (id: Long) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.eventServiceMock.getById(id))
-          .thenReturn(EitherT.eitherT(toFuture(-\/(NotFoundError.Event(id)): ApplicationError \/ Event)))
+        when(fixture.eventServiceMock.getById(id)).thenReturn(toErrorResult[Event](NotFoundError.Event(id)))
         val request = authenticated(FakeRequest(), env)
 
         val response = fixture.controller.getById(id).apply(request)
@@ -58,8 +55,7 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
       forAll { (id: Long, event: Event) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.eventServiceMock.getById(id))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(event): ApplicationError \/ Event)))
+        when(fixture.eventServiceMock.getById(id)).thenReturn(toSuccessResult(event))
         val request = authenticated(FakeRequest(), env)
 
         val response = fixture.controller.getById(id)(request)
@@ -82,8 +78,7 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
           val env = fakeEnvironment(admin)
           val fixture = getFixture(env)
           when(fixture.eventServiceMock.list(optStatus, projectId)(ListMeta.default))
-            .thenReturn(
-              EitherT.eitherT(toFuture(\/-(ListWithTotal(total, events)): ApplicationError \/ ListWithTotal[Event])))
+            .thenReturn(toSuccessResult(ListWithTotal(total, events)))
           val request = authenticated(FakeRequest(), env)
 
           val response =
@@ -104,8 +99,7 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
       forAll { (event: Event) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.eventServiceMock.update(event.copy(isPreparing = false)))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(event): ApplicationError \/ Event)))
+        when(fixture.eventServiceMock.update(event.copy(isPreparing = false))).thenReturn(toSuccessResult(event))
 
         val partialEvent = ApiPartialEvent(
           event.description,
@@ -136,7 +130,7 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
         when(fixture.eventServiceMock.create(event.copy(id = 0, isPreparing = false)))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(event): ApplicationError \/ Event)))
+          .thenReturn(toSuccessResult(event))
 
         val partialEvent = ApiPartialEvent(
           event.description,
@@ -167,8 +161,7 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
       forAll { (id: Long) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.eventServiceMock.delete(id))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(()): ApplicationError \/ Unit)))
+        when(fixture.eventServiceMock.delete(id)).thenReturn(toSuccessResult(()))
         val request = authenticated(FakeRequest(), env)
 
         val response = fixture.controller.delete(id)(request)
@@ -182,8 +175,7 @@ class EventControllerTest extends BaseControllerTest with EventGenerator {
       forAll { (id: Long, event: Event) =>
         val env = fakeEnvironment(admin)
         val fixture = getFixture(env)
-        when(fixture.eventServiceMock.cloneEvent(id))
-          .thenReturn(EitherT.eitherT(toFuture(\/-(event): ApplicationError \/ Event)))
+        when(fixture.eventServiceMock.cloneEvent(id)).thenReturn(toSuccessResult(event))
         val request = authenticated(FakeRequest(), env)
 
         val response = fixture.controller.cloneEvent(id)(request)
