@@ -4,6 +4,7 @@ import java.io.FileInputStream
 import javax.inject.Singleton
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
+import com.google.api.client.http.{HttpRequest, HttpRequestInitializer}
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.services.drive.model.{File, Permission}
@@ -24,10 +25,18 @@ class GoogleDriveService extends Logger {
   private lazy val credential = GoogleCredential
     .fromStream(new FileInputStream("conf/drive_service_key.json"))
     .createScoped(Seq(DriveScopes.DRIVE, SheetsScopes.SPREADSHEETS).asJava)
+
+  private lazy val requestInitializer = new HttpRequestInitializer {
+    override def initialize(request: HttpRequest): Unit = {
+      credential.initialize(request)
+      request.setConnectTimeout(60000) // 1 minute
+      request.setReadTimeout(10 * 60000) // 10 minutes
+    }
+  }
   private lazy val transport = new NetHttpTransport()
   private lazy val jsonFactory = JacksonFactory.getDefaultInstance
-  private lazy val driveService = new Drive.Builder(transport, jsonFactory, credential).build
-  private lazy val sheetsService = new Sheets.Builder(transport, jsonFactory, credential).build
+  private lazy val driveService = new Drive.Builder(transport, jsonFactory, requestInitializer).build
+  private lazy val sheetsService = new Sheets.Builder(transport, jsonFactory, requestInitializer).build
 
   /**
     * Creates object in gdrive.
@@ -38,12 +47,18 @@ class GoogleDriveService extends Logger {
     * @return created object ID
     */
   private def createObject(contentType: String)(parent: String, name: String) = {
-    val file = new File()
-      .setMimeType(contentType)
-      .setName(name)
-      .setParents(Seq(parent).asJava)
-    val result = driveService.files.create(file).execute()
-    result.getId
+    try {
+      val file = new File()
+        .setMimeType(contentType)
+        .setName(name)
+        .setParents(Seq(parent).asJava)
+      val result = driveService.files.create(file).execute()
+      result.getId
+    } catch {
+      case NonFatal(e) =>
+        log.error("gdrive object creation failed", e)
+        throw e
+    }
   }
 
   /**
@@ -81,7 +96,13 @@ class GoogleDriveService extends Logger {
     * @param batchUpdate batch update
     */
   def applyBatchSpreadsheetUpdate(fileId: String, batchUpdate: BatchUpdateSpreadsheetRequest): Unit = {
-    sheetsService.spreadsheets.batchUpdate(fileId, batchUpdate).execute()
+    try {
+      sheetsService.spreadsheets.batchUpdate(fileId, batchUpdate).execute()
+    } catch {
+      case NonFatal(e) =>
+        log.error("applying spreadsheet batch update failed", e)
+        throw e
+    }
   }
 
   /**
@@ -95,8 +116,8 @@ class GoogleDriveService extends Logger {
       driveService.files().get(folderId).execute()
       true
     } catch {
-      case e: Throwable =>
-        e.printStackTrace()
+      case NonFatal(e) =>
+        log.error("getting gdrive file failed, returning false", e)
         false
     }
   }

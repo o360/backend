@@ -141,20 +141,24 @@ class UploadService @Inject()(
       .sequence {
         modelsWithUsers.map {
           case (user, models) =>
-            for {
-              userFolderId <- getOrCreateUserFolder(user)
-            } yield {
-              models.groupBy(_.event).foreach {
-                case (event, eventModels) =>
-                  val eventFolderId = googleDriveService.createFolder(userFolderId, event.caption(user.timezone))
+            if (models.nonEmpty) {
+              for {
+                userFolderId <- getOrCreateUserFolder(user)
+              } yield {
+                models.groupBy(_.event).foreach {
+                  case (event, eventModels) =>
+                    if (eventModels.nonEmpty) {
+                      val eventFolderId = googleDriveService.createFolder(userFolderId, event.caption(user.timezone))
 
-                  eventModels.foreach {
-                    case UploadModel(_, project, batchUpdate) =>
-                      val spreadSheetId = googleDriveService.createSpreadsheet(eventFolderId, project.name)
-                      googleDriveService.applyBatchSpreadsheetUpdate(spreadSheetId, batchUpdate)
-                  }
+                      eventModels.foreach {
+                        case UploadModel(_, project, batchUpdate) =>
+                          val spreadSheetId = googleDriveService.createSpreadsheet(eventFolderId, project.name)
+                          googleDriveService.applyBatchSpreadsheetUpdate(spreadSheetId, batchUpdate)
+                      }
+                    } else ().toFuture
+                }
               }
-            }
+            } else ().toFuture
         }
       }
       .map(_ => ())
