@@ -110,7 +110,7 @@ class EventJobService @Inject()(
     * Executes given jobs.
     */
   def execute(jobs: Seq[EventJob]): Unit = {
-    def executeJob(job: EventJob, secondAttempt: Boolean = false): Unit = {
+    def executeJob(job: EventJob): Unit = {
       val result = job match {
         case j: EventJob.Upload => uploadService.execute(j)
         case j: EventJob.SendNotification => notificationService.execute(j)
@@ -122,17 +122,12 @@ class EventJobService @Inject()(
           log.debug(s"Event job $job completed successfully")
           eventJobDao.updateStatus(job.id, EventJob.Status.Success)
         case Failure(e) =>
-          if (secondAttempt) {
-            log.error(s"Second attempt for the job: $job failed", e)
-            eventJobDao.updateStatus(job.id, EventJob.Status.Failure)
-          } else {
-            log.error(s"First attempt for the job: $job failed, try one more time", e)
-            executeJob(job, secondAttempt = true)
-          }
+          log.error(s"Attempt for the job: $job failed", e)
+          eventJobDao.updateStatus(job.id, EventJob.Status.Failure)
       }
     }
     updateStatus(jobs, EventJob.Status.InProgress).map { _ =>
-      jobs.foreach(executeJob(_))
+      jobs.foreach(executeJob)
     }
   }
 

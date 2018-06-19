@@ -2,6 +2,7 @@ package services.event
 
 import javax.inject.{Inject, Singleton}
 
+import akka.actor.ActorSystem
 import models.{EntityKind, NamedEntity}
 import models.assessment.Answer
 import models.dao._
@@ -33,8 +34,10 @@ class EventStartService @Inject()(
   answerDao: AnswerDao,
   competenceDao: CompetenceDao,
   competenceGroupDao: CompetenceGroupDao,
-  implicit val ec: ExecutionContext
+  system: ActorSystem
 ) extends ServiceResults[Unit] {
+
+  implicit val ec: ExecutionContext = system.dispatchers.lookup("contexts.db-write")
 
   private[event] def getAnswersForRelation(
     relation: Relation,
@@ -158,7 +161,7 @@ class EventStartService @Inject()(
       allAnswers <- projects.data.map(getAnswersForProject(job.eventId, _, getAnswersForRelation)).sequenced
       withoutDuplicates = distinctAnswers(allAnswers.flatten)
       withReplacedForms <- createAndReplaceForms(withoutDuplicates, createAndReplaceCompetencies)
-      _ <- Future.sequence(withReplacedForms.map(answerDao.createAnswer)).lift
+      _ <- answerDao.createAnswers(withReplacedForms).lift
       _ <- eventDao.setIsPreparing(job.eventId, isPreparing = false).lift
     } yield ()
 
