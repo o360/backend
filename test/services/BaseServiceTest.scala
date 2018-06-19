@@ -1,5 +1,6 @@
 package services
 
+import akka.actor.ActorSystem
 import org.scalatest.{OneInstancePerTest, ParallelTestExecution}
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
@@ -22,6 +23,7 @@ trait BaseServiceTest
   with ParallelTestExecution {
 
   val ec = scala.concurrent.ExecutionContext.global
+  val actorSystem = ActorSystem("default")
 
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
     PropertyCheckConfiguration(sizeRange = 15, workers = 4)

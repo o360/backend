@@ -263,7 +263,11 @@ class AnswerDao @Inject()(
     db.run(actions.transactionally).map(_ => answer)
   }
 
-  def createAnswer(answer: Answer): Future[Unit] = {
-    db.run(Answers += DbAnswer.fromModel(answer)).map(_ => ())
+  def createAnswers(answers: Seq[Answer]): Future[Unit] = {
+    val chunkSize = 10000
+
+    val action = DBIO.sequence(answers.grouped(chunkSize).map(x => Answers ++= x.map(DbAnswer.fromModel)))
+
+    db.run(action).map(_ => ())
   }
 }

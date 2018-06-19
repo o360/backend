@@ -56,7 +56,7 @@ class EventStartServiceTest
                                         answerDao,
                                         competenceDao,
                                         competenceGroupDao,
-                                        ec)
+                                        actorSystem)
     Fixture(eventDao,
             formService,
             projectDao,
