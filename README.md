@@ -1,4 +1,8 @@
 # Open360 Backend
+
+[![pipeline status](https://git/open360/backend/badges/develop/pipeline.svg)](https://git/open360/backend/commits/develop)
+[![coverage report](https://git/open360/backend/badges/develop/coverage.svg)](https://git/open360/backend/commits/develop)
+
 ## Dependencies
 - java
 - sbt
