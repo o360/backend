@@ -20,6 +20,8 @@ before_script:
 
 test:
   stage: test
+  tags: 
+    - open360-shell
   script:
     - sbt clean coverage test coverageReport
 
