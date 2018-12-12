@@ -25,6 +25,8 @@ test:
 
 build:
   stage: build
+  tags: 
+    - open360-shell
   script:
     - sbt docker:publishLocal
     - docker tag open360/api:latest git:5000/open360/backend/app:${CI_COMMIT_REF_NAME}-${CI_PIPELINE_ID}
@@ -32,6 +34,8 @@ build:
 
 migrate:
   stage: migrate
+  tags: 
+    - open360-shell
   only:
     - develop
   script:
@@ -39,6 +43,8 @@ migrate:
 
 deploy:
   stage: deploy
+  tags: 
+    - open360-shell
   only:
     - develop
   script:
