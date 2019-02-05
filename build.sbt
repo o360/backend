@@ -17,8 +17,8 @@ libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-slick" % "3.0.0",
   "org.postgresql" % "postgresql" % "42.0.0",
   "org.davidbild" %% "tristate-play" % "0.3.0",
-  "com.mohiva" %% "play-silhouette" % "5.0.0",
-  "com.mohiva" %% "play-silhouette-persistence" % "5.0.0",
+  "com.mohiva" %% "play-silhouette" % "5.0.7",
+  "com.mohiva" %% "play-silhouette-persistence" % "5.0.7",
   "com.typesafe.play" %% "play-mailer" % "6.0.1",
   "com.typesafe.play" %% "play-mailer-guice" % "6.0.1",
   "org.scalaz" %% "scalaz-core" % "7.2.10",
@@ -26,6 +26,7 @@ libraryDependencies ++= Seq(
   "com.google.apis" % "google-api-services-drive" % "v3-rev74-1.22.0",
   "org.flywaydb" % "flyway-core" % "4.1.2",
   "io.scalaland" %% "chimney" % "0.1.6",
+  "commons-io" % "commons-io" % "2.6",
   filters,
   guice
 )
@@ -36,7 +37,7 @@ libraryDependencies ++= Seq(
   "com.h2database" % "h2" % "1.4.194",
   "org.mockito" % "mockito-core" % "2.7.19",
   "com.ninja-squad" % "DbSetup" % "2.1.0",
-  "com.mohiva" %% "play-silhouette-testkit" % "5.0.0"
+  "com.mohiva" %% "play-silhouette-testkit" % "5.0.7"
 ).map(_ % Test)
 
 routesImport ++= Seq("controllers.api.TristateQueryBinder._")
