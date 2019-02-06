@@ -17,7 +17,7 @@
     <logger name="slick.jdbc" level="INFO"/>
     <logger name="org.flywaydb.core" level="ERROR"/>
     <logger name="sop" level="DEBUG"/>
-    <logger name="com.mohiva" level="INFO" />
+    <logger name="com.mohiva" level="DEBUG" />
     <logger name="com.zaxxer.hikari" level="WARN" />
 
     <root level="INFO">
