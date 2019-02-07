@@ -36,10 +36,7 @@ class Authentication @Inject()(
       p: SocialProvider,
       authResult: Either[Result, SocialProvider#A]
     ) = authResult match {
-      case Left(error) =>
-        log.info("Cannot log in")
-        log.info(error.toString())
-        toResult(AuthenticationError.General).toFuture
+      case Left(_) => toResult(AuthenticationError.General).toFuture
       case Right(authInfo) =>
         for {
           profile <- p.retrieveProfile(authInfo.asInstanceOf[p.A])
@@ -60,9 +57,7 @@ class Authentication @Inject()(
         } yield result
 
         resultF.recover {
-          case e: SilhouetteException =>
-            log.error("Cannot log in", e)
-            toResult(AuthenticationError.General)
+          case _: SilhouetteException => toResult(AuthenticationError.General)
         }
 
       case _ => toResult(AuthenticationError.ProviderNotSupported(provider)).toFuture
