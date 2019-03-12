@@ -108,7 +108,8 @@ class FormControllerTest extends BaseControllerTest with FormGenerator {
         element.required,
         Some(element.values.map(value => ApiPartialForm.ElementValue(value.caption, value.competenceWeight))),
         None,
-        Some(element.machineName)
+        Some(element.machineName),
+        element.hint
       )
     }),
     form.showInAggregation,

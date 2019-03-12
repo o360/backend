@@ -212,7 +212,7 @@ class AssessmentServiceTest
       val baseForm = Form(1, "", Seq(), Form.Kind.Freezed, true, "machine name")
       val createAnswer = Answer(1, 1, None, NamedEntity(1), false, Answer.Status.Answered, false, _: Set[Answer.Element])
 
-      val createElement = Form.Element(1, _: ElementKind, "", _: Boolean, _: Seq[Form.ElementValue], Nil, "machine name")
+      val createElement = Form.Element(1, _: ElementKind, "", _: Boolean, _: Seq[Form.ElementValue], Nil, "machine name", None)
 
       val invalidFormsWithAnswers = Seq(
         // Duplicate answers
@@ -266,7 +266,7 @@ class AssessmentServiceTest
       val event = Events(3)
 
       val form =
-        Form(1, "", Seq(Form.Element(1, TextField, "", false, Nil, Nil, "")), Form.Kind.Freezed, true, "")
+        Form(1, "", Seq(Form.Element(1, TextField, "", false, Nil, Nil, "", None)), Form.Kind.Freezed, true, "")
 
       val answer = Answer(activeProject.id, user.id, None, NamedEntity(form.id), true, Answer.Status.Answered)
       val assessment = PartialAssessment(None, Seq(PartialAnswer(form.id, false, Set())))

@@ -56,7 +56,8 @@ object ApiForm {
     required: Boolean,
     values: Option[Seq[ElementValue]],
     competencies: Option[Seq[ElementCompetence]],
-    machineName: String
+    machineName: String,
+    hint: Option[String]
   ) extends Response
 
   object Element {
