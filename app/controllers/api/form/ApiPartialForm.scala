@@ -45,7 +45,8 @@ object ApiPartialForm {
       (__ \ "required").read[Boolean] and
       (__ \ "values").readNullable[Seq[ElementValue]] and
       (__ \ "competencies").readNullable[Seq[ElementCompetence]] and
-      (__ \ "machineName").readNullable[String]
+      (__ \ "machineName").readNullable[String] and
+      (__ \ "hint").readNullable[String]
   )(Element)
 
   implicit val formReads: Reads[ApiPartialForm] = (
@@ -64,7 +65,8 @@ object ApiPartialForm {
     required: Boolean,
     values: Option[Seq[ElementValue]],
     competencies: Option[Seq[ElementCompetence]],
-    machineName: Option[String]
+    machineName: Option[String],
+    hint: Option[String]
   ) extends Response {
 
     def toModel =

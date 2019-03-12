@@ -22,11 +22,11 @@ trait FormFixture extends FixtureHelper { self: FixtureSupport =>
         .scalaValues(3, "first", 1, true, "machine 1")
         .build,
       insertInto("form_element")
-        .columns("id", "form_id", "kind", "caption", "required", "ord", "machine_name")
-        .scalaValues(1, 1, 0, "cap1", true, 1, "el mach name")
-        .scalaValues(2, 1, 4, "cap2", false, 2, "el 2 mach name")
-        .scalaValues(3, 3, 0, "cap1", true, 1, "el 3 mach name")
-        .scalaValues(4, 3, 4, "cap2", false, 2, "el 4 mach name")
+        .columns("id", "form_id", "kind", "caption", "required", "ord", "machine_name", "hint")
+        .scalaValues(1, 1, 0, "cap1", true, 1, "el mach name", null)
+        .scalaValues(2, 1, 4, "cap2", false, 2, "el 2 mach name", "hint1")
+        .scalaValues(3, 3, 0, "cap1", true, 1, "el 3 mach name", null)
+        .scalaValues(4, 3, 4, "cap2", false, 2, "el 4 mach name", "hint2")
         .build,
       insertInto("form_element_value")
         .columns("id", "element_id", "caption", "ord", "competence_weight")
@@ -52,7 +52,8 @@ object FormFixture {
           required = true,
           Nil,
           Nil,
-          "el mach name"
+          "el mach name",
+          None
         ),
         Form.Element(
           2,
@@ -72,7 +73,8 @@ object FormFixture {
             )
           ),
           Nil,
-          "el 2 mach name"
+          "el 2 mach name",
+          Some("hint1")
         )
       ),
       Form.Kind.Active,
@@ -98,7 +100,8 @@ object FormFixture {
           required = true,
           Nil,
           Nil,
-          "el 3 mach name"
+          "el 3 mach name",
+          None
         ),
         Form.Element(
           4,
@@ -118,7 +121,8 @@ object FormFixture {
             )
           ),
           Nil,
-          "el 4 mach name"
+          "el 4 mach name",
+          Some("hint2")
         )
       ),
       Form.Kind.Freezed,

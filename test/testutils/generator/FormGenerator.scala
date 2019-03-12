@@ -27,7 +27,8 @@ trait FormGenerator {
       required <- Arbitrary.arbitrary[Boolean]
       values <- Arbitrary.arbitrary[Seq[Form.ElementValue]]
       machineName <- Arbitrary.arbitrary[String]
-    } yield Form.Element(0, kind, caption, required, values, Nil, machineName)
+      hint <- Arbitrary.arbitrary[Option[String]]
+    } yield Form.Element(0, kind, caption, required, values, Nil, machineName, hint)
   }
 
   implicit val formKindArb = Arbitrary[Form.Kind] {
