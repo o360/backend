@@ -7,7 +7,7 @@
     - application/json
   produces:
     - application/json
-  host: "sop-ci.z1.netpoint-dc.com:9000"
+  host: "netpoint-dc.com:9000"
   basePath: "/api/v1.0"
   schemes:
     - "http"
