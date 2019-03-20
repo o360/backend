@@ -1,5 +1,7 @@
 package controllers.api.export
 
+import java.time.ZoneOffset
+
 import controllers.api.Response
 import controllers.api.event.ApiEvent
 import models.event.Event
@@ -22,8 +24,8 @@ object ApiShortEvent {
   def apply(e: Event): ApiShortEvent = ApiShortEvent(
     e.id,
     e.description,
-    e.start.getTime,
-    e.end.getTime,
+    e.start.atZone(ZoneOffset.UTC).toEpochSecond,
+    e.end.atZone(ZoneOffset.UTC).toEpochSecond,
     ApiEvent.EventStatus(e.status)
   )
 }

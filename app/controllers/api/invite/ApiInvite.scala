@@ -24,8 +24,8 @@ object ApiInvite {
     invite.code,
     invite.email,
     invite.groups.map(ApiNamedEntity(_)),
-    TimestampConverter.fromUtc(invite.creationTime, account.timezone).toLocalDateTime,
-    invite.activationTime.map(TimestampConverter.fromUtc(_, account.timezone).toLocalDateTime)
+    TimestampConverter.fromUtc(invite.creationTime, account.timezone),
+    invite.activationTime.map(TimestampConverter.fromUtc(_, account.timezone))
   )
 
   implicit val writes = Json.writes[ApiInvite]

@@ -1,6 +1,5 @@
 package services
 
-import java.sql.Timestamp
 import java.time.LocalDateTime
 
 import models.dao.{EventDao, EventJobDao}
@@ -43,17 +42,17 @@ class EventJobServiceTest extends BaseServiceTest with EventFixture with EventJo
       val event = Events(0).copy(
         notifications = Seq(
           Event.NotificationTime(
-            Timestamp.valueOf(LocalDateTime.of(2040, 1, 2, 12, 0)),
+            LocalDateTime.of(2040, 1, 2, 12, 0),
             PreBegin,
             Respondent
           ),
           Event.NotificationTime(
-            Timestamp.valueOf(LocalDateTime.of(0, 1, 2, 12, 30)),
+            LocalDateTime.of(0, 1, 2, 12, 30),
             Begin,
             Respondent
           )
         ),
-        end = Timestamp.valueOf(LocalDateTime.of(2040, 1, 2, 11, 4))
+        end = LocalDateTime.of(2040, 1, 2, 11, 4)
       )
 
       val job1 = EventJob.Upload(0, event.id, event.end, EventJob.Status.New)
@@ -73,10 +72,10 @@ class EventJobServiceTest extends BaseServiceTest with EventFixture with EventJo
   "get" should {
     "cancel non actual jobs" in {
       val fixture = getFixture
-      val from = new Timestamp(123)
-      val to = new Timestamp(456)
+      val from = LocalDateTime.of(1980, 1, 1, 5, 0)
+      val to = LocalDateTime.of(1980, 1, 2, 5, 0)
 
-      val event = Events(0).copy(notifications = Seq(), end = Timestamp.valueOf(LocalDateTime.of(2040, 1, 2, 11, 4)))
+      val event = Events(0).copy(notifications = Seq(), end = LocalDateTime.of(2040, 1, 2, 11, 4))
 
       val nonActualJob1 = EventJob.Upload(1, event.id, from, EventJob.Status.New)
       val nonActualJob2 = EventJob.SendNotification(2, 789, Events(0).notifications(0), EventJob.Status.New)
@@ -98,8 +97,8 @@ class EventJobServiceTest extends BaseServiceTest with EventFixture with EventJo
 
     "return actual jobs" in {
       val fixture = getFixture
-      val from = new Timestamp(123)
-      val to = new Timestamp(456)
+      val from = LocalDateTime.of(1980, 1, 1, 5, 0)
+      val to = LocalDateTime.of(1980, 1, 2, 5, 0)
 
       val event = Events(0)
 

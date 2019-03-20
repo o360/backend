@@ -1,11 +1,11 @@
 package services
 
-import java.sql.Timestamp
+import java.time.LocalDateTime
 
-import models.{ListWithTotal, NamedEntity}
 import models.dao.{GroupDao, InviteDao, UserDao, UserGroupDao}
 import models.invite.Invite
 import models.user.User
+import models.{ListWithTotal, NamedEntity}
 import org.mockito.Mockito._
 import testutils.fixture.{GroupFixture, InviteFixture, UserFixture}
 import testutils.generator.InviteGenerator
@@ -142,7 +142,7 @@ class InviteServiceTest
       val fixture = getFixture
       val code = "code"
 
-      val invite = Invite(code, "email", Set(), Some(new Timestamp(0)), new Timestamp(0))
+      val invite = Invite(code, "email", Set(), Some(LocalDateTime.MIN), LocalDateTime.MIN)
       when(fixture.inviteDao.findByCode(code)).thenReturn(toFuture(Some(invite)))
 
       val result = wait(fixture.service.applyInvite(code)(Users(2)).run)
@@ -155,7 +155,7 @@ class InviteServiceTest
       val fixture = getFixture
       val code = "code"
 
-      val invite = Invite(code, "email", Set(), None, new Timestamp(0))
+      val invite = Invite(code, "email", Set(), None, LocalDateTime.MIN)
       when(fixture.inviteDao.findByCode(code)).thenReturn(toFuture(Some(invite)))
 
       val result = wait(fixture.service.applyInvite(code)(Users(0)).run)
@@ -169,7 +169,7 @@ class InviteServiceTest
       val code = "code"
       val group = NamedEntity(1)
 
-      val invite = Invite(code, "email", Set(group), None, new Timestamp(0))
+      val invite = Invite(code, "email", Set(group), None, LocalDateTime.MIN)
       when(fixture.inviteDao.findByCode(code)).thenReturn(toFuture(Some(invite)))
       when(fixture.userDao.update(Users(2).copy(status = User.Status.Approved))).thenReturn(toFuture(Users(2)))
       when(fixture.userGroupDao.add(group.id, Users(2).id)).thenReturn(toFuture(()))

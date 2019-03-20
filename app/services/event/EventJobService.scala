@@ -1,8 +1,8 @@
 package services.event
 
-import java.sql.Timestamp
-import javax.inject.{Inject, Singleton}
+import java.time.LocalDateTime
 
+import javax.inject.{Inject, Singleton}
 import models.dao.{EventDao, EventJobDao}
 import models.event.{Event, EventJob}
 import services.{NotificationService, ServiceResults, UploadService}
@@ -49,14 +49,14 @@ class EventJobService @Inject()(
     val sendEmailJobs = event.notifications.map(EventJob.SendNotification(0, event.id, _, EventJob.Status.New))
     val eventStart = EventJob.EventStart(0, event.id, event.start, EventJob.Status.New)
     val jobsInTheFuture = (eventStart +: uploadJob +: sendEmailJobs)
-      .filter(_.time.after(TimestampConverter.now))
+      .filter(_.time.isAfter(TimestampConverter.now))
     Future.sequence(jobsInTheFuture.map(eventJobDao.createJob(_))).map(_ => ())
   }
 
   /**
     * Returns event jobs in new status from given time interval.
     */
-  def get(from: Timestamp, to: Timestamp): Future[Seq[EventJob]] = {
+  def get(from: LocalDateTime, to: LocalDateTime): Future[Seq[EventJob]] = {
 
     /**
       * Splits collection using future of predicate.

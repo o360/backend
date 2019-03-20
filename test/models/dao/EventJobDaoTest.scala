@@ -1,6 +1,7 @@
 package models.dao
 
-import java.sql.Timestamp
+import java.time.{LocalDateTime, ZoneId, ZoneOffset}
+import java.time.temporal.ChronoUnit
 
 import models.event.EventJob
 import testutils.fixture.EventJobFixture
@@ -13,10 +14,17 @@ class EventJobDaoTest extends BaseDaoTest with EventJobFixture with EventJobGene
 
   val dao = inject[EventJobDao]
 
+  implicit val localDateTimeOrdering: Ordering[LocalDateTime] = Ordering.by(_.toEpochSecond(ZoneOffset.UTC))
+
+
   "getJobs" should {
     "return all jobs for status" in {
       forAll { (status: EventJob.Status) =>
-        val result = wait(dao.getJobs(new Timestamp(0), new Timestamp(Long.MaxValue), status))
+        val result = wait(dao.getJobs(
+          EventJobs.map(_.time).min.minusDays(1),
+          EventJobs.map(_.time).max.plusDays(1),
+          status
+        ))
 
         val expectedResult = EventJobs.filter(_.status == status)
 
@@ -26,8 +34,8 @@ class EventJobDaoTest extends BaseDaoTest with EventJobFixture with EventJobGene
 
     "fitler jobs by time" in {
       val firstJob = EventJobs(0)
-      val timeFrom = new Timestamp(firstJob.time.getTime - 1)
-      val timeTo = new Timestamp(firstJob.time.getTime + 1)
+      val timeFrom = firstJob.time.minus(1, ChronoUnit.MILLIS)
+      val timeTo = firstJob.time.plus(1, ChronoUnit.MILLIS)
       val result = wait(dao.getJobs(timeFrom, timeTo, firstJob.status))
 
       result.length mustBe 1
@@ -42,8 +50,8 @@ class EventJobDaoTest extends BaseDaoTest with EventJobFixture with EventJobGene
         val preparedJob = job.copyWith(eventId = eventId)
         wait(dao.createJob(preparedJob))
 
-        val timeFrom = new Timestamp(preparedJob.time.getTime - 1)
-        val timeTo = new Timestamp(preparedJob.time.getTime + 1)
+        val timeFrom = preparedJob.time.minus(1, ChronoUnit.MILLIS)
+        val timeTo = preparedJob.time.plus(1, ChronoUnit.MILLIS)
 
         val fromDb = wait(dao.getJobs(timeFrom, timeTo, preparedJob.status))
 
@@ -59,8 +67,8 @@ class EventJobDaoTest extends BaseDaoTest with EventJobFixture with EventJobGene
       forAll { (status: EventJob.Status) =>
         wait(dao.updateStatus(job.id, status))
 
-        val timeFrom = new Timestamp(job.time.getTime - 1)
-        val timeTo = new Timestamp(job.time.getTime + 1)
+        val timeFrom = job.time.minus(1, ChronoUnit.MILLIS)
+        val timeTo = job.time.plus(1, ChronoUnit.MILLIS)
 
         val fromDb = wait(dao.getJobs(timeFrom, timeTo, status))
 

@@ -1,12 +1,10 @@
 package utils
 
-import java.sql.Timestamp
-import java.time.format.DateTimeFormatter
 import java.time._
-import java.util.TimeZone
+import java.time.format.DateTimeFormatter
 
 /**
-  * Converter for timestamps.
+  * Converter for date and time.
   */
 object TimestampConverter {
 
@@ -15,34 +13,34 @@ object TimestampConverter {
   /**
     * Returns pretty printed timestamp in zone local time.
     */
-  def toPrettyString(timestamp: Timestamp, zone: ZoneId): String = {
-    val dateTime =
-      LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp.getTime), zone).format(dateTimePrettyFormatter)
+  def toPrettyString(dateTime: LocalDateTime, zone: ZoneId): String = {
+    val dateTimeString = dateTime.format(dateTimePrettyFormatter)
     val zoneOffset = zone.getId
-    s"$dateTime ($zoneOffset)"
+    s"$dateTimeString ($zoneOffset)"
   }
 
   /**
-    * Converts timestamp from UTC to local zone.
+    * Converts dateTime from UTC to local zone.
     */
-  def fromUtc(timestamp: Timestamp, zone: ZoneId): Timestamp = {
-    val millis = TimeZone.getTimeZone(zone).getOffset(timestamp.getTime)
-    new Timestamp(timestamp.getTime + millis)
+  def fromUtc(dateTime: LocalDateTime, zone: ZoneId): LocalDateTime = {
+    val zonedDateTime = ZonedDateTime.of(dateTime, ZoneOffset.UTC)
+    val dateTimeAtTargetZone = zonedDateTime.withZoneSameInstant(zone)
+    dateTimeAtTargetZone.toLocalDateTime
   }
 
   /**
-    * Converts local zone timestamp to UTC.
+    * Converts local zone dateTime to UTC.
     */
-  def toUtc(timestamp: Timestamp, zone: ZoneId): Timestamp = {
-    val millis = TimeZone.getTimeZone(zone).getOffset(timestamp.getTime)
-    new Timestamp(timestamp.getTime - millis)
+  def toUtc(dateTime: LocalDateTime, zone: ZoneId): LocalDateTime = {
+    val zonedSourceTime = ZonedDateTime.of(dateTime, zone)
+    val dateTimeAtUtc = zonedSourceTime.withZoneSameInstant(ZoneOffset.UTC)
+    dateTimeAtUtc.toLocalDateTime
   }
 
   /**
     * Returns current UTC time.
     */
-  def now: Timestamp = {
-    val zonedDateTime = ZonedDateTime.now(ZoneOffset.UTC)
-    Timestamp.valueOf(zonedDateTime.toLocalDateTime)
+  def now: LocalDateTime = {
+    ZonedDateTime.now(ZoneOffset.UTC).toLocalDateTime
   }
 }
