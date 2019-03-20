@@ -1,6 +1,6 @@
 package testutils.fixture
 
-import java.sql.Timestamp
+import java.time.LocalDateTime
 
 import com.ninja_squad.dbsetup.Operations._
 import models.NamedEntity
@@ -17,14 +17,14 @@ trait InviteFixture extends FixtureHelper with GroupFixture { self: FixtureSuppo
       email = "email",
       groups = Set(NamedEntity(1, "1"), NamedEntity(2, "2")),
       activationTime = None,
-      creationTime = new Timestamp(10)
+      creationTime = LocalDateTime.of(2019, 1, 1, 0, 0)
     ),
     Invite(
       code = "code 2",
       email = "email 2",
       groups = Set(NamedEntity(4, "2-2"), NamedEntity(5, "2-2-1")),
-      activationTime = Some(new Timestamp(100)),
-      creationTime = new Timestamp(50)
+      activationTime = Some(LocalDateTime.of(2019, 1, 2, 10, 27)),
+      creationTime = LocalDateTime.of(2019, 1, 1, 0, 0)
     )
   )
 

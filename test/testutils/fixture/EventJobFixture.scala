@@ -1,6 +1,6 @@
 package testutils.fixture
 
-import java.sql.Timestamp
+import java.time.LocalDateTime
 
 import com.ninja_squad.dbsetup.Operations.insertInto
 import models.event.{Event, EventJob}
@@ -12,11 +12,11 @@ import models.notification._
 trait EventJobFixture extends FixtureHelper with EventFixture { _: FixtureSupport =>
 
   val EventJobs: Seq[EventJob] = Seq(
-    EventJob.Upload(1, 1, new Timestamp(123), EventJob.Status.Cancelled),
-    EventJob.Upload(2, 2, new Timestamp(456), EventJob.Status.New),
+    EventJob.Upload(1, 1, LocalDateTime.of(1985, 1, 1, 0, 5), EventJob.Status.Cancelled),
+    EventJob.Upload(2, 2, LocalDateTime.of(1985, 1, 2, 1, 5), EventJob.Status.New),
     EventJob.SendNotification(3,
                               1,
-                              Event.NotificationTime(new Timestamp(789), PreBegin, Respondent),
+      Event.NotificationTime(LocalDateTime.of(1986, 1, 1, 0, 5), PreBegin, Respondent),
                               EventJob.Status.Failure)
   )
 
@@ -31,5 +31,5 @@ trait EventJobFixture extends FixtureHelper with EventFixture { _: FixtureSuppor
 }
 
 object EventJobFixture {
-  val eventStart = EventJob.EventStart(0, 0, new Timestamp(0), EventJob.Status.New)
+  val eventStart = EventJob.EventStart(0, 0, LocalDateTime.of(2000, 1, 1, 0, 0), EventJob.Status.New)
 }

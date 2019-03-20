@@ -1,9 +1,9 @@
 package scheduler
 
-import java.sql.Timestamp
-import javax.inject.{Inject, Singleton}
+import java.time.temporal.ChronoUnit
 
 import akka.actor.Actor
+import javax.inject.{Inject, Singleton}
 import services.event.EventJobService
 import utils.{Config, Logger, TimestampConverter}
 
@@ -27,7 +27,7 @@ class SchedulerActor @Inject()(
       log.trace("scheduler tick")
 
       val now = TimestampConverter.now
-      val from = new Timestamp(now.getTime - maxAge)
+      val from = now.minus(maxAge, ChronoUnit.MILLIS)
 
       eventJobService.get(from, now).map { jobs =>
         eventJobService.execute(jobs)

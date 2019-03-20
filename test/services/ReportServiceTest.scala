@@ -2,9 +2,7 @@ package services
 
 import models.assessment.Answer
 import models.dao.{AnswerDao, UserDao}
-import models.form.Form
-import models.form.element._
-import models.report.{AggregatedReport, Report, SimpleReport}
+import models.report.{Report, SimpleReport}
 import models.user.User
 import models.{ListWithTotal, NamedEntity}
 import org.mockito.Mockito._

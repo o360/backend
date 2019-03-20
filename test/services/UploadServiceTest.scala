@@ -1,6 +1,6 @@
 package services
 
-import java.sql.Timestamp
+import java.time.LocalDateTime
 
 import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetRequest
 import models.ListWithTotal
@@ -49,7 +49,7 @@ class UploadServiceTest
     Fixture(eventDao, activeProjectDao, reportService, spreadsheetService, userDao, googleDriveService, service)
   }
 
-  private val jobFixture = EventJob.Upload(0, 1, new Timestamp(123), EventJob.Status.New)
+  private val jobFixture = EventJob.Upload(0, 1, LocalDateTime.MAX, EventJob.Status.New)
 
   "getGroupedUploadModels" should {
     "return grouped upload models" in {

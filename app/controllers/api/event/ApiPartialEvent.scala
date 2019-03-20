@@ -1,6 +1,5 @@
 package controllers.api.event
 
-import java.sql.Timestamp
 import java.time.LocalDateTime
 
 import models.event.Event
@@ -28,8 +27,8 @@ case class ApiPartialEvent(
   def toModel(id: Long = 0)(implicit account: User) = Event(
     id,
     description,
-    TimestampConverter.toUtc(Timestamp.valueOf(start), account.timezone),
-    TimestampConverter.toUtc(Timestamp.valueOf(end), account.timezone),
+    TimestampConverter.toUtc(start, account.timezone),
+    TimestampConverter.toUtc(end, account.timezone),
     notifications.map(_.toModel)
   )
 }

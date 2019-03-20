@@ -1,7 +1,5 @@
 package models.dao
 
-import java.sql.Timestamp
-
 import models.event.Event
 import org.scalacheck.Gen
 import testutils.fixture.{EventFixture, EventProjectFixture, ProjectRelationFixture}
@@ -22,7 +20,7 @@ class EventDaoTest
   "get" should {
     "return events by specific criteria" in {
       forAll {
-        (status: Option[Event.Status], notificationFrom: Option[Timestamp], notificationTo: Option[Timestamp]) =>
+        status: Option[Event.Status] =>
           val events = wait(dao.getList(optStatus = status))
           val expectedEvents = Events.filter(u => status.forall(_ == u.status))
           events.total mustBe expectedEvents.length

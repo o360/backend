@@ -1,7 +1,7 @@
 package testutils.fixture
 
-import java.sql.Timestamp
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 
 import com.ninja_squad.dbsetup.Operations._
 import models.event.Event
@@ -34,25 +34,28 @@ trait EventFixture extends FixtureHelper { self: FixtureSupport =>
 }
 
 object EventFixture {
+  private val minDateTime = LocalDateTime.of(1980, 1, 1, 0, 0)
+  private val maxDateTime = LocalDateTime.of(2200, 1, 1, 0, 0)
+
   val values = Seq(
     Event(
       1,
       Some("description"),
-      Timestamp.valueOf(LocalDateTime.of(2017, 1, 2, 12, 30)),
-      Timestamp.valueOf(LocalDateTime.of(2017, 1, 5, 12, 30)),
+      LocalDateTime.of(2017, 1, 2, 12, 30),
+      LocalDateTime.of(2017, 1, 5, 12, 30),
       Seq(
         Event.NotificationTime(
-          Timestamp.valueOf(LocalDateTime.of(2017, 1, 2, 12, 0)),
+          LocalDateTime.of(2017, 1, 2, 12, 0),
           PreBegin,
           Respondent
         ),
         Event.NotificationTime(
-          Timestamp.valueOf(LocalDateTime.of(2017, 1, 2, 12, 30)),
+          LocalDateTime.of(2017, 1, 2, 12, 30),
           Begin,
           Respondent
         ),
         Event.NotificationTime(
-          Timestamp.valueOf(LocalDateTime.of(2017, 1, 5, 12, 30)),
+          LocalDateTime.of(2017, 1, 5, 12, 30),
           End,
           Auditor
         )
@@ -61,23 +64,23 @@ object EventFixture {
     Event(
       2,
       Some("completed"),
-      new Timestamp(0),
-      new Timestamp(500),
+      minDateTime,
+      minDateTime.plus(500, ChronoUnit.SECONDS),
       Nil
     ),
     Event(
       3,
       Some("notStarted"),
-      new Timestamp(Long.MaxValue - 500),
-      new Timestamp(Long.MaxValue),
+      maxDateTime.minus(500, ChronoUnit.SECONDS),
+      maxDateTime,
       Nil,
       isPreparing = true
     ),
     Event(
       4,
       Some("inProgress"),
-      new Timestamp(0),
-      new Timestamp(Long.MaxValue),
+      minDateTime,
+      maxDateTime,
       Nil
     )
   )
