@@ -16,7 +16,7 @@ trait EventJobFixture extends FixtureHelper with EventFixture { _: FixtureSuppor
     EventJob.Upload(2, 2, LocalDateTime.of(1985, 1, 2, 1, 5), EventJob.Status.New),
     EventJob.SendNotification(3,
                               1,
-      Event.NotificationTime(LocalDateTime.of(1986, 1, 1, 0, 5), PreBegin, Respondent),
+                              Event.NotificationTime(LocalDateTime.of(1986, 1, 1, 0, 5), PreBegin, Respondent),
                               EventJob.Status.Failure)
   )
 
