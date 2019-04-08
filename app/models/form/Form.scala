@@ -34,7 +34,8 @@ object Form {
     required: Boolean,
     values: Seq[ElementValue],
     competencies: Seq[ElementCompetence],
-    machineName: String
+    machineName: String,
+    hint: Option[String]
   )
 
   /**
