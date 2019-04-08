@@ -1,6 +1,6 @@
 package services
 
-import java.sql.Timestamp
+import java.time.LocalDateTime
 
 import models.dao.{EventDao, ProjectDao, ProjectRelationDao, TemplateDao}
 import models.event.{Event, EventJob}
@@ -56,7 +56,7 @@ class NotificationServiceTest
   }
 
   private val notificationFixture =
-    Event.NotificationTime(new Timestamp(123), Begin, Respondent)
+    Event.NotificationTime(LocalDateTime.MIN, Begin, Respondent)
   private val jobFixture = EventJob.SendNotification(0, 1, notificationFixture, EventJob.Status.New)
 
   "execute" should {

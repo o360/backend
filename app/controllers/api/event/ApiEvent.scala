@@ -1,6 +1,5 @@
 package controllers.api.event
 
-import java.sql.Timestamp
 import java.time.LocalDateTime
 
 import controllers.api.{EnumFormat, EnumFormatHelper, Response}
@@ -38,8 +37,8 @@ object ApiEvent {
     ApiEvent(
       e.id,
       e.description,
-      TimestampConverter.fromUtc(e.start, account.timezone).toLocalDateTime,
-      TimestampConverter.fromUtc(e.end, account.timezone).toLocalDateTime,
+      TimestampConverter.fromUtc(e.start, account.timezone),
+      TimestampConverter.fromUtc(e.end, account.timezone),
       notifications,
       EventStatus(e.status),
       e.userInfo.map(ApiUserInfo(_)),
@@ -63,7 +62,7 @@ object ApiEvent {
       * Converts api model to model.
       */
     def toModel(implicit account: User): Event.NotificationTime = Event.NotificationTime(
-      TimestampConverter.toUtc(Timestamp.valueOf(time), account.timezone),
+      TimestampConverter.toUtc(time, account.timezone),
       kind.value,
       recipient.value
     )
@@ -75,7 +74,7 @@ object ApiEvent {
       * Creates api model from model.
       */
     def apply(n: Event.NotificationTime)(implicit account: User): NotificationTime = NotificationTime(
-      TimestampConverter.fromUtc(n.time, account.timezone).toLocalDateTime,
+      TimestampConverter.fromUtc(n.time, account.timezone),
       ApiNotificationKind(n.kind),
       ApiNotificationRecipient(n.recipient)
     )

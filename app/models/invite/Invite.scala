@@ -1,6 +1,6 @@
 package models.invite
 
-import java.sql.Timestamp
+import java.time.LocalDateTime
 
 import models.NamedEntity
 import utils.TimestampConverter
@@ -12,8 +12,8 @@ case class Invite(
   code: String,
   email: String,
   groups: Set[NamedEntity],
-  activationTime: Option[Timestamp],
-  creationTime: Timestamp
+  activationTime: Option[LocalDateTime],
+  creationTime: LocalDateTime
 )
 
 object Invite {

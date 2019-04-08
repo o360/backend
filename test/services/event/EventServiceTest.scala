@@ -227,7 +227,7 @@ class EventServiceTest
     "return conflict if can't validate event" in {
       forAll { (event: Event) =>
         whenever(
-          (event.start after event.end) ||
+          (event.start isAfter event.end) ||
             event.notifications.map(x => (x.kind, x.recipient)).distinct.length != event.notifications.length) {
           val fixture = getFixture
 
@@ -256,7 +256,7 @@ class EventServiceTest
     "return conflict if can't validate event" in {
       forAll { (event: Event) =>
         whenever(
-          (event.start after event.end) ||
+          (event.start isAfter event.end) ||
             event.notifications.map(x => (x.kind, x.recipient)).distinct.length != event.notifications.length) {
           val fixture = getFixture
           when(fixture.eventDao.findById(event.id)).thenReturn(toFuture(Some(event)))

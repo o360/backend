@@ -1,6 +1,6 @@
 package models.event
 
-import java.sql.Timestamp
+import java.time.LocalDateTime
 
 /**
   * Job for event.
@@ -15,7 +15,7 @@ trait EventJob {
   /**
     * Fire time.
     */
-  def time: Timestamp
+  def time: LocalDateTime
 
   /**
     * Id of event.
@@ -70,7 +70,7 @@ object EventJob {
   /**
     * Upload event report to google drive.
     */
-  case class Upload(id: Long, eventId: Long, time: Timestamp, status: Status) extends EventJob {
+  case class Upload(id: Long, eventId: Long, time: LocalDateTime, status: Status) extends EventJob {
     override def copyWith(id: Long = id, eventId: Long = eventId, status: EventJob.Status = status): EventJob = {
       copy(id = id, eventId = eventId, status = status)
     }
@@ -84,13 +84,13 @@ object EventJob {
     override def copyWith(id: Long = id, eventId: Long = eventId, status: EventJob.Status = status): EventJob = {
       copy(id = id, eventId = eventId, status = status)
     }
-    override def time: Timestamp = notification.time
+    override def time: LocalDateTime = notification.time
   }
 
   /**
     * Event start.
     */
-  case class EventStart(id: Long, eventId: Long, time: Timestamp, status: Status) extends EventJob {
+  case class EventStart(id: Long, eventId: Long, time: LocalDateTime, status: Status) extends EventJob {
     override def copyWith(id: Long = id, eventId: Long = eventId, status: EventJob.Status = status): EventJob = {
       copy(id = id, eventId = eventId, status = status)
     }

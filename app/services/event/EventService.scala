@@ -1,8 +1,9 @@
 package services.event
 
-import java.sql.Timestamp
-import javax.inject.{Inject, Singleton}
+import java.time.temporal.ChronoUnit
+import java.time.{LocalDateTime, Period}
 
+import javax.inject.{Inject, Singleton}
 import models.ListWithTotal
 import models.assessment.Answer
 import models.dao._
@@ -106,7 +107,7 @@ class EventService @Inject()(
       _ <- validateEvent(event)
 
       now = TimestampConverter.now
-      _ <- ensure(event.start.after(now) && event.end.after(now) && event.notifications.forall(_.time.after(now))) {
+      _ <- ensure(event.start.isAfter(now) && event.end.isAfter(now) && event.notifications.forall(_.time.isAfter(now))) {
         BadRequestError.Event.WrongDates
       }
 
@@ -127,7 +128,7 @@ class EventService @Inject()(
       _ <- EventSda.canUpdate(original, draft).liftLeft
 
       now = TimestampConverter.now
-      _ <- ensure((original.status != Event.Status.NotStarted || draft.start.after(now)) && draft.end.after(now)) {
+      _ <- ensure((original.status != Event.Status.NotStarted || draft.start.isAfter(now)) && draft.end.isAfter(now)) {
         BadRequestError.Event.WrongDates
       }
 
@@ -158,17 +159,12 @@ class EventService @Inject()(
       * Moves all event dates to the future.
       */
     def shiftDates(event: Event): Event = {
-      val newStartDate = Timestamp.valueOf(
-        TimestampConverter.now.toLocalDateTime
-          .plusDays(2)
-          .withNano(0)
-      )
+      val newStartDate = TimestampConverter.now.plus(2, ChronoUnit.DAYS)
+      val difference = Period.between(newStartDate.toLocalDate, event.start.toLocalDate)
 
-      val difference = newStartDate.getTime - event.start.getTime
-
-      def shift(timestamp: Timestamp): Timestamp = {
-        val newValue = new Timestamp(timestamp.getTime + difference)
-        if (newValue.before(newStartDate)) newStartDate
+      def shift(time: LocalDateTime): LocalDateTime = {
+        val newValue = time.plus(difference)
+        if (newValue.isBefore(newStartDate)) newStartDate
         else newValue
       }
 
@@ -190,7 +186,7 @@ class EventService @Inject()(
 
   private def validateEvent(event: Event): UnitResult = {
     for {
-      _ <- ensure(!event.start.after(event.end)) {
+      _ <- ensure(!event.start.isAfter(event.end)) {
         BadRequestError.Event.StartAfterEnd
       }
 

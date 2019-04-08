@@ -1,22 +1,22 @@
 package models.dao
 
-import java.sql.Timestamp
-import javax.inject.{Inject, Singleton}
+import java.time.LocalDateTime
 
+import io.scalaland.chimney.dsl._
+import javax.inject.{Inject, Singleton}
 import models.invite.Invite
 import models.{ListWithTotal, NamedEntity}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
-import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * Component for invite and invite_group tables.
   */
-trait InviteComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
+trait InviteComponent extends DateColumnMapper { self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import profile.api._
 
@@ -24,8 +24,8 @@ trait InviteComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
     id: Long,
     code: String,
     email: String,
-    activationTime: Option[Timestamp],
-    creationTime: Timestamp
+    activationTime: Option[LocalDateTime],
+    creationTime: LocalDateTime
   ) {
     def toModel(groups: Seq[NamedEntity]) =
       this
@@ -47,8 +47,8 @@ trait InviteComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def code = column[String]("code")
     def email = column[String]("email")
-    def activationTime = column[Option[Timestamp]]("activation_time")
-    def creationTime = column[Timestamp]("creation_time")
+    def activationTime = column[Option[LocalDateTime]]("activation_time")
+    def creationTime = column[LocalDateTime]("creation_time")
 
     def * = (id, code, email, activationTime, creationTime) <> ((DbInvite.apply _).tupled, DbInvite.unapply)
   }
@@ -139,7 +139,7 @@ class InviteDao @Inject()(
 
   def findByCode(code: String): Future[Option[Invite]] = getList(Some(code)).map(_.data.headOption)
 
-  def activate(code: String, time: Timestamp): Future[Unit] = {
+  def activate(code: String, time: LocalDateTime): Future[Unit] = {
     db.run(Invites.filter(_.code === code).map(_.activationTime).update(Some(time))).map(_ => ())
   }
 }

@@ -1,6 +1,6 @@
 package models.dao
 
-import java.sql.Timestamp
+import java.time.LocalDateTime
 
 import models.NamedEntity
 import models.invite.Invite
@@ -52,14 +52,14 @@ class InviteDaoTest extends BaseDaoTest with InviteFixture with GroupFixture wit
 
   "activate" should {
     "activate invite" in {
-      forAll { timestamp: Timestamp =>
+      forAll { time: LocalDateTime =>
         val invite = Invites(0)
 
-        wait(dao.activate(invite.code, timestamp))
+        wait(dao.activate(invite.code, time))
 
         val fromDb = wait(dao.findByCode(invite.code)).get
 
-        fromDb.activationTime mustBe Some(timestamp)
+        fromDb.activationTime mustBe Some(time)
       }
     }
   }
