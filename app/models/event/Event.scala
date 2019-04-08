@@ -1,7 +1,6 @@
 package models.event
 
-import java.sql.Timestamp
-import java.time.ZoneId
+import java.time.{LocalDateTime, ZoneId}
 
 import models.NamedEntity
 import models.notification._
@@ -13,8 +12,8 @@ import utils.TimestampConverter
 case class Event(
   id: Long,
   description: Option[String],
-  start: Timestamp,
-  end: Timestamp,
+  start: LocalDateTime,
+  end: LocalDateTime,
   notifications: Seq[Event.NotificationTime],
   userInfo: Option[Event.UserInfo] = None,
   isPreparing: Boolean = false
@@ -25,8 +24,8 @@ case class Event(
     * Status of event.
     */
   val status: Event.Status =
-    if (currentTime.before(start) || isPreparing) Event.Status.NotStarted
-    else if (currentTime.before(end)) Event.Status.InProgress
+    if (currentTime.isBefore(start) || isPreparing) Event.Status.NotStarted
+    else if (currentTime.isBefore(end)) Event.Status.InProgress
     else Event.Status.Completed
 
   /**
@@ -50,7 +49,7 @@ object Event {
     * @param recipient notification recipient kind
     */
   case class NotificationTime(
-    time: Timestamp,
+    time: LocalDateTime,
     kind: NotificationKind,
     recipient: NotificationRecipient
   )

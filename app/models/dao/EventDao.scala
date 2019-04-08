@@ -1,18 +1,18 @@
 package models.dao
 
-import java.sql.Timestamp
-import javax.inject.{Inject, Singleton}
+import java.time.LocalDateTime
 
+import io.scalaland.chimney.dsl._
+import javax.inject.{Inject, Singleton}
 import models.ListWithTotal
 import models.event.Event
 import models.notification._
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
+import scalaz.std.option._
 import slick.jdbc.JdbcProfile
 import utils.TimestampConverter
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
-import io.scalaland.chimney.dsl._
-import scalaz.std.option._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -29,7 +29,8 @@ trait NotificationComponent extends EnumColumnMapper { self: HasDatabaseConfigPr
 /**
   * Component for event and event_notification tables.
   */
-trait EventComponent extends NotificationComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
+trait EventComponent extends NotificationComponent with DateColumnMapper {
+  self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import profile.api._
 
@@ -39,8 +40,8 @@ trait EventComponent extends NotificationComponent { self: HasDatabaseConfigProv
   case class DbEvent(
     id: Long,
     description: Option[String],
-    start: Timestamp,
-    end: Timestamp,
+    start: LocalDateTime,
+    end: LocalDateTime,
     isPreparing: Boolean
   ) {
     def toModel(notifications: Seq[Event.NotificationTime]) =
@@ -59,8 +60,8 @@ trait EventComponent extends NotificationComponent { self: HasDatabaseConfigProv
 
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def description = column[Option[String]]("description")
-    def start = column[Timestamp]("start_time")
-    def end = column[Timestamp]("end_time")
+    def start = column[LocalDateTime]("start_time")
+    def end = column[LocalDateTime]("end_time")
     def isPreparing = column[Boolean]("is_preparing")
 
     def * = (id, description, start, end, isPreparing) <> ((DbEvent.apply _).tupled, DbEvent.unapply)
@@ -74,7 +75,7 @@ trait EventComponent extends NotificationComponent { self: HasDatabaseConfigProv
   case class DbEventNotification(
     id: Long,
     eventId: Long,
-    time: Timestamp,
+    time: LocalDateTime,
     kind: NotificationKind,
     recipient: NotificationRecipient
   )
@@ -92,7 +93,7 @@ trait EventComponent extends NotificationComponent { self: HasDatabaseConfigProv
 
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def eventId = column[Long]("event_id")
-    def time = column[Timestamp]("time")
+    def time = column[LocalDateTime]("time")
     def kind = column[NotificationKind]("kind")
     def recipient = column[NotificationRecipient]("recipient_kind")
 

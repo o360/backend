@@ -2,7 +2,7 @@ name := "open360"
 
 version := "1.0"
 
-scalaVersion := "2.12.3"
+scalaVersion := "2.12.4"
 
 lazy val root =
   (project in file(".")).enablePlugins(PlayScala, SwaggerPlugin, DockerPlugin)

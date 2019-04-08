@@ -1,8 +1,8 @@
 package models.dao
 
-import java.sql.Timestamp
-import javax.inject.{Inject, Singleton}
+import java.time.LocalDateTime
 
+import javax.inject.{Inject, Singleton}
 import models.event.{Event, EventJob}
 import models.notification._
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
@@ -13,7 +13,8 @@ import scala.concurrent.{ExecutionContext, Future}
 /**
   * Component for event_job table.
   */
-trait EventJobComponent extends NotificationComponent with EnumColumnMapper { self: HasDatabaseConfigProvider[JdbcProfile] =>
+trait EventJobComponent extends NotificationComponent with EnumColumnMapper with DateColumnMapper {
+  self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import profile.api._
 
@@ -31,7 +32,7 @@ trait EventJobComponent extends NotificationComponent with EnumColumnMapper { se
   case class DbEventJob(
     id: Long,
     eventId: Long,
-    time: Timestamp,
+    time: LocalDateTime,
     status: EventJob.Status,
     kind: Option[NotificationKind],
     recipient: Option[NotificationRecipient],
@@ -68,7 +69,7 @@ trait EventJobComponent extends NotificationComponent with EnumColumnMapper { se
 
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def eventId = column[Long]("event_id")
-    def time = column[Timestamp]("time")
+    def time = column[LocalDateTime]("time")
     def status = column[EventJob.Status]("status")
     def kind = column[Option[NotificationKind]]("notification_kind")
     def recipient = column[Option[NotificationRecipient]]("notification_recipient_kind")
@@ -134,7 +135,7 @@ class EventJobDao @Inject()(
   /**
     * Return jobs filtered by given criteria.
     */
-  def getJobs(from: Timestamp, to: Timestamp, status: EventJob.Status): Future[Seq[EventJob]] = {
+  def getJobs(from: LocalDateTime, to: LocalDateTime, status: EventJob.Status): Future[Seq[EventJob]] = {
     val query = EventJobs
       .filter(x => x.time > from && x.time <= to && x.status === status)
       .result
