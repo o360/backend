@@ -71,3 +71,4 @@ deploy:
         -v /home/ci-user/config/user_invited.html:/opt/docker/templates/user_invited.html 
         -v /home/ci-user/uploads/:/opt/docker/uploads 
             git:5000/open360/backend/app:${CI_COMMIT_REF_NAME}-${CI_PIPELINE_ID}
+    - docker network connect bw-api-network private-open360-api || true
