@@ -1,13 +1,13 @@
-addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.6.3")
+addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.6.6")
 
-addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.6.2-PLAY2.6")
+addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.9.1")
 
-addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.5.0")
+addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.6.1")
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.1.5")
+addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.6.1")
 
-addSbtPlugin("org.flywaydb" % "flyway-sbt" % "4.1.2")
+addSbtPlugin("io.github.davidmweber" % "flyway-sbt" % "6.2.0")
 
-addSbtPlugin("com.lucidchart" % "sbt-scalafmt" % "1.10")
+addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.3.0")
 
 resolvers += "Flyway" at "https://flywaydb.org/repo"
