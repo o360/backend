@@ -20,7 +20,7 @@ import scala.concurrent.ExecutionContext
   * Event controller.
   */
 @Singleton
-class EventController @Inject()(
+class EventController @Inject() (
   silhouette: Silhouette[DefaultEnv],
   eventService: EventService,
   val controllerComponents: ControllerComponents,
@@ -87,7 +87,7 @@ class EventController @Inject()(
   /**
     * Removes event.
     */
-  def delete(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
+  def delete(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async {
     eventService
       .delete(id)
       .fold(

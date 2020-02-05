@@ -10,7 +10,14 @@ lazy val root =
 scalacOptions ++= Seq(
   "-Ywarn-inaccessible",
   "-Ywarn-unused",
-  "-Ywarn-unused-import"
+  "-Ywarn-unused-import",
+  s"-P:silencer:sourceRoots=${baseDirectory.value.getCanonicalPath}",
+  s"-P:silencer:pathFilters=routes/.*"
+)
+
+libraryDependencies ++= Seq(
+  compilerPlugin("com.github.ghik" %% "silencer-plugin" % "1.4.4" % Provided cross CrossVersion.full),
+  "com.github.ghik" %% "silencer-lib" % "1.4.4" % Provided cross CrossVersion.full
 )
 
 libraryDependencies ++= Seq(

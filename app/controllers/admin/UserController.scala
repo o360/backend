@@ -21,7 +21,7 @@ import scala.concurrent.ExecutionContext
   * User controller.
   */
 @Singleton
-class UserController @Inject()(
+class UserController @Inject() (
   protected val silhouette: Silhouette[DefaultEnv],
   protected val userService: UserService,
   val controllerComponents: ControllerComponents,
@@ -34,7 +34,7 @@ class UserController @Inject()(
   /**
     * Returns user by ID.
     */
-  def getById(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
+  def getById(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async {
     toResult(Ok) {
       userService
         .getById(id)
@@ -77,7 +77,7 @@ class UserController @Inject()(
   /**
     * Deletes user.
     */
-  def delete(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
+  def delete(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async {
     userService
       .delete(id)
       .fold(
