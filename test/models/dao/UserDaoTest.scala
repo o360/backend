@@ -18,9 +18,11 @@ class UserDaoTest
 
   "get" should {
     "return users by specific criteria" in {
-      forAll(Gen.option(Gen.choose(-1L, 5L)),
-             Gen.option(roleArbitrary.arbitrary),
-             Gen.option(statusArbitrary.arbitrary)) {
+      forAll(
+        Gen.option(Gen.choose(-1L, 5L)),
+        Gen.option(roleArbitrary.arbitrary),
+        Gen.option(statusArbitrary.arbitrary)
+      ) {
         (
           id: Option[Long],
           role: Option[UserModel.Role],
@@ -39,10 +41,11 @@ class UserDaoTest
         val users = wait(dao.getList(optGroupIds = groupId.map(Seq(_))))
         val expectedUsers = Users.filter(u =>
           groupId match {
-            case Tristate.Unspecified => true
-            case Tristate.Absent => !UserGroups.map(_._1).contains(u.id)
+            case Tristate.Unspecified  => true
+            case Tristate.Absent       => !UserGroups.map(_._1).contains(u.id)
             case Tristate.Present(gid) => UserGroups.filter(_._2 == gid).map(_._1).contains(u.id)
-        })
+          }
+        )
 
         users.data must contain theSameElementsAs expectedUsers
       }
@@ -69,10 +72,9 @@ class UserDaoTest
   "findByProvider" should {
     "return user by provider data" in {
       forAll(
-        Gen.choose(-1L, 5L),
         Gen.oneOf(UserLogins.map(_._2)),
         Gen.oneOf(UserLogins.map(_._3))
-      ) { (userId: Long, provId: String, provKey: String) =>
+      ) { (provId: String, provKey: String) =>
         val user = wait(dao.findByProvider(provId, provKey))
         val existedUserLogin = UserLogins.find(ul => ul._2 == provId && ul._3 == provKey)
         user.map(_.id) mustBe existedUserLogin.map(_._1)

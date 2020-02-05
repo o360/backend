@@ -20,7 +20,7 @@ import scala.concurrent.ExecutionContext
   * Project relation controller.
   */
 @Singleton
-class ProjectRelationController @Inject()(
+class ProjectRelationController @Inject() (
   protected val silhouette: Silhouette[DefaultEnv],
   protected val projectRelationService: ProjectRelationService,
   val controllerComponents: ControllerComponents,
@@ -47,7 +47,7 @@ class ProjectRelationController @Inject()(
   /**
     * Returns relation with relations.
     */
-  def getById(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
+  def getById(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async {
     toResult(Ok) {
       projectRelationService
         .getById(id)
@@ -83,7 +83,7 @@ class ProjectRelationController @Inject()(
   /**
     * Removes relation.
     */
-  def delete(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
+  def delete(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async {
     projectRelationService
       .delete(id)
       .fold(

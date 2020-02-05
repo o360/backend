@@ -20,7 +20,7 @@ import scala.concurrent.ExecutionContext
   * Form template controller.
   */
 @Singleton
-class FormController @Inject()(
+class FormController @Inject() (
   protected val silhouette: Silhouette[DefaultEnv],
   protected val formService: FormService,
   val controllerComponents: ControllerComponents,
@@ -46,7 +46,7 @@ class FormController @Inject()(
   /**
     * Returns form template with elements.
     */
-  def getById(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
+  def getById(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async {
     toResult(Ok) {
       formService
         .getById(id)
@@ -82,7 +82,7 @@ class FormController @Inject()(
   /**
     * Removes form template.
     */
-  def delete(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
+  def delete(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async {
     formService
       .delete(id)
       .fold(
@@ -94,7 +94,7 @@ class FormController @Inject()(
   /**
     * Clones form.
     */
-  def cloneForm(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
+  def cloneForm(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async {
     toResult(Created) {
       for {
         original <- formService.getById(id)

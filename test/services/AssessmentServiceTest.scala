@@ -73,8 +73,9 @@ class AssessmentServiceTest
           optActiveProjectId = eqTo(Some(activeProject.id)),
           optUserFromId = eqTo(Some(user.id)),
           optFormId = *,
-          optUserToId = *,
-        )).thenReturn(toFuture(Answers))
+          optUserToId = *
+        )
+      ).thenReturn(toFuture(Answers))
       when(
         fixture.userDao.getList(
           optIds = eqTo(Some(Seq(3L))),
@@ -84,8 +85,9 @@ class AssessmentServiceTest
           optName = *,
           optEmail = *,
           optProjectIdAuditor = *,
-          includeDeleted = eqTo(true),
-        )(*)).thenReturn(toFuture(ListWithTotal(Seq(user.copy(id = 3)))))
+          includeDeleted = eqTo(true)
+        )(*)
+      ).thenReturn(toFuture(ListWithTotal(Seq(user.copy(id = 3)))))
 
       val result = wait(fixture.service.getList(activeProject.id)(user).run)
 
@@ -93,7 +95,7 @@ class AssessmentServiceTest
       result.toOption.get mustBe ListWithTotal(
         Seq(
           Assessment(Some(user.copy(id = 3)), Seq(Answers(0))),
-          Assessment(None, Seq(Answers(1))),
+          Assessment(None, Seq(Answers(1)))
         )
       )
     }
@@ -210,9 +212,11 @@ class AssessmentServiceTest
 
     "return error if can't validate form" in {
       val baseForm = Form(1, "", Seq(), Form.Kind.Freezed, true, "machine name")
-      val createAnswer = Answer(1, 1, None, NamedEntity(1), false, Answer.Status.Answered, false, _: Set[Answer.Element])
+      val createAnswer =
+        Answer(1, 1, None, NamedEntity(1), false, Answer.Status.Answered, false, _: Set[Answer.Element])
 
-      val createElement = Form.Element(1, _: ElementKind, "", _: Boolean, _: Seq[Form.ElementValue], Nil, "machine name", None)
+      val createElement =
+        Form.Element(1, _: ElementKind, "", _: Boolean, _: Seq[Form.ElementValue], Nil, "machine name", None)
 
       val invalidFormsWithAnswers = Seq(
         // Duplicate answers
@@ -225,8 +229,7 @@ class AssessmentServiceTest
         baseForm.copy(elements = Seq(createElement(TextArea, true, Nil))) ->
           createAnswer(Set(Answer.Element(1, None, Some(Set(1)), None))),
         // Values answer contains unknown element
-        baseForm.copy(elements =
-          Seq(createElement(Select, true, Seq(Form.ElementValue(3, ""))))) ->
+        baseForm.copy(elements = Seq(createElement(Select, true, Seq(Form.ElementValue(3, ""))))) ->
           createAnswer(Set(Answer.Element(1, None, Some(Set(1)), None))),
         // Text answer is missed
         baseForm.copy(elements = Seq(createElement(TextArea, true, Nil))) ->

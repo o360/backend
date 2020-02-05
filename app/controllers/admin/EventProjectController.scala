@@ -16,7 +16,7 @@ import scala.concurrent.ExecutionContext
   * Event project controller.
   */
 @Singleton
-class EventProjectController @Inject()(
+class EventProjectController @Inject() (
   protected val silhouette: Silhouette[DefaultEnv],
   protected val eventProjectService: EventProjectService,
   val controllerComponents: ControllerComponents,
@@ -29,7 +29,7 @@ class EventProjectController @Inject()(
     * @param projectId project ID
     * @param eventId   event ID
     */
-  def create(projectId: Long, eventId: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
+  def create(projectId: Long, eventId: Long) = silhouette.SecuredAction(AllowedRole.admin).async {
     eventProjectService
       .add(projectId, eventId)
       .fold(
@@ -44,7 +44,7 @@ class EventProjectController @Inject()(
     * @param projectId project ID
     * @param eventId   event ID
     */
-  def delete(projectId: Long, eventId: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
+  def delete(projectId: Long, eventId: Long) = silhouette.SecuredAction(AllowedRole.admin).async {
     eventProjectService
       .remove(projectId, eventId)
       .fold(
