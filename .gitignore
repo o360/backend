@@ -1,5 +1,9 @@
 .idea/
+.vscode/
+.bloop/
+.metals/
 logs/
 target/
 project/target
+project/metals.sbt
 project/project
