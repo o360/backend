@@ -74,8 +74,8 @@ class UserServiceTest
 
         wait(fixture.service.createIfNotExist(profile))
 
-        verify(fixture.userDaoMock, times(1)).findByProvider(profile.loginInfo.providerID,
-                                                             profile.loginInfo.providerKey)
+        verify(fixture.userDaoMock, times(1))
+          .findByProvider(profile.loginInfo.providerID, profile.loginInfo.providerKey)
       }
     }
 
@@ -87,14 +87,14 @@ class UserServiceTest
 
         wait(fixture.service.createIfNotExist(profile))
 
-        verify(fixture.userDaoMock, times(1)).findByProvider(profile.loginInfo.providerID,
-                                                             profile.loginInfo.providerKey)
+        verify(fixture.userDaoMock, times(1))
+          .findByProvider(profile.loginInfo.providerID, profile.loginInfo.providerKey)
         verifyNoMoreInteractions(fixture.userDaoMock)
       }
     }
 
     "create user if not exist" in {
-      forAll { (profile: CustomSocialProfile, user: Option[UserModel]) =>
+      forAll { profile: CustomSocialProfile =>
         val fixture = getFixture
         when(fixture.userDaoMock.findByProvider(profile.loginInfo.providerID, profile.loginInfo.providerKey))
           .thenReturn(toFuture(None))
@@ -102,8 +102,8 @@ class UserServiceTest
           .thenReturn(toFuture(Users(0)))
 
         wait(fixture.service.createIfNotExist(profile))
-        verify(fixture.userDaoMock, times(1)).findByProvider(profile.loginInfo.providerID,
-                                                             profile.loginInfo.providerKey)
+        verify(fixture.userDaoMock, times(1))
+          .findByProvider(profile.loginInfo.providerID, profile.loginInfo.providerKey)
 
         val user = UserModel.fromSocialProfile(profile)
 
@@ -204,8 +204,8 @@ class UserServiceTest
               optEmail = *,
               optProjectIdAuditor = *,
               includeDeleted = *
-            )(eqTo(ListMeta.default)))
-            .thenReturn(toFuture(ListWithTotal(total, users)))
+            )(eqTo(ListMeta.default))
+          ).thenReturn(toFuture(ListWithTotal(total, users)))
           val result = wait(fixture.service.list(role, status, groupId, name)(ListMeta.default).run)
 
           result mustBe 'isRight
@@ -236,7 +236,8 @@ class UserServiceTest
               optEmail = *,
               optProjectIdAuditor = *,
               includeDeleted = eqTo(includeDeleted)
-            )(eqTo(ListMeta.default))).thenReturn(toFuture(ListWithTotal(total, users)))
+            )(eqTo(ListMeta.default))
+          ).thenReturn(toFuture(ListWithTotal(total, users)))
 
           val result = wait(fixture.service.listByGroupId(groupId, includeDeleted).run)
 
@@ -335,7 +336,8 @@ class UserServiceTest
             optUserId = eqTo(Some(id)),
             optName = *,
             optLevels = *
-          )(*)).thenReturn(toFuture(ListWithTotal(1, Groups.take(1))))
+          )(*)
+        ).thenReturn(toFuture(ListWithTotal(1, Groups.take(1))))
         val result = wait(fixture.service.delete(id).run)
 
         result mustBe 'left
@@ -354,7 +356,8 @@ class UserServiceTest
             optUserId = eqTo(Some(id)),
             optName = *,
             optLevels = *
-          )(*)).thenReturn(toFuture(ListWithTotal[Group](0, Nil)))
+          )(*)
+        ).thenReturn(toFuture(ListWithTotal[Group](0, Nil)))
         when(fixture.userDaoMock.delete(id)).thenReturn(toFuture(()))
         val result = wait(fixture.service.delete(id).run)
 
@@ -394,7 +397,8 @@ class UserServiceTest
           optEmail = *,
           optProjectIdAuditor = *,
           includeDeleted = eqTo(includeDeleted)
-        )(*)).thenReturn(toFuture(ListWithTotal(2, usersOfFirstGroup)))
+        )(*)
+      ).thenReturn(toFuture(ListWithTotal(2, usersOfFirstGroup)))
       when(
         fixture.userDaoMock.getList(
           optIds = *,
@@ -405,7 +409,8 @@ class UserServiceTest
           optEmail = *,
           optProjectIdAuditor = *,
           includeDeleted = eqTo(includeDeleted)
-        )(*)).thenReturn(toFuture(ListWithTotal(2, usersOfSecondGroup)))
+        )(*)
+      ).thenReturn(toFuture(ListWithTotal(2, usersOfSecondGroup)))
 
       val result = wait(fixture.service.getGroupIdToUsersMap(groupIds, includeDeleted = true))
       val expectedResult = Map(1L -> usersOfFirstGroup, 2L -> usersOfSecondGroup)

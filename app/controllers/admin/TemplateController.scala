@@ -21,7 +21,7 @@ import scala.concurrent.ExecutionContext
   * Template controller.
   */
 @Singleton
-class TemplateController @Inject()(
+class TemplateController @Inject() (
   protected val silhouette: Silhouette[DefaultEnv],
   protected val templateService: TemplateService,
   val controllerComponents: ControllerComponents,
@@ -51,7 +51,7 @@ class TemplateController @Inject()(
   /**
     * Returns template with relations.
     */
-  def getById(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
+  def getById(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async {
     toResult(Ok) {
       templateService
         .getById(id)
@@ -87,7 +87,7 @@ class TemplateController @Inject()(
   /**
     * Removes template.
     */
-  def delete(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
+  def delete(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async {
     templateService
       .delete(id)
       .fold(
@@ -99,7 +99,7 @@ class TemplateController @Inject()(
   /**
     * Clones template.
     */
-  def cloneTemplate(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
+  def cloneTemplate(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async {
     toResult(Created) {
       for {
         original <- templateService.getById(id)

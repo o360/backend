@@ -1,4 +1,4 @@
-addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.6.6")
+addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.7.4")
 
 addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.9.1")
 

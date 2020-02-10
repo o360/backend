@@ -29,7 +29,6 @@ trait AnswerGenerator {
       userFromId <- Arbitrary.arbitrary[Long]
       userToId <- Arbitrary.arbitrary[Option[Long]]
       formId <- Arbitrary.arbitrary[Long]
-      formId <- Arbitrary.arbitrary[Long]
       isAnonymous <- Arbitrary.arbitrary[Boolean]
       answers <- Arbitrary.arbitrary[Set[Answer.Element]]
       canSkip <- Arbitrary.arbitrary[Boolean]

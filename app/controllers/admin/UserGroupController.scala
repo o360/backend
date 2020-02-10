@@ -17,7 +17,7 @@ import scala.concurrent.ExecutionContext
   * User group controller.
   */
 @Singleton
-class UserGroupController @Inject()(
+class UserGroupController @Inject() (
   protected val silhouette: Silhouette[DefaultEnv],
   protected val userGroupService: UserGroupService,
   val controllerComponents: ControllerComponents,
@@ -30,7 +30,7 @@ class UserGroupController @Inject()(
     * @param groupId group ID
     * @param userId  user ID
     */
-  def add(groupId: Long, userId: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
+  def add(groupId: Long, userId: Long) = silhouette.SecuredAction(AllowedRole.admin).async {
     userGroupService
       .add(groupId, userId)
       .fold(
@@ -45,7 +45,7 @@ class UserGroupController @Inject()(
     * @param groupId group ID
     * @param userId  user ID
     */
-  def remove(groupId: Long, userId: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
+  def remove(groupId: Long, userId: Long) = silhouette.SecuredAction(AllowedRole.admin).async {
     userGroupService
       .remove(groupId, userId)
       .fold(
