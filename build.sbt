@@ -10,15 +10,22 @@ lazy val root =
 scalacOptions ++= Seq(
   "-Ywarn-inaccessible",
   "-Ywarn-unused",
-  "-Ywarn-unused-import"
+  "-Ywarn-unused-import",
+  s"-P:silencer:sourceRoots=${baseDirectory.value.getCanonicalPath}",
+  s"-P:silencer:pathFilters=routes/.*"
+)
+
+libraryDependencies ++= Seq(
+  compilerPlugin("com.github.ghik" %% "silencer-plugin" % "1.4.4" % Provided cross CrossVersion.full),
+  "com.github.ghik" %% "silencer-lib" % "1.4.4" % Provided cross CrossVersion.full
 )
 
 libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-slick" % "3.0.0",
   "org.postgresql" % "postgresql" % "42.0.0",
   "org.davidbild" %% "tristate-play" % "0.3.0",
-  "com.mohiva" %% "play-silhouette" % "5.0.7",
-  "com.mohiva" %% "play-silhouette-persistence" % "5.0.7",
+  "com.mohiva" %% "play-silhouette" % "6.1.0",
+  "com.mohiva" %% "play-silhouette-persistence" % "6.1.0",
   "com.typesafe.play" %% "play-mailer" % "6.0.1",
   "com.typesafe.play" %% "play-mailer-guice" % "6.0.1",
   "org.scalaz" %% "scalaz-core" % "7.2.10",
@@ -37,7 +44,7 @@ libraryDependencies ++= Seq(
   "com.h2database" % "h2" % "1.4.194",
   "org.mockito" % "mockito-core" % "2.7.19",
   "com.ninja-squad" % "DbSetup" % "2.1.0",
-  "com.mohiva" %% "play-silhouette-testkit" % "5.0.7"
+  "com.mohiva" %% "play-silhouette-testkit" % "6.1.0"
 ).map(_ % Test)
 
 routesImport ++= Seq("controllers.api.TristateQueryBinder._")

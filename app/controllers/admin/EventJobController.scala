@@ -17,7 +17,7 @@ import scala.concurrent.ExecutionContext
   * Event job controller.
   */
 @Singleton
-class EventJobController @Inject()(
+class EventJobController @Inject() (
   silhouette: Silhouette[DefaultEnv],
   eventJobService: EventJobService,
   val controllerComponents: ControllerComponents,
@@ -28,7 +28,7 @@ class EventJobController @Inject()(
   /**
     * Restarts failed job.
     */
-  def restart(jobId: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
+  def restart(jobId: Long) = silhouette.SecuredAction(AllowedRole.admin).async {
     eventJobService
       .runFailedJob(jobId)
       .fold(

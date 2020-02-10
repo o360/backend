@@ -21,7 +21,7 @@ import scala.concurrent.ExecutionContext
   * Group controller.
   */
 @Singleton
-class GroupController @Inject()(
+class GroupController @Inject() (
   silhouette: Silhouette[DefaultEnv],
   groupService: GroupService,
   val controllerComponents: ControllerComponents,
@@ -34,7 +34,7 @@ class GroupController @Inject()(
   /**
     * Returns group by ID.
     */
-  def getById(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
+  def getById(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async {
     toResult(Ok) {
       groupService
         .getById(id)
@@ -90,7 +90,7 @@ class GroupController @Inject()(
   /**
     * Removes group.
     */
-  def delete(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async { implicit request =>
+  def delete(id: Long) = silhouette.SecuredAction(AllowedRole.admin).async {
     groupService
       .delete(id)
       .fold(

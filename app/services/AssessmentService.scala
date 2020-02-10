@@ -21,7 +21,7 @@ import Scalaz._
   * Service for assessment.
   */
 @Singleton
-class AssessmentService @Inject()(
+class AssessmentService @Inject() (
   protected val formService: FormService,
   protected val userDao: UserDao,
   protected val answerDao: AnswerDao,
@@ -50,7 +50,7 @@ class AssessmentService @Inject()(
     }
 
     for {
-      activeProject <- activeProjectService.getById(activeProjectId)
+      _ <- activeProjectService.getById(activeProjectId)
       answers <- answerDao.getList(optActiveProjectId = Some(activeProjectId), optUserFromId = Some(account.id)).lift
       assessments <- getAssessments(answers).lift
     } yield ListWithTotal(assessments)
@@ -92,8 +92,10 @@ class AssessmentService @Inject()(
       def validateForm = formService.getById(answer.form.id).flatMap { form =>
         if (answer.status != Answer.Status.Skipped) {
           answer
-            .validateUsing(form)(BadRequestError.Assessment.InvalidForm(_),
-                                 BadRequestError.Assessment.RequiredAnswersMissed)
+            .validateUsing(form)(
+              BadRequestError.Assessment.InvalidForm(_),
+              BadRequestError.Assessment.RequiredAnswersMissed
+            )
             .liftLeft
         } else ().lift
       }

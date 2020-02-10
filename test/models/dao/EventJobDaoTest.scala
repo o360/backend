@@ -1,6 +1,6 @@
 package models.dao
 
-import java.time.{LocalDateTime, ZoneId, ZoneOffset}
+import java.time.{LocalDateTime, ZoneOffset}
 import java.time.temporal.ChronoUnit
 
 import models.event.EventJob
@@ -16,15 +16,16 @@ class EventJobDaoTest extends BaseDaoTest with EventJobFixture with EventJobGene
 
   implicit val localDateTimeOrdering: Ordering[LocalDateTime] = Ordering.by(_.toEpochSecond(ZoneOffset.UTC))
 
-
   "getJobs" should {
     "return all jobs for status" in {
       forAll { (status: EventJob.Status) =>
-        val result = wait(dao.getJobs(
-          EventJobs.map(_.time).min.minusDays(1),
-          EventJobs.map(_.time).max.plusDays(1),
-          status
-        ))
+        val result = wait(
+          dao.getJobs(
+            EventJobs.map(_.time).min.minusDays(1),
+            EventJobs.map(_.time).max.plusDays(1),
+            status
+          )
+        )
 
         val expectedResult = EventJobs.filter(_.status == status)
 
