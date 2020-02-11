@@ -35,7 +35,7 @@ class CompetenceServiceTest extends BaseServiceTest with CompetenceGenerator {
         when(fixture.competenceDao.getById(id)).thenReturn(toFuture(None))
         val result = wait(fixture.service.getById(id).run)
 
-        result mustBe 'left
+        result mustBe left
         result.swap.toOption.get mustBe a[NotFoundError]
       }
     }
@@ -46,7 +46,7 @@ class CompetenceServiceTest extends BaseServiceTest with CompetenceGenerator {
         when(fixture.competenceDao.getById(id)).thenReturn(toFuture(Some(competence)))
         val result = wait(fixture.service.getById(id).run)
 
-        result mustBe 'right
+        result mustBe right
         result.toOption.get mustBe competence
       }
     }
@@ -66,11 +66,11 @@ class CompetenceServiceTest extends BaseServiceTest with CompetenceGenerator {
               optGroupId = eqTo(groupId),
               optKind = eqTo(Some(EntityKind.Template)),
               optIds = *
-            )(eqTo(ListMeta.default)))
-            .thenReturn(toFuture(ListWithTotal(total, competences)))
+            )(eqTo(ListMeta.default))
+          ).thenReturn(toFuture(ListWithTotal(total, competences)))
           val result = wait(fixture.service.getList(groupId)(ListMeta.default).run)
 
-          result mustBe 'right
+          result mustBe right
           result.toOption.get mustBe ListWithTotal(total, competences)
       }
     }
@@ -86,7 +86,7 @@ class CompetenceServiceTest extends BaseServiceTest with CompetenceGenerator {
       when(fixture.competenceDao.create(competence.copy(id = 0))).thenReturn(toFuture(competence))
       val result = wait(fixture.service.create(competence.copy(id = 0)).run)
 
-      result mustBe 'right
+      result mustBe right
       result.toOption.get mustBe competence
     }
   }
@@ -99,7 +99,7 @@ class CompetenceServiceTest extends BaseServiceTest with CompetenceGenerator {
         when(fixture.competenceDao.getById(competence.id)).thenReturn(toFuture(None))
         val result = wait(fixture.service.update(competence).run)
 
-        result mustBe 'left
+        result mustBe left
         result.swap.toOption.get mustBe a[NotFoundError]
       }
     }
@@ -113,7 +113,7 @@ class CompetenceServiceTest extends BaseServiceTest with CompetenceGenerator {
       when(fixture.competenceDao.update(competence)).thenReturn(toFuture(competence))
       val result = wait(fixture.service.update(competence).run)
 
-      result mustBe 'right
+      result mustBe right
       result.toOption.get mustBe competence
     }
   }
@@ -125,7 +125,7 @@ class CompetenceServiceTest extends BaseServiceTest with CompetenceGenerator {
         when(fixture.competenceDao.getById(id)).thenReturn(toFuture(None))
         val result = wait(fixture.service.delete(id).run)
 
-        result mustBe 'left
+        result mustBe left
         result.swap.toOption.get mustBe a[NotFoundError]
       }
     }
@@ -138,7 +138,7 @@ class CompetenceServiceTest extends BaseServiceTest with CompetenceGenerator {
 
         val result = wait(fixture.service.delete(id).run)
 
-        result mustBe 'right
+        result mustBe right
       }
     }
   }

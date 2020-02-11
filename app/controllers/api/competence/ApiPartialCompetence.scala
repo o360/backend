@@ -15,7 +15,7 @@ case class ApiPartialCompetence(
   description: Option[String],
   machineName: Option[String]
 ) {
-  def toModel(id: Long = 0) =
+  def toModel(id: Long = 0): Competence =
     this
       .into[Competence]
       .withFieldConst(_.id, id)

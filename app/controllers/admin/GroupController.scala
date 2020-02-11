@@ -29,7 +29,7 @@ class GroupController @Inject() (
 ) extends BaseController
   with ListActions {
 
-  implicit val sortingFields = Sorting.AvailableFields('id, 'name)
+  implicit val sortingFields = Sorting.AvailableFields("id", "name")
 
   /**
     * Returns group by ID.

@@ -46,7 +46,7 @@ class GroupServiceTest
         when(fixture.groupDaoMock.findById(id)).thenReturn(toFuture(None))
         val result = wait(fixture.service.getById(id).run)
 
-        result mustBe 'left
+        result mustBe left
         result.swap.toOption.get mustBe a[NotFoundError]
 
         verify(fixture.groupDaoMock, times(1)).findById(id)
@@ -60,7 +60,7 @@ class GroupServiceTest
         when(fixture.groupDaoMock.findById(id)).thenReturn(toFuture(Some(group)))
         val result = wait(fixture.service.getById(id).run)
 
-        result mustBe 'right
+        result mustBe right
         result.toOption.get mustBe group
 
         verify(fixture.groupDaoMock, times(1)).findById(id)
@@ -87,11 +87,11 @@ class GroupServiceTest
               optUserId = eqTo(userId),
               optName = eqTo(name),
               optLevels = *
-            )(eqTo(ListMeta.default)))
-            .thenReturn(toFuture(ListWithTotal(total, groups)))
+            )(eqTo(ListMeta.default))
+          ).thenReturn(toFuture(ListWithTotal(total, groups)))
           val result = wait(fixture.service.list(parentId, userId, name, None)(ListMeta.default).run)
 
-          result mustBe 'right
+          result mustBe right
           result.toOption.get mustBe ListWithTotal(total, groups)
 
           verify(fixture.groupDaoMock, times(1)).getList(
@@ -116,14 +116,15 @@ class GroupServiceTest
             optUserId = eqTo(Some(userId)),
             optName = *,
             optLevels = *
-          )(*)).thenReturn(toFuture(ListWithTotal(Seq(group))))
+          )(*)
+        ).thenReturn(toFuture(ListWithTotal(Seq(group))))
         group.parentId.foreach { parentId =>
           when(fixture.groupDaoMock.findById(parentId)).thenReturn(toFuture(Some(group.copy(parentId = None))))
         }
 
         val result = wait(fixture.service.listByUserId(userId).run)
 
-        result mustBe 'right
+        result mustBe right
         result.toOption.get.data mustBe group.parentId.map(_ => group.copy(parentId = None)) ++ Seq(group)
       }
     }
@@ -138,7 +139,7 @@ class GroupServiceTest
           when(fixture.groupDaoMock.findById(group.parentId.get)).thenReturn(toFuture(None))
           val result = wait(fixture.service.create(group).run)
 
-          result mustBe 'left
+          result mustBe left
           result.swap.toOption.get mustBe a[NotFoundError]
         }
       }
@@ -151,7 +152,7 @@ class GroupServiceTest
       when(fixture.groupDaoMock.create(group.copy(id = 0))).thenReturn(toFuture(group))
       val result = wait(fixture.service.create(group.copy(id = 0)).run)
 
-      result mustBe 'right
+      result mustBe right
       result.toOption.get mustBe group
     }
   }
@@ -163,7 +164,7 @@ class GroupServiceTest
         when(fixture.groupDaoMock.findById(group.id)).thenReturn(toFuture(None))
         val result = wait(fixture.service.update(group).run)
 
-        result mustBe 'left
+        result mustBe left
         result.swap.toOption.get mustBe a[NotFoundError]
 
         verify(fixture.groupDaoMock, times(1)).findById(group.id)
@@ -179,7 +180,7 @@ class GroupServiceTest
           when(fixture.groupDaoMock.findById(group.id)).thenReturn(toFuture(Some(group)))
           val result = wait(fixture.service.update(group).run)
 
-          result mustBe 'left
+          result mustBe left
           result.swap.toOption.get mustBe a[ConflictError]
 
           verify(fixture.groupDaoMock, times(1)).findById(group.id)
@@ -196,7 +197,7 @@ class GroupServiceTest
           when(fixture.groupDaoMock.findById(group.parentId.get)).thenReturn(toFuture(None))
           val result = wait(fixture.service.update(group).run)
 
-          result mustBe 'left
+          result mustBe left
           result.swap.toOption.get mustBe a[NotFoundError]
         }
       }
@@ -210,7 +211,7 @@ class GroupServiceTest
       when(fixture.groupDaoMock.findChildrenIds(group.id)).thenReturn(toFuture(Seq(group.parentId.get)))
       val result = wait(fixture.service.update(group).run)
 
-      result mustBe 'left
+      result mustBe left
       result.swap.toOption.get mustBe a[ConflictError]
     }
 
@@ -223,7 +224,7 @@ class GroupServiceTest
       when(fixture.groupDaoMock.update(group)).thenReturn(toFuture(group))
       val result = wait(fixture.service.update(group).run)
 
-      result mustBe 'right
+      result mustBe right
       result.toOption.get mustBe group
     }
   }
@@ -235,7 +236,7 @@ class GroupServiceTest
         when(fixture.groupDaoMock.findById(id)).thenReturn(toFuture(None))
         val result = wait(fixture.service.delete(id).run)
 
-        result mustBe 'left
+        result mustBe left
         result.swap.toOption.get mustBe a[NotFoundError]
 
         verify(fixture.groupDaoMock, times(1)).findById(id)
@@ -257,7 +258,8 @@ class GroupServiceTest
           optGroupAuditorId = eqTo(Some(group.id)),
           optEmailTemplateId = *,
           optAnyRelatedGroupId = *
-        )(*)).thenReturn(toFuture(ListWithTotal(1, Projects.take(1))))
+        )(*)
+      ).thenReturn(toFuture(ListWithTotal(1, Projects.take(1))))
       when(
         fixture.relationDao.getList(
           optId = *,
@@ -267,11 +269,12 @@ class GroupServiceTest
           optGroupFromId = *,
           optGroupToId = *,
           optEmailTemplateId = *
-        )(*)).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
+        )(*)
+      ).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
 
       val result = wait(fixture.service.delete(group.id).run)
 
-      result mustBe 'left
+      result mustBe left
       result.swap.toOption.get mustBe a[ConflictError]
     }
 
@@ -289,7 +292,8 @@ class GroupServiceTest
           optGroupAuditorId = eqTo(Some(group.id)),
           optEmailTemplateId = *,
           optAnyRelatedGroupId = *
-        )(*)).thenReturn(toFuture(ListWithTotal[Project](0, Nil)))
+        )(*)
+      ).thenReturn(toFuture(ListWithTotal[Project](0, Nil)))
       when(
         fixture.relationDao.getList(
           optId = *,
@@ -299,11 +303,12 @@ class GroupServiceTest
           optGroupFromId = *,
           optGroupToId = *,
           optEmailTemplateId = *
-        )(*)).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
+        )(*)
+      ).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
       when(fixture.groupDaoMock.delete(group.id)).thenReturn(toFuture(1))
       val result = wait(fixture.service.delete(group.id).run)
 
-      result mustBe 'right
+      result mustBe right
     }
   }
 }

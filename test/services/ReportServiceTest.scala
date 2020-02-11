@@ -55,8 +55,9 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
           optActiveProjectId = eqTo(Some(activeProjectId)),
           optUserFromId = *,
           optFormId = *,
-          optUserToId = *,
-        )).thenReturn(toFuture(Seq(answer)))
+          optUserToId = *
+        )
+      ).thenReturn(toFuture(Seq(answer)))
       when(
         fixture.userDao.getList(
           optIds = eqTo(Some(Seq(userFrom.id, userTo.id))),
@@ -66,8 +67,9 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
           optName = *,
           optEmail = *,
           optProjectIdAuditor = *,
-          includeDeleted = eqTo(true),
-        )(*)).thenReturn(toFuture(ListWithTotal(Seq(userFrom, userTo))))
+          includeDeleted = eqTo(true)
+        )(*)
+      ).thenReturn(toFuture(ListWithTotal(Seq(userFrom, userTo))))
       when(fixture.formService.getById(form.id)).thenReturn(toSuccessResult(form))
 
       val result = wait(fixture.service.getReport(activeProjectId))
@@ -76,16 +78,20 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
         Seq(
           Report(
             Some(userTo),
-            Seq(Report.FormReport(
-              form,
-              Seq(
-                Report.FormElementReport(
-                  form.elements(0),
-                  Seq(Report.FormElementAnswerReport(userFrom, answer.elements.head, isAnonymous = true))),
-                Report.FormElementReport(form.elements(1), Seq())
+            Seq(
+              Report.FormReport(
+                form,
+                Seq(
+                  Report.FormElementReport(
+                    form.elements(0),
+                    Seq(Report.FormElementAnswerReport(userFrom, answer.elements.head, isAnonymous = true))
+                  ),
+                  Report.FormElementReport(form.elements(1), Seq())
+                )
               )
-            ))
-          ))
+            )
+          )
+        )
 
       result mustBe expectedResult
     }
@@ -154,11 +160,12 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
             optEmail = *,
             optProjectIdAuditor = eqTo(Some(apId)),
             includeDeleted = *
-          )(*)).thenReturn(toFuture(ListWithTotal(Seq.empty[User])))
+          )(*)
+        ).thenReturn(toFuture(ListWithTotal(Seq.empty[User])))
 
         val result = wait(fixture.service.getAuditorReport(apId)(UserFixture.user).run)
 
-        result mustBe 'left
+        result mustBe left
         result.swap.toOption.get mustBe a[AuthorizationError]
       }
     }
@@ -192,15 +199,17 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
           optEmail = *,
           optProjectIdAuditor = eqTo(Some(activeProjectId)),
           includeDeleted = *
-        )(*)).thenReturn(toFuture(ListWithTotal(Seq(UserFixture.user))))
+        )(*)
+      ).thenReturn(toFuture(ListWithTotal(Seq(UserFixture.user))))
       when(
         fixture.answerDao.getList(
           optEventId = *,
           optActiveProjectId = eqTo(Some(activeProjectId)),
           optUserFromId = *,
           optFormId = *,
-          optUserToId = *,
-        )).thenReturn(toFuture(Seq(answer)))
+          optUserToId = *
+        )
+      ).thenReturn(toFuture(Seq(answer)))
       when(
         fixture.userDao.getList(
           optIds = eqTo(Some(Seq(userFrom.id, userTo.id))),
@@ -210,8 +219,9 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
           optName = *,
           optEmail = *,
           optProjectIdAuditor = *,
-          includeDeleted = eqTo(true),
-        )(*)).thenReturn(toFuture(ListWithTotal(Seq(userFrom, userTo))))
+          includeDeleted = eqTo(true)
+        )(*)
+      ).thenReturn(toFuture(ListWithTotal(Seq(userFrom, userTo))))
       when(fixture.formService.getById(form.id)).thenReturn(toSuccessResult(form))
 
       val result = wait(fixture.service.getAuditorReport(activeProjectId)(UserFixture.user).run)
@@ -222,14 +232,13 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
           detailedReports = Seq(
             SimpleReport.SimpleReportElement(
               userFrom = Some(
-                SimpleReport.SimpleReportUser(
-                  isAnonymous = false,
-                  anonymousId = None,
-                  id = Some(userFrom.id))
+                SimpleReport.SimpleReportUser(isAnonymous = false, anonymousId = None, id = Some(userFrom.id))
               ),
               formId = form.id,
               elementId = answer.elements.head.elementId,
-              text = "text")),
+              text = "text"
+            )
+          ),
           aggregatedReports = Seq(
             SimpleReport.SimpleReportElement(
               userFrom = None,
@@ -247,7 +256,7 @@ class ReportServiceTest extends BaseServiceTest with FormFixture with UserFixtur
         )
       )
 
-      result mustBe 'right
+      result mustBe right
       result.toOption.get mustBe expectedResult
     }
   }

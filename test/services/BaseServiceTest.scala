@@ -2,19 +2,20 @@ package services
 
 import akka.actor.ActorSystem
 import org.scalatest.{OneInstancePerTest, ParallelTestExecution}
-import org.scalatest.mockito.MockitoSugar
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
+import org.scalatestplus.mockito.MockitoSugar
 import testutils.fixture.FixtureSupport
-import testutils.{AsyncHelper, MockitoHelper, ServiceResultHelper}
+import testutils.{AsyncHelper, MockitoHelper, ScalazDisjunctionMatchers, ServiceResultHelper}
 
 /**
   * Base trait for service tests.
   */
 trait BaseServiceTest
   extends PlaySpec
-  with GeneratorDrivenPropertyChecks
+  with ScalaCheckDrivenPropertyChecks
   with AsyncHelper
+  with ScalazDisjunctionMatchers
   with MockitoSugar
   with FixtureSupport
   with OneInstancePerTest

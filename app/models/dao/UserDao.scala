@@ -83,7 +83,7 @@ trait UserComponent extends Logger with EnumColumnMapper { self: HasDatabaseConf
     pictureName: Option[String],
     isDeleted: Boolean
   ) {
-    def toModel =
+    def toModel: User =
       this
         .into[User]
         .withFieldConst(_.timezone, Try(ZoneId.of(timezone)).getOrElse {
@@ -125,7 +125,7 @@ trait UserComponent extends Logger with EnumColumnMapper { self: HasDatabaseConf
 /**
   * DAO for User model.
   */
-class UserDao @Inject()(
+class UserDao @Inject() (
   protected val dbConfigProvider: DatabaseConfigProvider,
   implicit val ec: ExecutionContext
 ) extends HasDatabaseConfigProvider[JdbcProfile]
@@ -161,7 +161,7 @@ class UserDao @Inject()(
 
     def filterGroup(user: UserTable) = optGroupIds match {
       case Tristate.Unspecified => None
-      case Tristate.Absent => Some(!(user.id in UserGroups.map(_.userId)))
+      case Tristate.Absent      => Some(!(user.id in UserGroups.map(_.userId)))
       case Tristate.Present(groupIds) =>
         Some(user.id in UserGroups.filter(_.groupId inSet groupIds.distinct).map(_.userId))
     }
@@ -196,12 +196,12 @@ class UserDao @Inject()(
 
     runListQuery(query) { user =>
       {
-        case 'id => user.id
-        case 'name => user.name
-        case 'email => user.email
-        case 'role => user.role
-        case 'status => user.status
-        case 'gender => user.gender
+        case "id"     => user.id
+        case "name"   => user.name
+        case "email"  => user.email
+        case "role"   => user.role
+        case "status" => user.status
+        case "gender" => user.gender
       }
     }.map { case ListWithTotal(total, data) => ListWithTotal(total, data.map(_.toModel)) }
   }

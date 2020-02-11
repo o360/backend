@@ -1,13 +1,13 @@
 package services.authorization
 
 import org.scalacheck.Arbitrary
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
 /**
   * Test for validation rule.
   */
-class ValidationRuleTest extends PlaySpec with GeneratorDrivenPropertyChecks {
+class ValidationRuleTest extends PlaySpec with ScalaCheckDrivenPropertyChecks {
 
   implicit val validationRuleArbitrary = Arbitrary {
     for {

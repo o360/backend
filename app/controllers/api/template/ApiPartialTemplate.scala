@@ -18,7 +18,7 @@ case class ApiPartialTemplate(
   recipient: ApiNotificationRecipient
 ) {
 
-  def toModel(id: Long = 0) =
+  def toModel(id: Long = 0): Template =
     this
       .into[Template]
       .withFieldConst(_.id, id)

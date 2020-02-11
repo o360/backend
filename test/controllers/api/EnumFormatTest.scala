@@ -1,13 +1,14 @@
 package controllers.api
 
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json.{JsError, JsString, JsSuccess}
+import testutils.ScalazDisjunctionMatchers
 
 /**
   * Test for enum format.
   */
-class EnumFormatTest extends PlaySpec with GeneratorDrivenPropertyChecks {
+class EnumFormatTest extends PlaySpec with ScalaCheckDrivenPropertyChecks with ScalazDisjunctionMatchers {
 
   private trait TestEnum
   private case object TestValue1 extends TestEnum
@@ -60,7 +61,7 @@ class EnumFormatTest extends PlaySpec with GeneratorDrivenPropertyChecks {
 
       result mustBe Some(Right(TestEnumFormat(TestValue1)))
       result2 mustBe Some(Right(TestEnumFormat(TestValue2)))
-      result3.get mustBe 'left
+      result3.get mustBe a[Left[_, _]]
       result4 mustBe empty
     }
   }

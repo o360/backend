@@ -19,7 +19,7 @@ class CompetenceGroupDaoTest extends BaseDaoTest with CompetenceGroupFixture wit
         Gen.option(Gen.someOf(CompetenceGroups.map(_.id))),
         Gen.option(Gen.oneOf[EntityKind](EntityKind.Template, EntityKind.Freezed))
       ) { (ids, kind) =>
-        val groups = wait(dao.getList(kind, ids))
+        val groups = wait(dao.getList(kind, ids.map(_.toSeq)))
         val expectedGroups = CompetenceGroups.filter(cg => ids.forall(_.contains(cg.id)) && kind.forall(_ == cg.kind))
         groups.total mustBe expectedGroups.length
         groups.data must contain theSameElementsAs expectedGroups

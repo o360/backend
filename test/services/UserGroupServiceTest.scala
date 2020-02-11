@@ -4,7 +4,6 @@ import models.dao.UserGroupDao
 import models.group.Group
 import models.user.User
 import org.mockito.Mockito._
-import org.scalatest.mockito.MockitoSugar
 import testutils.fixture.{UserFixture, UserGroupFixture}
 import testutils.generator.TristateGenerator
 import utils.errors.{ConflictError, NotFoundError}
@@ -12,7 +11,7 @@ import utils.errors.{ConflictError, NotFoundError}
 /**
   * Test for user-group service.
   */
-class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with UserGroupFixture with MockitoSugar {
+class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with UserGroupFixture {
 
   private val admin = UserFixture.admin
 
@@ -38,7 +37,7 @@ class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with U
         when(fixture.userServiceMock.getById(userId)).thenReturn(toErrorResult[User](NotFoundError.User(userId)))
         val result = wait(fixture.service.add(groupId, userId).run)
 
-        result mustBe 'left
+        result mustBe left
         result.swap.toOption.get mustBe a[NotFoundError]
       }
     }
@@ -50,7 +49,7 @@ class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with U
         when(fixture.groupServiceMock.getById(groupId)).thenReturn(toErrorResult[Group](NotFoundError.Group(groupId)))
         val result = wait(fixture.service.add(groupId, userId).run)
 
-        result mustBe 'left
+        result mustBe left
         result.swap.toOption.get mustBe a[NotFoundError]
       }
     }
@@ -63,7 +62,7 @@ class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with U
 
         val result = wait(fixture.service.add(groupId, userId).run)
 
-        result mustBe 'left
+        result mustBe left
         result.swap.toOption.get mustBe a[ConflictError]
       }
     }
@@ -77,7 +76,7 @@ class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with U
           .thenReturn(toFuture(true))
         val result = wait(fixture.service.add(groupId, userId).run)
 
-        result mustBe 'right
+        result mustBe right
         verify(fixture.userGroupDaoMock, times(1)).exists(groupId = Some(groupId), userId = Some(userId))
       }
     }
@@ -92,7 +91,7 @@ class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with U
         when(fixture.userGroupDaoMock.add(groupId, userId)).thenReturn(toFuture(()))
         val result = wait(fixture.service.add(groupId, userId).run)
 
-        result mustBe 'right
+        result mustBe right
         verify(fixture.userGroupDaoMock, times(1)).exists(groupId = Some(groupId), userId = Some(userId))
         verify(fixture.userGroupDaoMock, times(1)).add(groupId, userId)
       }
@@ -106,7 +105,7 @@ class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with U
         when(fixture.userServiceMock.getById(userId)).thenReturn(toErrorResult[User](NotFoundError.User(userId)))
         val result = wait(fixture.service.remove(groupId, userId).run)
 
-        result mustBe 'left
+        result mustBe left
         result.swap.toOption.get mustBe a[NotFoundError]
       }
     }
@@ -118,7 +117,7 @@ class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with U
         when(fixture.groupServiceMock.getById(groupId)).thenReturn(toErrorResult[Group](NotFoundError.Group(groupId)))
         val result = wait(fixture.service.remove(groupId, userId).run)
 
-        result mustBe 'left
+        result mustBe left
         result.swap.toOption.get mustBe a[NotFoundError]
       }
     }
@@ -131,7 +130,7 @@ class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with U
 
         val result = wait(fixture.service.remove(groupId, userId).run)
 
-        result mustBe 'left
+        result mustBe left
         result.swap.toOption.get mustBe a[ConflictError]
       }
     }
@@ -144,7 +143,7 @@ class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with U
         when(fixture.userGroupDaoMock.remove(groupId, userId)).thenReturn(toFuture(()))
         val result = wait(fixture.service.remove(groupId, userId).run)
 
-        result mustBe 'right
+        result mustBe right
         verify(fixture.userGroupDaoMock, times(1)).remove(groupId, userId)
       }
     }
@@ -161,7 +160,7 @@ class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with U
         when(fixture.userGroupDaoMock.add(groupId, userId)).thenReturn(toFuture(()))
         val result = wait(fixture.service.bulkAdd(Seq((groupId, userId))).run)
 
-        result mustBe 'right
+        result mustBe right
         verify(fixture.userGroupDaoMock, times(1)).exists(groupId = Some(groupId), userId = Some(userId))
         verify(fixture.userGroupDaoMock, times(1)).add(groupId, userId)
       }
@@ -177,7 +176,7 @@ class UserGroupServiceTest extends BaseServiceTest with TristateGenerator with U
         when(fixture.userGroupDaoMock.remove(groupId, userId)).thenReturn(toFuture(()))
         val result = wait(fixture.service.bulkRemove(Seq((groupId, userId))).run)
 
-        result mustBe 'right
+        result mustBe right
         verify(fixture.userGroupDaoMock, times(1)).remove(groupId, userId)
       }
     }

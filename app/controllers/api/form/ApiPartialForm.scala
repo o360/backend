@@ -20,7 +20,7 @@ case class ApiPartialForm(
   machineName: Option[String]
 ) {
 
-  def toModel(id: Long = 0) =
+  def toModel(id: Long = 0): Form =
     this
       .into[Form]
       .withFieldConst(_.id, id)
@@ -69,7 +69,7 @@ object ApiPartialForm {
     hint: Option[String]
   ) extends Response {
 
-    def toModel =
+    def toModel: Form.Element =
       this
         .into[Form.Element]
         .withFieldConst(_.id, 0L)

@@ -4,8 +4,8 @@ import com.ninja_squad.dbsetup.destination.DriverManagerDestination
 import com.typesafe.config.ConfigFactory
 import org.flywaydb.core.Flyway
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import testutils.AsyncHelper
 import testutils.fixture.FixtureSupport
@@ -18,7 +18,7 @@ import scala.reflect.ClassTag
 trait BaseDaoTest
   extends PlaySpec
   with GuiceOneAppPerSuite
-  with GeneratorDrivenPropertyChecks
+  with ScalaCheckDrivenPropertyChecks
   with AsyncHelper
   with FixtureSupport
   with BeforeAndAfterEach {

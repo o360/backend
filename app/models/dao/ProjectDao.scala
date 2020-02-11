@@ -34,7 +34,7 @@ trait ProjectComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
     machineName: String
   ) {
 
-    def toModel(groupAuditorName: String, templates: Seq[TemplateBinding], hasInProgressEvent: Boolean) =
+    def toModel(groupAuditorName: String, templates: Seq[TemplateBinding], hasInProgressEvent: Boolean): Project =
       this
         .into[Project]
         .withFieldConst(_.groupAuditor, NamedEntity(groupAuditorId, groupAuditorName))
@@ -73,7 +73,7 @@ trait ProjectComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
   * Project DAO.
   */
 @Singleton
-class ProjectDao @Inject()(
+class ProjectDao @Inject() (
   protected val dbConfigProvider: DatabaseConfigProvider,
   implicit val ec: ExecutionContext
 ) extends HasDatabaseConfigProvider[JdbcProfile]
@@ -103,10 +103,10 @@ class ProjectDao @Inject()(
     optAnyRelatedGroupId: Option[Long] = None
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Project]] = {
 
-    def sortMapping(project: ProjectTable): PartialFunction[Symbol, Rep[_]] = {
-      case 'id => project.id
-      case 'name => project.name
-      case 'description => project.description
+    def sortMapping(project: ProjectTable): PartialFunction[String, Rep[_]] = {
+      case "id"          => project.id
+      case "name"        => project.name
+      case "description" => project.description
     }
 
     def emailTemplateFilter(project: ProjectTable) = optEmailTemplateId.map { emailTemplateId =>

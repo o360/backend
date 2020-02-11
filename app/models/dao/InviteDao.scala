@@ -27,7 +27,7 @@ trait InviteComponent extends DateColumnMapper { self: HasDatabaseConfigProvider
     activationTime: Option[LocalDateTime],
     creationTime: LocalDateTime
   ) {
-    def toModel(groups: Seq[NamedEntity]) =
+    def toModel(groups: Seq[NamedEntity]): Invite =
       this
         .into[Invite]
         .withFieldConst(_.groups, groups.toSet)
@@ -75,7 +75,7 @@ trait InviteComponent extends DateColumnMapper { self: HasDatabaseConfigProvider
   * Invite DAO.
   */
 @Singleton
-class InviteDao @Inject()(
+class InviteDao @Inject() (
   val dbConfigProvider: DatabaseConfigProvider,
   implicit val ec: ExecutionContext
 ) extends HasDatabaseConfigProvider[JdbcProfile]
@@ -86,21 +86,21 @@ class InviteDao @Inject()(
   import profile.api._
 
   def getList(code: Option[String] = None, activated: Option[Boolean] = None)(
-    implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Invite]] = {
+    implicit meta: ListMeta = ListMeta.default
+  ): Future[ListWithTotal[Invite]] = {
 
-    val baseQuery = Invites.applyFilter(
-      invite =>
-        Seq(
-          code.map(invite.code === _),
-          activated.map(if (_) invite.activationTime.nonEmpty else invite.activationTime.isEmpty)
+    val baseQuery = Invites.applyFilter(invite =>
+      Seq(
+        code.map(invite.code === _),
+        activated.map(if (_) invite.activationTime.nonEmpty else invite.activationTime.isEmpty)
       )
     )
 
-    val sortMapping: (InviteTable) => PartialFunction[Symbol, Rep[_]] = invite => {
-      case 'code => invite.code
-      case 'email => invite.email
-      case 'activationTime => invite.activationTime
-      case 'creationTime => invite.creationTime
+    val sortMapping: (InviteTable) => PartialFunction[String, Rep[_]] = invite => {
+      case "code"           => invite.code
+      case "email"          => invite.email
+      case "activationTime" => invite.activationTime
+      case "creationTime"   => invite.creationTime
     }
     val inviteQuery = baseQuery
       .applySorting(meta.sorting)(sortMapping)

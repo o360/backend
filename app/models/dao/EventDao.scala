@@ -44,7 +44,7 @@ trait EventComponent extends NotificationComponent with DateColumnMapper {
     end: LocalDateTime,
     isPreparing: Boolean
   ) {
-    def toModel(notifications: Seq[Event.NotificationTime]) =
+    def toModel(notifications: Seq[Event.NotificationTime]): Event =
       this
         .into[Event]
         .withFieldConst(_.notifications, notifications)
@@ -107,7 +107,7 @@ trait EventComponent extends NotificationComponent with DateColumnMapper {
     status match {
       case Event.Status.NotStarted => event.start > currentTime || event.isPreparing
       case Event.Status.InProgress => event.start <= currentTime && event.end > currentTime && !event.isPreparing
-      case Event.Status.Completed => event.end <= currentTime
+      case Event.Status.Completed  => event.end <= currentTime
     }
   }
 }
@@ -116,7 +116,7 @@ trait EventComponent extends NotificationComponent with DateColumnMapper {
   * Event DAO.
   */
 @Singleton
-class EventDao @Inject()(
+class EventDao @Inject() (
   protected val dbConfigProvider: DatabaseConfigProvider,
   implicit val ec: ExecutionContext
 ) extends HasDatabaseConfigProvider[JdbcProfile]
@@ -210,11 +210,11 @@ class EventDao @Inject()(
 
     val countQuery = baseQuery.length
 
-    def sortMapping(event: EventTable): PartialFunction[Symbol, Rep[_]] = {
-      case 'id => event.id
-      case 'start => event.start
-      case 'end => event.end
-      case 'description => event.description
+    def sortMapping(event: EventTable): PartialFunction[String, Rep[_]] = {
+      case "id"          => event.id
+      case "start"       => event.start
+      case "end"         => event.end
+      case "description" => event.description
     }
 
     val resultQuery = baseQuery

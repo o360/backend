@@ -22,7 +22,7 @@ import scala.concurrent.ExecutionContext
   * User controller.
   */
 @Singleton
-class UserController @Inject()(
+class UserController @Inject() (
   protected val silhouette: Silhouette[DefaultEnv],
   protected val userService: UserService,
   val controllerComponents: ControllerComponents,
@@ -30,7 +30,7 @@ class UserController @Inject()(
 ) extends BaseController
   with ListActions {
 
-  implicit val sortingFields = Sorting.AvailableFields('id, 'name, 'gender)
+  implicit val sortingFields = Sorting.AvailableFields("id", "name", "gender")
 
   /**
     * Returns user by ID.

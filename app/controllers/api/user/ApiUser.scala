@@ -26,7 +26,7 @@ case class ApiUser(
   hasPicture: Boolean
 ) extends Response {
 
-  def toModel =
+  def toModel: User =
     this
       .into[User]
       .withFieldComputed(_.gender, _.gender.map(_.value))

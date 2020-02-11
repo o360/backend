@@ -53,7 +53,7 @@ class FormServiceTest
         when(fixture.formDaoMock.findById(id)).thenReturn(toFuture(None))
         val result = wait(fixture.service.getById(id).run)
 
-        result mustBe 'left
+        result mustBe left
         result.swap.toOption.get mustBe a[NotFoundError]
 
         verify(fixture.formDaoMock, times(1)).findById(id)
@@ -67,7 +67,7 @@ class FormServiceTest
         when(fixture.formDaoMock.findById(id)).thenReturn(toFuture(Some(form)))
         val result = wait(fixture.service.getById(id).run)
 
-        result mustBe 'right
+        result mustBe right
         result.toOption.get mustBe form
 
         verify(fixture.formDaoMock, times(1)).findById(id)
@@ -81,17 +81,19 @@ class FormServiceTest
       val fixture = getFixture
       val formId = 1
       when(fixture.formDaoMock.findById(formId)).thenReturn(toFuture(Some(Forms(0))))
-      when(fixture.answerDao.getList(
-        optEventId = *,
-        optActiveProjectId = *,
-        optUserFromId = eqTo(Some(admin.id)),
-        optFormId = eqTo(Some(formId)),
-        optUserToId = *,
-      )).thenReturn(toFuture(Nil))
+      when(
+        fixture.answerDao.getList(
+          optEventId = *,
+          optActiveProjectId = *,
+          optUserFromId = eqTo(Some(admin.id)),
+          optFormId = eqTo(Some(formId)),
+          optUserToId = *
+        )
+      ).thenReturn(toFuture(Nil))
 
       val result = wait(fixture.service.getByIdWithAuth(formId)(admin).run)
 
-      result mustBe 'left
+      result mustBe left
       result.swap.toOption.get mustBe an[NotFoundError]
     }
 
@@ -99,17 +101,19 @@ class FormServiceTest
       val fixture = getFixture
       val formId = 1
       when(fixture.formDaoMock.findById(formId)).thenReturn(toFuture(Some(Forms(0))))
-      when(fixture.answerDao.getList(
-        optEventId = *,
-        optActiveProjectId = *,
-        optUserFromId = eqTo(Some(admin.id)),
-        optFormId = eqTo(Some(formId)),
-        optUserToId = *,
-      )).thenReturn(toFuture(Seq(Answers(0))))
+      when(
+        fixture.answerDao.getList(
+          optEventId = *,
+          optActiveProjectId = *,
+          optUserFromId = eqTo(Some(admin.id)),
+          optFormId = eqTo(Some(formId)),
+          optUserToId = *
+        )
+      ).thenReturn(toFuture(Seq(Answers(0))))
 
       val result = wait(fixture.service.getByIdWithAuth(formId)(admin).run)
 
-      result mustBe 'right
+      result mustBe right
       result.toOption.get mustBe Forms(0)
     }
   }
@@ -127,11 +131,11 @@ class FormServiceTest
               optKind = *,
               optEventId = *,
               includeDeleted = *
-            )(eqTo(ListMeta.default)))
-            .thenReturn(toFuture(ListWithTotal(total, forms)))
+            )(eqTo(ListMeta.default))
+          ).thenReturn(toFuture(ListWithTotal(total, forms)))
           val result = wait(fixture.service.getList()(ListMeta.default).run)
 
-          result mustBe 'right
+          result mustBe right
           result.toOption.get mustBe ListWithTotal(total, forms)
       }
     }
@@ -139,12 +143,13 @@ class FormServiceTest
 
   "create" should {
     "return conflict if form is incorrect" in {
-      val form = Forms(0).copy(elements = Seq(Form.Element(1, models.form.element.Radio, "", false, Nil, Nil, "", None)))
+      val form =
+        Forms(0).copy(elements = Seq(Form.Element(1, models.form.element.Radio, "", false, Nil, Nil, "", None)))
 
       val fixture = getFixture
       val result = wait(fixture.service.create(form).run)
 
-      result mustBe 'left
+      result mustBe left
       result.swap.toOption.get mustBe a[ConflictError]
     }
 
@@ -155,7 +160,7 @@ class FormServiceTest
 
       val result = wait(fixture.service.create(form).run)
 
-      result mustBe 'right
+      result mustBe right
       result.toOption.get mustBe form
     }
   }
@@ -167,7 +172,7 @@ class FormServiceTest
         when(fixture.formDaoMock.findById(form.id)).thenReturn(toFuture(None))
         val result = wait(fixture.service.update(form).run)
 
-        result mustBe 'left
+        result mustBe left
         result.swap.toOption.get mustBe a[NotFoundError]
 
         verify(fixture.formDaoMock, times(1)).findById(form.id)
@@ -176,7 +181,8 @@ class FormServiceTest
     }
 
     "return conflict if form is incorrect" in {
-      val form = Forms(0).copy(elements = Seq(Form.Element(1, models.form.element.Radio, "", false, Nil, Nil, "", None)))
+      val form =
+        Forms(0).copy(elements = Seq(Form.Element(1, models.form.element.Radio, "", false, Nil, Nil, "", None)))
       val fixture = getFixture
       when(fixture.formDaoMock.findById(form.id)).thenReturn(toFuture(Some(form)))
       when(
@@ -186,12 +192,13 @@ class FormServiceTest
           optProjectId = *,
           optFormId = eqTo(Some(form.id)),
           optGroupFromIds = *,
-          optUserId = *,
-        )(*)).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
+          optUserId = *
+        )(*)
+      ).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
 
       val result = wait(fixture.service.update(form).run)
 
-      result mustBe 'left
+      result mustBe left
       result.swap.toOption.get mustBe a[ConflictError]
     }
 
@@ -207,12 +214,13 @@ class FormServiceTest
           optProjectId = *,
           optFormId = eqTo(Some(form.id)),
           optGroupFromIds = *,
-          optUserId = *,
-        )(*)).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
+          optUserId = *
+        )(*)
+      ).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
 
       val result = wait(fixture.service.update(form).run)
 
-      result mustBe 'right
+      result mustBe right
       result.toOption.get mustBe form
     }
   }
@@ -224,7 +232,7 @@ class FormServiceTest
         when(fixture.formDaoMock.findById(id)).thenReturn(toFuture(None))
         val result = wait(fixture.service.delete(id).run)
 
-        result mustBe 'left
+        result mustBe left
         result.swap.toOption.get mustBe a[NotFoundError]
 
         verify(fixture.formDaoMock, times(1)).findById(id)
@@ -239,7 +247,7 @@ class FormServiceTest
 
         val result = wait(fixture.service.delete(form.id).run)
 
-        result mustBe 'left
+        result mustBe left
         result.swap.toOption.get mustBe a[ConflictError]
       }
     }
@@ -257,7 +265,8 @@ class FormServiceTest
             optGroupAuditorId = *,
             optEmailTemplateId = *,
             optAnyRelatedGroupId = *
-          )(*)).thenReturn(toFuture(ListWithTotal(1, Projects.take(1))))
+          )(*)
+        ).thenReturn(toFuture(ListWithTotal(1, Projects.take(1))))
         when(
           fixture.relationDao.getList(
             optId = *,
@@ -267,11 +276,12 @@ class FormServiceTest
             optGroupFromId = *,
             optGroupToId = *,
             optEmailTemplateId = *
-          )(*)).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
+          )(*)
+        ).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
 
         val result = wait(fixture.service.delete(form.id).run)
 
-        result mustBe 'left
+        result mustBe left
         result.swap.toOption.get mustBe a[ConflictError]
       }
     }
@@ -289,7 +299,8 @@ class FormServiceTest
             optGroupAuditorId = *,
             optEmailTemplateId = *,
             optAnyRelatedGroupId = *
-          )(*)).thenReturn(toFuture(ListWithTotal[Project](0, Nil)))
+          )(*)
+        ).thenReturn(toFuture(ListWithTotal[Project](0, Nil)))
         when(
           fixture.relationDao.getList(
             optId = *,
@@ -299,12 +310,13 @@ class FormServiceTest
             optGroupFromId = *,
             optGroupToId = *,
             optEmailTemplateId = *
-          )(*)).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
+          )(*)
+        ).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
         when(fixture.formDaoMock.delete(form.id)).thenReturn(toFuture(1))
 
         val result = wait(fixture.service.delete(form.id).run)
 
-        result mustBe 'right
+        result mustBe right
       }
     }
   }

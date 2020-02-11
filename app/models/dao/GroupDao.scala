@@ -64,7 +64,7 @@ trait GroupComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
   * Group DAO.
   */
 @Singleton
-class GroupDao @Inject()(
+class GroupDao @Inject() (
   protected val dbConfigProvider: DatabaseConfigProvider,
   implicit val ec: ExecutionContext
 ) extends HasDatabaseConfigProvider[JdbcProfile]
@@ -121,8 +121,8 @@ class GroupDao @Inject()(
             optId.map(group.id === _),
             optParentId match {
               case Tristate.Present(parentId) => Some(group.parentId.fold(false: Rep[Boolean])(_ === parentId))
-              case Tristate.Absent => Some(group.parentId.isEmpty)
-              case Tristate.Unspecified => None
+              case Tristate.Absent            => Some(group.parentId.isEmpty)
+              case Tristate.Unspecified       => None
             },
             optUserId.map(userId => group.id in UserGroups.filter(_.userId === userId).map(_.groupId)),
             filterName(group),
@@ -137,9 +137,9 @@ class GroupDao @Inject()(
 
     runListQuery(query) {
       case (group, _, level) => {
-        case 'id => group.id
-        case 'name => group.name
-        case 'level => level
+        case "id"    => group.id
+        case "name"  => group.name
+        case "level" => level
       }
     }.map {
       case ListWithTotal(total, data) =>

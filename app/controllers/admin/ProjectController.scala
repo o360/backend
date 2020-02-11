@@ -20,7 +20,7 @@ import scala.concurrent.ExecutionContext
   * Project controller.
   */
 @Singleton
-class ProjectController @Inject()(
+class ProjectController @Inject() (
   protected val silhouette: Silhouette[DefaultEnv],
   protected val projectService: ProjectService,
   val controllerComponents: ControllerComponents,
@@ -28,7 +28,7 @@ class ProjectController @Inject()(
 ) extends BaseController
   with ListActions {
 
-  implicit val sortingFields = Sorting.AvailableFields('id, 'name, 'description)
+  implicit val sortingFields = Sorting.AvailableFields("id", "name", "description")
 
   /**
     * Returns list of projects.

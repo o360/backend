@@ -20,7 +20,7 @@ import scala.concurrent.ExecutionContext
   * Event controller.
   */
 @Singleton
-class EventController @Inject()(
+class EventController @Inject() (
   silhouette: Silhouette[DefaultEnv],
   eventService: EventService,
   val controllerComponents: ControllerComponents,
@@ -28,7 +28,7 @@ class EventController @Inject()(
 ) extends BaseController
   with ListActions {
 
-  implicit val sortingFields = Sorting.AvailableFields('id, 'start, 'end, 'description)
+  implicit val sortingFields = Sorting.AvailableFields("id", "start", "end", "description")
 
   /**
     * Returns event by ID.

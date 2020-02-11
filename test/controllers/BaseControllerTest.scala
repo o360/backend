@@ -5,10 +5,10 @@ import com.mohiva.play.silhouette.api.{Env, Environment, LoginInfo, SilhouettePr
 import com.mohiva.play.silhouette.test._
 import models.user.{User => UserModel}
 import org.scalatest.ParallelTestExecution
-import org.scalatest.mockito.MockitoSugar
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.test.FakeRequest
 import play.api.test.Helpers.stubControllerComponents
 import silhouette.DefaultEnv
@@ -20,7 +20,7 @@ import testutils.{AsyncHelper, MockitoHelper, ServiceResultHelper}
   */
 trait BaseControllerTest
   extends PlaySpec
-  with GeneratorDrivenPropertyChecks
+  with ScalaCheckDrivenPropertyChecks
   with GuiceOneAppPerSuite
   with AsyncHelper
   with MockitoSugar
