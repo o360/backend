@@ -44,7 +44,8 @@ abstract class EnumFormatHelper[A, B <: EnumFormat[A]](val name: String) {
     case None =>
       Left(
         s"Unable to parse $name. Unknown value [$input]. " +
-          s"Possible values: [${mapping.keys.mkString(", ")}]")
+          s"Possible values: [${mapping.keys.mkString(", ")}]"
+      )
     case Some(value) => Right(value)
   }
 
@@ -71,7 +72,7 @@ abstract class EnumFormatHelper[A, B <: EnumFormat[A]](val name: String) {
     override def reads(json: JsValue): JsResult[B] = json match {
       case JsString(statusStr) =>
         read(statusStr) match {
-          case Left(error) => JsError(error)
+          case Left(error)  => JsError(error)
           case Right(value) => JsSuccess(apply(value))
         }
       case _ => JsError("Expected string")
@@ -86,11 +87,11 @@ abstract class EnumFormatHelper[A, B <: EnumFormat[A]](val name: String) {
     new QueryStringBindable[B] {
       override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, B]] = {
         stringBinder.bind(key, params) match {
-          case None => None
+          case None              => None
           case Some(Left(error)) => Some(Left(error))
           case Some(Right(str)) =>
             read(str) match {
-              case Left(error) => Some(Left(error))
+              case Left(error)  => Some(Left(error))
               case Right(value) => Some(Right(apply(value)))
             }
         }

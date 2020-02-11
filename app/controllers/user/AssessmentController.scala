@@ -20,7 +20,7 @@ import scala.concurrent.ExecutionContext
   * Assessment controller.
   */
 @Singleton
-class AssessmentController @Inject()(
+class AssessmentController @Inject() (
   silhouette: Silhouette[DefaultEnv],
   assessmentService: AssessmentService,
   val controllerComponents: ControllerComponents,

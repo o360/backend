@@ -18,9 +18,9 @@ class CustomGoogleProfileParser(implicit ec: ExecutionContext) extends CustomSoc
   def parse(content: JsValue, authInfo: OAuth2Info): Future[CustomSocialProfile] = {
     parser.parse(content, authInfo).map { commonProfile =>
       val gender = (content \ "gender").asOpt[String].flatMap {
-        case "male" => Some(User.Gender.Male)
+        case "male"   => Some(User.Gender.Male)
         case "female" => Some(User.Gender.Female)
-        case _ => None
+        case _        => None
       }
 
       CustomSocialProfile(

@@ -16,7 +16,7 @@ import scala.concurrent.{ExecutionContext, Future}
   * Invite service.
   */
 @Singleton
-class InviteService @Inject()(
+class InviteService @Inject() (
   userDao: UserDao,
   groupDao: GroupDao,
   inviteDao: InviteDao,
@@ -35,9 +35,9 @@ class InviteService @Inject()(
       val notFoundGroupId = groups.collectFirst { case (entity, None) => entity.id }
 
       (existedEmail, notFoundGroupId) match {
-        case (Some(email), _) => Some(ConflictError.Invite.UserAlreadyRegistered(email))
+        case (Some(email), _)   => Some(ConflictError.Invite.UserAlreadyRegistered(email))
         case (_, Some(groupId)) => Some(NotFoundError.Group(groupId))
-        case _ => None
+        case _                  => None
       }
     }
   }

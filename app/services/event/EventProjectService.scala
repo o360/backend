@@ -15,7 +15,7 @@ import scalaz.Scalaz._
   * Project event service.
   */
 @Singleton
-class EventProjectService @Inject()(
+class EventProjectService @Inject() (
   protected val projectService: ProjectService,
   protected val eventService: EventService,
   protected val eventProjectDao: EventProjectDao,

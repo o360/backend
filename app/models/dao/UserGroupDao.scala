@@ -31,7 +31,7 @@ trait UserGroupComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
   * DAO for user - group relation.
   */
 @Singleton
-class UserGroupDao @Inject()(
+class UserGroupDao @Inject() (
   protected val dbConfigProvider: DatabaseConfigProvider,
   implicit val ec: ExecutionContext
 ) extends HasDatabaseConfigProvider[JdbcProfile]

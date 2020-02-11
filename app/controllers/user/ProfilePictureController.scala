@@ -16,7 +16,7 @@ import scala.concurrent.ExecutionContext
 /**
   * Profile picture controller.
   */
-class ProfilePictureController @Inject()(
+class ProfilePictureController @Inject() (
   silhouette: Silhouette[DefaultEnv],
   val fileService: FileService,
   val userService: UserService,

@@ -16,7 +16,7 @@ import scala.concurrent.{ExecutionContext, Future}
 /**
   * Service for active projects.
   */
-class ActiveProjectService @Inject()(
+class ActiveProjectService @Inject() (
   activeProjectDao: ActiveProjectDao,
   implicit val ec: ExecutionContext
 ) extends ServiceResults[ActiveProject] {

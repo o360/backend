@@ -15,7 +15,7 @@ import scala.concurrent.ExecutionContext
   * Comptence service.
   */
 @Singleton
-class CompetenceService @Inject()(
+class CompetenceService @Inject() (
   protected val competenceDao: CompetenceDao,
   protected val competenceGroupService: CompetenceGroupService,
   implicit val ec: ExecutionContext

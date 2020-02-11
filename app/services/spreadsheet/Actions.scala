@@ -71,7 +71,7 @@ object Action {
       def getActionsForInnerElements(elements: Seq[Element], current: Point): Seq[Action] = {
 
         def getNewCoordinate(el: Element) = container.direction match {
-          case Container.Direction.TopToDown => current.copy(y = current.y + el.height)
+          case Container.Direction.TopToDown   => current.copy(y = current.y + el.height)
           case Container.Direction.LeftToRight => current.copy(x = current.x + el.width)
         }
 
@@ -91,8 +91,8 @@ object Action {
     }
 
     element match {
-      case NoElement => Nil
-      case cell: Cell => cell.getActions(coordinate)
+      case NoElement            => Nil
+      case cell: Cell           => cell.getActions(coordinate)
       case container: Container => getContainerActions(container)
     }
   }

@@ -17,7 +17,7 @@ import scala.concurrent.ExecutionContext
 /**
   * Report controller.
   */
-class ReportController @Inject()(
+class ReportController @Inject() (
   protected val silhouette: Silhouette[DefaultEnv],
   protected val reportService: ReportService,
   val controllerComponents: ControllerComponents,

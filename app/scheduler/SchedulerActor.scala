@@ -13,7 +13,7 @@ import scala.concurrent.ExecutionContext
   * Scheduler actor.
   */
 @Singleton
-class SchedulerActor @Inject()(
+class SchedulerActor @Inject() (
   protected val config: Config,
   protected val eventJobService: EventJobService,
   implicit val ec: ExecutionContext

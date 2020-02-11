@@ -17,7 +17,7 @@ import scala.concurrent.{ExecutionContext, Future}
   * Project service.
   */
 @Singleton
-class ProjectService @Inject()(
+class ProjectService @Inject() (
   protected val projectDao: ProjectDao,
   protected val eventDao: EventDao,
   protected val groupDao: GroupDao,
