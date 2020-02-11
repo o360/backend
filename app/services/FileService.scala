@@ -14,7 +14,7 @@ import scalaz.\/
 /**
   * File service.
   */
-class FileService @Inject()(config: Config) {
+class FileService @Inject() (config: Config) {
 
   /**
     * Uploads file to local filesystem, validate extensions.

@@ -20,7 +20,7 @@ import scalaz._
   * Form template service.
   */
 @Singleton
-class FormService @Inject()(
+class FormService @Inject() (
   protected val formDao: FormDao,
   protected val eventDao: EventDao,
   protected val groupDao: GroupDao,

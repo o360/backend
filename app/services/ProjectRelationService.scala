@@ -16,7 +16,7 @@ import scala.concurrent.ExecutionContext
   * Project relation service.
   */
 @Singleton
-class ProjectRelationService @Inject()(
+class ProjectRelationService @Inject() (
   protected val projectRelationDao: ProjectRelationDao,
   protected val eventDao: EventDao,
   protected val formService: FormService,

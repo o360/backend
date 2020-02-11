@@ -20,7 +20,7 @@ class FlywayModule extends AbstractModule {
   * Automatically applies migrations when application is in prod mode.
   */
 @Singleton
-class FlywayInitializer @Inject()(
+class FlywayInitializer @Inject() (
   protected val config: Config,
   protected val environment: Environment
 ) extends Logger {

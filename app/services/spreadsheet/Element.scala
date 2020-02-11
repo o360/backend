@@ -138,12 +138,12 @@ object Element {
     border: Option[Border]
   ) extends Element {
     def width: Int = direction match {
-      case Container.Direction.TopToDown => if (elements.isEmpty) 0 else elements.map(_.width).max
+      case Container.Direction.TopToDown   => if (elements.isEmpty) 0 else elements.map(_.width).max
       case Container.Direction.LeftToRight => if (elements.isEmpty) 0 else elements.map(_.width).sum
     }
 
     def height: Int = direction match {
-      case Container.Direction.TopToDown => if (elements.isEmpty) 0 else elements.map(_.height).sum
+      case Container.Direction.TopToDown   => if (elements.isEmpty) 0 else elements.map(_.height).sum
       case Container.Direction.LeftToRight => if (elements.isEmpty) 0 else elements.map(_.height).max
     }
 

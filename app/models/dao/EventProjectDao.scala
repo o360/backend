@@ -30,7 +30,7 @@ trait EventProjectComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
   * DAO for event - project relation.
   */
 @Singleton
-class EventProjectDao @Inject()(
+class EventProjectDao @Inject() (
   protected val dbConfigProvider: DatabaseConfigProvider,
   implicit val ec: ExecutionContext
 ) extends HasDatabaseConfigProvider[JdbcProfile]

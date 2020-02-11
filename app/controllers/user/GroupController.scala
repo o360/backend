@@ -20,7 +20,7 @@ import scala.concurrent.ExecutionContext
   * Group controller.
   */
 @Singleton
-class GroupController @Inject()(
+class GroupController @Inject() (
   silhouette: Silhouette[DefaultEnv],
   groupService: GroupService,
   userService: UserService,

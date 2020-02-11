@@ -28,13 +28,13 @@ object PaginationRequestParser {
       case (Some(sizeStr), Some(numberStr)) =>
         Try((sizeStr.toInt, numberStr.toInt)) match {
           case Success((size, number)) if size >= 0 && number > 0 => Right(WithPages(size, number))
-          case _ => Left(BadRequestError.Pagination)
+          case _                                                  => Left(BadRequestError.Pagination)
         }
 
       case (Some(sizeStr), None) =>
         Try(sizeStr.toInt) match {
           case Success(size) if size >= 0 => Right(WithPages(size, 1))
-          case _ => Left(BadRequestError.Pagination)
+          case _                          => Left(BadRequestError.Pagination)
         }
 
       case _ => Right(WithoutPages)

@@ -22,7 +22,7 @@ import scala.util.control.NonFatal
   * User service.
   */
 @Singleton
-class UserService @Inject()(
+class UserService @Inject() (
   protected val userDao: UserDao,
   protected val userGroupDao: UserGroupDao,
   protected val groupDao: GroupDao,

@@ -23,7 +23,7 @@ trait EventJobComponent extends NotificationComponent with EnumColumnMapper with
     EventJob.Status.Success,
     EventJob.Status.Failure,
     EventJob.Status.Cancelled,
-    EventJob.Status.InProgress,
+    EventJob.Status.InProgress
   )
 
   /**
@@ -46,7 +46,8 @@ trait EventJobComponent extends NotificationComponent with EnumColumnMapper with
           time,
           kind.getOrElse(throw new NoSuchElementException(s"missed kind in notification job for event $eventId")),
           recipient.getOrElse(
-            throw new NoSuchElementException(s"missed recipient in notification job for event $eventId"))
+            throw new NoSuchElementException(s"missed recipient in notification job for event $eventId")
+          )
         )
         EventJob.SendNotification(id, eventId, notification, status)
       case 2 =>
@@ -85,7 +86,7 @@ trait EventJobComponent extends NotificationComponent with EnumColumnMapper with
   * Event job DAO.
   */
 @Singleton
-class EventJobDao @Inject()(
+class EventJobDao @Inject() (
   protected val dbConfigProvider: DatabaseConfigProvider,
   implicit val ec: ExecutionContext
 ) extends HasDatabaseConfigProvider[JdbcProfile]
@@ -115,7 +116,7 @@ class EventJobDao @Inject()(
       existingJobId <- db.run(existedJobQuery)
       _ <- existingJobId match {
         case Some(id) => db.run(EventJobs.filter(_.id === id).update(dbJob.copy(id = id)))
-        case None => db.run(EventJobs += dbJob)
+        case None     => db.run(EventJobs += dbJob)
       }
     } yield ()
   }
