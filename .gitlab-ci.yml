@@ -23,7 +23,7 @@ test:
   tags: 
     - open360-shell
   script:
-    - sbt clean coverage test coverageReport
+    - sbt scalafmtCheck scalafmtSbtCheck clean coverage test coverageReport
 
 build:
   stage: build
