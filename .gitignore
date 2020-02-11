@@ -2,6 +2,7 @@
 .vscode/
 .bloop/
 .metals/
+.DS_Store
 logs/
 target/
 project/target
