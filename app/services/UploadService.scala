@@ -112,7 +112,7 @@ class UploadService @Inject() (
           .groupBy(_._1)
           .view
           .mapValues(_.map(_._2))
-          .to(Map)
+          .toMap
       }
     }
 

@@ -34,7 +34,7 @@ object SpreadsheetApi {
         .groupBy(_.region.topLeft)
         .view
         .mapValues(_.head.color)
-        .to(Map)
+        .toMap
 
       val setTextActions = actions.collect { case v: SetCellText => v }
 
@@ -47,7 +47,7 @@ object SpreadsheetApi {
             .groupBy(_.coordinate.x)
             .view
             .mapValues(_.head.cell)
-            .to(Map)
+            .toMap
           val cellsModels = (0 to maxColumn).map { cellIndex =>
             val color = coordinateToColor.get(Point(cellIndex, rowIndex))
             cells.get(cellIndex).fold(textCell("", color = color)) { cell =>

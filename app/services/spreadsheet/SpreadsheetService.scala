@@ -134,7 +134,7 @@ class SpreadsheetService @Inject() () {
           .toMap
           .view
           .mapValues(x => s"Anonymous #$x")
-          .to(Map)
+          .toMap
 
         val fromUsers = nonAnonymous.map((_, false)) ++ anonymous.map((_, true))
         val forms = report.forms.map(_.form).distinct
@@ -186,7 +186,7 @@ class SpreadsheetService @Inject() () {
             .groupBy(_._2)
             .view
             .mapValues(_.head._3)
-            .to(Map)
+            .toMap
 
           val formElementIds = form.elements.map(_.id)
 

@@ -11,7 +11,7 @@ import utils.listmeta.ListMeta
 import scala.concurrent.{ExecutionContext, Future}
 
 /**
-  * Component for "competence_group"' table.
+  * Component for 'competence_group' table.
   */
 trait CompetenceGroupComponent extends EntityKindColumnMapper {
   _: HasDatabaseConfigProvider[JdbcProfile] =>

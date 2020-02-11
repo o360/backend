@@ -188,7 +188,7 @@ class ReportService @Inject() (
         .groupBy(identity)
         .view
         .mapValues(_.length)
-        .to(Map)
+        .toMap
 
       val totalCount = valueIdToCount.values.sum
 
