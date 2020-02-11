@@ -45,7 +45,7 @@ object ErrorHelper extends Logger {
           Error.AdditionalInfo.ConflictDependencies(
             relatedEntities.view
               .mapValues(_.map(ApiNamedEntity(_)))
-              .to(Map)
+              .toMap
           )
         }
       case _ => None

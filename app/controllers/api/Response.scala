@@ -49,7 +49,7 @@ object Response {
           JsObject(
             Seq(
               "conflicts" -> JsObject(
-                values.view.mapValues(x => JsArray(x.map(Json.toJson(_)))).to(Map)
+                values.view.mapValues(x => JsArray(x.map(Json.toJson(_)))).toMap
               )
             )
           )
