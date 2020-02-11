@@ -19,7 +19,7 @@ import scalaz.EitherT
   * Group service.
   */
 @Singleton
-class GroupService @Inject()(
+class GroupService @Inject() (
   protected val groupDao: GroupDao,
   protected val userGroupDao: UserGroupDao,
   protected val relationDao: ProjectRelationDao,
@@ -79,7 +79,7 @@ class GroupService @Inject()(
       }
     }
 
-    EitherT.right {
+    EitherT.rightT {
       groupDao.getList(optUserId = Some(userId)).flatMap { groups =>
         Future
           .sequence(groups.data.map(getParents))

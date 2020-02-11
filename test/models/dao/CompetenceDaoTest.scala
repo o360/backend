@@ -20,9 +20,10 @@ class CompetenceDaoTest extends BaseDaoTest with CompetenceFixture with Competen
         Gen.option(Gen.oneOf[EntityKind](EntityKind.Template, EntityKind.Freezed)),
         Gen.option(Gen.oneOf(CompetenceGroups.map(_.id) :+ -10L))
       ) { (ids, kind, groupId) =>
-        val competences = wait(dao.getList(groupId, kind, ids))
+        val competences = wait(dao.getList(groupId, kind, ids.map(_.toSeq)))
         val expectedCompetences = Competences.filter(c =>
-          ids.forall(_.contains(c.id)) && kind.forall(_ == c.kind) && groupId.forall(_ == c.groupId))
+          ids.forall(_.contains(c.id)) && kind.forall(_ == c.kind) && groupId.forall(_ == c.groupId)
+        )
         competences.total mustBe expectedCompetences.length
         competences.data must contain theSameElementsAs expectedCompetences
       }

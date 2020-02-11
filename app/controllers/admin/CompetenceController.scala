@@ -19,7 +19,7 @@ import scala.concurrent.ExecutionContext
 /**
   * Competence controller.
   */
-class CompetenceController @Inject()(
+class CompetenceController @Inject() (
   silhouette: Silhouette[DefaultEnv],
   competenceService: CompetenceService,
   val controllerComponents: ControllerComponents,
@@ -27,7 +27,7 @@ class CompetenceController @Inject()(
 ) extends BaseController
   with ListActions {
 
-  implicit val sortingFields = Sorting.AvailableFields('id, 'name, 'groupId, 'description)
+  implicit val sortingFields = Sorting.AvailableFields("id", "name", "groupId", "description")
 
   private val secured = silhouette.SecuredAction(AllowedRole.admin)
 

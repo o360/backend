@@ -28,7 +28,7 @@ class ProjectRelationController @Inject() (
 ) extends BaseController
   with ListActions {
 
-  implicit val sortingFields = Sorting.AvailableFields('id, 'projectId)
+  implicit val sortingFields = Sorting.AvailableFields("id", "projectId")
 
   /**
     * Returns list of relations with relations.

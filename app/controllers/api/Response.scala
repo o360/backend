@@ -49,8 +49,10 @@ object Response {
           JsObject(
             Seq(
               "conflicts" -> JsObject(
-                values.mapValues(x => JsArray(x.map(Json.toJson(_))))
-              )))
+                values.view.mapValues(x => JsArray(x.map(Json.toJson(_)))).to(Map)
+              )
+            )
+          )
       }
 
       case class UserFormInfo(userId: Option[Long], formId: Long) extends AdditionalInfo {
@@ -59,7 +61,8 @@ object Response {
             Seq(
               "userId" -> Json.toJson(userId),
               "formId" -> Json.toJson(formId)
-            ))
+            )
+          )
       }
     }
 
@@ -69,7 +72,8 @@ object Response {
           Seq(
             "code" -> JsString(o.code),
             "message" -> JsString(o.message)
-          ))
+          )
+        )
 
         o.additionalInfo.map(_.toJson).foreach(errorJs ++= _)
 
@@ -77,7 +81,8 @@ object Response {
           errorJs ++= JsObject(
             Seq(
               "inner" -> JsArray(innerErrors.map(Json.toJson(_)(this)))
-            ))
+            )
+          )
         }
 
         errorJs
@@ -99,7 +104,8 @@ object Response {
           Seq(
             "data" -> JsArray(o.data.map(Json.toJson(_))),
             "meta" -> Json.toJson(o.meta)(Meta.writes)
-          ))
+          )
+        )
     }
 
     /**
@@ -125,7 +131,7 @@ object Response {
     def apply[A, B, E](
       list: Either[E, ListWithTotal[A]]
     )(model2response: A => B)(implicit meta: ListMeta): Either[E, List[B]] = {
-      list.right.map(List(_)(model2response))
+      list.map(List(_)(model2response))
     }
 
     /**
@@ -154,7 +160,7 @@ object Response {
       */
     def apply(total: Int, listMeta: ListMeta): Meta = {
       val (size, number) = listMeta.pagination match {
-        case WithoutPages => (total, 1)
+        case WithoutPages    => (total, 1)
         case WithPages(s, n) => (s, n)
       }
       Meta(

@@ -8,7 +8,7 @@ import utils.listmeta.sorting.Sorting
 /**
   * ListMeta generator for scalacheck.
   */
-trait ListMetaGenerator extends SymbolGenerator {
+trait ListMetaGenerator {
 
   implicit val listMetaArb = Arbitrary {
     val paginationGen: Gen[Pagination] = {
@@ -22,7 +22,7 @@ trait ListMetaGenerator extends SymbolGenerator {
 
     val sortingGen = {
       val fieldGen = for {
-        name <- Arbitrary.arbitrary[Symbol]
+        name <- Arbitrary.arbitrary[String]
         direction <- Gen.oneOf(Sorting.Direction.Asc, Sorting.Direction.Desc)
       } yield Sorting.Field(name, direction)
 

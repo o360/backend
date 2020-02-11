@@ -38,7 +38,7 @@ object ApiFormAnswer {
     valuesIds: Option[Seq[Long]],
     comment: Option[String]
   ) {
-    def toModel =
+    def toModel: Answer.Element =
       this
         .into[Answer.Element]
         .withFieldComputed(_.valuesIds, _.valuesIds.map(_.toSet))

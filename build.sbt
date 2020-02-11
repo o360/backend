@@ -2,15 +2,14 @@ name := "open360"
 
 version := "1.0"
 
-scalaVersion := "2.12.9"
+scalaVersion := "2.13.1"
 
 lazy val root =
   (project in file(".")).enablePlugins(PlayScala, SwaggerPlugin, DockerPlugin)
 
 scalacOptions ++= Seq(
-  "-Ywarn-inaccessible",
-  "-Ywarn-unused",
-  "-Ywarn-unused-import",
+  "-Xlint:inaccessible",
+  "-Xlint:unused",
   s"-P:silencer:sourceRoots=${baseDirectory.value.getCanonicalPath}",
   s"-P:silencer:pathFilters=routes/.*"
 )
@@ -21,26 +20,25 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "com.typesafe.play" %% "play-slick" % "3.0.0",
+  "com.typesafe.play" %% "play-slick" % "4.0.2",
   "org.postgresql" % "postgresql" % "42.0.0",
-  "org.davidbild" %% "tristate-play" % "0.3.0",
   "com.mohiva" %% "play-silhouette" % "6.1.0",
   "com.mohiva" %% "play-silhouette-persistence" % "6.1.0",
-  "com.typesafe.play" %% "play-mailer" % "6.0.1",
-  "com.typesafe.play" %% "play-mailer-guice" % "6.0.1",
-  "org.scalaz" %% "scalaz-core" % "7.2.10",
+  "com.typesafe.play" %% "play-mailer" % "8.0.0",
+  "com.typesafe.play" %% "play-mailer-guice" % "8.0.0",
+  "org.scalaz" %% "scalaz-core" % "7.2.30",
   "com.google.apis" % "google-api-services-sheets" % "v4-rev473-1.22.0",
   "com.google.apis" % "google-api-services-drive" % "v3-rev74-1.22.0",
   "org.flywaydb" % "flyway-core" % "4.1.2",
-  "io.scalaland" %% "chimney" % "0.1.6",
+  "io.scalaland" %% "chimney" % "0.4.1",
   "commons-io" % "commons-io" % "2.6",
   filters,
   guice
 )
 
 libraryDependencies ++= Seq(
-  "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.1",
-  "org.scalacheck" %% "scalacheck" % "1.13.4",
+  "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.3",
+  "org.scalacheck" %% "scalacheck" % "1.14.1",
   "com.h2database" % "h2" % "1.4.194",
   "org.mockito" % "mockito-core" % "2.7.19",
   "com.ninja-squad" % "DbSetup" % "2.1.0",

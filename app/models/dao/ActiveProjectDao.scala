@@ -30,7 +30,7 @@ trait ActiveProjectComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
     machineName: String,
     parentProjectId: Option[Long]
   ) {
-    def toModel =
+    def toModel: ActiveProject =
       this
         .into[ActiveProject]
         .withFieldConst(_.userInfo, none[ActiveProject.UserInfo])
@@ -78,7 +78,7 @@ trait ActiveProjectComponent { self: HasDatabaseConfigProvider[JdbcProfile] =>
 /**
   * Active project DAO.
   */
-class ActiveProjectDao @Inject()(
+class ActiveProjectDao @Inject() (
   protected val dbConfigProvider: DatabaseConfigProvider,
   implicit val ec: ExecutionContext
 ) extends HasDatabaseConfigProvider[JdbcProfile]
@@ -99,19 +99,19 @@ class ActiveProjectDao @Inject()(
     def userFilter(project: ActiveProjectTable) = optUserId.map { userId =>
       project.id.in(Answers.filter(_.userFromId === userId).map(_.activeProjectId))
     }
-    val query = ActiveProjects.applyFilter(
-      project =>
-        Seq(
-          optId.map(project.id === _),
-          userFilter(project),
-          optEventId.map(project.eventId === _)
-      ))
+    val query = ActiveProjects.applyFilter(project =>
+      Seq(
+        optId.map(project.id === _),
+        userFilter(project),
+        optEventId.map(project.eventId === _)
+      )
+    )
 
     runListQuery(query) { pr =>
       {
-        case 'id => pr.id
-        case 'name => pr.name
-        case 'description => pr.description
+        case "id"          => pr.id
+        case "name"        => pr.name
+        case "description" => pr.description
       }
     }.map {
       case ListWithTotal(total, data) =>

@@ -35,7 +35,7 @@ class CompetenceGroupServiceTest extends BaseServiceTest with CompetenceGroupGen
         when(fixture.competenceGroupDao.getById(id)).thenReturn(toFuture(None))
         val result = wait(fixture.service.getById(id).run)
 
-        result mustBe 'left
+        result mustBe left
         result.swap.toOption.get mustBe a[NotFoundError]
       }
     }
@@ -46,7 +46,7 @@ class CompetenceGroupServiceTest extends BaseServiceTest with CompetenceGroupGen
         when(fixture.competenceGroupDao.getById(id)).thenReturn(toFuture(Some(group)))
         val result = wait(fixture.service.getById(id).run)
 
-        result mustBe 'right
+        result mustBe right
         result.toOption.get mustBe group
       }
     }
@@ -64,11 +64,11 @@ class CompetenceGroupServiceTest extends BaseServiceTest with CompetenceGroupGen
             fixture.competenceGroupDao.getList(
               optKind = eqTo(Some(EntityKind.Template)),
               optIds = *
-            )(eqTo(ListMeta.default)))
-            .thenReturn(toFuture(ListWithTotal(total, groups)))
+            )(eqTo(ListMeta.default))
+          ).thenReturn(toFuture(ListWithTotal(total, groups)))
           val result = wait(fixture.service.getList(ListMeta.default).run)
 
-          result mustBe 'right
+          result mustBe right
           result.toOption.get mustBe ListWithTotal(total, groups)
       }
     }
@@ -82,7 +82,7 @@ class CompetenceGroupServiceTest extends BaseServiceTest with CompetenceGroupGen
       when(fixture.competenceGroupDao.create(group.copy(id = 0))).thenReturn(toFuture(group))
       val result = wait(fixture.service.create(group.copy(id = 0)).run)
 
-      result mustBe 'right
+      result mustBe right
       result.toOption.get mustBe group
     }
   }
@@ -94,7 +94,7 @@ class CompetenceGroupServiceTest extends BaseServiceTest with CompetenceGroupGen
         when(fixture.competenceGroupDao.getById(group.id)).thenReturn(toFuture(None))
         val result = wait(fixture.service.update(group).run)
 
-        result mustBe 'left
+        result mustBe left
         result.swap.toOption.get mustBe a[NotFoundError]
       }
     }
@@ -106,7 +106,7 @@ class CompetenceGroupServiceTest extends BaseServiceTest with CompetenceGroupGen
       when(fixture.competenceGroupDao.update(group)).thenReturn(toFuture(group))
       val result = wait(fixture.service.update(group).run)
 
-      result mustBe 'right
+      result mustBe right
       result.toOption.get mustBe group
     }
   }
@@ -118,7 +118,7 @@ class CompetenceGroupServiceTest extends BaseServiceTest with CompetenceGroupGen
         when(fixture.competenceGroupDao.getById(id)).thenReturn(toFuture(None))
         val result = wait(fixture.service.delete(id).run)
 
-        result mustBe 'left
+        result mustBe left
         result.swap.toOption.get mustBe a[NotFoundError]
       }
     }
@@ -132,11 +132,12 @@ class CompetenceGroupServiceTest extends BaseServiceTest with CompetenceGroupGen
             optGroupId = eqTo(Some(id)),
             optKind = *,
             optIds = *
-          )(*)).thenReturn(toFuture(ListWithTotal(CompetenceFixture.values.take(1))))
+          )(*)
+        ).thenReturn(toFuture(ListWithTotal(CompetenceFixture.values.take(1))))
 
         val result = wait(fixture.service.delete(id).run)
 
-        result mustBe 'left
+        result mustBe left
         result.swap.toOption.get mustBe a[ConflictError]
       }
     }
@@ -150,13 +151,14 @@ class CompetenceGroupServiceTest extends BaseServiceTest with CompetenceGroupGen
             optGroupId = eqTo(Some(id)),
             optKind = *,
             optIds = *
-          )(*)).thenReturn(toFuture(ListWithTotal(Seq.empty[Competence])))
+          )(*)
+        ).thenReturn(toFuture(ListWithTotal(Seq.empty[Competence])))
 
         when(fixture.competenceGroupDao.delete(id)).thenReturn(toFuture(()))
 
         val result = wait(fixture.service.delete(id).run)
 
-        result mustBe 'right
+        result mustBe right
       }
     }
   }

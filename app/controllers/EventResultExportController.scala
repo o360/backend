@@ -20,7 +20,7 @@ import scala.concurrent.ExecutionContext
 /**
   * Controller exporting event results as JSON.
   */
-class EventResultExportController @Inject()(
+class EventResultExportController @Inject() (
   config: Config,
   exportService: EventResultExportService,
   val controllerComponents: ControllerComponents,
@@ -28,7 +28,7 @@ class EventResultExportController @Inject()(
 ) extends BaseController
   with ListActions {
 
-  implicit val sortingFields = Sorting.AvailableFields('id, 'start, 'end, 'description)
+  implicit val sortingFields = Sorting.AvailableFields("id", "start", "end", "description")
 
   def listEvents = (Action andThen UnsecuredListAction).async(parse.json[ApiExportCode]) { implicit request =>
     if (config.exportSecret != request.body.code) {

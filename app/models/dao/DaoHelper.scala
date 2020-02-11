@@ -66,7 +66,7 @@ trait DaoHelper { self: HasDatabaseConfigProvider[JdbcProfile] =>
       *
       * @param mapping mapping between field names and slick columns
       */
-    def applySorting(sorting: Sorting)(mapping: E => PartialFunction[Symbol, Rep[_]]): Query[E, U, Seq] = {
+    def applySorting(sorting: Sorting)(mapping: E => PartialFunction[String, Rep[_]]): Query[E, U, Seq] = {
       def getSortedQuery(fields: Seq[Sorting.Field]): Query[E, U, Seq] = fields match {
         case Seq() => query
         case Sorting.Field(field, direction) +: tail =>
@@ -74,7 +74,7 @@ trait DaoHelper { self: HasDatabaseConfigProvider[JdbcProfile] =>
             ColumnOrdered(
               column = mapping(x)(field),
               ord = direction match {
-                case Sorting.Direction.Asc => Ordering().copy(direction = Ordering.Asc, nulls = Ordering.NullsFirst)
+                case Sorting.Direction.Asc  => Ordering().copy(direction = Ordering.Asc, nulls = Ordering.NullsFirst)
                 case Sorting.Direction.Desc => Ordering().copy(direction = Ordering.Desc, nulls = Ordering.NullsLast)
               }
             )
@@ -92,9 +92,9 @@ trait DaoHelper { self: HasDatabaseConfigProvider[JdbcProfile] =>
     * @param meta        list meta
     * @return future of list result
     */
-  def runListQuery[E, U](query: Query[E, U, Seq])(sortMapping: E => PartialFunction[Symbol, Rep[_]])(
-    implicit meta: ListMeta,
-    ec: ExecutionContext): Future[ListWithTotal[U]] = {
+  def runListQuery[E, U](query: Query[E, U, Seq])(
+    sortMapping: E => PartialFunction[String, Rep[_]]
+  )(implicit meta: ListMeta, ec: ExecutionContext): Future[ListWithTotal[U]] = {
     val paginatedQuery = query
       .applySorting(meta.sorting)(sortMapping)
       .applyPagination(meta.pagination)

@@ -152,7 +152,7 @@ class EventJobServiceTest extends BaseServiceTest with EventFixture with EventJo
 
           val result = wait(fixture.service.runFailedJob(id).run)
 
-          result mustBe 'left
+          result mustBe left
           result.swap.toOption.get mustBe a[NotFoundError]
         }
       }
@@ -167,7 +167,7 @@ class EventJobServiceTest extends BaseServiceTest with EventFixture with EventJo
 
           val result = wait(fixture.service.runFailedJob(id).run)
 
-          result mustBe 'right
+          result mustBe right
         }
       }
     }

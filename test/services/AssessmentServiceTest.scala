@@ -10,6 +10,7 @@ import org.mockito.Mockito._
 import org.scalacheck.Gen
 import services.event.ActiveProjectService
 import testutils.fixture._
+import testutils.ScalazDisjunctionMatchers
 import utils.errors.BadRequestError.Assessment.WithUserFormInfo
 import utils.errors.{ConflictError, NotFoundError}
 
@@ -22,6 +23,7 @@ class AssessmentServiceTest
   with ProjectRelationFixture
   with UserFixture
   with FormFixture
+  with ScalazDisjunctionMatchers
   with AnswerFixture {
 
   private case class Fixture(
@@ -55,7 +57,7 @@ class AssessmentServiceTest
 
       val result = wait(fixture.service.getList(activeProjectId)(user).run)
 
-      result mustBe 'left
+      result mustBe left
       result.swap.toOption.get mustBe a[NotFoundError]
     }
 
@@ -91,7 +93,7 @@ class AssessmentServiceTest
 
       val result = wait(fixture.service.getList(activeProject.id)(user).run)
 
-      result mustBe 'right
+      result mustBe right
       result.toOption.get mustBe ListWithTotal(
         Seq(
           Assessment(Some(user.copy(id = 3)), Seq(Answers(0))),
@@ -113,7 +115,7 @@ class AssessmentServiceTest
 
       val result = wait(fixture.service.bulkSubmit(activeProjectId, Seq())(user).run)
 
-      result mustBe 'left
+      result mustBe left
       result.swap.toOption.get mustBe a[NotFoundError]
     }
 
@@ -128,7 +130,7 @@ class AssessmentServiceTest
 
       val result = wait(fixture.service.bulkSubmit(activeProject.id, Seq())(user).run)
 
-      result mustBe 'left
+      result mustBe left
       result.swap.toOption.get mustBe a[NotFoundError]
     }
 
@@ -144,7 +146,7 @@ class AssessmentServiceTest
 
       val result = wait(fixture.service.bulkSubmit(activeProject.id, Seq())(user).run)
 
-      result mustBe 'left
+      result mustBe left
       result.swap.toOption.get mustBe a[ConflictError.Assessment.InactiveEvent.type]
     }
 
@@ -164,7 +166,7 @@ class AssessmentServiceTest
 
       val result = wait(fixture.service.bulkSubmit(activeProject.id, Seq(assessment))(user).run)
 
-      result mustBe 'left
+      result mustBe left
       result.swap.toOption.get.getInnerErrors.get.head mustBe a[WithUserFormInfo]
     }
 
@@ -185,7 +187,7 @@ class AssessmentServiceTest
 
       val result = wait(fixture.service.bulkSubmit(activeProject.id, Seq(assessment))(user).run)
 
-      result mustBe 'left
+      result mustBe left
       result.swap.toOption.get.getInnerErrors.get.head mustBe a[WithUserFormInfo]
     }
 
@@ -206,7 +208,7 @@ class AssessmentServiceTest
 
       val result = wait(fixture.service.bulkSubmit(activeProject.id, Seq(assessment))(user).run)
 
-      result mustBe 'left
+      result mustBe left
       result.swap.toOption.get.getInnerErrors.get.head mustBe a[WithUserFormInfo]
     }
 
@@ -258,7 +260,7 @@ class AssessmentServiceTest
 
           val assessment = PartialAssessment(None, Seq(PartialAnswer(form.id, false, answer.elements)))
           val result = wait(fixture.service.bulkSubmit(activeProject.id, Seq(assessment))(user).run)
-          result mustBe 'left
+          result mustBe left
       }
     }
 
@@ -284,7 +286,7 @@ class AssessmentServiceTest
 
       val result = wait(fixture.service.bulkSubmit(activeProject.id, Seq(assessment))(user).run)
 
-      result mustBe 'right
+      result mustBe right
     }
   }
 }
