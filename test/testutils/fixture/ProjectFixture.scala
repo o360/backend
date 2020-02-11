@@ -15,14 +15,16 @@ trait ProjectFixture extends FixtureHelper with GroupFixture with TemplateFixtur
   addFixtureOperation {
     sequenceOf(
       insertInto("project")
-        .columns("id",
-                 "name",
-                 "description",
-                 "group_auditor_id",
-                 "forms_on_same_page",
-                 "can_revote",
-                 "is_anonymous",
-                 "machine_name")
+        .columns(
+          "id",
+          "name",
+          "description",
+          "group_auditor_id",
+          "forms_on_same_page",
+          "can_revote",
+          "is_anonymous",
+          "machine_name"
+        )
         .scalaValues(1, "first", "description", 3, true, true, true, "some machine name")
         .scalaValues(2, "second", null, 1, false, false, false, "another machine name")
         .build,

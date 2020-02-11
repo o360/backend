@@ -86,8 +86,10 @@ class TemplateControllerTest extends BaseControllerTest with TemplateGenerator {
             .thenReturn(toSuccessResult(ListWithTotal(total, templates)))
           val request = authenticated(FakeRequest(), env)
 
-          val response = fixture.controller.getList(kind.map(ApiNotificationKind(_)),
-                                                    recipient.map(ApiNotificationRecipient(_)))(request)
+          val response =
+            fixture.controller.getList(kind.map(ApiNotificationKind(_)), recipient.map(ApiNotificationRecipient(_)))(
+              request
+            )
 
           status(response) mustBe OK
           val templatesJson = contentAsJson(response)

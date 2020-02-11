@@ -23,18 +23,17 @@ trait ProjectRelationGenerator extends TemplateBindingGenerator {
       templates <- Arbitrary.arbitrary[Seq[TemplateBinding]]
       canSelfVote <- Arbitrary.arbitrary[Boolean]
       canSkip <- Arbitrary.arbitrary[Boolean]
-    } yield
-      Relation(
-        0,
-        NamedEntity(projectId),
-        NamedEntity(groupFrom),
-        groupTo.map(NamedEntity(_)),
-        NamedEntity(formId),
-        kind,
-        templates,
-        hasInProgressEvents = false,
-        canSelfVote,
-        canSkip
-      )
+    } yield Relation(
+      0,
+      NamedEntity(projectId),
+      NamedEntity(groupFrom),
+      groupTo.map(NamedEntity(_)),
+      NamedEntity(formId),
+      kind,
+      templates,
+      hasInProgressEvents = false,
+      canSelfVote,
+      canSkip
+    )
   }
 }
