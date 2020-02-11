@@ -51,6 +51,7 @@ flywayLocations := Seq("migrations/common", "migrations/postgres")
 flywayUrl := sys.env.getOrElse("DATABASE_URL", "")
 flywayUser := sys.env.getOrElse("DATABASE_USER", "")
 flywayPassword := sys.env.getOrElse("DATABASE_PASSWORD", "")
+flywayTable := "schema_version"
 flywayOutOfOrder := true
 
 fork in Test := true
