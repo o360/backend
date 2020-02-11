@@ -5,7 +5,7 @@ version := "1.0"
 scalaVersion := "2.13.1"
 
 lazy val root =
-  (project in file(".")).enablePlugins(PlayScala, SwaggerPlugin, DockerPlugin)
+  (project in file(".")).enablePlugins(PlayScala, SwaggerPlugin, DockerPlugin, FlywayPlugin)
 
 scalacOptions ++= Seq(
   "-Xlint:inaccessible",
