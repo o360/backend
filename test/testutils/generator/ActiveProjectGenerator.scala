@@ -20,17 +20,16 @@ trait ActiveProjectGenerator {
       isAnonymous <- Arbitrary.arbitrary[Boolean]
       machineName <- Arbitrary.arbitrary[String]
       parentProjectId <- Gen.option(Gen.oneOf(ProjectFixture.values.map(_.id)))
-    } yield
-      ActiveProject(
-        id,
-        eventId,
-        name,
-        description,
-        formsOnSamePage,
-        canRevote,
-        isAnonymous,
-        machineName,
-        parentProjectId
-      )
+    } yield ActiveProject(
+      id,
+      eventId,
+      name,
+      description,
+      formsOnSamePage,
+      canRevote,
+      isAnonymous,
+      machineName,
+      parentProjectId
+    )
   }
 }
