@@ -1,13 +1,14 @@
 package utils.listmeta.pagination
 
 import org.scalacheck.Gen
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
+import testutils.ScalazDisjunctionMatchers
 
 /**
   * Test for pagination.
   */
-class PaginationTest extends PlaySpec with GeneratorDrivenPropertyChecks {
+class PaginationTest extends PlaySpec with ScalaCheckDrivenPropertyChecks with ScalazDisjunctionMatchers {
 
   "create" should {
     "create pagination when both size and number specified" in {
@@ -39,7 +40,7 @@ class PaginationTest extends PlaySpec with GeneratorDrivenPropertyChecks {
         whenever(size < 0) {
           val pagination = PaginationRequestParser.parse(Map("size" -> size.toString))
 
-          pagination mustBe 'isLeft
+          pagination mustBe a[Left[_, _]]
         }
       }
     }
@@ -49,7 +50,7 @@ class PaginationTest extends PlaySpec with GeneratorDrivenPropertyChecks {
         whenever(number <= 0) {
           val pagination = PaginationRequestParser.parse(Map("number" -> number.toString, "size" -> "1"))
 
-          pagination mustBe 'isLeft
+          pagination mustBe a[Left[_, _]]
         }
       }
     }
@@ -59,7 +60,7 @@ class PaginationTest extends PlaySpec with GeneratorDrivenPropertyChecks {
         whenever(!size.matches("\\d+")) {
           val pagination = PaginationRequestParser.parse(Map("size" -> size))
 
-          pagination mustBe 'isLeft
+          pagination mustBe a[Left[_, _]]
         }
       }
     }
@@ -69,7 +70,7 @@ class PaginationTest extends PlaySpec with GeneratorDrivenPropertyChecks {
         whenever(!number.matches("\\d+")) {
           val pagination = PaginationRequestParser.parse(Map("number" -> number, "size" -> "1"))
 
-          pagination mustBe 'isLeft
+          pagination mustBe a[Left[_, _]]
         }
       }
     }

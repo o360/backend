@@ -59,7 +59,7 @@ object Transliterator {
           .sortBy { case (from, _) => -from.length }
           .headOption match {
           case Some((from, to)) => helper(rest.drop(math.max(from.length, 1)), acc + to)
-          case None => helper(rest.tail, acc + rest.head)
+          case None             => helper(rest.tail, acc + rest.head)
         }
       }
 

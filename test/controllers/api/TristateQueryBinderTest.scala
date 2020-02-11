@@ -1,14 +1,14 @@
 package controllers.api
 
 import org.davidbild.tristate.Tristate
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.mvc.QueryStringBindable
 
 /**
   * Test for tristate query binder.
   */
-class TristateQueryBinderTest extends PlaySpec with GeneratorDrivenPropertyChecks {
+class TristateQueryBinderTest extends PlaySpec with ScalaCheckDrivenPropertyChecks {
 
   private val stringBinder = QueryStringBindable.bindableString
 

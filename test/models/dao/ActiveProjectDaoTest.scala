@@ -31,12 +31,12 @@ class ActiveProjectDaoTest
         val activeProjects = wait(dao.getList(optUserId = userId))
         val expectedActiveProjects = ActiveProjectFixture.values
           .filter { p =>
-            userId.forall(
-              uid =>
-                AnswerFixture.values
-                  .filter(_.userFromId == uid)
-                  .map(_.activeProjectId)
-                  .contains(p.id))
+            userId.forall(uid =>
+              AnswerFixture.values
+                .filter(_.userFromId == uid)
+                .map(_.activeProjectId)
+                .contains(p.id)
+            )
           }
 
         activeProjects.data must contain theSameElementsAs expectedActiveProjects

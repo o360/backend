@@ -13,7 +13,7 @@ case class ApiPartialFormAnswer(
   isAnonymous: Boolean,
   isSkipped: Boolean
 ) {
-  def toModel =
+  def toModel: PartialAnswer =
     this
       .into[PartialAnswer]
       .withFieldComputed(_.elements, _.answers.map(_.toModel).toSet)

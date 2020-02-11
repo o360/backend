@@ -36,7 +36,7 @@ trait CompetenceComponent extends EntityKindColumnMapper { _: HasDatabaseConfigP
   * Competence DAO.
   */
 @Singleton
-class CompetenceDao @Inject()(
+class CompetenceDao @Inject() (
   protected val dbConfigProvider: DatabaseConfigProvider,
   implicit val ec: ExecutionContext
 ) extends HasDatabaseConfigProvider[JdbcProfile]
@@ -69,10 +69,10 @@ class CompetenceDao @Inject()(
 
     runListQuery(query) { c =>
       {
-        case 'id => c.id
-        case 'groupId => c.groupId
-        case 'name => c.name
-        case 'description => c.description
+        case "id"          => c.id
+        case "groupId"     => c.groupId
+        case "name"        => c.name
+        case "description" => c.description
       }
     }
   }

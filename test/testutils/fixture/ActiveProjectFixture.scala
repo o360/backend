@@ -12,15 +12,17 @@ trait ActiveProjectFixture extends FixtureHelper with EventFixture with UserFixt
   addFixtureOperation {
     sequenceOf(
       insertInto("active_project")
-        .columns("id",
-                 "event_id",
-                 "name",
-                 "description",
-                 "forms_on_same_page",
-                 "can_revote",
-                 "is_anonymous",
-                 "machine_name",
-                 "parent_project_id")
+        .columns(
+          "id",
+          "event_id",
+          "name",
+          "description",
+          "forms_on_same_page",
+          "can_revote",
+          "is_anonymous",
+          "machine_name",
+          "parent_project_id"
+        )
         .scalaValues(1, 1, "first", "description", true, true, true, "some machine name", 1)
         .scalaValues(2, 2, "second", null, false, false, false, "another machine name", null)
         .build,

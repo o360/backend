@@ -11,16 +11,17 @@ abstract class BadRequestError(
 
 object BadRequestError {
 
-  case object Pagination
-    extends BadRequestError("PAGINATION", "Can't parse pagination. Correct usage: ?page=1&size=20")
+  case object Pagination extends BadRequestError("PAGINATION", "Can't parse pagination. Correct usage: ?page=1&size=20")
 
   object Sorting {
     case object General
       extends BadRequestError("SORTING", "Can't parse sorting. Correct usage: ?sort=field,-field2,...")
 
     case class UnsupportedField(unsupported: String, available: String)
-      extends BadRequestError("SORTING",
-                              s"Unsupported fields: [$unsupported]. Available fields for sorting: [$available]")
+      extends BadRequestError(
+        "SORTING",
+        s"Unsupported fields: [$unsupported]. Available fields for sorting: [$available]"
+      )
   }
 
   object Event {
@@ -57,8 +58,10 @@ object BadRequestError {
 
   object File {
     case class Extension(actual: String, expected: Set[String])
-      extends BadRequestError("BAD-REQUEST-FILE-1",
-                              s"Invalid file extension [$actual]. Available extensions: [${expected.mkString(", ")}]")
+      extends BadRequestError(
+        "BAD-REQUEST-FILE-1",
+        s"Invalid file extension [$actual]. Available extensions: [${expected.mkString(", ")}]"
+      )
 
     case object Unexpected extends BadRequestError("BAD-REQUEST-FILE-2", "Unexpected problems with file upload")
 

@@ -7,7 +7,6 @@ import models.group.Group
 import models.user.{User => UserModel}
 import org.davidbild.tristate.Tristate
 import org.mockito.Mockito._
-import org.scalatest.mockito.MockitoSugar
 import silhouette.CustomSocialProfile
 import testutils.fixture.{GroupFixture, UserFixture}
 import testutils.generator.{SocialProfileGenerator, TristateGenerator, UserGenerator}
@@ -25,8 +24,7 @@ class UserServiceTest
   with SocialProfileGenerator
   with UserFixture
   with TristateGenerator
-  with GroupFixture
-  with MockitoSugar {
+  with GroupFixture {
 
   private val admin = UserFixture.admin
 
@@ -120,7 +118,7 @@ class UserServiceTest
         when(fixture.userDaoMock.findById(id)).thenReturn(toFuture(None))
         val result = wait(fixture.service.getById(id).run)
 
-        result mustBe 'isLeft
+        result mustBe left
         result.swap.toOption.get mustBe a[NotFoundError]
 
         verify(fixture.userDaoMock, times(1)).findById(id)
@@ -134,7 +132,7 @@ class UserServiceTest
         when(fixture.userDaoMock.findById(id)).thenReturn(toFuture(Some(user)))
         val result = wait(fixture.service.getById(id).run)
 
-        result mustBe 'isRight
+        result mustBe right
         result.toOption.get mustBe user
 
         verify(fixture.userDaoMock, times(1)).findById(id)
@@ -150,7 +148,7 @@ class UserServiceTest
         when(fixture.userDaoMock.findById(id)).thenReturn(toFuture(None))
         val result = wait(fixture.service.getByIdWithAuth(id)(UserFixture.user).run)
 
-        result mustBe 'isLeft
+        result mustBe left
         result.swap.toOption.get mustBe a[NotFoundError]
       }
     }
@@ -162,7 +160,7 @@ class UserServiceTest
           when(fixture.userDaoMock.findById(user.id)).thenReturn(toFuture(Some(user)))
           val result = wait(fixture.service.getByIdWithAuth(user.id)(UserFixture.user).run)
 
-          result mustBe 'isLeft
+          result mustBe left
           result.swap.toOption.get mustBe a[AuthorizationError]
         }
       }
@@ -175,7 +173,7 @@ class UserServiceTest
           when(fixture.userDaoMock.findById(user.id)).thenReturn(toFuture(Some(user)))
           val result = wait(fixture.service.getByIdWithAuth(user.id)(UserFixture.user).run)
 
-          result mustBe 'isRight
+          result mustBe right
           result.toOption.get mustBe user
         }
       }
@@ -208,7 +206,7 @@ class UserServiceTest
           ).thenReturn(toFuture(ListWithTotal(total, users)))
           val result = wait(fixture.service.list(role, status, groupId, name)(ListMeta.default).run)
 
-          result mustBe 'isRight
+          result mustBe right
           result.toOption.get mustBe ListWithTotal(total, users)
       }
     }
@@ -241,7 +239,7 @@ class UserServiceTest
 
           val result = wait(fixture.service.listByGroupId(groupId, includeDeleted).run)
 
-          result mustBe 'isRight
+          result mustBe right
           result.toOption.get mustBe ListWithTotal(total, users)
       }
     }
@@ -254,7 +252,7 @@ class UserServiceTest
         when(fixture.userDaoMock.findById(user.id)).thenReturn(toFuture(None))
         val result = wait(fixture.service.update(user)(admin).run)
 
-        result mustBe 'isLeft
+        result mustBe left
         result.swap.toOption.get mustBe a[NotFoundError]
 
         verify(fixture.userDaoMock, times(1)).findById(user.id)
@@ -269,7 +267,7 @@ class UserServiceTest
           when(fixture.userDaoMock.findById(loggedInUser.id)).thenReturn(toFuture(Some(loggedInUser)))
           val result = wait(fixture.service.update(loggedInUser.copy(role = UserModel.Role.Admin))(loggedInUser).run)
 
-          result mustBe 'isLeft
+          result mustBe left
           result.swap.toOption.get mustBe an[AuthorizationError]
 
           verify(fixture.userDaoMock, times(1)).findById(loggedInUser.id)
@@ -298,7 +296,7 @@ class UserServiceTest
 
         val result = wait(fixture.service.update(updatedUser)(admin).run)
 
-        result mustBe 'isRight
+        result mustBe right
         result.toOption.get mustBe updatedUser
 
         verify(fixture.userDaoMock, times(1)).findById(user.id)
@@ -318,7 +316,7 @@ class UserServiceTest
         when(fixture.userDaoMock.findById(id)).thenReturn(toFuture(None))
         val result = wait(fixture.service.delete(id).run)
 
-        result mustBe 'isLeft
+        result mustBe left
         result.swap.toOption.get mustBe a[NotFoundError]
 
         verify(fixture.userDaoMock, times(1)).findById(id)
@@ -340,7 +338,7 @@ class UserServiceTest
         ).thenReturn(toFuture(ListWithTotal(1, Groups.take(1))))
         val result = wait(fixture.service.delete(id).run)
 
-        result mustBe 'left
+        result mustBe left
         result.swap.toOption.get mustBe a[ConflictError]
       }
     }
@@ -361,7 +359,7 @@ class UserServiceTest
         when(fixture.userDaoMock.delete(id)).thenReturn(toFuture(()))
         val result = wait(fixture.service.delete(id).run)
 
-        result mustBe 'isRight
+        result mustBe right
 
         verify(fixture.userDaoMock, times(1)).findById(id)
         verify(fixture.userDaoMock, times(1)).delete(id)

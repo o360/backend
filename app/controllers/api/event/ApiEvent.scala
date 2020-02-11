@@ -31,7 +31,7 @@ object ApiEvent {
   def apply(e: Event)(implicit account: User): ApiEvent = {
     val notifications = account.role match {
       case User.Role.Admin => Some(e.notifications.map(NotificationTime(_)))
-      case User.Role.User => None
+      case User.Role.User  => None
     }
 
     ApiEvent(

@@ -10,7 +10,7 @@ import services.BaseServiceTest
 import org.mockito.Mockito._
 import testutils.generator._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /**
   * Test for event result export service.
@@ -40,7 +40,8 @@ class EventResultExportServiceTest
     val eventDao = mock[EventDao]
     val competenceDao = mock[CompetenceDao]
     val competenceGroupDao = mock[CompetenceGroupDao]
-    val service = new EventResultExportService(answerDao, formDao, userDao, eventDao, competenceDao, competenceGroupDao, ec)
+    val service =
+      new EventResultExportService(answerDao, formDao, userDao, eventDao, competenceDao, competenceGroupDao, ec)
     Fixture(answerDao, formDao, userDao, eventDao, competenceDao, competenceGroupDao, service)
   }
 
@@ -48,49 +49,57 @@ class EventResultExportServiceTest
     "export answers" in {
       forAll {
         (
-        eventId: Long,
-        answers: Seq[Answer],
-        form: Form,
-        users: Seq[User],
-        competencies: Seq[Competence],
-        competenceGroups: Seq[CompetenceGroup]
+          eventId: Long,
+          answers: Seq[Answer],
+          form: Form,
+          users: Seq[User],
+          competencies: Seq[Competence],
+          competenceGroups: Seq[CompetenceGroup]
         ) =>
           val fixture = getFixture
 
-          when(fixture.answerDao.getList(
-            optEventId = eqTo(Some(eventId)),
-            optActiveProjectId = *,
-            optUserFromId = *,
-            optFormId = *,
-            optUserToId = *,
-          )).thenReturn(toFuture(answers))
+          when(
+            fixture.answerDao.getList(
+              optEventId = eqTo(Some(eventId)),
+              optActiveProjectId = *,
+              optUserFromId = *,
+              optFormId = *,
+              optUserToId = *
+            )
+          ).thenReturn(toFuture(answers))
           val formIdCaptor = argumentCaptor[Long]
           when(fixture.formDao.findById(formIdCaptor.capture())).thenReturn(toFuture(Some(form)))
 
           val userIdsCaptor = argumentCaptor[Option[Seq[Long]]]
-          when(fixture.userDao.getList(
-            optIds = userIdsCaptor.capture(),
-            optRole = *,
-            optStatus = *,
-            optGroupIds = *,
-            optName = *,
-            optEmail = *,
-            optProjectIdAuditor = *,
-            eqTo(true)
-          )(*)).thenReturn(toFuture(ListWithTotal(users)))
+          when(
+            fixture.userDao.getList(
+              optIds = userIdsCaptor.capture(),
+              optRole = *,
+              optStatus = *,
+              optGroupIds = *,
+              optName = *,
+              optEmail = *,
+              optProjectIdAuditor = *,
+              eqTo(true)
+            )(*)
+          ).thenReturn(toFuture(ListWithTotal(users)))
 
           val competenceIdsCaptor = argumentCaptor[Option[Seq[Long]]]
-          when(fixture.competenceDao.getList(
-            optGroupId = *,
-            optKind = *,
-            optIds = competenceIdsCaptor.capture(),
-          )(*)).thenReturn(toFuture(ListWithTotal(competencies)))
+          when(
+            fixture.competenceDao.getList(
+              optGroupId = *,
+              optKind = *,
+              optIds = competenceIdsCaptor.capture()
+            )(*)
+          ).thenReturn(toFuture(ListWithTotal(competencies)))
 
           val competenceGroupIdsCaptor = argumentCaptor[Option[Seq[Long]]]
-          when(fixture.competenceGroupDao.getList(
-            optKind = *,
-            optIds = competenceGroupIdsCaptor.capture()
-          )(*)).thenReturn(toFuture(ListWithTotal(competenceGroups)))
+          when(
+            fixture.competenceGroupDao.getList(
+              optKind = *,
+              optIds = competenceGroupIdsCaptor.capture()
+            )(*)
+          ).thenReturn(toFuture(ListWithTotal(competenceGroups)))
 
           val (_, resultUsers, resultAnswers, resultCompetencies, resultCompetenceGroups) =
             wait(fixture.service.exportAnswers(eventId))
@@ -102,7 +111,10 @@ class EventResultExportServiceTest
           userIdsCaptor.getValue.get must contain allElementsOf answers.flatMap(_.userToId)
 
           competenceIdsCaptor.getValue mustBe defined
-          competenceIdsCaptor.getValue.get must contain theSameElementsAs form.elements.flatMap(_.competencies).map(_.competence.id).distinct
+          competenceIdsCaptor.getValue.get must contain theSameElementsAs form.elements
+            .flatMap(_.competencies)
+            .map(_.competence.id)
+            .distinct
 
           competenceGroupIdsCaptor.getValue mustBe defined
           competenceGroupIdsCaptor.getValue.get must contain theSameElementsAs competencies.map(_.groupId).distinct

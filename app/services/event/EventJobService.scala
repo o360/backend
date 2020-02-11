@@ -17,7 +17,7 @@ import scala.util.{Failure, Success}
   * Event job service.
   */
 @Singleton
-class EventJobService @Inject()(
+class EventJobService @Inject() (
   protected val eventJobDao: EventJobDao,
   protected val eventDao: EventDao,
   protected val notificationService: NotificationService,
@@ -90,9 +90,9 @@ class EventJobService @Inject()(
       eventDao.findById(job.eventId).map {
         case Some(event) =>
           job match {
-            case j: EventJob.Upload => event.end == j.time
+            case j: EventJob.Upload           => event.end == j.time
             case j: EventJob.SendNotification => event.notifications.contains(j.notification)
-            case j: EventJob.EventStart => event.start == j.time
+            case j: EventJob.EventStart       => event.start == j.time
           }
         case None =>
           false
@@ -112,9 +112,9 @@ class EventJobService @Inject()(
   def execute(jobs: Seq[EventJob]): Unit = {
     def executeJob(job: EventJob): Unit = {
       val result = job match {
-        case j: EventJob.Upload => uploadService.execute(j)
+        case j: EventJob.Upload           => uploadService.execute(j)
         case j: EventJob.SendNotification => notificationService.execute(j)
-        case j: EventJob.EventStart => eventStartService.execute(j)
+        case j: EventJob.EventStart       => eventStartService.execute(j)
       }
 
       result.onComplete {

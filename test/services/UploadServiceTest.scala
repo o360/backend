@@ -14,11 +14,7 @@ import testutils.fixture._
 /**
   * Test for upload service
   */
-class UploadServiceTest
-  extends BaseServiceTest
-  with EventFixture
-  with FormFixture
-  with UserFixture {
+class UploadServiceTest extends BaseServiceTest with EventFixture with FormFixture with UserFixture {
 
   private case class Fixture(
     eventDao: EventDao,
@@ -70,28 +66,31 @@ class UploadServiceTest
           optFormId = *,
           optGroupFromIds = *,
           optUserId = *
-        )(*)).thenReturn(toFuture(ListWithTotal(1, Seq(event))))
+        )(*)
+      ).thenReturn(toFuture(ListWithTotal(1, Seq(event))))
       when(
         fixture.activeProjectDao.getList(
           optId = *,
           optUserId = *,
           optEventId = eqTo(Some(event.id))
-        )(*)).thenReturn(toFuture(ListWithTotal(1, Seq(activeProject))))
+        )(*)
+      ).thenReturn(toFuture(ListWithTotal(1, Seq(activeProject))))
 
       when(fixture.reportService.getReport(activeProject.id)).thenReturn(toFuture(Seq(report)))
       when(fixture.reportService.getAggregatedReport(report)).thenReturn(aggregatedReport)
       when(fixture.spreadsheetService.getBatchUpdateRequest(Seq(report), Seq(aggregatedReport))).thenReturn(batchUpdate)
-      when(fixture.userDao.getList(
-        optIds = *,
-        optRole = *,
-        optStatus = *,
-        optGroupIds = *,
-        optName = *,
-        optEmail = *,
-        optProjectIdAuditor = eqTo(Some(activeProject.id)),
-        includeDeleted = *,
-      )(*))
-        .thenReturn(toFuture(ListWithTotal(Seq(user))))
+      when(
+        fixture.userDao.getList(
+          optIds = *,
+          optRole = *,
+          optStatus = *,
+          optGroupIds = *,
+          optName = *,
+          optEmail = *,
+          optProjectIdAuditor = eqTo(Some(activeProject.id)),
+          includeDeleted = *
+        )(*)
+      ).thenReturn(toFuture(ListWithTotal(Seq(user))))
 
       val result = wait(fixture.service.getGroupedUploadModels(jobFixture.eventId))
       val expectedResult = Map(user -> Seq(UploadService.UploadModel(event, activeProject, batchUpdate)))

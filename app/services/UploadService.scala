@@ -17,7 +17,7 @@ import scala.concurrent.{ExecutionContext, Future}
   * Upload service.
   */
 @Singleton
-class UploadService @Inject()(
+class UploadService @Inject() (
   eventDao: EventDao,
   activeProjectDao: ActiveProjectDao,
   reportService: ReportService,
@@ -71,10 +71,10 @@ class UploadService @Inject()(
                 val leftName = left.assessedUser.flatMap(_.name)
                 val rightName = right.assessedUser.flatMap(_.name)
                 (leftName, rightName) match {
-                  case (None, None) => false
+                  case (None, None)       => false
                   case (Some(l), Some(r)) => l < r
-                  case (Some(_), None) => true
-                  case (None, Some(_)) => false
+                  case (Some(_), None)    => true
+                  case (None, Some(_))    => false
                 }
               }
 
@@ -98,7 +98,8 @@ class UploadService @Inject()(
         val allProjectsIds = uploadModels.map(_.project.id).distinct
         Future
           .sequence(
-            allProjectsIds.map(id => userDao.getList(optProjectIdAuditor = Some(id)).map(list => (id, list.data))))
+            allProjectsIds.map(id => userDao.getList(optProjectIdAuditor = Some(id)).map(list => (id, list.data)))
+          )
           .map(_.toMap)
       }
 
@@ -109,7 +110,9 @@ class UploadService @Inject()(
             users.map((_, uploadModel))
           }
           .groupBy(_._1)
+          .view
           .mapValues(_.map(_._2))
+          .toMap
       }
     }
 

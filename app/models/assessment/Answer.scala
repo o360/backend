@@ -95,14 +95,15 @@ object Answer {
           .map(
             _.map(findCaption)
               .collect { case Some(v) => v }
-              .mkString(";\n"))
+              .mkString(";\n")
+          )
           .getOrElse("")
       }
 
       val basePart = element.kind match {
         case TextArea | TextField | Checkbox => text.getOrElse("")
-        case CheckboxGroup | Radio | Select => getValuesText
-        case LikeDislike => getValuesText + text.map(t => s" ($t)").getOrElse("")
+        case CheckboxGroup | Radio | Select  => getValuesText
+        case LikeDislike                     => getValuesText + text.map(t => s" ($t)").getOrElse("")
       }
 
       comment.fold(basePart)(c => s"$basePart ($c)")

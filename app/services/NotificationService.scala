@@ -14,7 +14,7 @@ import scala.concurrent.{ExecutionContext, Future}
   * Email notifications service.
   */
 @Singleton
-class NotificationService @Inject()(
+class NotificationService @Inject() (
   eventDao: EventDao,
   projectDao: ProjectDao,
   relationDao: ProjectRelationDao,

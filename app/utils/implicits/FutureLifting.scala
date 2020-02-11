@@ -68,8 +68,9 @@ object FutureLifting {
       *
       * @param pf exceptions mapping
       */
-    def lift(pf: PartialFunction[Throwable, ApplicationError])(
-      implicit ec: ExecutionContext): EitherT[Future, ApplicationError, A] = {
+    def lift(
+      pf: PartialFunction[Throwable, ApplicationError]
+    )(implicit ec: ExecutionContext): EitherT[Future, ApplicationError, A] = {
       EitherT.eitherT(f.map(_.right[ApplicationError]).recover(pf.andThen(_.left)))
     }
   }
@@ -101,8 +102,9 @@ object FutureLifting {
     * @param conditionF future of condition
     * @param error      error for negative condition
     */
-  def ensure(conditionF: Future[Boolean])(error: => ApplicationError)(
-    implicit ec: ExecutionContext): EitherT[Future, ApplicationError, Unit] = {
+  def ensure(
+    conditionF: Future[Boolean]
+  )(error: => ApplicationError)(implicit ec: ExecutionContext): EitherT[Future, ApplicationError, Unit] = {
     EitherT.eitherT(conditionF.map(_ ? ().right[ApplicationError] | error.left[Unit]))
   }
 

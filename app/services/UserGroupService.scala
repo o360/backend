@@ -15,7 +15,7 @@ import scalaz.Scalaz._
   * User group service.
   */
 @Singleton
-class UserGroupService @Inject()(
+class UserGroupService @Inject() (
   protected val userService: UserService,
   protected val groupService: GroupService,
   protected val userGroupDao: UserGroupDao,

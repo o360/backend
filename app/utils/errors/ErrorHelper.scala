@@ -20,10 +20,10 @@ object ErrorHelper extends Logger {
   def getResult(error: ApplicationError): Result = {
     val statusCode = error match {
       case _: AuthenticationError => Unauthorized
-      case _: BadRequestError => BadRequest
-      case _: NotFoundError => NotFound
-      case _: AuthorizationError => Forbidden
-      case _: ConflictError => Conflict
+      case _: BadRequestError     => BadRequest
+      case _: NotFoundError       => NotFound
+      case _: AuthorizationError  => Forbidden
+      case _: ConflictError       => Conflict
     }
 
     val errorResponse = getApiError(error)
@@ -42,7 +42,11 @@ object ErrorHelper extends Logger {
         Some(Error.AdditionalInfo.UserFormInfo(e.userId, e.formId))
       case e: ConflictError =>
         e.getRelated.map { relatedEntities =>
-          Error.AdditionalInfo.ConflictDependencies(relatedEntities.mapValues(_.map(ApiNamedEntity(_))))
+          Error.AdditionalInfo.ConflictDependencies(
+            relatedEntities.view
+              .mapValues(_.map(ApiNamedEntity(_)))
+              .toMap
+          )
         }
       case _ => None
     }

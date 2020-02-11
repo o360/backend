@@ -11,7 +11,7 @@ import utils.{Config, Logger}
   * Mail service.
   */
 @Singleton
-class MailService @Inject()(
+class MailService @Inject() (
   protected val mailerClient: MailerClient,
   protected val config: Config
 ) extends Logger {

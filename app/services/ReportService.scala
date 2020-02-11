@@ -20,15 +20,16 @@ import scalaz.EitherT
   * Report service.
   */
 @Singleton
-class ReportService @Inject()(
+class ReportService @Inject() (
   userDao: UserDao,
   formService: FormService,
   answerDao: AnswerDao,
   implicit val ec: ExecutionContext
 ) extends Logger {
 
-  def getAuditorReport(activeProjectId: Long)(
-    implicit user: User): EitherT[Future, ApplicationError, Seq[SimpleReport]] = {
+  def getAuditorReport(
+    activeProjectId: Long
+  )(implicit user: User): EitherT[Future, ApplicationError, Seq[SimpleReport]] = {
 
     var allUsersToAnonymousMap = Map.empty[Long, String]
     def getUserAnonymousId(userId: Long) = {
@@ -54,9 +55,12 @@ class ReportService @Inject()(
               SimpleReport.SimpleReportElement(
                 if (reportElementAnswer.isAnonymous) {
                   Some(
-                    SimpleReport.SimpleReportUser(isAnonymous = true,
-                                                  Some(getUserAnonymousId(reportElementAnswer.fromUser.id)),
-                                                  None))
+                    SimpleReport.SimpleReportUser(
+                      isAnonymous = true,
+                      Some(getUserAnonymousId(reportElementAnswer.fromUser.id)),
+                      None
+                    )
+                  )
                 } else {
                   Some(SimpleReport.SimpleReportUser(isAnonymous = false, None, Some(reportElementAnswer.fromUser.id)))
                 },
@@ -157,6 +161,7 @@ class ReportService @Inject()(
       val textsWithCount = answers
         .flatMap(_.text)
         .groupBy(identity)
+        .view
         .mapValues(_.length)
 
       val totalCount = textsWithCount.values.sum
@@ -164,7 +169,7 @@ class ReportService @Inject()(
       val captionsToPercents = textsWithCount.toSeq
         .map {
           case (text, count) =>
-            val percent = count * 100F / totalCount
+            val percent = count * 100f / totalCount
             f""""$text" - $count ($percent%3.2f%%)"""
         }
 
@@ -181,7 +186,9 @@ class ReportService @Inject()(
         .flatMap(_.valuesIds)
         .flatten
         .groupBy(identity)
+        .view
         .mapValues(_.length)
+        .toMap
 
       val totalCount = valueIdToCount.values.sum
 
@@ -189,7 +196,7 @@ class ReportService @Inject()(
         .map {
           case (valueId, count) =>
             val caption = valueIdToCaption.getOrElse(valueId, valueId.toString)
-            val percent = count * 100F / totalCount
+            val percent = count * 100f / totalCount
             f""""$caption" - $count ($percent%3.2f%%)"""
         }
 
@@ -202,8 +209,8 @@ class ReportService @Inject()(
       val elements = formReport.answers.map { answerReport =>
         val answers = answerReport.elementAnswers.map(_.answer)
         val result = answerReport.formElement.kind match {
-          case TextArea | TextField => aggregateAnswersCount(answers)
-          case Checkbox => aggregateEachTextPercent(answers)
+          case TextArea | TextField                         => aggregateAnswersCount(answers)
+          case Checkbox                                     => aggregateEachTextPercent(answers)
           case CheckboxGroup | Radio | Select | LikeDislike => aggregateEachValuePercent(answers, formReport.form)
         }
         FormElementAnswer(answerReport.formElement, result)

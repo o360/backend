@@ -21,7 +21,7 @@ trait AnswerComponent extends EnumColumnMapper { self: HasDatabaseConfigProvider
   implicit lazy val answerStatusColumnType = mappedEnumSeq[Answer.Status](
     Answer.Status.New,
     Answer.Status.Answered,
-    Answer.Status.Skipped,
+    Answer.Status.Skipped
   )
 
   /**
@@ -37,7 +37,7 @@ trait AnswerComponent extends EnumColumnMapper { self: HasDatabaseConfigProvider
     status: Answer.Status,
     canSkip: Boolean
   ) {
-    def toModel(answers: Seq[Answer.Element], formName: String) =
+    def toModel(answers: Seq[Answer.Element], formName: String): Answer =
       this
         .into[Answer]
         .withFieldComputed(_.form, x => NamedEntity(x.formId, formName))
@@ -81,7 +81,7 @@ trait AnswerComponent extends EnumColumnMapper { self: HasDatabaseConfigProvider
     text: Option[String],
     comment: Option[String]
   ) {
-    def toModel(values: Option[Seq[Long]]) =
+    def toModel(values: Option[Seq[Long]]): Answer.Element =
       this
         .into[Answer.Element]
         .withFieldConst(_.valuesIds, values.map(_.toSet))
@@ -137,7 +137,7 @@ trait AnswerComponent extends EnumColumnMapper { self: HasDatabaseConfigProvider
   * Answer DAO.
   */
 @Singleton
-class AnswerDao @Inject()(
+class AnswerDao @Inject() (
   protected val dbConfigProvider: DatabaseConfigProvider,
   implicit val ec: ExecutionContext
 ) extends HasDatabaseConfigProvider[JdbcProfile]
@@ -178,7 +178,8 @@ class AnswerDao @Inject()(
           optUserFromId.map(answer.userFromId === _),
           optFormId.map(answer.formId === _),
           userToFilter(answer)
-      ))
+        )
+      )
       .join(Forms)
       .on(_.formId === _.id)
       .joinLeft {

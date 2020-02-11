@@ -20,7 +20,7 @@ import scala.concurrent.ExecutionContext
   * Invite controller.
   */
 @Singleton
-class InviteController @Inject()(
+class InviteController @Inject() (
   silhouette: Silhouette[DefaultEnv],
   inviteService: InviteService,
   val controllerComponents: ControllerComponents,
@@ -28,7 +28,7 @@ class InviteController @Inject()(
 ) extends BaseController
   with ListActions {
 
-  implicit val sortingFields = Sorting.AvailableFields('code, 'email, 'activationTime, 'creationTime)
+  implicit val sortingFields = Sorting.AvailableFields("code", "email", "activationTime", "creationTime")
 
   /**
     * Returns list of invites.
@@ -41,7 +41,8 @@ class InviteController @Inject()(
           .map(invites =>
             Response.List(invites) { invite =>
               ApiInvite(invite)
-          })
+            }
+          )
       }
   }
 

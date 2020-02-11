@@ -8,7 +8,7 @@ import play.api.Configuration
   * Wrapper for application config.
   */
 @Singleton
-class Config @Inject()(protected val configuration: Configuration) {
+class Config @Inject() (protected val configuration: Configuration) {
 
   lazy val googleSettings: Config.OAuthGoogle = {
     val accessTokenURL = configuration.get[String]("silhouette.google.accessTokenURL")

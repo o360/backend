@@ -29,7 +29,7 @@ trait FormComponent extends EnumColumnMapper { self: HasDatabaseConfigProvider[J
     showInAggregation: Boolean,
     machineName: String
   ) {
-    def toModel = this.transformInto[FormShort]
+    def toModel: FormShort = this.transformInto[FormShort]
   }
 
   object DbForm {
@@ -62,7 +62,7 @@ trait FormComponent extends EnumColumnMapper { self: HasDatabaseConfigProvider[J
     CheckboxGroup,
     Radio,
     Select,
-    LikeDislike,
+    LikeDislike
   )
 
   /**
@@ -79,7 +79,7 @@ trait FormComponent extends EnumColumnMapper { self: HasDatabaseConfigProvider[J
     hint: Option[String]
   ) {
 
-    def toModel(values: Seq[Form.ElementValue], competencies: Seq[Form.ElementCompetence]) =
+    def toModel(values: Seq[Form.ElementValue], competencies: Seq[Form.ElementCompetence]): Form.Element =
       this
         .into[Form.Element]
         .withFieldConst(_.values, values)
@@ -152,7 +152,7 @@ trait FormComponent extends EnumColumnMapper { self: HasDatabaseConfigProvider[J
   * Form DAO.
   */
 @Singleton
-class FormDao @Inject()(
+class FormDao @Inject() (
   protected val dbConfigProvider: DatabaseConfigProvider,
   implicit val ec: ExecutionContext
 ) extends HasDatabaseConfigProvider[JdbcProfile]
@@ -195,8 +195,8 @@ class FormDao @Inject()(
 
     runListQuery(query) { form =>
       {
-        case 'id => form.id
-        case 'name => form.name
+        case "id"   => form.id
+        case "name" => form.name
       }
     }.map { case ListWithTotal(total, data) => ListWithTotal(total, data.map(_.toModel)) }
   }

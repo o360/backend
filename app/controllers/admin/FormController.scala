@@ -28,7 +28,7 @@ class FormController @Inject() (
 ) extends BaseController
   with ListActions {
 
-  implicit val sortingFields = Sorting.AvailableFields('id, 'name)
+  implicit val sortingFields = Sorting.AvailableFields("id", "name")
 
   /**
     * Returns list of form templates without elements.

@@ -7,13 +7,13 @@ import models.form.Form
 import models.report.{AggregatedReport, Report}
 import models.user.User
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /**
   * Spreadsheet service.
   */
 @Singleton
-class SpreadsheetService @Inject()() {
+class SpreadsheetService @Inject() () {
 
   import Element._
   import Container.Direction._
@@ -45,11 +45,14 @@ class SpreadsheetService @Inject()() {
         Container(
           LeftToRight,
           border = Some(
-            Border(Border.Style.Solid,
-                   Border.Placement.ValueSet(
-                     Border.Placement.InnerVertical,
-                     Border.Placement.Bottom
-                   )))
+            Border(
+              Border.Style.Solid,
+              Border.Placement.ValueSet(
+                Border.Placement.InnerVertical,
+                Border.Placement.Bottom
+              )
+            )
+          )
         )(form.elements.map(element => Cell(element.caption, format = Some(Cell.Format.bold))): _*),
         answers
       )
@@ -125,7 +128,13 @@ class SpreadsheetService @Inject()() {
         val anonymous =
           report.forms.flatMap(_.answers.flatMap(_.elementAnswers.filter(_.isAnonymous).map(_.fromUser))).distinct
 
-        val anonymousUserNameMapping = anonymous.map(_.id).zipWithIndex.toMap.mapValues(x => s"Anonymous #$x")
+        val anonymousUserNameMapping = anonymous
+          .map(_.id)
+          .zipWithIndex
+          .toMap
+          .view
+          .mapValues(x => s"Anonymous #$x")
+          .toMap
 
         val fromUsers = nonAnonymous.map((_, false)) ++ anonymous.map((_, true))
         val forms = report.forms.map(_.form).distinct
@@ -135,8 +144,12 @@ class SpreadsheetService @Inject()() {
             form <- report.forms
             answer <- form.answers
             element <- answer.elementAnswers
-          } yield
-            (answer.formElement.id, element.fromUser, element.answer.getText(answer.formElement), element.isAnonymous)
+          } yield (
+            answer.formElement.id,
+            element.fromUser,
+            element.answer.getText(answer.formElement),
+            element.isAnonymous
+          )
           val formElementIds = form.elements.map(_.id)
 
           val rows = fromUsers.map {
@@ -171,7 +184,9 @@ class SpreadsheetService @Inject()() {
           val elementIdToAnswer: Map[Long, String] = surveyAnswers
             .filter(_._1.id == form.id)
             .groupBy(_._2)
+            .view
             .mapValues(_.head._3)
+            .toMap
 
           val formElementIds = form.elements.map(_.id)
 
@@ -208,7 +223,7 @@ class SpreadsheetService @Inject()() {
                   Cell("Name", format = Some(Cell.Format.bold)),
                   Container(TopToDown)(
                     fromUsers.map {
-                      case (u, true) => Cell(anonymousUserNameMapping.getOrElse(u.id, "Anonymous"))
+                      case (u, true)  => Cell(anonymousUserNameMapping.getOrElse(u.id, "Anonymous"))
                       case (u, false) => Cell(u.name.getOrElse(""))
                     }: _*
                   ).colorIfEven(Color.lightGray),

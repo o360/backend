@@ -17,7 +17,7 @@ trait EnumColumnMapper { _: HasDatabaseConfigProvider[JdbcProfile] =>
     * Automaps sequence of objects to corresponding byte values.
     */
   def mappedEnumSeq[A: ClassTag](s: A*) = {
-    val withIndex = s.zipWithIndex.toMap.mapValues(_.toByte)
+    val withIndex = s.zipWithIndex.toMap.view.mapValues(_.toByte).toMap
     MappedColumnType.base[A, Byte](
       withIndex,
       withIndex.map(_.swap)

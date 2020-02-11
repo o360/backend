@@ -17,7 +17,7 @@ import scala.concurrent.{ExecutionContext, Future}
   * Template service.
   */
 @Singleton
-class TemplateService @Inject()(
+class TemplateService @Inject() (
   protected val templateDao: TemplateDao,
   protected val eventDao: EventDao,
   protected val projectDao: ProjectDao,

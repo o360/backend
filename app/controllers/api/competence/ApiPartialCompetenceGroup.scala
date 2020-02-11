@@ -13,7 +13,7 @@ case class ApiPartialCompetenceGroup(
   description: Option[String],
   machineName: Option[String]
 ) {
-  def toModel(id: Long = 0) =
+  def toModel(id: Long = 0): CompetenceGroup =
     this
       .into[CompetenceGroup]
       .withFieldConst(_.id, id)

@@ -16,7 +16,7 @@ import scala.concurrent.ExecutionContext
   * Invite controller.
   */
 @Singleton
-class InviteController @Inject()(
+class InviteController @Inject() (
   silhouette: Silhouette[DefaultEnv],
   inviteService: InviteService,
   val controllerComponents: ControllerComponents,

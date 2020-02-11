@@ -15,7 +15,7 @@ import scala.concurrent.{ExecutionContext, Future}
 /**
   * Service for exporting event results.
   */
-class EventResultExportService @Inject()(
+class EventResultExportService @Inject() (
   answerDao: AnswerDao,
   formDao: FormDao,
   userDao: UserDao,

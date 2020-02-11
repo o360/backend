@@ -3,7 +3,7 @@ package services.spreadsheet
 import com.google.api.services.sheets.v4.model.Request
 import services.BaseServiceTest
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.util.Try
 
 /**
@@ -20,8 +20,11 @@ class SpreadsheetApiTest extends BaseServiceTest {
         {
           (
             Seq(
-              SetCellText(Point(0, 0),
-                          Cell("test", alignment = Some(Cell.Alignment.Center), format = Some(Cell.Format.bold)))),
+              SetCellText(
+                Point(0, 0),
+                Cell("test", alignment = Some(Cell.Alignment.Center), format = Some(Cell.Format.bold))
+              )
+            ),
             request => {
               val cell = request.getUpdateCells.getRows.asScala.head.getValues.asScala.head
               cell.getUserEnteredValue.getStringValue == "test" &&
@@ -35,16 +38,19 @@ class SpreadsheetApiTest extends BaseServiceTest {
             r => {
               val color =
                 r.getUpdateCells.getRows.asScala.head.getValues.asScala.head.getUserEnteredFormat.getBackgroundColor
-              color.getRed == Color.lightGray._1 / 255F &&
-              color.getGreen == Color.lightGray._2 / 255F &&
-              color.getBlue == Color.lightGray._3 / 255F
+              color.getRed == Color.lightGray._1 / 255f &&
+              color.getGreen == Color.lightGray._2 / 255f &&
+              color.getBlue == Color.lightGray._3 / 255f
             }
           )
         }, {
           (
             Seq(
-              SetBorder(Region(Point(0, 0), Point(2, 2)),
-                        Border(Border.Style.SolidMedium, Border.Placement.ValueSet(Border.Placement.Bottom)))),
+              SetBorder(
+                Region(Point(0, 0), Point(2, 2)),
+                Border(Border.Style.SolidMedium, Border.Placement.ValueSet(Border.Placement.Bottom))
+              )
+            ),
             r => {
               val borderProp = r.getUpdateBorders
               borderProp.getRange.getStartColumnIndex == 0 &&

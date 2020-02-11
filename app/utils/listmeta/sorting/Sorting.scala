@@ -15,7 +15,7 @@ object Sorting {
     * @param name      field name
     * @param direction sorting direction
     */
-  case class Field(name: Symbol, direction: Direction)
+  case class Field(name: String, direction: Direction)
 
   /**
     * Sorting direction.
@@ -38,7 +38,7 @@ object Sorting {
   /**
     * List of fields available for sorting.
     */
-  case class AvailableFields(fields: Set[Symbol])
+  case class AvailableFields(fields: Set[String])
   object AvailableFields {
 
     /**
@@ -46,7 +46,7 @@ object Sorting {
       *
       * @param fields fields list
       */
-    def apply(fields: Symbol*): AvailableFields = AvailableFields(fields.toSet)
+    def apply(fields: String*): AvailableFields = AvailableFields(fields.toSet)
 
     /**
       * Default sorting fields.

@@ -12,7 +12,7 @@ import scala.concurrent.duration._
 /**
   * Scheduler timer.
   */
-class Scheduler @Inject()(
+class Scheduler @Inject() (
   protected val system: ActorSystem,
   @Named("scheduler-actor") protected val schedulerActor: ActorRef,
   protected val config: Config,

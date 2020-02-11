@@ -40,7 +40,8 @@ class ActiveProjectServiceTest
             optId = *,
             optUserId = eqTo(Some(user.id)),
             optEventId = eqTo(Some(eventId))
-          )(*)).thenReturn(toFuture(ListWithTotal(Seq(activeProject))))
+          )(*)
+        ).thenReturn(toFuture(ListWithTotal(Seq(activeProject))))
 
         when(fixture.activeProjectDao.isAuditor(activeProject.id, user.id)).thenReturn(toFuture(isAuditor))
 
@@ -48,7 +49,7 @@ class ActiveProjectServiceTest
 
         val expectedProject = activeProject.copy(userInfo = Some(ActiveProject.UserInfo(isAuditor)))
 
-        result mustBe 'right
+        result mustBe right
         result.toOption.get mustBe ListWithTotal(Seq(expectedProject))
       }
     }
@@ -63,7 +64,7 @@ class ActiveProjectServiceTest
 
         val result = wait(fixture.service.create(project, eventId).run)
 
-        result mustBe 'right
+        result mustBe right
         val createdAp = result.toOption.get
 
         captor.getValue mustBe createdAp
@@ -89,11 +90,12 @@ class ActiveProjectServiceTest
             optId = eqTo(Some(apId)),
             optUserId = eqTo(Some(user.id)),
             optEventId = *
-          )(*)).thenReturn(toFuture(ListWithTotal(Seq.empty[ActiveProject])))
+          )(*)
+        ).thenReturn(toFuture(ListWithTotal(Seq.empty[ActiveProject])))
 
         val result = wait(fixture.service.getById(apId)(user).run)
 
-        result mustBe 'left
+        result mustBe left
         result.swap.toOption.get mustBe a[NotFoundError]
       }
     }
@@ -107,14 +109,15 @@ class ActiveProjectServiceTest
             optId = eqTo(Some(apId)),
             optUserId = eqTo(Some(user.id)),
             optEventId = *
-          )(*)).thenReturn(toFuture(ListWithTotal(Seq(ap))))
+          )(*)
+        ).thenReturn(toFuture(ListWithTotal(Seq(ap))))
         when(fixture.activeProjectDao.isAuditor(ap.id, user.id)).thenReturn(toFuture(isAuditor))
 
         val result = wait(fixture.service.getById(apId)(user).run)
 
         val expectedProject = ap.copy(userInfo = Some(ActiveProject.UserInfo(isAuditor)))
 
-        result mustBe 'right
+        result mustBe right
         result.toOption.get mustBe expectedProject
       }
     }
@@ -128,7 +131,7 @@ class ActiveProjectServiceTest
 
         val result = wait(fixture.service.createProjectAuditors(apId, auditorsIds).run)
 
-        result mustBe 'right
+        result mustBe right
       }
     }
   }

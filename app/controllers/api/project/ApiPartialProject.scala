@@ -22,7 +22,7 @@ case class ApiPartialProject(
   machineName: Option[String]
 ) {
 
-  def toModel(id: Long = 0) =
+  def toModel(id: Long = 0): Project =
     this
       .into[Project]
       .withFieldConst(_.id, id)
