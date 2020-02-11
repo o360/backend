@@ -116,8 +116,7 @@ class UserControllerTest extends BaseControllerTest with UserGenerator {
         ) =>
           val env = fakeEnvironment(UserFixture.user)
           val fixture = getFixture(env)
-          when(
-            fixture.userService.list(None, Some(User.Status.Approved), Tristate.Unspecified, name)(ListMeta.default))
+          when(fixture.userService.list(None, Some(User.Status.Approved), Tristate.Unspecified, name)(ListMeta.default))
             .thenReturn(toSuccessResult(ListWithTotal(total, users)))
           val request = authenticated(FakeRequest(), env)
 

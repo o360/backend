@@ -2,7 +2,7 @@ package services.spreadsheet
 
 import com.google.api.services.sheets.v4.model._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import Action._
 import Element.{Cell, Point, Region}
 
@@ -32,7 +32,9 @@ object SpreadsheetApi {
         .sortBy(_.region.area) // smaller regions have priority
         .flatMap(_.toSingleCells)
         .groupBy(_.region.topLeft)
+        .view
         .mapValues(_.head.color)
+        .toMap
 
       val setTextActions = actions.collect { case v: SetCellText => v }
 
@@ -40,7 +42,12 @@ object SpreadsheetApi {
       if (rows.isEmpty) None
       else {
         val rowsModels = (0 to maxRow).map { rowIndex =>
-          val cells = rows.getOrElse(rowIndex, Nil).groupBy(_.coordinate.x).mapValues(_.head.cell)
+          val cells = rows
+            .getOrElse(rowIndex, Nil)
+            .groupBy(_.coordinate.x)
+            .view
+            .mapValues(_.head.cell)
+            .toMap
           val cellsModels = (0 to maxColumn).map { cellIndex =>
             val color = coordinateToColor.get(Point(cellIndex, rowIndex))
             cells.get(cellIndex).fold(textCell("", color = color)) { cell =>
@@ -57,7 +64,8 @@ object SpreadsheetApi {
             .setStart(startCoordinate)
             .setRows(rowsModels.asJava)
             .setFields(
-              "userEnteredValue,userEnteredFormat.textFormat,userEnteredFormat.backgroundColor,userEnteredFormat.horizontalAlignment")
+              "userEnteredValue,userEnteredFormat.textFormat,userEnteredFormat.backgroundColor,userEnteredFormat.horizontalAlignment"
+            )
         )
 
         Some(request)
@@ -153,9 +161,9 @@ object SpreadsheetApi {
     */
   private def getApiColor(c: Element.Color) =
     new Color()
-      .setRed(c._1 / 255F)
-      .setGreen(c._2 / 255F)
-      .setBlue(c._3 / 255F)
+      .setRed(c._1 / 255f)
+      .setGreen(c._2 / 255f)
+      .setBlue(c._3 / 255f)
 
   /**
     * Returns cell API model.

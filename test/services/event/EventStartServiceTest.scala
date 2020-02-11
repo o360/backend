@@ -47,26 +47,30 @@ class EventStartServiceTest
     val answerDao = mock[AnswerDao]
     val competenceDao = mock[CompetenceDao]
     val competenceGroupDao = mock[CompetenceGroupDao]
-    val service = new EventStartService(eventDao,
-                                        formService,
-                                        projectDao,
-                                        relationDao,
-                                        activeProjectService,
-                                        userService,
-                                        answerDao,
-                                        competenceDao,
-                                        competenceGroupDao,
-                                        actorSystem)
-    Fixture(eventDao,
-            formService,
-            projectDao,
-            relationDao,
-            activeProjectService,
-            userService,
-            answerDao,
-            competenceDao,
-            competenceGroupDao,
-            service)
+    val service = new EventStartService(
+      eventDao,
+      formService,
+      projectDao,
+      relationDao,
+      activeProjectService,
+      userService,
+      answerDao,
+      competenceDao,
+      competenceGroupDao,
+      actorSystem
+    )
+    Fixture(
+      eventDao,
+      formService,
+      projectDao,
+      relationDao,
+      activeProjectService,
+      userService,
+      answerDao,
+      competenceDao,
+      competenceGroupDao,
+      service
+    )
   }
 
   "getAnswersForRelation" should {
@@ -82,7 +86,7 @@ class EventStartServiceTest
 
           val result = wait(fixture.service.getAnswersForRelation(relation, ActiveProjectFixture.values(0)).run)
 
-          result mustBe 'right
+          result mustBe right
           result.toOption.get must have size users.data.size
       }
     }
@@ -105,7 +109,7 @@ class EventStartServiceTest
 
           val result = wait(fixture.service.getAnswersForRelation(relation, ActiveProjectFixture.values(0)).run)
 
-          result mustBe 'right
+          result mustBe right
           val answers = result.toOption.get
           answers must have size usersFrom.data.size * usersTo.data.size
           testForAll(answers) { answer =>
@@ -143,13 +147,14 @@ class EventStartServiceTest
               optGroupFromId = *,
               optGroupToId = *,
               optEmailTemplateId = *
-            )(*)).thenReturn(toFuture(relations))
+            )(*)
+          ).thenReturn(toFuture(relations))
 
           val answerProducerResult = toSuccessResult(Seq.empty[Answer])
 
           val result = wait(fixture.service.getAnswersForProject(eventId, project, (_, _) => answerProducerResult).run)
 
-          result mustBe 'right
+          result mustBe right
           result.toOption.get mustBe empty
       }
     }

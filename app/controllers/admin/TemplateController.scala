@@ -29,7 +29,7 @@ class TemplateController @Inject() (
 ) extends BaseController
   with ListActions {
 
-  implicit val sortingFields = Sorting.AvailableFields('id, 'name, 'kind, 'recipient)
+  implicit val sortingFields = Sorting.AvailableFields("id", "name", "kind", "recipient")
 
   /**
     * Returns list of templates with relations.

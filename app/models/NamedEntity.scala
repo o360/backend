@@ -13,7 +13,7 @@ case class NamedEntity(
     else
       obj match {
         case that: NamedEntity => this.id == that.id
-        case _ => false
+        case _                 => false
       }
   }
 

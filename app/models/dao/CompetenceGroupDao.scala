@@ -36,7 +36,7 @@ trait CompetenceGroupComponent extends EntityKindColumnMapper {
   * Competence group DAO.
   */
 @Singleton
-class CompetenceGroupDao @Inject()(
+class CompetenceGroupDao @Inject() (
   protected val dbConfigProvider: DatabaseConfigProvider,
   implicit val ec: ExecutionContext
 ) extends HasDatabaseConfigProvider[JdbcProfile]
@@ -57,19 +57,18 @@ class CompetenceGroupDao @Inject()(
     optKind: Option[EntityKind] = None,
     optIds: Option[Seq[Long]] = None
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[CompetenceGroup]] = {
-    val query = CompetenceGroups.applyFilter {
-      cg =>
-        Seq(
-          optKind.map(cg.kind === _),
-          optIds.map(cg.id.inSet(_)),
-        )
+    val query = CompetenceGroups.applyFilter { cg =>
+      Seq(
+        optKind.map(cg.kind === _),
+        optIds.map(cg.id.inSet(_))
+      )
     }
 
     runListQuery(query) { cg =>
       {
-        case 'id => cg.id
-        case 'name => cg.name
-        case 'description => cg.description
+        case "id"          => cg.id
+        case "name"        => cg.name
+        case "description" => cg.description
       }
     }
   }

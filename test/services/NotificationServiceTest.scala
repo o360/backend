@@ -71,8 +71,8 @@ class NotificationServiceTest
           optFormId = *,
           optGroupFromIds = *,
           optUserId = *
-        )(*))
-        .thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
+        )(*)
+      ).thenReturn(toFuture(ListWithTotal[Event](0, Nil)))
 
       wait(fixture.service.execute(jobFixture))
       succeed
@@ -90,8 +90,8 @@ class NotificationServiceTest
           optFormId = *,
           optGroupFromIds = *,
           optUserId = *
-        )(*))
-        .thenReturn(toFuture(ListWithTotal(1, Seq(event))))
+        )(*)
+      ).thenReturn(toFuture(ListWithTotal(1, Seq(event))))
 
       when(
         fixture.projectDao.getList(
@@ -102,8 +102,8 @@ class NotificationServiceTest
           optGroupAuditorId = *,
           optEmailTemplateId = *,
           optAnyRelatedGroupId = *
-        )(*))
-        .thenReturn(toFuture(ListWithTotal[Project](0, Nil)))
+        )(*)
+      ).thenReturn(toFuture(ListWithTotal[Project](0, Nil)))
 
       wait(fixture.service.execute(jobFixture))
       succeed
@@ -119,7 +119,9 @@ class NotificationServiceTest
             NamedEntity(1, "template name"),
             notification.kind,
             notification.recipient
-          )))
+          )
+        )
+      )
       val template = Templates(0)
       val user = Users(0)
       val job = jobFixture.copy(notification = notification)
@@ -132,8 +134,8 @@ class NotificationServiceTest
           optFormId = *,
           optGroupFromIds = *,
           optUserId = *
-        )(*))
-        .thenReturn(toFuture(ListWithTotal(1, Seq(event))))
+        )(*)
+      ).thenReturn(toFuture(ListWithTotal(1, Seq(event))))
 
       when(
         fixture.projectDao.getList(
@@ -144,8 +146,8 @@ class NotificationServiceTest
           optGroupAuditorId = *,
           optEmailTemplateId = *,
           optAnyRelatedGroupId = *
-        )(*))
-        .thenReturn(toFuture(ListWithTotal(1, Seq(project))))
+        )(*)
+      ).thenReturn(toFuture(ListWithTotal(1, Seq(project))))
 
       when(fixture.templateDao.findById(1)).thenReturn(toFuture(Some(template)))
 
@@ -158,14 +160,15 @@ class NotificationServiceTest
           optGroupFromId = *,
           optGroupToId = *,
           optEmailTemplateId = *
-        )(*)).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
+        )(*)
+      ).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
 
       when(
         fixture.userService.listByGroupId(
           groupId = eqTo(project.groupAuditor.id),
           includeDeleted = eqTo(false)
-        )(*))
-        .thenReturn(toSuccessResult(ListWithTotal(1, Seq(user))))
+        )(*)
+      ).thenReturn(toSuccessResult(ListWithTotal(1, Seq(user))))
 
       val context = Map("example" -> "any")
       val renderedSubject = "subject"
@@ -190,7 +193,9 @@ class NotificationServiceTest
             NamedEntity(1, "template name"),
             notification.kind,
             notification.recipient
-          )))
+          )
+        )
+      )
       val template = Templates(0)
       val user = Users(0)
       val relation = ProjectRelations(0).copy(
@@ -199,7 +204,9 @@ class NotificationServiceTest
             NamedEntity(1, "template name"),
             notification.kind,
             notification.recipient
-          )))
+          )
+        )
+      )
       val job = jobFixture.copy(notification = notification)
 
       when(
@@ -210,8 +217,8 @@ class NotificationServiceTest
           optFormId = *,
           optGroupFromIds = *,
           optUserId = *
-        )(*))
-        .thenReturn(toFuture(ListWithTotal(1, Seq(event))))
+        )(*)
+      ).thenReturn(toFuture(ListWithTotal(1, Seq(event))))
 
       when(
         fixture.projectDao.getList(
@@ -222,8 +229,8 @@ class NotificationServiceTest
           optGroupAuditorId = *,
           optEmailTemplateId = *,
           optAnyRelatedGroupId = *
-        )(*))
-        .thenReturn(toFuture(ListWithTotal(1, Seq(project))))
+        )(*)
+      ).thenReturn(toFuture(ListWithTotal(1, Seq(project))))
 
       when(fixture.templateDao.findById(1)).thenReturn(toFuture(Some(template)))
 
@@ -236,14 +243,15 @@ class NotificationServiceTest
           optGroupFromId = *,
           optGroupToId = *,
           optEmailTemplateId = *
-        )(*)).thenReturn(toFuture(ListWithTotal(1, Seq(relation))))
+        )(*)
+      ).thenReturn(toFuture(ListWithTotal(1, Seq(relation))))
 
       when(
         fixture.userService.listByGroupId(
           groupId = eqTo(relation.groupFrom.id),
           includeDeleted = eqTo(false)
-        )(*))
-        .thenReturn(toSuccessResult(ListWithTotal(1, Seq(user))))
+        )(*)
+      ).thenReturn(toSuccessResult(ListWithTotal(1, Seq(user))))
 
       val context = Map("example" -> "any")
       val renderedSubject = "subject"

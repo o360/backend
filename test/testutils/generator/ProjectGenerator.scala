@@ -19,18 +19,17 @@ trait ProjectGenerator extends TemplateBindingGenerator {
       canRevote <- Arbitrary.arbitrary[Boolean]
       isAnonymous <- Arbitrary.arbitrary[Boolean]
       machineName <- Arbitrary.arbitrary[String]
-    } yield
-      Project(
-        0,
-        name,
-        description,
-        NamedEntity(groupAuditor),
-        templates,
-        formsOnSamePage,
-        canRevote,
-        isAnonymous,
-        hasInProgressEvents = false,
-        machineName
-      )
+    } yield Project(
+      0,
+      name,
+      description,
+      NamedEntity(groupAuditor),
+      templates,
+      formsOnSamePage,
+      canRevote,
+      isAnonymous,
+      hasInProgressEvents = false,
+      machineName
+    )
   }
 }

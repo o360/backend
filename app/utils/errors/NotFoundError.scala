@@ -26,8 +26,10 @@ object NotFoundError {
   case class Template(id: Long) extends NotFoundError("NOTFOUND-TEMPLATE", s"Can't find template with id:$id")
 
   case class Assessment(eventId: Long, projectId: Long, accountId: Long)
-    extends NotFoundError("NOTFOUND-ASSESSMENT",
-                          s"There is no assessment objects for event: $eventId; project: $projectId; user: $accountId")
+    extends NotFoundError(
+      "NOTFOUND-ASSESSMENT",
+      s"There is no assessment objects for event: $eventId; project: $projectId; user: $accountId"
+    )
 
   case class Invite(code: String) extends NotFoundError("NOTFOUND-INVITE", s"Can't find invite with code $code")
 

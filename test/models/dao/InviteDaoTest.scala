@@ -36,7 +36,7 @@ class InviteDaoTest extends BaseDaoTest with InviteFixture with GroupFixture wit
 
   "create" should {
     "create invites" in {
-      forAll(inviteArb.arbitrary, Gen.someOf(Groups.map(_.id))) { (invite: Invite, groupIds: Seq[Long]) =>
+      forAll(inviteArb.arbitrary, Gen.someOf(Groups.map(_.id))) { (invite: Invite, groupIds) =>
         whenever(wait(dao.findByCode(invite.code)).isEmpty) {
           val groupsSet = groupIds.map(NamedEntity(_)).toSet
 

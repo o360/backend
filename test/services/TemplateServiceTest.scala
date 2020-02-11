@@ -41,7 +41,7 @@ class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with Te
         when(fixture.templateDaoMock.findById(id)).thenReturn(toFuture(None))
         val result = wait(fixture.service.getById(id).run)
 
-        result mustBe 'left
+        result mustBe left
         result.swap.toOption.get mustBe a[NotFoundError]
 
         verify(fixture.templateDaoMock, times(1)).findById(id)
@@ -55,7 +55,7 @@ class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with Te
         when(fixture.templateDaoMock.findById(id)).thenReturn(toFuture(Some(template)))
         val result = wait(fixture.service.getById(id).run)
 
-        result mustBe 'right
+        result mustBe right
         result.toOption.get mustBe template
 
         verify(fixture.templateDaoMock, times(1)).findById(id)
@@ -79,11 +79,11 @@ class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with Te
               optId = *,
               optKind = eqTo(kind),
               optRecipient = eqTo(recipient)
-            )(eqTo(ListMeta.default)))
-            .thenReturn(toFuture(ListWithTotal(total, templates)))
+            )(eqTo(ListMeta.default))
+          ).thenReturn(toFuture(ListWithTotal(total, templates)))
           val result = wait(fixture.service.getList(kind, recipient)(ListMeta.default).run)
 
-          result mustBe 'right
+          result mustBe right
           result.toOption.get mustBe ListWithTotal(total, templates)
       }
     }
@@ -97,7 +97,7 @@ class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with Te
       when(fixture.templateDaoMock.create(template.copy(id = 0))).thenReturn(toFuture(template))
       val result = wait(fixture.service.create(template.copy(id = 0)).run)
 
-      result mustBe 'right
+      result mustBe right
       result.toOption.get mustBe template
     }
   }
@@ -109,7 +109,7 @@ class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with Te
         when(fixture.templateDaoMock.findById(template.id)).thenReturn(toFuture(None))
         val result = wait(fixture.service.update(template).run)
 
-        result mustBe 'left
+        result mustBe left
         result.swap.toOption.get mustBe a[NotFoundError]
 
         verify(fixture.templateDaoMock, times(1)).findById(template.id)
@@ -124,7 +124,7 @@ class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with Te
       when(fixture.templateDaoMock.update(template)).thenReturn(toFuture(template))
       val result = wait(fixture.service.update(template).run)
 
-      result mustBe 'right
+      result mustBe right
       result.toOption.get mustBe template
     }
   }
@@ -136,7 +136,7 @@ class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with Te
         when(fixture.templateDaoMock.findById(id)).thenReturn(toFuture(None))
         val result = wait(fixture.service.delete(id).run)
 
-        result mustBe 'left
+        result mustBe left
         result.swap.toOption.get mustBe a[NotFoundError]
 
         verify(fixture.templateDaoMock, times(1)).findById(id)
@@ -157,7 +157,8 @@ class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with Te
             optGroupAuditorId = *,
             optEmailTemplateId = eqTo(Some(id)),
             optAnyRelatedGroupId = *
-          )(*)).thenReturn(toFuture(ListWithTotal(1, Projects.take(1))))
+          )(*)
+        ).thenReturn(toFuture(ListWithTotal(1, Projects.take(1))))
         when(
           fixture.relationDao.getList(
             optId = *,
@@ -167,11 +168,12 @@ class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with Te
             optGroupFromId = *,
             optGroupToId = *,
             optEmailTemplateId = eqTo(Some(id))
-          )(*)).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
+          )(*)
+        ).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
 
         val result = wait(fixture.service.delete(id).run)
 
-        result mustBe 'left
+        result mustBe left
         result.swap.toOption.get mustBe a[ConflictError]
       }
     }
@@ -189,7 +191,8 @@ class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with Te
             optGroupAuditorId = *,
             optEmailTemplateId = eqTo(Some(id)),
             optAnyRelatedGroupId = *
-          )(*)).thenReturn(toFuture(ListWithTotal[Project](0, Nil)))
+          )(*)
+        ).thenReturn(toFuture(ListWithTotal[Project](0, Nil)))
         when(
           fixture.relationDao.getList(
             optId = *,
@@ -199,13 +202,14 @@ class TemplateServiceTest extends BaseServiceTest with TemplateGenerator with Te
             optGroupFromId = *,
             optGroupToId = *,
             optEmailTemplateId = eqTo(Some(id))
-          )(*)).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
+          )(*)
+        ).thenReturn(toFuture(ListWithTotal[Relation](0, Nil)))
 
         when(fixture.templateDaoMock.delete(id)).thenReturn(toFuture(1))
 
         val result = wait(fixture.service.delete(id).run)
 
-        result mustBe 'right
+        result mustBe right
       }
     }
   }

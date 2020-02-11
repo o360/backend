@@ -37,7 +37,7 @@ trait TemplateComponent extends NotificationComponent { self: HasDatabaseConfigP
   * Template DAO.
   */
 @Singleton
-class TemplateDao @Inject()(
+class TemplateDao @Inject() (
   protected val dbConfigProvider: DatabaseConfigProvider,
   implicit val ec: ExecutionContext
 ) extends HasDatabaseConfigProvider[JdbcProfile]
@@ -81,10 +81,10 @@ class TemplateDao @Inject()(
 
     runListQuery(query) { template =>
       {
-        case 'id => template.id
-        case 'name => template.name
-        case 'kind => template.kind
-        case 'recipient => template.recipient
+        case "id"        => template.id
+        case "name"      => template.name
+        case "kind"      => template.kind
+        case "recipient" => template.recipient
       }
     }
   }

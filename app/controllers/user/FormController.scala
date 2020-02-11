@@ -18,7 +18,7 @@ import scala.concurrent.ExecutionContext
   * Form template controller.
   */
 @Singleton
-class FormController @Inject()(
+class FormController @Inject() (
   protected val silhouette: Silhouette[DefaultEnv],
   protected val formService: FormService,
   val controllerComponents: ControllerComponents,

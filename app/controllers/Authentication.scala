@@ -17,13 +17,14 @@ import scala.concurrent.ExecutionContext
 /**
   * Authentication controller.
   */
-class Authentication @Inject()(
+class Authentication @Inject() (
   silhouette: Silhouette[DefaultEnv],
   socialProviderRegistry: SocialProviderRegistry,
   userService: UserService,
   val controllerComponents: ControllerComponents,
   implicit val ec: ExecutionContext
-) extends BaseController with Logger {
+) extends BaseController
+  with Logger {
 
   /**
     * Authenticate user by OAuth code.

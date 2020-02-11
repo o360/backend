@@ -91,7 +91,7 @@ trait ProjectRelationComponent extends EnumColumnMapper { self: HasDatabaseConfi
   * Project relation DAO.
   */
 @Singleton
-class ProjectRelationDao @Inject()(
+class ProjectRelationDao @Inject() (
   protected val dbConfigProvider: DatabaseConfigProvider,
   implicit val ec: ExecutionContext
 ) extends HasDatabaseConfigProvider[JdbcProfile]
@@ -120,9 +120,9 @@ class ProjectRelationDao @Inject()(
     optEmailTemplateId: Option[Long] = None
   )(implicit meta: ListMeta = ListMeta.default): Future[ListWithTotal[Relation]] = {
 
-    def sortMapping(relation: RelationTable): PartialFunction[Symbol, Rep[_]] = {
-      case 'id => relation.id
-      case 'projectId => relation.projectId
+    def sortMapping(relation: RelationTable): PartialFunction[String, Rep[_]] = {
+      case "id"        => relation.id
+      case "projectId" => relation.projectId
     }
 
     def emailTemplateFilter(relation: RelationTable) = optEmailTemplateId.map { emailTemplateId =>

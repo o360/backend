@@ -15,14 +15,16 @@ trait AnswerFixture extends FixtureHelper with ActiveProjectFixture with FormFix
   addFixtureOperation {
     sequenceOf(
       insertInto("form_answer")
-        .columns("id",
-                 "active_project_id",
-                 "user_from_id",
-                 "user_to_id",
-                 "form_id",
-                 "is_anonymous",
-                 "status",
-                 "can_skip")
+        .columns(
+          "id",
+          "active_project_id",
+          "user_from_id",
+          "user_to_id",
+          "form_id",
+          "is_anonymous",
+          "status",
+          "can_skip"
+        )
         .scalaValues(1, 1, 1, 3, 1, true, 1, true)
         .scalaValues(2, 2, 1, null, 2, false, 0, false)
         .build,

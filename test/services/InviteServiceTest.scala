@@ -47,13 +47,15 @@ class InviteServiceTest
       templateEngineServiceMock,
       ec
     )
-    Fixture(userDaoMock,
-            groupDaoMock,
-            inviteDaoMock,
-            userGroupDaoMock,
-            mailServiceMock,
-            templateEngineServiceMock,
-            service)
+    Fixture(
+      userDaoMock,
+      groupDaoMock,
+      inviteDaoMock,
+      userGroupDaoMock,
+      mailServiceMock,
+      templateEngineServiceMock,
+      service
+    )
   }
 
   "getList" should {
@@ -65,7 +67,8 @@ class InviteServiceTest
           fixture.inviteDao.getList(
             *,
             *
-          )(*)).thenReturn(toFuture(ListWithTotal(total, invites)))
+          )(*)
+        ).thenReturn(toFuture(ListWithTotal(total, invites)))
         val result = wait(fixture.service.getList().run)
 
         result.toOption.get mustBe ListWithTotal(total, invites)
@@ -88,12 +91,13 @@ class InviteServiceTest
           optEmail = eqTo(Some(email)),
           optProjectIdAuditor = *,
           includeDeleted = *
-        )(*)).thenReturn(toFuture(ListWithTotal[User](0, Nil)))
+        )(*)
+      ).thenReturn(toFuture(ListWithTotal[User](0, Nil)))
       when(fixture.groupDao.findById(group.id)).thenReturn(toFuture(None))
 
       val result = wait(fixture.service.createInvites(Seq(Invite(email, Set(group)))).run)
 
-      result mustBe 'isLeft
+      result mustBe left
       result.swap.toOption.get mustBe a[NotFoundError]
     }
 
@@ -113,7 +117,8 @@ class InviteServiceTest
           optEmail = eqTo(Some(email)),
           optProjectIdAuditor = *,
           includeDeleted = *
-        )(*)).thenReturn(toFuture(ListWithTotal[User](0, Nil)))
+        )(*)
+      ).thenReturn(toFuture(ListWithTotal[User](0, Nil)))
       when(fixture.groupDao.findById(group.id)).thenReturn(toFuture(Some(Groups(0))))
       when(fixture.inviteDao.create(*)).thenReturn(toFuture(invite))
       when(fixture.templateEngineService.loadStaticTemplate("user_invited.html")).thenReturn("template")
@@ -121,7 +126,7 @@ class InviteServiceTest
 
       val result = wait(fixture.service.createInvites(Seq(invite)).run)
 
-      result mustBe 'isRight
+      result mustBe right
     }
   }
 
@@ -134,7 +139,7 @@ class InviteServiceTest
 
       val result = wait(fixture.service.applyInvite(code)(Users(2)).run)
 
-      result mustBe 'isLeft
+      result mustBe left
       result.swap.toOption.get mustBe a[NotFoundError]
     }
 
@@ -147,7 +152,7 @@ class InviteServiceTest
 
       val result = wait(fixture.service.applyInvite(code)(Users(2)).run)
 
-      result mustBe 'isLeft
+      result mustBe left
       result.swap.toOption.get mustBe a[ConflictError]
     }
 
@@ -160,7 +165,7 @@ class InviteServiceTest
 
       val result = wait(fixture.service.applyInvite(code)(Users(0)).run)
 
-      result mustBe 'isLeft
+      result mustBe left
       result.swap.toOption.get mustBe a[ConflictError]
     }
 
@@ -177,7 +182,7 @@ class InviteServiceTest
 
       val result = wait(fixture.service.applyInvite(code)(Users(2)).run)
 
-      result mustBe 'isRight
+      result mustBe right
     }
   }
 }

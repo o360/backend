@@ -22,7 +22,7 @@ import scala.concurrent.{ExecutionContext, Future}
   * Event service.
   */
 @Singleton
-class EventService @Inject()(
+class EventService @Inject() (
   protected val eventDao: EventDao,
   protected val groupDao: GroupDao,
   protected val projectDao: ProjectDao,

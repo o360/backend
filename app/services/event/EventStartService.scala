@@ -24,7 +24,7 @@ import scala.concurrent.{ExecutionContext, Future}
   * Event start handling service.
   */
 @Singleton
-class EventStartService @Inject()(
+class EventStartService @Inject() (
   eventDao: EventDao,
   formService: FormService,
   projectDao: ProjectDao,
@@ -41,7 +41,8 @@ class EventStartService @Inject()(
 
   private[event] def getAnswersForRelation(
     relation: Relation,
-    activeProject: ActiveProject): EitherT[Future, ApplicationError, Seq[Answer]] = {
+    activeProject: ActiveProject
+  ): EitherT[Future, ApplicationError, Seq[Answer]] = {
     for {
       usersFrom <- userService.listByGroupId(relation.groupFrom.id, includeDeleted = false)
       usersTo <- relation.groupTo match {
@@ -50,7 +51,7 @@ class EventStartService @Inject()(
             .listByGroupId(groupTo.id, includeDeleted = false)
             .map(_.data.some)
         case None =>
-          val result: EitherT[Future, ApplicationError, Option[Seq[User]]] = EitherT.right(none[Seq[User]].toFuture)
+          val result: EitherT[Future, ApplicationError, Option[Seq[User]]] = EitherT.rightT(none[Seq[User]].toFuture)
           result
       }
     } yield {
@@ -71,7 +72,8 @@ class EventStartService @Inject()(
   private[event] def getAnswersForProject(
     eventId: Long,
     project: Project,
-    relationAnswersProducer: (Relation, ActiveProject) => EitherT[Future, ApplicationError, Seq[Answer]]) = {
+    relationAnswersProducer: (Relation, ActiveProject) => EitherT[Future, ApplicationError, Seq[Answer]]
+  ) = {
 
     for {
       activeProject <- activeProjectService.create(project, eventId)
@@ -98,7 +100,8 @@ class EventStartService @Inject()(
       groupsMapping <- Future
         .sequence {
           groups.data.map(cg =>
-            competenceGroupDao.create(cg.copy(kind = EntityKind.Freezed)).map(created => (cg.id, created.id)))
+            competenceGroupDao.create(cg.copy(kind = EntityKind.Freezed)).map(created => (cg.id, created.id))
+          )
         }
         .map(_.toMap)
 
@@ -131,7 +134,10 @@ class EventStartService @Inject()(
     }
   }
 
-  private[event] def createAndReplaceForms(answers: Seq[Answer], replaceCompetencies: Seq[Form] => Future[Seq[Form]]) = {
+  private[event] def createAndReplaceForms(
+    answers: Seq[Answer],
+    replaceCompetencies: Seq[Form] => Future[Seq[Form]]
+  ) = {
     val formsIds = answers.map(_.form.id).distinct
     for {
       forms <- formsIds.map(formService.getById).sequenced

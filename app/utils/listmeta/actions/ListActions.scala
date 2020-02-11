@@ -54,13 +54,14 @@ trait ListActions {
     * @param sortingFields   fields available for sorting
     * @return either list meta or error
     */
-  private def getListMeta(playQueryString: Map[String, Seq[String]])(
-    implicit sortingFields: Sorting.AvailableFields): Either[ApplicationError, ListMeta] = {
+  private def getListMeta(
+    playQueryString: Map[String, Seq[String]]
+  )(implicit sortingFields: Sorting.AvailableFields): Either[ApplicationError, ListMeta] = {
     val queryString = playQueryString.map { case (k, v) => k -> v.mkString }
 
     for {
-      pagination <- PaginationRequestParser.parse(queryString).right
-      sorting <- SortingRequestParser.parse(queryString).right
+      pagination <- PaginationRequestParser.parse(queryString)
+      sorting <- SortingRequestParser.parse(queryString)
     } yield ListMeta(pagination, sorting)
   }
 

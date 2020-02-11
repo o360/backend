@@ -22,7 +22,7 @@ object ExceptionHandler {
         "form_element_competence_competence_id_fk" -> ConflictError.Competence.CompetenceIdNotExists,
         "form_element_competence_element_id_competence_id_pk" -> ConflictError.Competence.DuplicateElementCompetence,
         "relation_classic_unique" -> BadRequestError.Relation.DuplicateRelation,
-        "relation_survey_unique" -> BadRequestError.Relation.DuplicateRelation,
+        "relation_survey_unique" -> BadRequestError.Relation.DuplicateRelation
       )
 
       val message = e.getMessage

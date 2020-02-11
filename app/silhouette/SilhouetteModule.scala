@@ -47,9 +47,11 @@ class SilhouetteModule extends AbstractModule {
   def provideAuthenticatorCrypter: Crypter = new DummyCrypter
 
   @Provides
-  def provideAuthenticatorService(crypter: Crypter,
-                                  config: Config,
-                                  ec: ExecutionContext): AuthenticatorService[JWTAuthenticator] = {
+  def provideAuthenticatorService(
+    crypter: Crypter,
+    config: Config,
+    ec: ExecutionContext
+  ): AuthenticatorService[JWTAuthenticator] = {
 
     val secret = config.cryptoSecret
     val jwtConfig = JWTAuthenticatorSettings(sharedSecret = secret)
