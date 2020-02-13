@@ -1,0 +1,1911 @@
+### NoDocs ###
+GET /swagger.json controllers.Assets.at(path="/public", file="swagger.json")
+
+###
+# summary: Returns logged in user
+# tags:
+#   - User
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.user.ApiUser'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /users/current controllers.user.UserController.me
+
+###
+# summary: Authenticate user by OAuth code
+# tags:
+#   - Auth
+# security: []
+# parameters:
+#   - name: body
+#     schema:
+#       type: object
+#       properties:
+#           code:
+#               type: string
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               token:
+#                   type: string
+#   400:
+#       $ref: '#/responses/BadRequest'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST /auth/:provider controllers.Authentication.auth(provider: String)
+
+###
+# summary: Returns user by ID
+# tags:
+#   - User
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.user.ApiShortUser'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /users/:id controllers.user.UserController.getById(id: Long)
+
+###
+# summary: Returns user by ID
+# tags:
+#   - User
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.user.ApiUser'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /admin/users/:id controllers.admin.UserController.getById(id: Long)
+
+###
+# summary: Returns list of users
+# tags:
+#   - User
+# parameters:
+#   - name: sort
+#     in: query
+#     type: string
+#     pattern: '^-?\w+(,-?\w+)*$'
+#     description: 'Available fields: id, name, gender. Format: field1,-field2,...'
+#   - $ref: '#/parameters/pageSize'
+#   - $ref: '#/parameters/pageNumber'
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.user.ApiShortUser'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /users controllers.user.UserController.getList(name: Option[String])
+
+###
+# summary: Returns list of users
+# tags:
+#   - User
+# parameters:
+#   - in: query
+#     name: role
+#     schema:
+#     type: string
+#     enum:
+#       - "admin"
+#       - "user"
+#   - in: query
+#     name: status
+#     schema:
+#     type: string
+#     enum:
+#       - "new"
+#       - "approved"
+#   - in: query
+#     name: groupId
+#     schema:
+#     type: integer
+#     description: 'group ID or "null"'
+#     required: false
+#   - name: sort
+#     in: query
+#     type: string
+#     pattern: '^-?\w+(,-?\w+)*$'
+#     description: 'Available fields: id, name, email, role, status, gender. Format: field1,-field2,...'
+#   - $ref: '#/parameters/pageSize'
+#   - $ref: '#/parameters/pageNumber'
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.user.ApiUser'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /admin/users controllers.admin.UserController.getList(role: Option[controllers.api.user.ApiUser.ApiRole], status: Option[controllers.api.user.ApiUser.ApiStatus], groupId: org.davidbild.tristate.Tristate[Long], name: Option[String])
+
+###
+# summary: Updates current user
+# tags:
+#   - User
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.user.ApiPartialUser'
+# responses:
+#   200:
+#       description: User updated
+#       schema:
+#           $ref: '#/definitions/controllers.api.user.ApiUser'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+PUT /users/current controllers.user.UserController.update
+
+###
+# summary: Updates user
+# tags:
+#   - User
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.user.ApiUser'
+# responses:
+#   200:
+#       description: User updated
+#       schema:
+#           $ref: '#/definitions/controllers.api.user.ApiUser'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+PUT /admin/users/:id controllers.admin.UserController.update(id: Long)
+
+###
+# summary: Removes user by ID
+# tags:
+#   - User
+# responses:
+#   204:
+#       description: User deleted successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+DELETE /admin/users/:id controllers.admin.UserController.delete(id: Long)
+
+###
+# summary: Returns list of groups
+# tags:
+#   - Group
+# parameters:
+#   - in: query
+#     name: levels
+#     type: string
+#     description: comma separated list of available levels, e.g. 0,1,2
+#     required: false
+#   - in: query
+#     name: parentId
+#     schema:
+#     type: integer
+#     description: 'group parent ID or "null"'
+#     required: false
+#   - name: sort
+#     in: query
+#     type: string
+#     pattern: '^-?\w+(,-?\w+)*$'
+#     description: 'Available fields: id, name. Format: field1,-field2,...'
+#   - $ref: '#/parameters/pageSize'
+#   - $ref: '#/parameters/pageNumber'
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.group.ApiGroup'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /admin/groups controllers.admin.GroupController.getList(parentId: org.davidbild.tristate.Tristate[Long], userId: Option[Long], name: Option[String], levels: Option[String])
+
+###
+# summary: Returns current user groups
+# tags:
+#   - Group
+#   - User
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.group.ApiGroup'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /users/current/groups controllers.user.GroupController.getList
+
+###
+# summary: Returns user groups
+# tags:
+#   - Group
+#   - User
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.group.ApiGroup'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /users/:userId/groups controllers.user.GroupController.getListByUserId(userId: Long)
+
+###
+# summary: Returns group by ID
+# tags:
+#   - Group
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.group.ApiGroup'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /admin/groups/:id controllers.admin.GroupController.getById(id: Long)
+
+###
+# summary: Creates group
+# tags:
+#   - Group
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.group.ApiPartialGroup'
+# responses:
+#   201:
+#       description: Group created
+#       schema:
+#           $ref: '#/definitions/controllers.api.group.ApiGroup'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST /admin/groups controllers.admin.GroupController.create
+
+###
+# summary: Updates group
+# tags:
+#   - Group
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.group.ApiPartialGroup'
+# responses:
+#   200:
+#       description: Group updated
+#       schema:
+#           $ref: '#/definitions/controllers.api.group.ApiGroup'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+PUT /admin/groups/:id controllers.admin.GroupController.update(id: Long)
+
+###
+# summary: Removes group by ID
+# tags:
+#   - Group
+# responses:
+#   204:
+#       description: Group deleted successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+DELETE /admin/groups/:id controllers.admin.GroupController.delete(id: Long)
+
+###
+# summary: Adds user to group
+# tags:
+#   - Group
+# responses:
+#   204:
+#       description: User added to group successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST /admin/groups/:groupId/users/:userId controllers.admin.UserGroupController.add(groupId: Long, userId: Long)
+
+###
+# summary: Remove user from group
+# tags:
+#   - Group
+# responses:
+#   204:
+#       description: User removed from group successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+DELETE /admin/groups/:groupId/users/:userId controllers.admin.UserGroupController.remove(groupId: Long, userId: Long)
+
+###
+# summary: Bulk adds users to groups
+# tags:
+#   - Group
+# parameters:
+#   - name: body
+#     schema:
+#       type: array
+#       items:
+#           $ref: '#/definitions/controllers.api.group.ApiUserGroup'
+# responses:
+#   204:
+#       description: Users added to groups successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST /admin/groups-users/add controllers.admin.UserGroupController.bulkAdd
+
+###
+# summary: Bulk removes users from groups
+# tags:
+#   - Group
+# parameters:
+#   - name: body
+#     schema:
+#       type: array
+#       items:
+#           $ref: '#/definitions/controllers.api.group.ApiUserGroup'
+# responses:
+#   204:
+#       description: Users removed from groups successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST /admin/groups-users/remove controllers.admin.UserGroupController.bulkRemove
+
+
+###
+# summary: Returns form template with elements by ID for user
+# tags:
+#   - Form template
+#   - Assessment
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.form.ApiForm'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /forms/:id controllers.user.FormController.getById(id: Long)
+
+###
+# summary: Returns form template with elements by ID for admin
+# tags:
+#   - Form template
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.form.ApiForm'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /admin/forms/:id controllers.admin.FormController.getById(id: Long)
+
+###
+# summary: Returns list of form templates without elements
+# tags:
+#   - Form template
+# parameters:
+#   - name: sort
+#     in: query
+#     type: string
+#     pattern: '^-?\w+(,-?\w+)*$'
+#     description: 'Available fields: id, name. Format: field1,-field2,...'
+#   - $ref: '#/parameters/pageSize'
+#   - $ref: '#/parameters/pageNumber'
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.form.ApiForm'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /admin/forms controllers.admin.FormController.getList
+
+###
+# summary: Creates form template
+# tags:
+#   - Form template
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.form.ApiPartialForm'
+# responses:
+#   201:
+#       description: Form created
+#       schema:
+#           $ref: '#/definitions/controllers.api.form.ApiForm'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST /admin/forms controllers.admin.FormController.create
+
+###
+# summary: Updates form template
+# tags:
+#   - Form template
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.form.ApiPartialForm'
+# responses:
+#   200:
+#       description: Form updated
+#       schema:
+#           $ref: '#/definitions/controllers.api.form.ApiForm'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+PUT /admin/forms/:id controllers.admin.FormController.update(id: Long)
+
+###
+# summary: Removes form template by ID
+# tags:
+#   - Form template
+# responses:
+#   204:
+#       description: Form deleted successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+DELETE /admin/forms/:id controllers.admin.FormController.delete(id: Long)
+
+###
+# summary: Clones form with given ID
+# tags:
+#   - Form template
+# responses:
+#   201:
+#       description: New form
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST /admin/forms/:id/clone controllers.admin.FormController.cloneForm(id: Long)
+
+###
+# summary: Returns project by ID
+# tags:
+#   - Project
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.project.ApiProject'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /admin/projects/:id controllers.admin.ProjectController.getById(id: Long)
+
+###
+# summary: Returns list of projects
+# tags:
+#   - Project
+# parameters:
+#   - name: sort
+#     in: query
+#     type: string
+#     pattern: '^-?\w+(,-?\w+)*$'
+#     description: 'Available fields: id, name, description. Format: field1,-field2,...'
+#   - $ref: '#/parameters/pageSize'
+#   - $ref: '#/parameters/pageNumber'
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.project.ApiProject'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /admin/projects controllers.admin.ProjectController.getList(eventId: Option[Long], groupId: Option[Long])
+
+###
+# summary: Returns list of active projects
+# tags:
+#   - Project
+# parameters:
+#   - name: sort
+#     in: query
+#     type: string
+#     pattern: '^-?\w+(,-?\w+)*$'
+#     description: 'Available fields: id, name, description. Format: field1,-field2,...'
+#   - $ref: '#/parameters/pageSize'
+#   - $ref: '#/parameters/pageNumber'
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.project.ApiActiveProject'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /projects controllers.user.ActiveProjectController.getList(eventId: Option[Long])
+
+###
+# summary: Returns active project by ID
+# tags:
+#   - Project
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.project.ApiActiveProject'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /projects/:id controllers.user.ActiveProjectController.getById(id: Long)
+
+###
+# summary: Creates project
+# tags:
+#   - Project
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.project.ApiPartialProject'
+# responses:
+#   201:
+#       description: Project created
+#       schema:
+#           $ref: '#/definitions/controllers.api.project.ApiProject'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST /admin/projects controllers.admin.ProjectController.create
+
+###
+# summary: Updates project
+# tags:
+#   - Project
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.project.ApiPartialProject'
+# responses:
+#   200:
+#       description: Project updated
+#       schema:
+#           $ref: '#/definitions/controllers.api.project.ApiProject'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+PUT /admin/projects/:id controllers.admin.ProjectController.update(id: Long)
+
+###
+# summary: Removes project
+# tags:
+#   - Project
+# responses:
+#   204:
+#       description: Project deleted successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+DELETE /admin/projects/:id controllers.admin.ProjectController.delete(id: Long)
+
+###
+# summary: Returns relation by ID
+# tags:
+#   - Project
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.project.ApiRelation'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /admin/relations/:id controllers.admin.ProjectRelationController.getById(id: Long)
+
+###
+# summary: Returns list of relations
+# tags:
+#   - Project
+# parameters:
+#   - name: sort
+#     in: query
+#     type: string
+#     pattern: '^-?\w+(,-?\w+)*$'
+#     description: 'Available fields: id, projectId. Format: field1,-field2,...'
+#   - $ref: '#/parameters/pageSize'
+#   - $ref: '#/parameters/pageNumber'
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.project.ApiRelation'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /admin/relations controllers.admin.ProjectRelationController.getList(projectId: Option[Long])
+
+###
+# summary: Creates relation
+# tags:
+#   - Project
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.project.ApiPartialRelation'
+# responses:
+#   201:
+#       description: Relation created
+#       schema:
+#           $ref: '#/definitions/controllers.api.project.ApiRelation'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST /admin/relations controllers.admin.ProjectRelationController.create
+
+###
+# summary: Updates relation
+# tags:
+#   - Project
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.project.ApiPartialRelation'
+# responses:
+#   200:
+#       description: Relation updated
+#       schema:
+#           $ref: '#/definitions/controllers.api.project.ApiRelation'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+PUT /admin/relations/:id controllers.admin.ProjectRelationController.update(id: Long)
+
+###
+# summary: Removes relation
+# tags:
+#   - Project
+# responses:
+#   204:
+#       description: Relation deleted successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+DELETE /admin/relations/:id controllers.admin.ProjectRelationController.delete(id: Long)
+
+###
+# summary: Returns event by ID
+# tags:
+#   - Event
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.event.ApiEvent'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /admin/events/:id controllers.admin.EventController.getById(id: Long)
+
+###
+# summary: Returns event by ID
+# tags:
+#   - Event
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.event.ApiEvent'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /events/:id controllers.user.EventController.getById(id: Long)
+
+###
+# summary: Returns list of events
+# tags:
+#   - Event
+# parameters:
+#   - name: status
+#     in: query
+#     required: false
+#     schema:
+#     type: string
+#     enum:
+#       - notStarted
+#       - inProgress
+#       - completed
+#   - name: sort
+#     in: query
+#     type: string
+#     pattern: '^-?\w+(,-?\w+)*$'
+#     description: 'Available fields: id, start, end, description. Format: field1,-field2,...'
+#   - $ref: '#/parameters/pageSize'
+#   - $ref: '#/parameters/pageNumber'
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.event.ApiEvent'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /admin/events controllers.admin.EventController.getList(status: Option[controllers.api.event.ApiEvent.EventStatus], projectId: Option[Long])
+
+###
+# summary: Returns list of events
+# tags:
+#   - Event
+# parameters:
+#   - name: status
+#     in: query
+#     required: false
+#     schema:
+#     type: string
+#     enum:
+#       - notStarted
+#       - inProgress
+#       - completed
+#   - name: sort
+#     in: query
+#     type: string
+#     pattern: '^-?\w+(,-?\w+)*$'
+#     description: 'Available fields: id, start, end, description. Format: field1,-field2,...'
+#   - $ref: '#/parameters/pageSize'
+#   - $ref: '#/parameters/pageNumber'
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.event.ApiEvent'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /events controllers.user.EventController.getList(status: Option[controllers.api.event.ApiEvent.EventStatus])
+
+
+###
+# summary: Creates event
+# tags:
+#   - Event
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.event.ApiPartialEvent'
+# responses:
+#   201:
+#       description: Event created
+#       schema:
+#           $ref: '#/definitions/controllers.api.event.ApiEvent'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST /admin/events controllers.admin.EventController.create
+
+###
+# summary: Updates event
+# tags:
+#   - Event
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.event.ApiPartialEvent'
+# responses:
+#   200:
+#       description: Event updated
+#       schema:
+#           $ref: '#/definitions/controllers.api.event.ApiEvent'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+PUT /admin/events/:id controllers.admin.EventController.update(id: Long)
+
+###
+# summary: Removes event by ID
+# tags:
+#   - Event
+# responses:
+#   204:
+#       description: Event deleted successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+DELETE /admin/events/:id controllers.admin.EventController.delete(id: Long)
+
+###
+# summary: Clones event
+# tags:
+#   - Event
+# responses:
+#   200:
+#       description: Cloned event
+#       schema:
+#           $ref: '#/definitions/controllers.api.event.ApiEvent'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST /admin/events/:id/clone controllers.admin.EventController.cloneEvent(id: Long)
+
+###
+# summary: Adds project to event
+# tags:
+#   - Event
+# responses:
+#   204:
+#       description: Project added to event successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST /admin/events/:eventId/projects/:projectId controllers.admin.EventProjectController.create(eventId: Long, projectId: Long)
+
+###
+# summary: Remove project from event
+# tags:
+#   - Event
+# responses:
+#   204:
+#       description: Project removed from event successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+DELETE /admin/events/:eventId/projects/:projectId controllers.admin.EventProjectController.delete(eventId: Long, projectId: Long)
+
+###
+# summary: Returns template by ID
+# tags:
+#   - Email template
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.template.ApiTemplate'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /admin/templates/:id controllers.admin.TemplateController.getById(id: Long)
+
+###
+# summary: Returns list of templates
+# tags:
+#   - Email template
+# parameters:
+#   - in: query
+#     name: kind
+#     schema:
+#     type: string
+#     enum:
+#       - "preBegin"
+#       - "begin"
+#       - "preEnd"
+#       - "end"
+#   - in: query
+#     name: recipient
+#     schema:
+#     type: string
+#     enum:
+#       - "respondent"
+#       - "auditor"
+#   - name: sort
+#     in: query
+#     type: string
+#     pattern: '^-?\w+(,-?\w+)*$'
+#     description: 'Available fields: id, name, kind, recipient. Format: field1,-field2,...'
+#   - $ref: '#/parameters/pageSize'
+#   - $ref: '#/parameters/pageNumber'
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.template.ApiTemplate'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /admin/templates controllers.admin.TemplateController.getList(kind: Option[controllers.api.notification.ApiNotificationKind], recipient: Option[controllers.api.notification.ApiNotificationRecipient])
+
+###
+# summary: Creates template
+# tags:
+#   - Email template
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.template.ApiPartialTemplate'
+# responses:
+#   201:
+#       description: Template created
+#       schema:
+#           $ref: '#/definitions/controllers.api.template.ApiTemplate'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST /admin/templates controllers.admin.TemplateController.create
+
+###
+# summary: Updates template
+# tags:
+#   - Email template
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.template.ApiPartialTemplate'
+# responses:
+#   200:
+#       description: Template updated
+#       schema:
+#           $ref: '#/definitions/controllers.api.template.ApiTemplate'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+PUT /admin/templates/:id controllers.admin.TemplateController.update(id: Long)
+
+###
+# summary: Removes template
+# tags:
+#   - Email template
+# responses:
+#   204:
+#       description: Template deleted successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+DELETE /admin/templates/:id controllers.admin.TemplateController.delete(id: Long)
+
+###
+# summary: Clones template with given ID
+# tags:
+#   - Email template
+# responses:
+#   201:
+#       description: New template
+#       schema:
+#           $ref: '#/definitions/controllers.api.template.ApiTemplate'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST /admin/templates/:id/clone controllers.admin.TemplateController.cloneTemplate(id: Long)
+
+###
+# summary: Returns list of assessment objects
+# tags:
+#   - Assessment
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.assessment.ApiAssessment'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /assessments controllers.user.AssessmentController.getList(projectId: Long)
+
+###
+# summary: Bulk submits answers
+# tags:
+#   - Assessment
+# parameters:
+#   - name: body
+#     schema:
+#       type: array
+#       items:
+#           $ref: '#/definitions/controllers.api.assessment.ApiPartialAssessment'
+# responses:
+#   200:
+#       description: Answers submited
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST /assessments controllers.user.AssessmentController.bulkSubmit(projectId: Long)
+
+###
+# summary: Returns list of events
+# tags:
+#   - Export
+# parameters:
+#   - name: sort
+#     in: query
+#     type: string
+#     pattern: '^-?\w+(,-?\w+)*$'
+#   - $ref: '#/parameters/pageSize'
+#   - $ref: '#/parameters/pageNumber'
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.export.ApiExportCode'
+# responses:
+#   200:
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.export.ApiShortEvent'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST /export/events controllers.EventResultExportController.listEvents
+
+###
+# summary: Returns results of single event
+# tags:
+#   - Export
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.export.ApiExportCode'
+# responses:
+#   200:
+#       schema:
+#           $ref: '#/definitions/controllers.api.export.ApiEventExport'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST /export/event controllers.EventResultExportController.export(eventId: Long)
+
+###
+# summary: Restarts failed event job
+# tags:
+#   - System
+# responses:
+#   204:
+#       description: Job is restarting
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST /system/jobs/restart/:jobId controllers.admin.EventJobController.restart(jobId: Long)
+
+###
+# summary: Returns list of invites
+# tags:
+#   - Invite
+# parameters:
+#   - name: sort
+#     in: query
+#     type: string
+#     pattern: '^-?\w+(,-?\w+)*$'
+#     description: 'Available fields: code, email, activationTime, creationTime. Format: field1,-field2,...'
+#   - $ref: '#/parameters/pageSize'
+#   - $ref: '#/parameters/pageNumber'
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.invite.ApiInvite'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /admin/invites controllers.admin.InviteController.getList(activated: Option[Boolean])
+
+###
+# summary: Bulk creates invites
+# tags:
+#   - Invite
+# parameters:
+#   - name: body
+#     schema:
+#       type: array
+#       items:
+#           $ref: '#/definitions/controllers.api.invite.ApiPartialInvite'
+# responses:
+#   200:
+#       description: Invites created
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST /admin/invites controllers.admin.InviteController.bulkCreate
+
+###
+# summary: Submits invite code
+# tags:
+#   - Invite
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.invite.ApiInviteCode'
+# responses:
+#   200:
+#       description: Invite code accepted
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST /invites/submit controllers.user.InviteController.submit
+
+###
+# summary: Uploads user profile picture
+# tags:
+#   - User
+# consumes:
+#   - multipart/form-data
+# parameters:
+#   - in: formData
+#     name: picture
+#     type: file
+# responses:
+#   204:
+#       description: Profile picture was set
+#   400:
+#       $ref: '#/responses/BadRequest'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST /users/current/picture controllers.user.ProfilePictureController.upload
+
+###
+# summary: Uploads user profile picture
+# tags:
+#   - User
+# consumes:
+#   - multipart/form-data
+# parameters:
+#   - in: formData
+#     name: picture
+#     type: file
+# responses:
+#   204:
+#       description: Profile picture was set
+#   400:
+#       $ref: '#/responses/BadRequest'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST /admin/users/:userId/picture controllers.admin.ProfilePictureController.upload(userId: Long)
+
+###
+# summary: Returns user profile picture
+# tags:
+#   - User
+# produces:
+#   - image/gif
+#   - image/jpeg
+#   - image/png
+# responses:
+#   200:
+#       description: Profile picture
+#   400:
+#       $ref: '#/responses/BadRequest'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /users/:userId/picture controllers.user.ProfilePictureController.get(userId: Long)
+
+###
+# summary: Returns reports list
+# tags:
+#   - Report
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.report.ApiReport'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /projects/:projectId/report controllers.user.ReportController.getAuditorReport(projectId: Long)
+
+###
+# summary: Returns competence group by ID
+# tags:
+#   - Competence
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.competence.ApiCompetenceGroup'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /admin/competence-groups/:id controllers.admin.CompetenceGroupController.getById(id: Long)
+
+###
+# summary: Returns list of competence groups
+# tags:
+#   - Competence
+# parameters:
+#   - name: sort
+#     in: query
+#     type: string
+#     pattern: '^-?\w+(,-?\w+)*$'
+#     description: 'Available fields: id, name, description. Format: field1,-field2,...'
+#   - $ref: '#/parameters/pageSize'
+#   - $ref: '#/parameters/pageNumber'
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.competence.ApiCompetenceGroup'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /admin/competence-groups controllers.admin.CompetenceGroupController.getList
+
+###
+# summary: Creates competence group
+# tags:
+#   - Competence
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.competence.ApiPartialCompetenceGroup'
+# responses:
+#   201:
+#       description: Competence group created
+#       schema:
+#           $ref: '#/definitions/controllers.api.competence.ApiCompetenceGroup'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST /admin/competence-groups controllers.admin.CompetenceGroupController.create
+
+###
+# summary: Updates competence group
+# tags:
+#   - Competence
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.competence.ApiPartialCompetenceGroup'
+# responses:
+#   200:
+#       description: Competence group updated
+#       schema:
+#           $ref: '#/definitions/controllers.api.competence.ApiCompetenceGroup'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+PUT /admin/competence-groups/:id controllers.admin.CompetenceGroupController.update(id: Long)
+
+###
+# summary: Removes competence group
+# tags:
+#   - Competence
+# responses:
+#   204:
+#       description: Competence group deleted successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+DELETE /admin/competence-groups/:id controllers.admin.CompetenceGroupController.delete(id: Long)
+
+###
+# summary: Returns competence by ID
+# tags:
+#   - Competence
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           $ref: '#/definitions/controllers.api.competence.ApiCompetence'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /admin/competence/:id controllers.admin.CompetenceController.getById(id: Long)
+
+###
+# summary: Returns list of competence
+# tags:
+#   - Competence
+# parameters:
+#   - name: sort
+#     in: query
+#     type: string
+#     pattern: '^-?\w+(,-?\w+)*$'
+#     description: 'Available fields: id, name, groupId, description. Format: field1,-field2,...'
+#   - $ref: '#/parameters/pageSize'
+#   - $ref: '#/parameters/pageNumber'
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               meta:
+#                   $ref: '#/definitions/controllers.api.Response.Meta'
+#               data:
+#                   type: array
+#                   items:
+#                       $ref: '#/definitions/controllers.api.competence.ApiCompetence'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /admin/competence controllers.admin.CompetenceController.getList(groupId: Option[Long])
+
+###
+# summary: Creates competence
+# tags:
+#   - Competence
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.competence.ApiPartialCompetence'
+# responses:
+#   201:
+#       description: Competence created
+#       schema:
+#           $ref: '#/definitions/controllers.api.competence.ApiCompetence'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST /admin/competence controllers.admin.CompetenceController.create
+
+###
+# summary: Updates competence
+# tags:
+#   - Competence
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.competence.ApiPartialCompetence'
+# responses:
+#   200:
+#       description: Competence updated
+#       schema:
+#           $ref: '#/definitions/controllers.api.competence.ApiCompetence'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   409:
+#       $ref: '#/responses/Conflict'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+PUT /admin/competence/:id controllers.admin.CompetenceController.update(id: Long)
+
+###
+# summary: Removes competence
+# tags:
+#   - Competence
+# responses:
+#   204:
+#       description: Competence deleted successfully
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   403:
+#       $ref: '#/responses/Forbidden'
+#   404:
+#       $ref: '#/responses/NotFound'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+DELETE /admin/competence/:id controllers.admin.CompetenceController.delete(id: Long)
