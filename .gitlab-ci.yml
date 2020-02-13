@@ -1,0 +1,74 @@
+variables:
+  SBT_OPTS: "-Dsbt.global.base=sbt-cache/sbtboot -Dsbt.boot.directory=sbt-cache/boot -Dsbt.ivy.home=sbt-cache/ivy"
+
+cache:
+  untracked: true
+  paths:
+    - "sbt-cache/ivy/cache"
+    - "sbt-cache/boot"
+    - "sbt-cache/sbtboot"
+    - "sbt-cache/target"
+
+stages:
+  - test
+  - build
+  - migrate
+  - deploy
+
+before_script:
+  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN git.bw-sw.com:5000
+
+test:
+  stage: test
+  tags: 
+    - open360-shell
+  script:
+    - sbt scalafmtCheck scalafmtSbtCheck test:scalafmtCheck clean coverage test coverageReport
+
+build:
+  stage: build
+  tags: 
+    - open360-shell
+  script:
+    - sbt docker:publishLocal
+    - docker tag open360/api:latest git.bw-sw.com:5000/open360/backend/app:${CI_COMMIT_REF_NAME}-${CI_PIPELINE_ID}
+    - docker push git.bw-sw.com:5000/open360/backend/app:${CI_COMMIT_REF_NAME}-${CI_PIPELINE_ID}
+
+migrate:
+  stage: migrate
+  tags: 
+    - open360-shell
+  only:
+    - develop
+  script:
+    - sbt flywayMigrate
+
+deploy:
+  stage: deploy
+  tags: 
+    - open360-shell
+  only:
+    - develop
+  script:
+    - docker rm -f private-open360-api || true
+    - docker run -d --name private-open360-api --restart=always -p 9000:9000 
+        -e DATABASE_USER=${DATABASE_USER} 
+        -e DATABASE_PASSWORD=${DATABASE_PASSWORD} 
+        -e DATABASE_URL=${DATABASE_URL} 
+        -e APPLICATION_SECRET=${APPLICATION_SECRET} 
+        -e GOOGLE_REDIRECT_URL=${GOOGLE_REDIRECT_URL} 
+        -e GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID} 
+        -e GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET} 
+        -e MAIL_HOST=${MAIL_HOST} 
+        -e MAIL_PORT=${MAIL_PORT} 
+        -e MAIL_USER=${MAIL_USER} 
+        -e MAIL_PASSWORD=${MAIL_PASSWORD} 
+        -e MAIL_SEND_FROM=${MAIL_SEND_FROM} 
+        -e EXPORT_SECRET=${EXPORT_SECRET} 
+        -e SCHEDULER_ENABLED=true 
+        -v /home/ci-user/config/drive_service_key.json:/opt/docker/conf/drive_service_key.json 
+        -v /home/ci-user/config/user_approved.html:/opt/docker/templates/user_approved.html 
+        -v /home/ci-user/config/user_invited.html:/opt/docker/templates/user_invited.html 
+        -v /home/ci-user/uploads/:/opt/docker/uploads 
+            git.bw-sw.com:5000/open360/backend/app:${CI_COMMIT_REF_NAME}-${CI_PIPELINE_ID}
+    - docker network connect bw-api-network private-open360-api || true
