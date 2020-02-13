@@ -1,0 +1,13 @@
+language: scala
+scala:
+  - 2.13.1
+jdk:
+  - openjdk8
+cache:
+  directories:
+    - $HOME/sbt-cache/ivy/cache
+    - $HOME/sbt-cache/boot
+    - $HOME/sbt-cache/sbtboot
+    - $HOME/sbt-cache/target
+script:
+  - sbt ++$TRAVIS_SCALA_VERSION scalafmtCheck scalafmtSbtCheck test:scalafmtCheck clean coverage test coverageReport

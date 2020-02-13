@@ -1,6 +1,6 @@
 # Open360 Backend
 
-[![pipeline status](https://git.bw-sw.com/open360/backend/badges/develop/pipeline.svg)](https://git.bw-sw.com/open360/backend/commits/develop)
+[![Build Status](https://travis-ci.com/o360/backend.svg?branch=master)](https://travis-ci.com/o360/backend)
 [![coverage report](https://git.bw-sw.com/open360/backend/badges/develop/coverage.svg)](https://git.bw-sw.com/open360/backend/commits/develop)
 
 ## Dependencies
