@@ -1,0 +1,101 @@
+---
+  swagger: "2.0"
+  info:
+    title: "Open360 API"
+    version: "1.0"
+  consumes:
+    - application/json
+  produces:
+    - application/json
+  host: "vm-a834f9ac-1c23-40f2-9461-618361703efd.premium.cs2.netpoint-dc.com:9000"
+  basePath: "/api/v1.0"
+  schemes:
+    - "http"
+  securityDefinitions:
+    apiKey:
+      type: apiKey
+      name: X-Auth-Token
+      description: JWT
+      in: header
+  security:
+    - apiKey: []
+  responses:
+    'BadRequest':
+      description: Bad Request
+      schema:
+        $ref: '#/definitions/error'
+    'Unauthorized':
+      description: Unauthorized
+      schema:
+        $ref: '#/definitions/error'
+    'Forbidden':
+      description: Forbidden
+      schema:
+        $ref: '#/definitions/error'
+    'NotFound':
+      description: Not Found
+      schema:
+        $ref: '#/definitions/error'
+    'InternalServerError':
+      description: Internal Server Error
+      schema:
+        $ref: '#/definitions/error'
+    'Conflict':
+      description: Conflict
+      schema:
+        allOf:
+          - $ref: '#/definitions/error'
+          - properties:
+              conflicts:
+                type: object
+                properties:
+                  forms:
+                    type: array
+                    items:
+                      $ref: '#/definitions/controllers.api.ApiNamedEntity'
+                  groups:
+                    type: array
+                    items:
+                      $ref: '#/definitions/controllers.api.ApiNamedEntity'
+                  projects:
+                    type: array
+                    items:
+                      $ref: '#/definitions/controllers.api.ApiNamedEntity'
+                  relations:
+                    type: array
+                    items:
+                      $ref: '#/definitions/controllers.api.ApiNamedEntity'
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/definitions/controllers.api.ApiNamedEntity'
+  parameters:
+    pageSize:
+      name: size
+      in: query
+      type: integer
+      description: Page size
+    pageNumber:
+      name: number
+      in: query
+      type: integer
+      description: Page number
+  definitions:
+    error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    controllers.api.user.ApiUser:
+      properties:
+        gender:
+          $ref: ''
+          type: string
+          enum:
+            - male
+            - female
