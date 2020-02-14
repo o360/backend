@@ -1,7 +1,8 @@
 # Open360 Backend
 
-[![Build Status](https://travis-ci.com/o360/backend.svg?branch=master)](https://travis-ci.com/o360/backend)
-[![coverage report](https://git/open360/backend/badges/develop/coverage.svg)](https://git/open360/backend/commits/develop)
+[![Build Status](https://travis-ci.org/o360/backend.svg?branch=master)](https://travis-ci.org/o360/backend)
+[![License](http://img.shields.io/:license-Apache%202-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.txt)
+[![Coverage Status](https://coveralls.io/repos/github/o360/backend/badge.svg?branch=master)](https://coveralls.io/github/o360/backend?branch=master)
 
 ## Dependencies
 - java
