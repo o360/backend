@@ -10,4 +10,6 @@ cache:
     - $HOME/sbt-cache/sbtboot
     - $HOME/sbt-cache/target
 script:
-  - sbt ++$TRAVIS_SCALA_VERSION scalafmtCheck scalafmtSbtCheck test:scalafmtCheck clean coverage test coverageReport
+  - sbt ++$TRAVIS_SCALA_VERSION scalafmtCheck scalafmtSbtCheck test:scalafmtCheck clean coverage test
+after_success:
+  - sbt coverageReport coveralls

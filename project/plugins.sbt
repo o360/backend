@@ -10,4 +10,6 @@ addSbtPlugin("io.github.davidmweber" % "flyway-sbt" % "6.2.0")
 
 addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.3.0")
 
+addSbtPlugin("org.scoverage" % "sbt-coveralls" % "1.2.7")
+
 resolvers += "Flyway" at "https://flywaydb.org/repo"
