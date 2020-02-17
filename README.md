@@ -9,6 +9,7 @@
 * [Manual build and run](#manual-build-and-run)
 * [Migrations](#migrations)
 * [Configuration](#configuration)
+* [Contributing](#contributing)
 
 ## Dependencies
 Build:
@@ -161,3 +162,6 @@ Each of them represents body of the corresponding message types and may contain 
 * `user_approved.html`
     * `{{user_name}}` variable, containing approved user name
 
+## Contributing
+
+If you are ready to contribute to this project, please get familiar with [contributing guide](/CONTRIBUTING.md).
