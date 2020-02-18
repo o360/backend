@@ -18,6 +18,32 @@ GET /swagger.json controllers.Assets.at(path="/public", file="swagger.json")
 GET /users/current controllers.user.UserController.me
 
 ###
+# summary: Authenticate user by credentials
+# tags:
+#   - Auth
+# security: []
+# parameters:
+#   - name: body
+#     schema:
+#       $ref: '#/definitions/controllers.api.auth.ApiAuthentication'
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: object
+#           properties:
+#               token:
+#                   type: string
+#   400:
+#       $ref: '#/responses/BadRequest'
+#   401:
+#       $ref: '#/responses/Unauthorized'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+POST /auth-creds controllers.Authentication.authCreds
+
+###
 # summary: Authenticate user by OAuth code
 # tags:
 #   - Auth
