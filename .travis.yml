@@ -1,8 +1,9 @@
+os: linux
 language: scala
 scala:
   - 2.13.1
-jdk:
-  - openjdk8
+jdk: openjdk8
+services: docker
 before_cache:
   - rm -fv $HOME/.ivy2/.sbt.ivy.lock
   - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
@@ -16,3 +17,14 @@ script:
   - sbt ++$TRAVIS_SCALA_VERSION scalafmtCheck scalafmtSbtCheck test:scalafmtCheck clean coverage test
 after_success:
   - sbt coverageReport coveralls
+before_deploy:
+  - sbt docker:publishLocal
+  - echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  # Note: On tag builds $TRAVIS_BRANCH contains tag name, not branch name
+  - docker tag "open360/api" "$DOCKER_REPOSITORY:$([ "$TRAVIS_BRANCH" == "master" ] && echo "latest" || echo "$TRAVIS_BRANCH")"
+deploy:
+  provider: script
+  script: docker push "$DOCKER_REPOSITORY:$([ "$TRAVIS_BRANCH" == "master" ] && echo "latest" || echo "$TRAVIS_BRANCH")"
+  on:
+    all_branches: true
+    condition: $TRAVIS_PULL_REQUEST = false
