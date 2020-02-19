@@ -79,31 +79,34 @@ class SilhouetteModule extends AbstractModule {
     httpLayer: HTTPLayer,
     config: Config,
     ec: ExecutionContext
-  ): CustomGoogleProvider = {
+  ): Option[CustomGoogleProvider] =
+    config.googleSettings.map { googleSettings =>
+      val oauthConfig = OAuth2Settings(
+        accessTokenURL = googleSettings.accessTokenUrl,
+        redirectURL = Some(googleSettings.redirectUrl),
+        clientID = googleSettings.clientId,
+        clientSecret = googleSettings.clientSecret,
+        scope = googleSettings.scope
+      )
 
-    val oauthConfig = OAuth2Settings(
-      accessTokenURL = config.googleSettings.accessTokenUrl,
-      redirectURL = Some(config.googleSettings.redirectUrl),
-      clientID = config.googleSettings.clientId,
-      clientSecret = config.googleSettings.clientSecret,
-      scope = config.googleSettings.scope
-    )
-
-    new CustomGoogleProvider(
-      httpLayer,
-      new DefaultSocialStateHandler(Set(), new Signer {
-        override def sign(data: String): String = data
-        override def extract(message: String): Try[String] = Success(message)
-      }),
-      oauthConfig,
-      ec
-    )
-  }
+      new CustomGoogleProvider(
+        httpLayer,
+        new DefaultSocialStateHandler(Set(), new Signer {
+          override def sign(data: String): String = data
+          override def extract(message: String): Try[String] = Success(message)
+        }),
+        oauthConfig,
+        ec
+      )
+    }
 
   @Provides
-  def provideSocialProviderRegistry(googleProvider: CustomGoogleProvider): SocialProviderRegistry = {
-    SocialProviderRegistry(Seq(googleProvider))
-  }
+  def provideSocialProviderRegistry(googleProvider: Option[CustomGoogleProvider]): SocialProviderRegistry =
+    SocialProviderRegistry(
+      Seq(
+        googleProvider
+      ).collect { case Some(provider) => provider }
+    )
 
   @Provides
   def provideSecuredErrorHandler: SecuredErrorHandler = {

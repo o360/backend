@@ -15,6 +15,8 @@
 package utils
 
 import javax.inject.{Inject, Singleton}
+import scalaz.std.option._
+import scalaz.syntax.apply._
 
 import play.api.Configuration
 
@@ -24,15 +26,23 @@ import play.api.Configuration
 @Singleton
 class Config @Inject() (protected val configuration: Configuration) {
 
-  lazy val googleSettings: Config.OAuthGoogle = {
-    val authConfig = configuration.get[Configuration]("auth")
-    val accessTokenURL = authConfig.get[String]("silhouette.google.accessTokenURL")
-    val redirectURL = authConfig.get[String]("silhouette.google.redirectURL")
-    val clientID = authConfig.get[String]("silhouette.google.clientID")
-    val clientSecret = authConfig.get[String]("silhouette.google.clientSecret")
-    val scope = authConfig.getOptional[String]("silhouette.google.scope")
+  lazy val googleSettings: Option[Config.OAuthGoogle] = {
+    val googleConfig = configuration.get[Configuration]("auth.silhouette.google")
 
-    Config.OAuthGoogle(accessTokenURL, redirectURL, clientID, clientSecret, scope)
+    val params = googleConfig.getOptional[String]("accessTokenURL") |@|
+      googleConfig.getOptional[String]("redirectURL") |@|
+      googleConfig.getOptional[String]("clientID") |@|
+      googleConfig.getOptional[String]("clientSecret")
+
+    params { (accessTokenURL, redirectURL, clientID, clientSecret) =>
+      Config.OAuthGoogle(
+        accessTokenURL,
+        redirectURL,
+        clientID,
+        clientSecret,
+        googleConfig.getOptional[String]("scope")
+      )
+    }
   }
 
   lazy val schedulerSettings: Config.Scheduler = {
