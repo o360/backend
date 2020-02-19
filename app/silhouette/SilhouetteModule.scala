@@ -105,7 +105,7 @@ class SilhouetteModule extends AbstractModule {
     SocialProviderRegistry(
       Seq(
         googleProvider
-      ).collect { case Some(provider) => provider }
+      ).flatten
     )
 
   @Provides
