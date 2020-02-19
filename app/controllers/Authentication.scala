@@ -29,6 +29,7 @@ import utils.implicits.FutureLifting._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import services.ExternalAuthService
+import com.mohiva.play.silhouette.impl.providers.CommonSocialProfile
 
 /**
   * Authentication controller.
@@ -75,6 +76,7 @@ class Authentication @Inject() (
           profile <- p.retrieveProfile(authInfo.asInstanceOf[p.A])
           customProfile = profile match {
             case p: CustomSocialProfile => p
+            case p: CommonSocialProfile => CustomSocialProfile.fromCommonSocialProfile(p)
           }
           token <- this.retrieveToken(customProfile)
         } yield toResult(ApiToken(token))

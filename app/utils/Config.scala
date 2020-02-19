@@ -45,6 +45,28 @@ class Config @Inject() (protected val configuration: Configuration) {
     }
   }
 
+  lazy val twitterSettings: Option[Config.OAuthTwitter] = {
+    val twitterConfig = configuration.get[Configuration]("auth.silhouette.twitter")
+
+    val params = twitterConfig.getOptional[String]("requestTokenURL") |@|
+      twitterConfig.getOptional[String]("accessTokenURL") |@|
+      twitterConfig.getOptional[String]("authorizationURL") |@|
+      twitterConfig.getOptional[String]("callbackURL") |@|
+      twitterConfig.getOptional[String]("consumerKey") |@|
+      twitterConfig.getOptional[String]("consumerSecret")
+
+    params { (requestTokenURL, accessTokenURL, authorizationURL, callbackURL, consumerKey, consumerSecret) =>
+      Config.OAuthTwitter(
+        requestTokenURL,
+        accessTokenURL,
+        authorizationURL,
+        callbackURL,
+        consumerKey,
+        consumerSecret
+      )
+    }
+  }
+
   lazy val schedulerSettings: Config.Scheduler = {
     val isEnabled = configuration.getOptional[Boolean]("scheduler.enabled")
     val interval = configuration.getMillis("scheduler.interval")
@@ -80,6 +102,15 @@ object Config {
     clientId: String,
     clientSecret: String,
     scope: Option[String]
+  )
+
+  case class OAuthTwitter(
+    requestTokenURL: String,
+    accessTokenURL: String,
+    authorizationURL: String,
+    callbackURL: String,
+    consumerKey: String,
+    consumerSecret: String
   )
 
   case class Scheduler(enabled: Boolean, intervalMilliseconds: Long, maxAgeMilliseconds: Long)

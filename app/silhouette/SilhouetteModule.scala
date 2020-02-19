@@ -28,7 +28,10 @@ import play.api.libs.ws.WSClient
 import utils.Config
 
 import scala.concurrent.ExecutionContext
-import scala.util.{Success, Try}
+import com.mohiva.play.silhouette.impl.providers.oauth1.TwitterProvider
+import com.mohiva.play.silhouette.impl.providers.oauth1.services.PlayOAuth1Service
+import com.mohiva.play.silhouette.impl.providers.oauth1.secrets.CookieSecretProvider
+import com.mohiva.play.silhouette.impl.providers.oauth1.secrets.CookieSecretSettings
 
 /**
   * DI module for silhouette.
@@ -61,6 +64,9 @@ class SilhouetteModule extends AbstractModule {
   def provideAuthenticatorCrypter: Crypter = new DummyCrypter
 
   @Provides
+  def provideSigner: Signer = new DummySigner
+
+  @Provides
   def provideAuthenticatorService(
     crypter: Crypter,
     config: Config,
@@ -77,6 +83,7 @@ class SilhouetteModule extends AbstractModule {
   @Provides
   def provideGoogleProvider(
     httpLayer: HTTPLayer,
+    signer: Signer,
     config: Config,
     ec: ExecutionContext
   ): Option[CustomGoogleProvider] =
@@ -91,20 +98,53 @@ class SilhouetteModule extends AbstractModule {
 
       new CustomGoogleProvider(
         httpLayer,
-        new DefaultSocialStateHandler(Set(), new Signer {
-          override def sign(data: String): String = data
-          override def extract(message: String): Try[String] = Success(message)
-        }),
+        new DefaultSocialStateHandler(Set(), signer),
         oauthConfig,
         ec
       )
     }
 
   @Provides
-  def provideSocialProviderRegistry(googleProvider: Option[CustomGoogleProvider]): SocialProviderRegistry =
+  def provideTwitterProvider(
+    httpLayer: HTTPLayer,
+    crypter: Crypter,
+    signer: Signer,
+    config: Config,
+    ec: ExecutionContext
+  ): Option[TwitterProvider] =
+    config.twitterSettings.map { twitterSettings =>
+      val oauthSettings = OAuth1Settings(
+        requestTokenURL = twitterSettings.requestTokenURL,
+        accessTokenURL = twitterSettings.accessTokenURL,
+        authorizationURL = twitterSettings.authorizationURL,
+        apiURL = None,
+        callbackURL = twitterSettings.callbackURL,
+        consumerKey = twitterSettings.consumerKey,
+        consumerSecret = twitterSettings.consumerSecret
+      )
+
+      new TwitterProvider(
+        httpLayer = httpLayer,
+        service = new PlayOAuth1Service(oauthSettings),
+        tokenSecretProvider = new CookieSecretProvider(
+          CookieSecretSettings(),
+          signer,
+          crypter,
+          Clock()
+        ),
+        settings = oauthSettings
+      )
+    }
+
+  @Provides
+  def provideSocialProviderRegistry(
+    googleProvider: Option[CustomGoogleProvider],
+    twitterProvider: Option[TwitterProvider]
+  ): SocialProviderRegistry =
     SocialProviderRegistry(
       Seq(
-        googleProvider
+        googleProvider,
+        twitterProvider
       ).flatten
     )
 
