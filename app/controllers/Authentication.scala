@@ -18,8 +18,8 @@ import javax.inject.Inject
 import com.mohiva.play.silhouette.api.Silhouette
 import com.mohiva.play.silhouette.api.exceptions.SilhouetteException
 import com.mohiva.play.silhouette.impl.providers.{SocialProvider, SocialProviderRegistry}
-import play.api.libs.json.Json
-import play.api.mvc.{ControllerComponents, Result}
+import controllers.api.auth.{ApiAuthentication, ApiToken}
+import play.api.mvc.{ControllerComponents, RequestHeader, Result}
 import services.UserService
 import silhouette.{CustomSocialProfile, DefaultEnv}
 import utils.Logger
@@ -27,6 +27,8 @@ import utils.errors.AuthenticationError
 import utils.implicits.FutureLifting._
 
 import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+import services.ExternalAuthService
 
 /**
   * Authentication controller.
@@ -35,10 +37,26 @@ class Authentication @Inject() (
   silhouette: Silhouette[DefaultEnv],
   socialProviderRegistry: SocialProviderRegistry,
   userService: UserService,
+  externalAuthService: ExternalAuthService,
   val controllerComponents: ControllerComponents,
   implicit val ec: ExecutionContext
 ) extends BaseController
   with Logger {
+
+  /**
+    * Authenticate user by username and password.
+    *
+    * @return JWT token
+    */
+  def authCreds() = Action.async(parse.json[ApiAuthentication]) { implicit request =>
+    toResult(Ok) {
+      for {
+        authResponse <- externalAuthService.auth(request.body.username, request.body.password)
+        socialProfile <- Future.fromTry(authResponse.toSocialProfile).lift
+        token <- retrieveToken(socialProfile).lift
+      } yield ApiToken(token)
+    }
+  }
 
   /**
     * Authenticate user by OAuth code.
@@ -58,10 +76,8 @@ class Authentication @Inject() (
           customProfile = profile match {
             case p: CustomSocialProfile => p
           }
-          _ <- userService.createIfNotExist(customProfile)
-          authenticator <- silhouette.env.authenticatorService.create(profile.loginInfo)
-          token <- silhouette.env.authenticatorService.init(authenticator)
-        } yield Ok(Json.obj("token" -> token))
+          token <- this.retrieveToken(customProfile)
+        } yield toResult(ApiToken(token))
     }
 
     socialProviderRegistry.get[SocialProvider](provider) match {
@@ -78,4 +94,12 @@ class Authentication @Inject() (
       case _ => toResult(AuthenticationError.ProviderNotSupported(provider)).toFuture
     }
   }
+
+  private def retrieveToken(profile: CustomSocialProfile)(implicit request: RequestHeader): Future[String] =
+    for {
+      _ <- userService.createIfNotExist(profile)
+      authenticator <- silhouette.env.authenticatorService.create(profile.loginInfo)
+      token <- silhouette.env.authenticatorService.init(authenticator)
+    } yield token
+
 }

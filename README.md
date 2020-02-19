@@ -85,18 +85,19 @@ environment variables. *application.conf* path inside container - `/opt/docker/c
 
 ```shell
 docker run -d --name open360-api --restart=always -p 9000:9000 \
-   -e DATABASE_USER=${DATABASE_USER} \
-    -e DATABASE_PASSWORD=${DATABASE_PASSWORD} \
-    -e DATABASE_URL=${DATABASE_URL} \
-    -e APPLICATION_SECRET=${APPLICATION_SECRET} \
-    -e GOOGLE_REDIRECT_URL=${GOOGLE_REDIRECT_URL} \
-    -e GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID} \
-    -e GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET} \
-    -e MAIL_HOST=${MAIL_HOST} \
-    -e MAIL_PORT=${MAIL_PORT} \
-    -e MAIL_USER=${MAIL_USER} \
-    -e MAIL_PASSWORD=${MAIL_PASSWORD} \
-    -e MAIL_SEND_FROM=${MAIL_SEND_FROM} \
+   -e DATABASE_USER \
+    -e DATABASE_PASSWORD \
+    -e DATABASE_URL \
+    -e APPLICATION_SECRET \
+    -e EXTERNAL_AUTH_SERVER_URL \
+    -e GOOGLE_REDIRECT_URL \
+    -e GOOGLE_CLIENT_ID \
+    -e GOOGLE_CLIENT_SECRET \
+    -e MAIL_HOST \
+    -e MAIL_PORT \
+    -e MAIL_USER \
+    -e MAIL_PASSWORD \
+    -e MAIL_SEND_FROM \
     -e SCHEDULER_ENABLED=true \
     -v $(pwd)/drive_service_key.json:/opt/docker/conf/drive_service_key.json \
     -v $(pwd)/user_approved.html:/opt/docker/templates/user_approved.html \

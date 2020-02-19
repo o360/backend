@@ -15,6 +15,8 @@
 package utils
 
 import javax.inject.{Inject, Singleton}
+import scalaz.std.option._
+import scalaz.syntax.apply._
 
 import play.api.Configuration
 
@@ -24,14 +26,23 @@ import play.api.Configuration
 @Singleton
 class Config @Inject() (protected val configuration: Configuration) {
 
-  lazy val googleSettings: Config.OAuthGoogle = {
-    val accessTokenURL = configuration.get[String]("silhouette.google.accessTokenURL")
-    val redirectURL = configuration.get[String]("silhouette.google.redirectURL")
-    val clientID = configuration.get[String]("silhouette.google.clientID")
-    val clientSecret = configuration.get[String]("silhouette.google.clientSecret")
-    val scope = configuration.getOptional[String]("silhouette.google.scope")
+  lazy val googleSettings: Option[Config.OAuthGoogle] = {
+    val googleConfig = configuration.get[Configuration]("auth.silhouette.google")
 
-    Config.OAuthGoogle(accessTokenURL, redirectURL, clientID, clientSecret, scope)
+    val params = googleConfig.getOptional[String]("accessTokenURL") |@|
+      googleConfig.getOptional[String]("redirectURL") |@|
+      googleConfig.getOptional[String]("clientID") |@|
+      googleConfig.getOptional[String]("clientSecret")
+
+    params { (accessTokenURL, redirectURL, clientID, clientSecret) =>
+      Config.OAuthGoogle(
+        accessTokenURL,
+        redirectURL,
+        clientID,
+        clientSecret,
+        googleConfig.getOptional[String]("scope")
+      )
+    }
   }
 
   lazy val schedulerSettings: Config.Scheduler = {
@@ -58,6 +69,8 @@ class Config @Inject() (protected val configuration: Configuration) {
   lazy val exportSecret: String = configuration.get[String]("export.secret")
 
   lazy val userFilesPath: String = configuration.get[String]("userFilesPath")
+
+  lazy val externalAuthServerUrl: Option[String] = configuration.getOptional[String]("auth.externalServerURL")
 }
 
 object Config {
