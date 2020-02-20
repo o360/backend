@@ -32,6 +32,7 @@ import com.mohiva.play.silhouette.impl.providers.oauth1.TwitterProvider
 import com.mohiva.play.silhouette.impl.providers.oauth1.services.PlayOAuth1Service
 import com.mohiva.play.silhouette.impl.providers.oauth1.secrets.CookieSecretProvider
 import com.mohiva.play.silhouette.impl.providers.oauth1.secrets.CookieSecretSettings
+import com.mohiva.play.silhouette.impl.providers.oauth2.FacebookProvider
 
 /**
   * DI module for silhouette.
@@ -67,6 +68,9 @@ class SilhouetteModule extends AbstractModule {
   def provideSigner: Signer = new DummySigner
 
   @Provides
+  def provideStateHandler(signer: Signer): SocialStateHandler = new DefaultSocialStateHandler(Set(), signer)
+
+  @Provides
   def provideAuthenticatorService(
     crypter: Crypter,
     config: Config,
@@ -83,23 +87,15 @@ class SilhouetteModule extends AbstractModule {
   @Provides
   def provideGoogleProvider(
     httpLayer: HTTPLayer,
-    signer: Signer,
+    stateHandler: SocialStateHandler,
     config: Config,
     ec: ExecutionContext
   ): Option[CustomGoogleProvider] =
-    config.googleSettings.map { googleSettings =>
-      val oauthConfig = OAuth2Settings(
-        accessTokenURL = googleSettings.accessTokenUrl,
-        redirectURL = Some(googleSettings.redirectUrl),
-        clientID = googleSettings.clientId,
-        clientSecret = googleSettings.clientSecret,
-        scope = googleSettings.scope
-      )
-
+    config.googleSettings.map { oauthSettings =>
       new CustomGoogleProvider(
         httpLayer,
-        new DefaultSocialStateHandler(Set(), signer),
-        oauthConfig,
+        stateHandler,
+        oauthSettings,
         ec
       )
     }
@@ -112,17 +108,7 @@ class SilhouetteModule extends AbstractModule {
     config: Config,
     ec: ExecutionContext
   ): Option[TwitterProvider] =
-    config.twitterSettings.map { twitterSettings =>
-      val oauthSettings = OAuth1Settings(
-        requestTokenURL = twitterSettings.requestTokenURL,
-        accessTokenURL = twitterSettings.accessTokenURL,
-        authorizationURL = twitterSettings.authorizationURL,
-        apiURL = None,
-        callbackURL = twitterSettings.callbackURL,
-        consumerKey = twitterSettings.consumerKey,
-        consumerSecret = twitterSettings.consumerSecret
-      )
-
+    config.twitterSettings.map { oauthSettings =>
       new TwitterProvider(
         httpLayer = httpLayer,
         service = new PlayOAuth1Service(oauthSettings),
@@ -135,6 +121,26 @@ class SilhouetteModule extends AbstractModule {
         settings = oauthSettings
       )
     }
+
+  @Provides
+  def provideFacebookProvider(
+    httpLayer: HTTPLayer,
+    stateHandler: SocialStateHandler,
+    config: Config
+  ): Option[FacebookProvider] =
+    config.facebookSettings.map { oauthSettings =>
+      new FacebookProvider(
+        httpLayer,
+        stateHandler,
+        oauthSettings
+      )
+    }
+
+  // @Provides
+  // def provideVKProvider(): Option[VKProvider] = {
+
+  //   new VKProvider()
+  // }
 
   @Provides
   def provideSocialProviderRegistry(

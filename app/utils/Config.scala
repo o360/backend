@@ -15,10 +15,10 @@
 package utils
 
 import javax.inject.{Inject, Singleton}
-import scalaz.std.option._
-import scalaz.syntax.apply._
 
 import play.api.Configuration
+import com.mohiva.play.silhouette.impl.providers.OAuth2Settings
+import com.mohiva.play.silhouette.impl.providers.OAuth1Settings
 
 /**
   * Wrapper for application config.
@@ -26,46 +26,11 @@ import play.api.Configuration
 @Singleton
 class Config @Inject() (protected val configuration: Configuration) {
 
-  lazy val googleSettings: Option[Config.OAuthGoogle] = {
-    val googleConfig = configuration.get[Configuration]("auth.silhouette.google")
+  lazy val googleSettings: Option[OAuth2Settings] = loadOAuth2Settings("google")
 
-    val params = googleConfig.getOptional[String]("accessTokenURL") |@|
-      googleConfig.getOptional[String]("redirectURL") |@|
-      googleConfig.getOptional[String]("clientID") |@|
-      googleConfig.getOptional[String]("clientSecret")
+  lazy val twitterSettings: Option[OAuth1Settings] = loadOAuth1Settings("twitter")
 
-    params { (accessTokenURL, redirectURL, clientID, clientSecret) =>
-      Config.OAuthGoogle(
-        accessTokenURL,
-        redirectURL,
-        clientID,
-        clientSecret,
-        googleConfig.getOptional[String]("scope")
-      )
-    }
-  }
-
-  lazy val twitterSettings: Option[Config.OAuthTwitter] = {
-    val twitterConfig = configuration.get[Configuration]("auth.silhouette.twitter")
-
-    val params = twitterConfig.getOptional[String]("requestTokenURL") |@|
-      twitterConfig.getOptional[String]("accessTokenURL") |@|
-      twitterConfig.getOptional[String]("authorizationURL") |@|
-      twitterConfig.getOptional[String]("callbackURL") |@|
-      twitterConfig.getOptional[String]("consumerKey") |@|
-      twitterConfig.getOptional[String]("consumerSecret")
-
-    params { (requestTokenURL, accessTokenURL, authorizationURL, callbackURL, consumerKey, consumerSecret) =>
-      Config.OAuthTwitter(
-        requestTokenURL,
-        accessTokenURL,
-        authorizationURL,
-        callbackURL,
-        consumerKey,
-        consumerSecret
-      )
-    }
-  }
+  lazy val facebookSettings: Option[OAuth2Settings] = loadOAuth2Settings("facebook")
 
   lazy val schedulerSettings: Config.Scheduler = {
     val isEnabled = configuration.getOptional[Boolean]("scheduler.enabled")
@@ -93,25 +58,43 @@ class Config @Inject() (protected val configuration: Configuration) {
   lazy val userFilesPath: String = configuration.get[String]("userFilesPath")
 
   lazy val externalAuthServerUrl: Option[String] = configuration.getOptional[String]("auth.externalServerURL")
+
+  private def loadOAuth2Settings(provider: String): Option[OAuth2Settings] =
+    for {
+      providerConfig <- configuration.getOptional[Configuration](s"auth.silhouette.$provider")
+      accessTokenURL <- providerConfig.getOptional[String]("accessTokenURL")
+      redirectURL <- providerConfig.getOptional[String]("redirectURL")
+      clientID <- providerConfig.getOptional[String]("clientID")
+      clientSecret <- providerConfig.getOptional[String]("clientSecret")
+    } yield OAuth2Settings(
+      accessTokenURL = accessTokenURL,
+      redirectURL = Some(redirectURL),
+      clientID = clientID,
+      clientSecret = clientSecret,
+      scope = providerConfig.getOptional[String]("scope")
+    )
+
+  private def loadOAuth1Settings(provider: String): Option[OAuth1Settings] =
+    for {
+      providerConfig <- configuration.getOptional[Configuration](s"auth.silhouette.$provider")
+      requestTokenURL <- providerConfig.getOptional[String]("requestTokenURL")
+      accessTokenURL <- providerConfig.getOptional[String]("accessTokenURL")
+      authorizationURL <- providerConfig.getOptional[String]("authorizationURL")
+      callbackURL <- providerConfig.getOptional[String]("callbackURL")
+      consumerKey <- providerConfig.getOptional[String]("consumerKey")
+      consumerSecret <- providerConfig.getOptional[String]("consumerSecret")
+    } yield OAuth1Settings(
+      requestTokenURL = requestTokenURL,
+      accessTokenURL = accessTokenURL,
+      authorizationURL = authorizationURL,
+      callbackURL = callbackURL,
+      consumerKey = consumerKey,
+      consumerSecret = consumerSecret
+    )
+
 }
 
 object Config {
-  case class OAuthGoogle(
-    accessTokenUrl: String,
-    redirectUrl: String,
-    clientId: String,
-    clientSecret: String,
-    scope: Option[String]
-  )
-
-  case class OAuthTwitter(
-    requestTokenURL: String,
-    accessTokenURL: String,
-    authorizationURL: String,
-    callbackURL: String,
-    consumerKey: String,
-    consumerSecret: String
-  )
 
   case class Scheduler(enabled: Boolean, intervalMilliseconds: Long, maxAgeMilliseconds: Long)
 
