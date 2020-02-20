@@ -178,7 +178,7 @@ currently two types of authentication sources supported:
     * *firstName* : *string*, *optional* - user's first name.
     * *lastName* : *string*, *optional* - user's last name.
     * *email* : *string*, *optional* - user's email.
-    * *gender* : *string*, *optional*  *{'f', 'm', 'female', 'male', 'man', 'woman'}*, *optional* - user's gender.
+    * *gender* : *string*, *optional*  *{'f', 'm', 'female', 'male', 'man', 'woman'}* - user's gender.
 
     It is strongly encouraged to provide all the values from this list, even optional ones, because
     some features, like email notification sending, filering and sorting by email/name/gender
@@ -188,8 +188,8 @@ currently two types of authentication sources supported:
 
     Here is how your server should be used by curl:
 
-    ```shel
-    $ curl --request POST 'https://your-server-domain:9090/' --header 'Content-Type: application/json' --data-raw '{"username":"johndoe@example.com", "password":"blackcat"}'
+    ```shell
+    $ curl --request POST 'https://your-server-domain:9090/auth' --header 'Content-Type: application/json' --data-raw '{"username":"johndoe@example.com", "password":"blackcat"}'
     > {"userId": "1", "firstName": "John", "lastName": "Doe", "email": "johndoe@example.com", "gender": "m"}
     ```
 
@@ -198,6 +198,10 @@ currently two types of authentication sources supported:
 
     >❗Please make sure that the connection between the application and your script is *secure*, i.e.
     >they should either both be in the private network or use HTTPS, because passwords are sent *not* encrypted.
+
+    Once you have set your HTTP server up, specify an additional environment variable *EXTERNAL_AUTH_SERVER_URL*
+    to a string cotnaining full HTTP url for your authentication endpoint. For the above curl example, this
+    endpoint shall be `https://your-server-domain:9090/auth`
 
 #### Google
  1. Go to https://console.developers.google.com/ and choose the project you created [before](#setting-up-google-account).
