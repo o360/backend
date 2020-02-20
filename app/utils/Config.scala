@@ -27,10 +27,9 @@ import com.mohiva.play.silhouette.impl.providers.OAuth1Settings
 class Config @Inject() (protected val configuration: Configuration) {
 
   lazy val googleSettings: Option[OAuth2Settings] = loadOAuth2Settings("google")
-
   lazy val twitterSettings: Option[OAuth1Settings] = loadOAuth1Settings("twitter")
-
   lazy val facebookSettings: Option[OAuth2Settings] = loadOAuth2Settings("facebook")
+  lazy val vkSettings: Option[OAuth2Settings] = loadOAuth2Settings("vk")
 
   lazy val schedulerSettings: Config.Scheduler = {
     val isEnabled = configuration.getOptional[Boolean]("scheduler.enabled")

@@ -32,7 +32,6 @@ import com.mohiva.play.silhouette.impl.providers.oauth1.TwitterProvider
 import com.mohiva.play.silhouette.impl.providers.oauth1.services.PlayOAuth1Service
 import com.mohiva.play.silhouette.impl.providers.oauth1.secrets.CookieSecretProvider
 import com.mohiva.play.silhouette.impl.providers.oauth1.secrets.CookieSecretSettings
-import com.mohiva.play.silhouette.impl.providers.oauth2.FacebookProvider
 
 /**
   * DI module for silhouette.
@@ -126,21 +125,33 @@ class SilhouetteModule extends AbstractModule {
   def provideFacebookProvider(
     httpLayer: HTTPLayer,
     stateHandler: SocialStateHandler,
-    config: Config
-  ): Option[FacebookProvider] =
+    config: Config,
+    ec: ExecutionContext
+  ): Option[CustomFacebookProvider] =
     config.facebookSettings.map { oauthSettings =>
-      new FacebookProvider(
+      new CustomFacebookProvider(
         httpLayer,
         stateHandler,
-        oauthSettings
+        oauthSettings,
+        ec
       )
     }
 
-  // @Provides
-  // def provideVKProvider(): Option[VKProvider] = {
-
-  //   new VKProvider()
-  // }
+  @Provides
+  def provideVKProvider(
+    httpLayer: HTTPLayer,
+    stateHandler: SocialStateHandler,
+    config: Config,
+    ec: ExecutionContext
+  ): Option[CustomVKProvider] =
+    config.vkSettings.map { oauthSettings =>
+      new CustomVKProvider(
+        httpLayer,
+        stateHandler,
+        oauthSettings,
+        ec
+      )
+    }
 
   @Provides
   def provideSocialProviderRegistry(
