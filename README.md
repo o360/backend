@@ -31,27 +31,30 @@ Script runs through the following stages:
 * Docker image running (also applies migrations)
 
 To run the script follow the next steps:
-1. Set up an environment:
+1. [Set up Google account](#setting-up-google-account)
+
+2. Set up an environment:
 
     1.1. Install and configure PostgreSQL database
-        
-    1.2. Set up [environment variables](#environment-variables)
-    
-    1.3. Create configuration files in the current directory:
-    * *drive_service_key.json* - credentials for Google Drive and Google Sheets API
-    ([how to get it](#setting-up-google-account));
-    
+
+    1.2. Set up [auth sources](#setting-up-authentication-sources)
+
+    1.3. Set up [environment variables](#environment-variables)
+
+    1.4. Create configuration files in the current directory:
+    * *drive_service_key.json* - credentials file for Google Drive and Google Sheets API
+    that you downloaded [before](#setting-up-google-account);
+
         path inside container: `/opt/docker/conf/drive_service_key.json`
     * *user_approved.html* - email template for approved user email
     ([creating email template](#creating-email-template));
-    
+
         path inside container: `/opt/docker/templates/user_approved.html`
     * *user_invited.html* - email template for user invite email
     ([creating email template](#creating-email-template));
-    
+
         path inside container: `/opt/docker/templates/user_invited.html`
 
-2. [Set up Google account](#setting-up-google-account)
 3. Execute `./run-in-docker.sh`
 
 ## Manual build and run
@@ -65,13 +68,14 @@ Coverage report can be seen at `target/scala-2.13/scoverage-report/index.html`
 
 ### Run application
 To run the application locally:
-  1. Set up database and apply [migrations](#migrations)
-  2. Set up configuration:
-     * either by changing `conf/application.conf` file
-     * or by specifying the [environment variables](#environment-variables)
-  3. Create `drive_service_key.json` file as described in [Setting up Google account](#setting-up-google-account)
-  4. Create `user_invited.html` and `user_approved.html` email templates.
-  5. Execute `sbt clean run`
+    1. Create `drive_service_key.json` file as described in [Setting up Google account](#setting-up-google-account)
+    2. Set up database and apply [migrations](#migrations)
+    3. Set up [auth sources](#setting-up-authentication-sources)
+    4. Set up configuration:
+        * either by changing `conf/application.conf` file
+        * or by specifying the [environment variables](#environment-variables)
+    4. Create `user_invited.html` and `user_approved.html` email templates.
+    5. Execute `sbt clean run`
 
 ### Build Docker image
 Execute `sbt docker:publishLocal`
@@ -85,7 +89,7 @@ environment variables. *application.conf* path inside container - `/opt/docker/c
 
 ```shell
 docker run -d --name open360-api --restart=always -p 9000:9000 \
-   -e DATABASE_USER \
+    -e DATABASE_USER \
     -e DATABASE_PASSWORD \
     -e DATABASE_URL \
     -e APPLICATION_SECRET \
@@ -148,7 +152,7 @@ If you need to manually apply migrations:
 ### Setting up authentication sources
 
 For the application to able to authenticate its users, you also need to configure authentication sources. There are
-currently two types of authentication sources supported:
+currently two types of authentication sources supported (you may set up one or both):
 1. Authentication using social providers:
 
     Table below contains all supported social providers as well as the links to how to set them up. You can set up any number of those. Please note that each provider also requires you to configure a set of additional environment variables, in addition to those listed in the [corresponding section](#environment-variables). 
@@ -166,7 +170,7 @@ currently two types of authentication sources supported:
     JSON body. The JSON that will be sent to you server contains the following fields:
     * *username* : *string*
     * *password* : *string*
-    
+
     Your server shall use these values to authenticate the user using any method that makes
     sense in your domain. This way you can implement authentication with LDAP or simple SQL
     database with encrypted passwords, a third party storage or anything else. In the HTTP
