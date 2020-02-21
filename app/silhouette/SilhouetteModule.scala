@@ -156,12 +156,16 @@ class SilhouetteModule extends AbstractModule {
   @Provides
   def provideSocialProviderRegistry(
     googleProvider: Option[CustomGoogleProvider],
-    twitterProvider: Option[TwitterProvider]
+    twitterProvider: Option[TwitterProvider],
+    facebookProvider: Option[CustomFacebookProvider],
+    vkProvider: Option[CustomVKProvider]
   ): SocialProviderRegistry =
     SocialProviderRegistry(
       Seq(
         googleProvider,
-        twitterProvider
+        twitterProvider,
+        facebookProvider,
+        vkProvider
       ).flatten
     )
 
