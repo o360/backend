@@ -20,6 +20,7 @@ import com.mohiva.play.silhouette.api.exceptions.SilhouetteException
 import com.mohiva.play.silhouette.impl.providers.{SocialProvider, SocialProviderRegistry}
 import controllers.api.auth.{ApiAuthentication, ApiToken}
 import play.api.mvc.{ControllerComponents, RequestHeader, Result}
+import play.api.libs.json.Json
 import services.UserService
 import silhouette.{CustomSocialProfile, DefaultEnv}
 import utils.Logger
@@ -93,6 +94,21 @@ class Authentication @Inject() (
 
       case _ => toResult(AuthenticationError.ProviderNotSupported(provider)).toFuture
     }
+  }
+
+  /**
+    * @return List of available providers.
+    */
+  def listProviders() = Action {
+    val socialProviders = socialProviderRegistry.providers.map(_.id.toUpperCase)
+
+    val allProviders = if (externalAuthService.isEnabled()) {
+      "CREDENTIALS" +: socialProviders
+    } else {
+      socialProviders
+    }
+
+    Ok(Json.arr(allProviders))
   }
 
   private def retrieveToken(profile: CustomSocialProfile)(implicit request: RequestHeader): Future[String] =

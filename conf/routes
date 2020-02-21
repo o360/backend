@@ -18,6 +18,25 @@ GET /swagger.json controllers.Assets.at(path="/public", file="swagger.json")
 GET /users/current controllers.user.UserController.me
 
 ###
+# summary: Return list of available authentication providers
+# tags:
+#   - Auth
+# security: []
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: array
+#           items:
+#               type: string
+#   400:
+#       $ref: '#/responses/BadRequest'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /auth-providers controllers.Authentication.listProviders
+
+###
 # summary: Authenticate user by credentials
 # tags:
 #   - Auth
