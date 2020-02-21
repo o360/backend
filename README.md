@@ -35,13 +35,13 @@ To run the script follow the next steps:
 
 2. Set up an environment:
 
-    1.1. Install and configure PostgreSQL database
+    2.1. Install and configure PostgreSQL database
 
-    1.2. Set up [auth sources](#setting-up-authentication-sources)
+    2.2. Set up [auth sources](#setting-up-authentication-sources)
 
-    1.3. Set up [environment variables](#environment-variables)
+    2.3. Set up [environment variables](#environment-variables)
 
-    1.4. Create configuration files in the current directory:
+    2.4. Create configuration files in the current directory:
     * *drive_service_key.json* - credentials file for Google Drive and Google Sheets API
     that you downloaded [before](#setting-up-google-account);
 
@@ -68,14 +68,20 @@ Coverage report can be seen at `target/scala-2.13/scoverage-report/index.html`
 
 ### Run application
 To run the application locally:
-    1. Create `drive_service_key.json` file as described in [Setting up Google account](#setting-up-google-account)
-    2. Set up database and apply [migrations](#migrations)
-    3. Set up [auth sources](#setting-up-authentication-sources)
-    4. Set up configuration:
-        * either by changing `conf/application.conf` file
-        * or by specifying the [environment variables](#environment-variables)
-    4. Create `user_invited.html` and `user_approved.html` email templates.
-    5. Execute `sbt clean run`
+
+1. Create `drive_service_key.json` file as described in [Setting up Google account](#setting-up-google-account)
+
+2. Set up database and apply [migrations](#migrations)
+
+3. Set up [auth sources](#setting-up-authentication-sources)
+
+4. Set up configuration:
+    * either by changing `conf/application.conf` file
+    * or by specifying the [environment variables](#environment-variables)
+
+5. Create `user_invited.html` and `user_approved.html` email templates
+
+6. Execute `sbt clean run`
 
 ### Build Docker image
 Execute `sbt docker:publishLocal`
@@ -117,7 +123,7 @@ If you need to manually apply migrations:
 2. Set up ***DATABASE_USER, DATABASE_PASSWORD, DATABASE_URL*** environment variables (URL format 
 `jdbc:postgresql://<host>:<port>/<db_name>`)
 3. Execute `sbt flywayMigrate`
-  
+
 ## Configuration
 
 ### Environment variables
@@ -134,7 +140,7 @@ If you need to manually apply migrations:
  * *EXPORT_SECRET* - Secret key used for JSON export
  * *SCHEDULER_ENABLED* - (true, false) is background tasks execution enabled
  * *USER_FILES_PATH* - user files path
- 
+
 ### Setting up Google account
 
 1. Go to https://console.developers.google.com/ and create a project.
@@ -144,7 +150,7 @@ If you need to manually apply migrations:
     * Create credentials without role
     * Press "Create key" and select JSON format
     * JSON file will be downloaded automatically
-    
+
 3. Enable following APIs for project via "Library":
     * Google Drive API
     * Google Sheets API
@@ -208,18 +214,18 @@ currently two types of authentication sources supported (you may set up one or b
     endpoint shall be `https://your-server-domain:9090/auth`
 
 #### Google
- 1. Go to https://console.developers.google.com/ and choose the project you created [before](#setting-up-google-account).
- 2. Go to OAuth consent screen and set up an application
- 3. Go to credentials section
- 4. Press "CREATE CREDENTIALS" button and choose "OAuth client ID"
- 5. Choose "Web application", enter client ID name and valid redirect uris
- 6. Client ID and client secret will be displayed automatically after saving
+1. Go to https://console.developers.google.com/ and choose the project you created [before](#setting-up-google-account).
+2. Go to OAuth consent screen and set up an application
+3. Go to credentials section
+4. Press "CREATE CREDENTIALS" button and choose "OAuth client ID"
+5. Choose "Web application", enter client ID name and valid redirect uris
+6. Client ID and client secret will be displayed automatically after saving
 
     ##### Additional environment variables:
     * *GOOGLE_REDIRECT_URL* - allowed OAuth redirect URL, e.g. "http://localhost/login/google"
     * *GOOGLE_CLIENT_ID* - Google OAuth client ID
     * *GOOGLE_CLIENT_SECRET* - Google OAuth client secret
-  
+
 ### Creating email template
 Application requires 2 templates on startup: `user_invited.html` and `user_approved.html`.
 
