@@ -32,9 +32,10 @@ class CustomVKProfileParser(implicit ec: ExecutionContext) extends CustomSocialP
 
   def parse(content: JsValue, authInfo: OAuth2Info): Future[CustomSocialProfile] = {
     parser.parse(content, authInfo).map { commonProfile =>
-      val gender = (content \ "sex").asOpt[Int].flatMap {
-        case 1 => Some(User.Gender.Male)
-        case 2 => Some(User.Gender.Female)
+      val response = (content \ "response").apply(0)
+      val gender = (response \ "sex").asOpt[Int].flatMap {
+        case 1 => Some(User.Gender.Female)
+        case 2 => Some(User.Gender.Male)
         case _ => None
       }
 

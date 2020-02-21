@@ -70,6 +70,7 @@ class Config @Inject() (protected val configuration: Configuration) {
       redirectURL = Some(redirectURL),
       clientID = clientID,
       clientSecret = clientSecret,
+      apiURL = providerConfig.getOptional[String]("apiURL"),
       scope = providerConfig.getOptional[String]("scope")
     )
 
