@@ -62,7 +62,7 @@ class CustomFacebookProvider(
   type Self = CustomFacebookProvider
   type Profile = CustomSocialProfile
 
-  def withSettings(f: (OAuth2Settings) => OAuth2Settings): CustomFacebookProvider = {
+  def withSettings(f: OAuth2Settings => OAuth2Settings): CustomFacebookProvider = {
     new CustomFacebookProvider(httpLayer, stateHandler, f(settings), ec)
   }
 

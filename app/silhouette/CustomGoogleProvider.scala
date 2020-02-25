@@ -60,7 +60,7 @@ class CustomGoogleProvider(
   type Self = CustomGoogleProvider
   type Profile = CustomSocialProfile
 
-  def withSettings(f: (OAuth2Settings) => OAuth2Settings): CustomGoogleProvider = {
+  def withSettings(f: OAuth2Settings => OAuth2Settings): CustomGoogleProvider = {
     new CustomGoogleProvider(httpLayer, stateHandler, f(settings), ec)
   }
 

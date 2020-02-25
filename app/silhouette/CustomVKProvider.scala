@@ -67,7 +67,7 @@ class CustomVKProvider(
   type Self = CustomVKProvider
   type Profile = CustomSocialProfile
 
-  def withSettings(f: (OAuth2Settings) => OAuth2Settings): CustomVKProvider = {
+  def withSettings(f: OAuth2Settings => OAuth2Settings): CustomVKProvider = {
     new CustomVKProvider(httpLayer, stateHandler, f(settings), ec)
   }
 
