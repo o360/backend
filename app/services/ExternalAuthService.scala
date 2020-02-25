@@ -55,6 +55,9 @@ class ExternalAuthService @Inject() (
           )
       }
     } yield authResponse
+
+  def isEnabled(): Boolean = externalUrl.isDefined
+
 }
 
 object ExternalAuthService {
