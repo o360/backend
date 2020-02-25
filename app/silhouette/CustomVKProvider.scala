@@ -16,30 +16,37 @@ package silhouette
 
 import com.mohiva.play.silhouette.api.util.HTTPLayer
 import com.mohiva.play.silhouette.impl.providers._
-import com.mohiva.play.silhouette.impl.providers.oauth2.{BaseGoogleProvider, GoogleProfileParser}
 import models.user.User
 import play.api.libs.json.JsValue
 
 import scala.concurrent.{ExecutionContext, Future}
+import com.mohiva.play.silhouette.impl.providers.oauth2.BaseVKProvider
+import com.mohiva.play.silhouette.impl.providers.oauth2.VKProfileParser
 
 /**
-  * Custom google profile parser.
+  * Custom vk profile parser.
   */
-class CustomGoogleProfileParser(implicit ec: ExecutionContext) extends CustomSocialProfileParser[JsValue, OAuth2Info] {
+class CustomVKProfileParser(implicit ec: ExecutionContext) extends CustomSocialProfileParser[JsValue, OAuth2Info] {
 
-  val parser = new GoogleProfileParser
+  val parser = new VKProfileParser
 
   def parse(content: JsValue, authInfo: OAuth2Info): Future[CustomSocialProfile] = {
     parser.parse(content, authInfo).map { commonProfile =>
-      val gender = (content \ "gender").asOpt[String].flatMap {
-        case "male"   => Some(User.Gender.Male)
-        case "female" => Some(User.Gender.Female)
-        case _        => None
+      val response = (content \ "response").apply(0)
+      val gender = (response \ "sex").asOpt[Int].flatMap {
+        case 1 => Some(User.Gender.Female)
+        case 2 => Some(User.Gender.Male)
+        case _ => None
       }
 
       CustomSocialProfile(
         loginInfo = commonProfile.loginInfo,
-        fullName = commonProfile.fullName,
+        fullName = (commonProfile.firstName, commonProfile.lastName) match {
+          case (Some(firstName), Some(lastName)) => Some(firstName + " " + lastName)
+          case (Some(firstName), None)           => Some(firstName)
+          case (None, Some(lastName))            => Some(lastName)
+          case (None, None)                      => None
+        },
         email = commonProfile.email,
         gender = gender
       )
@@ -48,21 +55,21 @@ class CustomGoogleProfileParser(implicit ec: ExecutionContext) extends CustomSoc
 }
 
 /**
-  * Custom google provider.
+  * Custom vk provider.
   */
-class CustomGoogleProvider(
+class CustomVKProvider(
   protected val httpLayer: HTTPLayer,
   protected val stateHandler: SocialStateHandler,
   val settings: OAuth2Settings,
   implicit val ec: ExecutionContext
-) extends BaseGoogleProvider {
+) extends BaseVKProvider {
 
-  type Self = CustomGoogleProvider
+  type Self = CustomVKProvider
   type Profile = CustomSocialProfile
 
-  def withSettings(f: OAuth2Settings => OAuth2Settings): CustomGoogleProvider = {
-    new CustomGoogleProvider(httpLayer, stateHandler, f(settings), ec)
+  def withSettings(f: OAuth2Settings => OAuth2Settings): CustomVKProvider = {
+    new CustomVKProvider(httpLayer, stateHandler, f(settings), ec)
   }
 
-  protected def profileParser: CustomGoogleProfileParser = new CustomGoogleProfileParser
+  protected def profileParser: CustomVKProfileParser = new CustomVKProfileParser
 }

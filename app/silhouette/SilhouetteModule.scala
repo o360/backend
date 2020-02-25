@@ -28,7 +28,10 @@ import play.api.libs.ws.WSClient
 import utils.Config
 
 import scala.concurrent.ExecutionContext
-import scala.util.{Success, Try}
+import com.mohiva.play.silhouette.impl.providers.oauth1.TwitterProvider
+import com.mohiva.play.silhouette.impl.providers.oauth1.services.PlayOAuth1Service
+import com.mohiva.play.silhouette.impl.providers.oauth1.secrets.CookieSecretProvider
+import com.mohiva.play.silhouette.impl.providers.oauth1.secrets.CookieSecretSettings
 
 /**
   * DI module for silhouette.
@@ -61,6 +64,12 @@ class SilhouetteModule extends AbstractModule {
   def provideAuthenticatorCrypter: Crypter = new DummyCrypter
 
   @Provides
+  def provideSigner: Signer = new DummySigner
+
+  @Provides
+  def provideStateHandler(signer: Signer): SocialStateHandler = new DefaultSocialStateHandler(Set(), signer)
+
+  @Provides
   def provideAuthenticatorService(
     crypter: Crypter,
     config: Config,
@@ -77,34 +86,86 @@ class SilhouetteModule extends AbstractModule {
   @Provides
   def provideGoogleProvider(
     httpLayer: HTTPLayer,
+    stateHandler: SocialStateHandler,
     config: Config,
     ec: ExecutionContext
   ): Option[CustomGoogleProvider] =
-    config.googleSettings.map { googleSettings =>
-      val oauthConfig = OAuth2Settings(
-        accessTokenURL = googleSettings.accessTokenUrl,
-        redirectURL = Some(googleSettings.redirectUrl),
-        clientID = googleSettings.clientId,
-        clientSecret = googleSettings.clientSecret,
-        scope = googleSettings.scope
-      )
-
+    config.googleSettings.map { oauthSettings =>
       new CustomGoogleProvider(
         httpLayer,
-        new DefaultSocialStateHandler(Set(), new Signer {
-          override def sign(data: String): String = data
-          override def extract(message: String): Try[String] = Success(message)
-        }),
-        oauthConfig,
+        stateHandler,
+        oauthSettings,
         ec
       )
     }
 
   @Provides
-  def provideSocialProviderRegistry(googleProvider: Option[CustomGoogleProvider]): SocialProviderRegistry =
+  def provideTwitterProvider(
+    httpLayer: HTTPLayer,
+    crypter: Crypter,
+    signer: Signer,
+    config: Config,
+    ec: ExecutionContext
+  ): Option[TwitterProvider] =
+    config.twitterSettings.map { oauthSettings =>
+      new TwitterProvider(
+        httpLayer = httpLayer,
+        service = new PlayOAuth1Service(oauthSettings),
+        tokenSecretProvider = new CookieSecretProvider(
+          CookieSecretSettings(),
+          signer,
+          crypter,
+          Clock()
+        ),
+        settings = oauthSettings
+      )
+    }
+
+  @Provides
+  def provideFacebookProvider(
+    httpLayer: HTTPLayer,
+    stateHandler: SocialStateHandler,
+    config: Config,
+    ec: ExecutionContext
+  ): Option[CustomFacebookProvider] =
+    config.facebookSettings.map { oauthSettings =>
+      new CustomFacebookProvider(
+        httpLayer,
+        stateHandler,
+        oauthSettings,
+        ec
+      )
+    }
+
+  @Provides
+  def provideVKProvider(
+    httpLayer: HTTPLayer,
+    stateHandler: SocialStateHandler,
+    config: Config,
+    ec: ExecutionContext
+  ): Option[CustomVKProvider] =
+    config.vkSettings.map { oauthSettings =>
+      new CustomVKProvider(
+        httpLayer,
+        stateHandler,
+        oauthSettings,
+        ec
+      )
+    }
+
+  @Provides
+  def provideSocialProviderRegistry(
+    googleProvider: Option[CustomGoogleProvider],
+    twitterProvider: Option[TwitterProvider],
+    facebookProvider: Option[CustomFacebookProvider],
+    vkProvider: Option[CustomVKProvider]
+  ): SocialProviderRegistry =
     SocialProviderRegistry(
       Seq(
-        googleProvider
+        googleProvider,
+        twitterProvider,
+        facebookProvider,
+        vkProvider
       ).flatten
     )
 

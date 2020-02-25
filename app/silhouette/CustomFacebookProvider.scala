@@ -16,18 +16,20 @@ package silhouette
 
 import com.mohiva.play.silhouette.api.util.HTTPLayer
 import com.mohiva.play.silhouette.impl.providers._
-import com.mohiva.play.silhouette.impl.providers.oauth2.{BaseGoogleProvider, GoogleProfileParser}
 import models.user.User
 import play.api.libs.json.JsValue
 
 import scala.concurrent.{ExecutionContext, Future}
+import com.mohiva.play.silhouette.impl.providers.oauth2.BaseFacebookProvider
+import com.mohiva.play.silhouette.impl.providers.oauth2.FacebookProfileParser
 
 /**
-  * Custom google profile parser.
+  * Custom facebook profile parser.
   */
-class CustomGoogleProfileParser(implicit ec: ExecutionContext) extends CustomSocialProfileParser[JsValue, OAuth2Info] {
+class CustomFacebookProfileParser(implicit ec: ExecutionContext)
+  extends CustomSocialProfileParser[JsValue, OAuth2Info] {
 
-  val parser = new GoogleProfileParser
+  val parser = new FacebookProfileParser
 
   def parse(content: JsValue, authInfo: OAuth2Info): Future[CustomSocialProfile] = {
     parser.parse(content, authInfo).map { commonProfile =>
@@ -48,21 +50,21 @@ class CustomGoogleProfileParser(implicit ec: ExecutionContext) extends CustomSoc
 }
 
 /**
-  * Custom google provider.
+  * Custom facebook provider.
   */
-class CustomGoogleProvider(
+class CustomFacebookProvider(
   protected val httpLayer: HTTPLayer,
   protected val stateHandler: SocialStateHandler,
   val settings: OAuth2Settings,
   implicit val ec: ExecutionContext
-) extends BaseGoogleProvider {
+) extends BaseFacebookProvider {
 
-  type Self = CustomGoogleProvider
+  type Self = CustomFacebookProvider
   type Profile = CustomSocialProfile
 
-  def withSettings(f: OAuth2Settings => OAuth2Settings): CustomGoogleProvider = {
-    new CustomGoogleProvider(httpLayer, stateHandler, f(settings), ec)
+  def withSettings(f: OAuth2Settings => OAuth2Settings): CustomFacebookProvider = {
+    new CustomFacebookProvider(httpLayer, stateHandler, f(settings), ec)
   }
 
-  protected def profileParser: CustomGoogleProfileParser = new CustomGoogleProfileParser
+  protected def profileParser: CustomFacebookProfileParser = new CustomFacebookProfileParser
 }
