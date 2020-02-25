@@ -20,7 +20,7 @@ import com.mohiva.play.silhouette.api.exceptions.SilhouetteException
 import com.mohiva.play.silhouette.impl.providers.{SocialProvider, SocialProviderRegistry}
 import controllers.api.auth.{ApiAuthentication, ApiToken}
 import play.api.mvc.{ControllerComponents, RequestHeader, Result}
-import play.api.libs.json.Json
+import play.api.libs.json.{JsArray, JsString}
 import services.UserService
 import silhouette.{CustomSocialProfile, DefaultEnv}
 import utils.Logger
@@ -110,7 +110,7 @@ class Authentication @Inject() (
       socialProviders
     }
 
-    Ok(Json.arr(allProviders))
+    Ok(JsArray(allProviders.map(JsString)))
   }
 
   private def retrieveToken(profile: CustomSocialProfile)(implicit request: RequestHeader): Future[String] =
