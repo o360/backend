@@ -18,6 +18,29 @@ GET /swagger.json controllers.Assets.at(path="/public", file="swagger.json")
 GET /users/current controllers.user.UserController.me
 
 ###
+# summary: Returns list of available authentication providers.
+# description:
+#     \'CREDENTIALS\' value in the result stirng list means that
+#     'POST /auth-creds' endpoint can be used for credential-based authentication.
+#     All other values in the result string list should be interpreted as social authentication providers names.
+# tags:
+#   - Auth
+# security: []
+# responses:
+#   200:
+#       description: Success
+#       schema:
+#           type: array
+#           items:
+#               type: string
+#   400:
+#       $ref: '#/responses/BadRequest'
+#   500:
+#       $ref: '#/responses/InternalServerError'
+###
+GET /auth-providers controllers.Authentication.listProviders
+
+###
 # summary: Authenticate user by credentials
 # tags:
 #   - Auth
