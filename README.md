@@ -103,6 +103,12 @@ docker run -d --name open360-api --restart=always -p 9000:9000 \
     -e GOOGLE_REDIRECT_URL \
     -e GOOGLE_CLIENT_ID \
     -e GOOGLE_CLIENT_SECRET \
+    -e FACEBOOK_REDIRECT_URL \
+    -e FACEBOOK_CLIENT_ID \
+    -e FACEBOOK_CLIENT_SECRET \
+    -e VK_REDIRECT_URL \
+    -e VK_CLIENT_ID \
+    -e VK_CLIENT_SECRET \
     -e MAIL_HOST \
     -e MAIL_PORT \
     -e MAIL_USER \
@@ -141,9 +147,11 @@ If you need to manually apply migrations:
  * *SCHEDULER_ENABLED* - (true, false) is background tasks execution enabled
  * *USER_FILES_PATH* - user files path
 
+> In addition to this list of variables, you should also set at least one of the [authentication sources](#setting-up-authentication-sources) via dedicated environment variables
+
 ### Setting up Google account
 
-1. Go to https://console.developers.google.com/ and create a project.
+1. Go to https://console.developers.google.com/ and create a project
 2. Getting *drive_service_key.json*: 
     * Go to credentials section
     * Press "CREATE CREDENTIALS" button and choose "Service account"
@@ -166,6 +174,8 @@ currently two types of authentication sources supported (you may set up one or b
     | Name  | How to set up |
     |---|---|
     | Google | [Link](#google) |
+    | Facebook | [Link](#facebook) |
+    | VK | [Link](#vk) |
 2. Custom authentication using external HTTP server:
 
     If you have your own database of users, which can be used to authenticate using login
@@ -214,7 +224,7 @@ currently two types of authentication sources supported (you may set up one or b
     endpoint shall be `https://your-server-domain:9090/auth`
 
 #### Google
-1. Go to https://console.developers.google.com/ and choose the project you created [before](#setting-up-google-account).
+1. Go to https://console.developers.google.com/ and choose the project you created [before](#setting-up-google-account)
 2. Go to OAuth consent screen and set up an application
 3. Go to credentials section
 4. Press "CREATE CREDENTIALS" button and choose "OAuth client ID"
@@ -226,8 +236,36 @@ currently two types of authentication sources supported (you may set up one or b
     * *GOOGLE_CLIENT_ID* - Google OAuth client ID
     * *GOOGLE_CLIENT_SECRET* - Google OAuth client secret
 
+#### Facebook
+1. Login to https://developers.facebook.com/
+2. In navbar choose My Apps -> Create App
+3. In pop-up window fill "Display Name" and “Contact Email" and then press "Create App ID" button. You will be redirected to your new application "Add a Product" page
+4. Find "Facebook Login" tile and press "Set Up" button on it
+5. Select "Web" as a platform for your application, fill the "Site URL" field and press "Save" button
+6. On the left panel in Products section go to Facebook login -> Settings
+7. Enter valid redirect uris into "Valid OAuth Redirect URIs" field and press "Save changes" button 
+8. On the left panel go to Settings -> Basic. App ID and App Secret will be displayed there
+9. Fill "App Domains" field with your website domain and press "Save changes"
+
+    ##### Additional environment variables:
+    * *FACEBOOK_REDIRECT_URL* - allowed OAuth redirect URL, e.g. "http://localhost/login/facebook"
+    * *FACEBOOK_CLIENT_ID* - Facebook App ID
+    * *FACEBOOK_CLIENT_SECRET* - Facebook App secret
+
+#### VK
+1. Go to https://vk.com/apps?act=manage and click "Create App"
+2. Enter a title for your application, choose "Website" platform and enter your website address and base domain
+3. In the app window, click "Settings" in the left pannel
+4. Enter valid redirect uris for your application
+5. Client ID and client secret will be displayed as "App ID" and "Secure key"
+
+    ##### Additional environment variables:
+    * *VK_REDIRECT_URL* - allowed OAuth redirect URL, e.g. "http://localhost/login/vk"
+    * *VK_CLIENT_ID* - VK App ID
+    * *VK_CLIENT_SECRET* - VK Secure key
+
 ### Creating email template
-Application requires 2 templates on startup: `user_invited.html` and `user_approved.html`.
+Application requires 2 templates on startup: `user_invited.html` and `user_approved.html`
 
 Each of them represents body of the corresponding message types and may contain variables:
 * `user_invited.html`
