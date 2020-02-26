@@ -43,6 +43,15 @@ docker run -d --name private-open360-api --restart=always -p 9000:9000 \
     -e GOOGLE_REDIRECT_URL \
     -e GOOGLE_CLIENT_ID \
     -e GOOGLE_CLIENT_SECRET \
+    -e FACEBOOK_REDIRECT_URL \
+    -e FACEBOOK_CLIENT_ID \
+    -e FACEBOOK_CLIENT_SECRET \
+    -e VK_REDIRECT_URL \
+    -e VK_CLIENT_ID \
+    -e VK_CLIENT_SECRET \
+    -e TWITTER_CALLBACK_URL \
+    -e TWITTER_CONSUMER_KEY \
+    -e TWITTER_CONSUMER_SECRET \
     -e MAIL_HOST \
     -e MAIL_PORT \
     -e MAIL_USER \
