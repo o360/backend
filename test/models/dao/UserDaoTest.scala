@@ -96,6 +96,12 @@ class UserDaoTest
     }
   }
 
+  "count" should {
+    "return number users" in {
+      wait(dao.count()) mustBe Users.length
+    }
+  }
+
   "create" should {
     "create user" in {
       forAll() { (u: UserModel, provId: String, provKey: String) =>
