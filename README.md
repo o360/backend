@@ -10,6 +10,7 @@
 * [Migrations](#migrations)
 * [Configuration](#configuration)
 * [Contributing](#contributing)
+* [Error codes](#error-codes)
 
 ## Dependencies
 Build:
@@ -276,3 +277,7 @@ Each of them represents body of the corresponding message types and may contain 
 ## Contributing
 
 If you are ready to contribute to this project, please get familiar with [contributing guide](/CONTRIBUTING.md).
+
+## Error codes
+
+In case of unsuccessful response, you may get an error code. To interpret them there is a list of [error code descriptions](/docs/ERROR_CODES.md)

@@ -4,8 +4,8 @@
 |PROVIDER_NOT_SUPPORTED | OAuth provider is not supported |
 |GENERAL_AUTHENTICATION | Missed token, invalid token, expired token |
 | **403** |
-| AUTHORIZATION-1 | Authorization failed. For more details see [Access-Control List](ACL.md) |
-| AUTHORIZATION-2 | Authorization failed. Action is allowed with some conditions. For more details see [Access-Control List](ACL.md) |
+| AUTHORIZATION-1 | Authorization failed. For more details see [Access-Control List](/docs/ACL.md) |
+| AUTHORIZATION-2 | Authorization failed. Action is allowed with some conditions. For more details see [Access-Control List](/docs/ACL.md) |
 | AUTHORIZATION-EVENT-1 | Authorization failed. Can' t modify projects in in-progress events |
 | AUTHORIZATION-EVENT-2 | Authorization failed. Can' t update completed event |
 | AUTHORIZATION-FORM-1 | Can't get form template by ID |
