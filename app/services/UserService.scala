@@ -51,17 +51,32 @@ class UserService @Inject() (
     userDao.findByProvider(loginInfo.providerID, loginInfo.providerKey)
 
   /**
-    * Creates new user, if doesn't exist.
+    * Creates new user, if doesn't exist. If no users exist, the user will be created as an admin.
     *
     * @param socialProfile silhouette social profile
     */
   def createIfNotExist(socialProfile: CustomSocialProfile): Future[Unit] = {
+
     val loginInfo = socialProfile.loginInfo
+
+    def createNewUser(): Future[Unit] = {
+      val baseNewUser = UserModel.fromSocialProfile(socialProfile)
+      for {
+        newUser <- userDao.count().map {
+          case 0 =>
+            baseNewUser.copy(
+              role = UserModel.Role.Admin,
+              status = UserModel.Status.Approved
+            )
+          case _ => baseNewUser
+        }
+        _ <- userDao.create(newUser, loginInfo.providerID, loginInfo.providerKey)
+      } yield ()
+    }
+
     retrieve(loginInfo).flatMap {
       case Some(_) => ().toFuture
-      case None =>
-        val newUser = UserModel.fromSocialProfile(socialProfile)
-        userDao.create(newUser, loginInfo.providerID, loginInfo.providerKey).map(_ => ())
+      case None    => createNewUser()
     }
   }
 

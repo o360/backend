@@ -82,6 +82,7 @@ class UserServiceTest
         val fixture = getFixture
         when(fixture.userDaoMock.findByProvider(profile.loginInfo.providerID, profile.loginInfo.providerKey))
           .thenReturn(toFuture(user))
+        when(fixture.userDaoMock.count()).thenReturn(toFuture(1))
         when(fixture.userDaoMock.create(*, *, *)).thenReturn(toFuture(Users(0)))
 
         wait(fixture.service.createIfNotExist(profile))
@@ -110,15 +111,45 @@ class UserServiceTest
         val fixture = getFixture
         when(fixture.userDaoMock.findByProvider(profile.loginInfo.providerID, profile.loginInfo.providerKey))
           .thenReturn(toFuture(None))
+        when(fixture.userDaoMock.count()).thenReturn(toFuture(Users.tail.length))
         when(fixture.userDaoMock.create(*, eqTo(profile.loginInfo.providerID), eqTo(profile.loginInfo.providerKey)))
           .thenReturn(toFuture(Users(0)))
 
         wait(fixture.service.createIfNotExist(profile))
         verify(fixture.userDaoMock, times(1))
           .findByProvider(profile.loginInfo.providerID, profile.loginInfo.providerKey)
+        verify(fixture.userDaoMock, times(1)).count()
 
         val user = UserModel.fromSocialProfile(profile)
 
+        verify(fixture.userDaoMock, times(1)).create(user, profile.loginInfo.providerID, profile.loginInfo.providerKey)
+        verifyNoMoreInteractions(fixture.userDaoMock)
+      }
+    }
+
+    "create user as admin if no users exist" in {
+      forAll { profile: CustomSocialProfile =>
+        val fixture = getFixture
+        val user = UserModel
+          .fromSocialProfile(profile)
+          .copy(
+            role = UserModel.Role.Admin,
+            status = UserModel.Status.Approved
+          )
+
+        when(fixture.userDaoMock.findByProvider(profile.loginInfo.providerID, profile.loginInfo.providerKey))
+          .thenReturn(toFuture(None))
+        when(fixture.userDaoMock.count()).thenReturn(toFuture(0))
+        when(
+          fixture.userDaoMock
+            .create(eqTo(user), eqTo(profile.loginInfo.providerID), eqTo(profile.loginInfo.providerKey))
+        ).thenReturn(toFuture(Users(0)))
+
+        wait(fixture.service.createIfNotExist(profile))
+
+        verify(fixture.userDaoMock, times(1))
+          .findByProvider(profile.loginInfo.providerID, profile.loginInfo.providerKey)
+        verify(fixture.userDaoMock, times(1)).count()
         verify(fixture.userDaoMock, times(1)).create(user, profile.loginInfo.providerID, profile.loginInfo.providerKey)
         verifyNoMoreInteractions(fixture.userDaoMock)
       }

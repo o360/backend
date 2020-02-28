@@ -264,6 +264,11 @@ currently two types of authentication sources supported (you may set up one or b
     * *VK_CLIENT_ID* - VK App ID
     * *VK_CLIENT_SECRET* - VK Secure key
 
+### First admin
+When some user logs in a blank application, i.e. the first login ever is performed, that user becomes an administrator. This is done to solve chicken-vs-egg problem when no user could be approved by administrator 
+or become an administrator since there is no one yet. This user can create other administrators and demote 
+or delete him/herself later
+
 ### Creating email template
 Application requires 2 templates on startup: `user_invited.html` and `user_approved.html`
 
