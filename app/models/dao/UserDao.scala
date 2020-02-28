@@ -242,6 +242,11 @@ class UserDao @Inject() (
   }
 
   /**
+    * Returns count of all users.
+    */
+  def count(): Future[Int] = db.run(Users.length.result)
+
+  /**
     * Creates new user and associate it with provider key.
     *
     * @param user        user to create
