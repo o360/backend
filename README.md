@@ -66,12 +66,17 @@ Execute `sbt clean test` or `sbt clean coverage test && sbt coverageReport` for 
 
 Coverage report can be seen at `target/scala-2.13/scoverage-report/index.html`
 
+### Build Docker image
+> You don't have to build the docker image yourself, as the latest master is published at
+> https://hub.docker.com/repository/docker/o360/backend
+Execute `sbt docker:publishLocal`
+
 ### Run application
-To run the application locally:
+To run the application locally or as a docker container:
 
 1. Create `drive_service_key.json` file as described in [Setting up Google account](#setting-up-google-account)
 
-2. Set up database and apply [migrations](#migrations)
+2. Set up PostgreSQL database
 
 3. Set up [auth sources](#setting-up-authentication-sources)
 
@@ -79,50 +84,47 @@ To run the application locally:
     * either by changing `conf/application.conf` file
     * or by specifying the [environment variables](#environment-variables)
 
-5. Create `user_invited.html` and `user_approved.html` email templates
+5. Create `user_invited.html` and `user_approved.html` [email templates](#creating-email-templates)
 
-6. Execute `sbt clean run`
+6.
+    * To run locally (on your host): `sbt clean run`
+    * To run as a docker container:
+        > Migrations will be applied automatically at application startup
+        >
+        > It is possible to directly replace application.conf file with preconfigured one instead of using 
+        > environment variables. *application.conf* path inside container - `/opt/docker/conf/application.conf`
 
-### Build Docker image
-Execute `sbt docker:publishLocal`
+        ```shell
+        docker run -d --name open360-api --restart=always -p 9000:9000 \
+            -e DATABASE_USER \
+            -e DATABASE_PASSWORD \
+            -e DATABASE_URL \
+            -e APPLICATION_SECRET \
+            -e EXTERNAL_AUTH_SERVER_URL \
+            -e GOOGLE_REDIRECT_URL \
+            -e GOOGLE_CLIENT_ID \
+            -e GOOGLE_CLIENT_SECRET \
+            -e FACEBOOK_REDIRECT_URL \
+            -e FACEBOOK_CLIENT_ID \
+            -e FACEBOOK_CLIENT_SECRET \
+            -e VK_REDIRECT_URL \
+            -e VK_CLIENT_ID \
+            -e VK_CLIENT_SECRET \
+            -e MAIL_HOST \
+            -e MAIL_PORT \
+            -e MAIL_USER \
+            -e MAIL_PASSWORD \
+            -e MAIL_SEND_FROM \
+            -e SCHEDULER_ENABLED=true \
+            -v $(pwd)/drive_service_key.json:/opt/docker/conf/drive_service_key.json \
+            -v $(pwd)/user_approved.html:/opt/docker/templates/user_approved.html \
+            -v $(pwd)/user_invited.html:/opt/docker/templates/user_invited.html \
+            -v ${USER_FILES_PATH}:/opt/docker/uploads
+            open360/api:latest
+        ```
 
-### Run Docker container
-
-> Migrations will be applied automatically at application startup
->
-> It is possible to directly replace application.conf file with preconfigured one instead of using 
-environment variables. *application.conf* path inside container - `/opt/docker/conf/application.conf`
-
-```shell
-docker run -d --name open360-api --restart=always -p 9000:9000 \
-    -e DATABASE_USER \
-    -e DATABASE_PASSWORD \
-    -e DATABASE_URL \
-    -e APPLICATION_SECRET \
-    -e EXTERNAL_AUTH_SERVER_URL \
-    -e GOOGLE_REDIRECT_URL \
-    -e GOOGLE_CLIENT_ID \
-    -e GOOGLE_CLIENT_SECRET \
-    -e FACEBOOK_REDIRECT_URL \
-    -e FACEBOOK_CLIENT_ID \
-    -e FACEBOOK_CLIENT_SECRET \
-    -e VK_REDIRECT_URL \
-    -e VK_CLIENT_ID \
-    -e VK_CLIENT_SECRET \
-    -e MAIL_HOST \
-    -e MAIL_PORT \
-    -e MAIL_USER \
-    -e MAIL_PASSWORD \
-    -e MAIL_SEND_FROM \
-    -e SCHEDULER_ENABLED=true \
-    -v $(pwd)/drive_service_key.json:/opt/docker/conf/drive_service_key.json \
-    -v $(pwd)/user_approved.html:/opt/docker/templates/user_approved.html \
-    -v $(pwd)/user_invited.html:/opt/docker/templates/user_invited.html \
-    -v ${USER_FILES_PATH}:/opt/docker/uploads
-    open360/api:latest
-```
 ## Migrations
-Database migrations are applied automatically on startup when running in docker.
+Database migrations are applied automatically on startup when running in docker
 
 If you need to manually apply migrations:
 1. Get your PostgreSQL instance up and running
@@ -136,7 +138,7 @@ If you need to manually apply migrations:
 
  * *DATABASE_USER* - database user name
  * *DATABASE_PASSWORD* - database user password
- * *DATABASE_URL* - database url in "jdbc:postgresql://<host>:<port>/<db_name>" format
+ * *DATABASE_URL* - database url in `jdbc:postgresql://<host>:<port>/<db_name>` format
  * *APPLICATION_SECRET* - application secret used for signing JWT tokens
  * *MAIL_HOST* - SMTP server address. Default is localhost
  * *MAIL_PORT* - SMTP server port. Default is 25
@@ -269,7 +271,7 @@ When some user logs in a blank application, i.e. the first login ever is perform
 or become an administrator since there is no one yet. This user can create other administrators and demote 
 or delete him/herself later
 
-### Creating email template
+### Creating email templates
 Application requires 2 templates on startup: `user_invited.html` and `user_approved.html`
 
 Each of them represents body of the corresponding message types and may contain variables:
@@ -277,6 +279,12 @@ Each of them represents body of the corresponding message types and may contain 
     * `{{code}}` variable, representing an invite code
 * `user_approved.html`
     * `{{user_name}}` variable, containing approved user name
+
+## Swagger
+To get a swagger specification of the application HTTP API, execute: `sbt swagger`.
+
+Swagger file can be seen at `target/swagger/swagger.json`. You can use
+[swagger-ui](https://swagger.io/tools/swagger-ui/) to view it
 
 ## Contributing
 
