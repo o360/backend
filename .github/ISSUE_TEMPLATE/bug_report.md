@@ -20,19 +20,7 @@ assignees: ''
 <!-- Describe what you expected to happen -->
 
 ### Environment
-
-<pre><code>
-Browser:
-- [ ] Chrome version XX
-- [ ] Firefox version XX
-- [ ] Safari version XX
-- [ ] Opera version XX
-- [ ] IE version XX
-- [ ] Edge version XX
-
-Others:
-<!-- Anything else relevant? Operating system version, IDE, package manager, HTTP server, ... -->
-</code></pre>
+<!-- Provide any environment description you may find relevant -->
 
 ### Connected requirement IDs
 <!-- Provide the requirement IDs if you know -->
