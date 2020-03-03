@@ -67,8 +67,10 @@ Execute `sbt clean test` or `sbt clean coverage test && sbt coverageReport` for 
 Coverage report can be seen at `target/scala-2.13/scoverage-report/index.html`
 
 ### Build Docker image
-> You don't have to build the docker image yourself, as the latest master is published at
-> https://hub.docker.com/repository/docker/o360/backend
+> You don't have to build the docker image yourself, as the master branch is published at
+> https://hub.docker.com/repository/docker/o360/backend as the latest tag. We also publish all
+> git tags for releases and we recommend using those for production deployment instead of master
+
 Execute `sbt docker:publishLocal`
 
 ### Run application
