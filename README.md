@@ -1,15 +1,16 @@
 # Open360 Backend
 
-<https://o360.github.io/>
-
 [![Build Status](https://travis-ci.org/o360/backend.svg?branch=master)](https://travis-ci.org/o360/backend)
 [![License](http://img.shields.io/:license-Apache%202-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.txt)
 [![Coverage Status](https://coveralls.io/repos/github/o360/backend/badge.svg?branch=master)](https://coveralls.io/github/o360/backend?branch=master)
 
 Backend project for Open360. Open360 is a system to create, manage and run surveys in a convenient way for both employees and employers.
+Please see the [github.io page](https://o360.github.io/) for more information.
 
-#### Related project
+#### Related projects
 [Open360 Frontend](https://github.com/o360/frontend)
+
+[Open360 Demo](https://github.com/o360/demo)
 
 ## Contents
 * [Dependencies](#dependencies)
