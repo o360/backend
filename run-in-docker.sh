@@ -56,6 +56,8 @@ docker run -d --name private-open360-api --restart=always -p 9000:9000 \
     -e MAIL_PORT \
     -e MAIL_USER \
     -e MAIL_PASSWORD \
+    -e MAIL_SSL \
+    -e MAIL_TLS \
     -e MAIL_SEND_FROM \
     -e EXPORT_SECRET \
     -e SCHEDULER_ENABLED=true \

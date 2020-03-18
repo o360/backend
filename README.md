@@ -126,6 +126,8 @@ To run the application locally or as a docker container:
             -e MAIL_PORT \
             -e MAIL_USER \
             -e MAIL_PASSWORD \
+            -e MAIL_SSL \
+            -e MAIL_TLS \
             -e MAIL_SEND_FROM \
             -e SCHEDULER_ENABLED=true \
             -v $(pwd)/drive_service_key.json:/opt/docker/conf/drive_service_key.json \
@@ -156,6 +158,8 @@ If you need to manually apply migrations:
  * *MAIL_PORT* - SMTP server port. Default is 25
  * *MAIL_USER* - SMTP server username
  * *MAIL_PASSWORD* - SMTP server password
+ * *MAIL_SSL* - yes|no – should or should not use ssl for connecting to SMTP server. Default is '*no*
+ * *MAIL_TLS* - yes|no – should or should not use tls for connecting to SMTP server. Default is '*no*
  * *MAIL_SEND_FROM* - Sender email address
  * *EXPORT_SECRET* - Secret key used for JSON export
  * *SCHEDULER_ENABLED* - (true, false) is background tasks execution enabled
