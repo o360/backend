@@ -7,7 +7,6 @@
     - application/json
   produces:
     - application/json
-  host: "vm-a834f9ac-1c23-40f2-9461-618361703efd.premium.cs2.netpoint-dc.com:9000"
   basePath: "/api/v1.0"
   schemes:
     - "http"
