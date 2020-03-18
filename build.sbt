@@ -22,8 +22,8 @@ libraryDependencies ++= Seq(
 libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-slick" % "4.0.2",
   "org.postgresql" % "postgresql" % "42.0.0",
-  "com.mohiva" %% "play-silhouette" % "6.1.0",
-  "com.mohiva" %% "play-silhouette-persistence" % "6.1.0",
+  "com.mohiva" %% "play-silhouette" % "7.0.0",
+  "com.mohiva" %% "play-silhouette-persistence" % "7.0.0",
   "com.typesafe.play" %% "play-mailer" % "8.0.0",
   "com.typesafe.play" %% "play-mailer-guice" % "8.0.0",
   "org.davidbild" %% "tristate-play" % "0.4.0",

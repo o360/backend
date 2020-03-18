@@ -36,7 +36,7 @@ class Scheduler @Inject() (
 
   if (config.schedulerSettings.enabled) {
     val interval = config.schedulerSettings.intervalMilliseconds
-    system.scheduler.schedule(
+    system.scheduler.scheduleAtFixedRate(
       initialDelay = 30.seconds,
       interval = interval.milliseconds,
       receiver = schedulerActor,
