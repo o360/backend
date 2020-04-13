@@ -42,10 +42,21 @@ class FlywayInitializer @Inject() (
   if (environment.mode == Mode.Prod) {
     try {
       val dbSettings = config.dbSettings
-      val flyway = new Flyway()
-      flyway.setLocations("migrations/common", "migrations/postgres")
-      flyway.setDataSource(dbSettings.url, dbSettings.user, dbSettings.password)
-      flyway.setOutOfOrder(true)
+      val flyway = Flyway
+        .configure()
+        .locations(
+          "migrations/common",
+          "migrations/postgres"
+        )
+        .dataSource(
+          dbSettings.url,
+          dbSettings.user,
+          dbSettings.password
+        )
+        .table("schema_version")
+        .outOfOrder(true)
+        .load()
+
       flyway.migrate()
     } catch {
       case e: FlywayException => log.error("Can't apply migrations", e)

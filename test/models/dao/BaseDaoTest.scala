@@ -41,13 +41,14 @@ trait BaseDaoTest
   private val dbUser = ConfigFactory.load.getString("slick.dbs.default.db.user")
   private val dbPass = ConfigFactory.load.getString("slick.dbs.default.db.password")
 
-  private val flyway = new Flyway()
-
   private val dbSetupDestination = new DriverManagerDestination(dbUrl, dbUser, dbPass)
 
   override def beforeEach(): Unit = {
-    flyway.setLocations("migrations/common", "migrations/h2")
-    flyway.setDataSource(dbUrl, dbUser, dbPass)
+    val flyway = Flyway
+      .configure()
+      .locations("migrations/common", "migrations/h2")
+      .dataSource(dbUrl, dbUser, dbPass)
+      .load()
     flyway.clean()
     flyway.migrate()
     executeFixtureOperations(dbSetupDestination)
