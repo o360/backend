@@ -30,7 +30,7 @@ libraryDependencies ++= Seq(
   "org.scalaz" %% "scalaz-core" % "7.2.30",
   "com.google.apis" % "google-api-services-sheets" % "v4-rev473-1.22.0",
   "com.google.apis" % "google-api-services-drive" % "v3-rev74-1.22.0",
-  "org.flywaydb" % "flyway-core" % "4.1.2",
+  "org.flywaydb" % "flyway-core" % "6.3.3",
   "io.scalaland" %% "chimney" % "0.4.1",
   "commons-io" % "commons-io" % "2.6",
   filters,
