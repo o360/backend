@@ -24,7 +24,8 @@ import com.mohiva.play.silhouette.impl.providers.CommonSocialProfile
   */
 case class CustomSocialProfile(
   loginInfo: LoginInfo,
-  fullName: Option[String],
+  firstName: Option[String],
+  lastName: Option[String],
   email: Option[String],
   gender: Option[User.Gender]
 ) extends SocialProfile
@@ -33,7 +34,8 @@ object CustomSocialProfile {
   def fromCommonSocialProfile(profile: CommonSocialProfile): CustomSocialProfile =
     CustomSocialProfile(
       loginInfo = profile.loginInfo,
-      fullName = profile.fullName,
+      firstName = profile.firstName,
+      lastName = profile.lastName,
       email = profile.email,
       gender = None
     )

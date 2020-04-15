@@ -24,7 +24,8 @@ import silhouette.CustomSocialProfile
   */
 case class User(
   id: Long,
-  name: Option[String],
+  firstName: Option[String],
+  lastName: Option[String],
   email: Option[String],
   gender: Option[User.Gender],
   role: User.Role,
@@ -32,7 +33,16 @@ case class User(
   timezone: ZoneId,
   termsApproved: Boolean,
   pictureName: Option[String]
-) extends Identity
+) extends Identity {
+
+  def fullName: Option[String] = (firstName, lastName) match {
+    case (Some(firstName), Some(lastName)) => Some(firstName + " " + lastName)
+    case (Some(firstName), None)           => Some(firstName)
+    case (None, Some(lastName))            => Some(lastName)
+    case (None, None)                      => None
+  }
+
+}
 
 object User {
   val nameSingular = "user"
@@ -85,15 +95,16 @@ object User {
     */
   def fromSocialProfile(socialProfile: CustomSocialProfile): User = {
     User(
-      0,
-      socialProfile.fullName,
-      socialProfile.email,
-      socialProfile.gender,
-      User.Role.User,
-      User.Status.New,
-      ZoneOffset.UTC,
+      id = 0,
+      firstName = socialProfile.firstName,
+      lastName = socialProfile.lastName,
+      email = socialProfile.email,
+      gender = socialProfile.gender,
+      role = User.Role.User,
+      status = User.Status.New,
+      timezone = ZoneOffset.UTC,
       termsApproved = false,
-      None
+      pictureName = None
     )
   }
 }

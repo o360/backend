@@ -87,7 +87,8 @@ trait UserComponent extends Logger with EnumColumnMapper { self: HasDatabaseConf
     */
   case class DbUser(
     id: Long,
-    name: Option[String],
+    firstName: Option[String],
+    lastName: Option[String],
     email: Option[String],
     gender: Option[User.Gender],
     role: User.Role,
@@ -119,7 +120,8 @@ trait UserComponent extends Logger with EnumColumnMapper { self: HasDatabaseConf
   class UserTable(tag: Tag) extends Table[DbUser](tag, "account") {
 
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
-    def name = column[Option[String]]("name")
+    def firstName = column[Option[String]]("first_name")
+    def lastName = column[Option[String]]("last_name")
     def email = column[Option[String]]("email")
     def gender = column[Option[User.Gender]]("gender")
     def role = column[User.Role]("role")
@@ -130,7 +132,7 @@ trait UserComponent extends Logger with EnumColumnMapper { self: HasDatabaseConf
     def isDeleted = column[Boolean]("is_deleted")
 
     def * =
-      (id, name, email, gender, role, status, timezone, termsApproved, pictureName, isDeleted) <> ((DbUser.apply _).tupled, DbUser.unapply)
+      (id, firstName, lastName, email, gender, role, status, timezone, termsApproved, pictureName, isDeleted) <> ((DbUser.apply _).tupled, DbUser.unapply)
   }
 
   val Users = TableQuery[UserTable]
@@ -181,11 +183,20 @@ class UserDao @Inject() (
     }
 
     def filterName(user: UserTable) = optName.map { name =>
-      user.name.fold(false: Rep[Boolean]) { nameColumn =>
-        val transliteratedName = Transliterator.transliterate(name)
-        val nameLike = like(nameColumn, _: String, true)
-        nameLike(name) || nameLike(transliteratedName)
-      }
+      def filterNamePartColumn(namePartColumn: Rep[Option[String]]): Rep[Boolean] =
+        namePartColumn.fold(false: Rep[Boolean]) { namePartColumn =>
+          val transliteratedName = Transliterator.transliterate(name)
+          val nameLike = like(namePartColumn, _: String, true)
+          nameLike(name) || nameLike(transliteratedName)
+        }
+
+      (
+        user.firstName.nonEmpty ||
+        user.lastName.nonEmpty
+      ) && (
+        filterNamePartColumn(user.firstName) ||
+        filterNamePartColumn(user.lastName)
+      )
     }
 
     def filterActiveProject(user: UserTable) = optProjectIdAuditor.map { projectIdAuditor =>
@@ -210,12 +221,13 @@ class UserDao @Inject() (
 
     runListQuery(query) { user =>
       {
-        case "id"     => user.id
-        case "name"   => user.name
-        case "email"  => user.email
-        case "role"   => user.role
-        case "status" => user.status
-        case "gender" => user.gender
+        case "id"        => user.id
+        case "firstName" => user.firstName
+        case "lastName"  => user.lastName
+        case "email"     => user.email
+        case "role"      => user.role
+        case "status"    => user.status
+        case "gender"    => user.gender
       }
     }.map { case ListWithTotal(total, data) => ListWithTotal(total, data.map(_.toModel)) }
   }

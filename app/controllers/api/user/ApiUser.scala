@@ -30,7 +30,8 @@ import scalaz.std.option._
   */
 case class ApiUser(
   id: Long,
-  name: Option[String],
+  firstName: Option[String],
+  lastName: Option[String],
   email: Option[String],
   gender: Option[ApiUser.ApiGender],
   role: ApiUser.ApiRole,
@@ -67,14 +68,15 @@ object ApiUser {
 
   private val reads: Reads[ApiUser] = (
     (__ \ "id").read[Long] and
-      (__ \ "name").readNullable[String](maxLength[String](1024)) and
+      (__ \ "firstName").readNullable[String](maxLength[String](1024)) and
+      (__ \ "lastName").readNullable[String](maxLength[String](1024)) and
       (__ \ "email").readNullable[String](maxLength[String](255)) and
       (__ \ "gender").readNullable[ApiUser.ApiGender] and
       (__ \ "role").read[ApiUser.ApiRole] and
       (__ \ "status").read[ApiUser.ApiStatus] and
       (__ \ "timezone").read[ZoneId] and
       (__ \ "termsApproved").read[Boolean]
-  )(ApiUser(_, _, _, _, _, _, _, _, false))
+  )(ApiUser(_, _, _, _, _, _, _, _, _, false))
 
   implicit val format = Format(reads, Json.writes[ApiUser])
 

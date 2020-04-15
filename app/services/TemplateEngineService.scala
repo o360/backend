@@ -50,7 +50,7 @@ class TemplateEngineService {
     event: Option[Event]
   ): Map[String, String] = {
     Map(
-      "user_name" -> recipient.name.getOrElse(""),
+      "user_name" -> recipient.fullName.getOrElse(""),
       "event_start" -> event.fold("")(e => TimestampConverter.toPrettyString(e.start, recipient.timezone)),
       "event_end" -> event.fold("")(e => TimestampConverter.toPrettyString(e.end, recipient.timezone)),
       "event_description" -> event.fold("")(_.description.getOrElse(""))

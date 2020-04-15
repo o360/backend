@@ -23,7 +23,8 @@ import play.api.libs.json.Json
   * Partial user model for self-updates.
   */
 case class ApiPartialUser(
-  name: Option[String],
+  firstName: Option[String],
+  lastName: Option[String],
   email: Option[String],
   gender: Option[ApiUser.ApiGender],
   timezone: ZoneId,
@@ -31,7 +32,8 @@ case class ApiPartialUser(
 ) {
   def applyTo(user: User): User = {
     user.copy(
-      name = name,
+      firstName = firstName,
+      lastName = lastName,
       email = email,
       gender = gender.map(_.value),
       timezone = timezone,

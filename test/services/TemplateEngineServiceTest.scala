@@ -65,7 +65,7 @@ class TemplateEngineServiceTest extends BaseServiceTest with UserGenerator with 
         val result = service.getContext(user, Some(event))
 
         result must not be empty
-        result("user_name") mustBe user.name.getOrElse("")
+        result("user_name") mustBe user.fullName.getOrElse("")
         result("event_description") mustBe event.description.getOrElse("")
         result.get("event_start") mustBe defined
         result.get("event_end") mustBe defined

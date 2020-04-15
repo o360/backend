@@ -24,7 +24,8 @@ import io.scalaland.chimney.dsl._
   */
 case class ApiShortUser(
   id: Long,
-  name: String,
+  firstName: String,
+  lastName: String,
   gender: ApiUser.ApiGender,
   hasPicture: Boolean
 ) extends Response

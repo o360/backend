@@ -144,7 +144,7 @@ GET /admin/users/:id controllers.admin.UserController.getById(id: Long)
 #     in: query
 #     type: string
 #     pattern: '^-?\w+(,-?\w+)*$'
-#     description: 'Available fields: id, name, gender. Format: field1,-field2,...'
+#     description: 'Available fields: id, firstName, lastName, gender. Format: field1,-field2,...'
 #   - $ref: '#/parameters/pageSize'
 #   - $ref: '#/parameters/pageNumber'
 # responses:
@@ -197,7 +197,7 @@ GET /users controllers.user.UserController.getList(name: Option[String])
 #     in: query
 #     type: string
 #     pattern: '^-?\w+(,-?\w+)*$'
-#     description: 'Available fields: id, name, email, role, status, gender. Format: field1,-field2,...'
+#     description: 'Available fields: id, firstName, lastName, email, role, status, gender. Format: field1,-field2,...'
 #   - $ref: '#/parameters/pageSize'
 #   - $ref: '#/parameters/pageNumber'
 # responses:

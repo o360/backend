@@ -41,12 +41,8 @@ class CustomVKProfileParser(implicit ec: ExecutionContext) extends CustomSocialP
 
       CustomSocialProfile(
         loginInfo = commonProfile.loginInfo,
-        fullName = (commonProfile.firstName, commonProfile.lastName) match {
-          case (Some(firstName), Some(lastName)) => Some(firstName + " " + lastName)
-          case (Some(firstName), None)           => Some(firstName)
-          case (None, Some(lastName))            => Some(lastName)
-          case (None, None)                      => None
-        },
+        firstName = commonProfile.firstName,
+        lastName = commonProfile.lastName,
         email = commonProfile.email,
         gender = gender
       )
