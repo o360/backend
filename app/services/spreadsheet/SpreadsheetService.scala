@@ -109,7 +109,7 @@ class SpreadsheetService @Inject() () {
             Cell("Name", format = Some(Cell.Format.bold), color = Some(Color.lightBlue)),
             Cell.empty,
             Container(TopToDown)(
-              users.map(user => Cell(user.name.getOrElse(""))): _*
+              users.map(user => Cell(user.fullName.getOrElse(""))): _*
             ).colorIfEven(Color.lightGray)
           ),
           Container(LeftToRight)(
@@ -226,7 +226,7 @@ class SpreadsheetService @Inject() () {
               border = Some(Border(Border.Style.SolidThick, Border.Placement.outer))
             )(
               Cell(
-                report.assessedUser.map(_.name.getOrElse("")).getOrElse("Survey"),
+                report.assessedUser.map(_.fullName.getOrElse("")).getOrElse("Survey"),
                 format = Some(Cell.Format.bold),
                 mergeToRight = Some(1),
                 color = Some(rowColor)
@@ -238,7 +238,7 @@ class SpreadsheetService @Inject() () {
                   Container(TopToDown)(
                     fromUsers.map {
                       case (u, true)  => Cell(anonymousUserNameMapping.getOrElse(u.id, "Anonymous"))
-                      case (u, false) => Cell(u.name.getOrElse(""))
+                      case (u, false) => Cell(u.fullName.getOrElse(""))
                     }: _*
                   ).colorIfEven(Color.lightGray),
                   if (surveyAnswers.isEmpty) NoElement

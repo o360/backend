@@ -39,7 +39,8 @@ class CustomGoogleProfileParser(implicit ec: ExecutionContext) extends CustomSoc
 
       CustomSocialProfile(
         loginInfo = commonProfile.loginInfo,
-        fullName = commonProfile.fullName,
+        firstName = commonProfile.firstName,
+        lastName = commonProfile.lastName,
         email = commonProfile.email,
         gender = gender
       )

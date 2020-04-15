@@ -75,6 +75,19 @@ class UploadService @Inject() (
       * Returns upload models for given events with projects.
       */
     def getUploadModels(eventsWithProjects: Seq[(Event, ActiveProject)]): Future[Seq[UploadModel]] = {
+
+      def compareOptionsWith[T](x: Option[T], y: Option[T])(f: (T, T) => Boolean): Boolean = {
+        (x, y) match {
+          case (Some(_), None)    => true
+          case (None, Some(_))    => false
+          case (None, None)       => false
+          case (Some(x), Some(y)) => f(x, y)
+        }
+      }
+
+      def compareOptionStrings(x: Option[String], y: Option[String]): Boolean =
+        compareOptionsWith(x, y)(_.toLowerCase > _.toLowerCase)
+
       Future.sequence {
         eventsWithProjects.map {
           case (event, project) =>
@@ -82,13 +95,9 @@ class UploadService @Inject() (
               reports <- reportService.getReport(project.id)
             } yield {
               val sortedReports = reports.sortWith { (left, right) =>
-                val leftName = left.assessedUser.flatMap(_.name)
-                val rightName = right.assessedUser.flatMap(_.name)
-                (leftName, rightName) match {
-                  case (None, None)       => false
-                  case (Some(l), Some(r)) => l < r
-                  case (Some(_), None)    => true
-                  case (None, Some(_))    => false
+                compareOptionsWith(left.assessedUser, right.assessedUser) { (leftUser, rightUser) =>
+                  compareOptionStrings(leftUser.firstName, rightUser.firstName) ||
+                  compareOptionStrings(leftUser.lastName, rightUser.lastName)
                 }
               }
 
@@ -149,7 +158,7 @@ class UploadService @Inject() (
         googleDriveService.setPermission(folderId, email)
         folderId.toFuture
       case None =>
-        val userFolderId = googleDriveService.createFolder("root", s"Report for ${user.name.getOrElse("")}")
+        val userFolderId = googleDriveService.createFolder("root", s"Report for ${user.firstName.getOrElse("")}")
         googleDriveService.setPermission(userFolderId, user.email.getOrElse(""))
         userDao.setGdriveFolderId(user.id, userFolderId)
     }

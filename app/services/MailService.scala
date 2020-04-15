@@ -47,7 +47,7 @@ class MailService @Inject() (
     to: User,
     text: String
   ): Unit = {
-    val name = to.name.getOrElse(throw new NoSuchElementException(s"name not defined, id ${to.id}"))
+    val name = to.fullName.getOrElse(throw new NoSuchElementException(s"name not defined, id ${to.id}"))
     val address = to.email.getOrElse(throw new NoSuchElementException(s"email not defined, id ${to.id}"))
 
     send(subject, name, address, text)

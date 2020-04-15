@@ -71,12 +71,8 @@ object ExternalAuthService {
     def toSocialProfile: Try[CustomSocialProfile] = Try {
       CustomSocialProfile(
         loginInfo = LoginInfo("custom", userId),
-        fullName = (firstName, lastName) match {
-          case (Some(firstName), Some(lastName)) => Some(firstName + " " + lastName)
-          case (Some(firstName), None)           => Some(firstName)
-          case (None, Some(lastName))            => Some(lastName)
-          case (None, None)                      => None
-        },
+        firstName = firstName,
+        lastName = lastName,
         gender = gender.flatMap { g =>
           g.toLowerCase match {
             case "m" | "man" | "male"     => Some(User.Gender.Male)

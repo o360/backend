@@ -325,7 +325,8 @@ class UserServiceTest
       forAll { (user: UserModel) =>
         val fixture = getFixture
         val updatedUser = user.copy(
-          name = Some("name"),
+          firstName = Some("first name"),
+          lastName = Some("first name"),
           email = Some("email"),
           gender = Some(UserModel.Gender.Male),
           role = UserModel.Role.Admin,

@@ -39,23 +39,25 @@ trait UserGenerator {
   implicit val userArbitrary = Arbitrary {
     for {
       id <- Arbitrary.arbitrary[Long]
-      name <- Arbitrary.arbitrary[Option[String]]
+      firstName <- Arbitrary.arbitrary[Option[String]]
+      lastName <- Arbitrary.arbitrary[Option[String]]
       email <- Arbitrary.arbitrary[Option[String]]
       gender <- Arbitrary.arbitrary[Option[User.Gender]]
       role <- Arbitrary.arbitrary[User.Role]
       status <- Arbitrary.arbitrary[User.Status]
       termsApproved <- Arbitrary.arbitrary[Boolean]
       pictureName <- Arbitrary.arbitrary[Option[String]]
-    } yield User(id, name, email, gender, role, status, ZoneOffset.UTC, termsApproved, pictureName)
+    } yield User(id, firstName, lastName, email, gender, role, status, ZoneOffset.UTC, termsApproved, pictureName)
   }
 
   implicit val userShortArb = Arbitrary {
     for {
       id <- Arbitrary.arbitrary[Long]
-      name <- Arbitrary.arbitrary[String]
+      firstName <- Arbitrary.arbitrary[String]
+      lastName <- Arbitrary.arbitrary[String]
       gender <- Arbitrary.arbitrary[User.Gender]
       hasPicture <- Arbitrary.arbitrary[Boolean]
-    } yield UserShort(id, name, gender, hasPicture)
+    } yield UserShort(id, firstName, lastName, gender, hasPicture)
   }
 
 }

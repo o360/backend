@@ -28,10 +28,11 @@ trait SocialProfileGenerator extends UserGenerator {
     for {
       provId <- Arbitrary.arbitrary[String]
       provKey <- Arbitrary.arbitrary[String]
-      fullName <- Arbitrary.arbitrary[Option[String]]
+      firstName <- Arbitrary.arbitrary[Option[String]]
+      lastName <- Arbitrary.arbitrary[Option[String]]
       email <- Arbitrary.arbitrary[Option[String]]
       gender <- Arbitrary.arbitrary[Option[User.Gender]]
-    } yield CustomSocialProfile(LoginInfo(provId, provKey), fullName, email, gender)
+    } yield CustomSocialProfile(LoginInfo(provId, provKey), firstName, lastName, email, gender)
   }
 
 }

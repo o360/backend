@@ -12,25 +12,10 @@
  * limitations under the License.
  */
 
-package models.user
+ALTER TABLE account ADD first_name VARCHAR(1024) DEFAULT NULL;
+ALTER TABLE account ADD last_name VARCHAR(1024) DEFAULT NULL;
 
-/**
-  * Short user model.
-  */
-case class UserShort(
-  id: Long,
-  firstName: String,
-  lastName: String,
-  gender: User.Gender,
-  hasPicture: Boolean
-)
+UPDATE account SET first_name = split_part(name, ' ', 1);
+UPDATE account SET last_name = split_part(name, ' ', 2);
 
-object UserShort {
-  def fromUser(user: User) = UserShort(
-    id = user.id,
-    firstName = user.firstName.getOrElse(""),
-    lastName = user.lastName.getOrElse(""),
-    gender = user.gender.getOrElse(User.Gender.Male),
-    hasPicture = user.pictureName.nonEmpty
-  )
-}
+ALTER TABLE account DROP COLUMN name;

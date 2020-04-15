@@ -68,7 +68,7 @@ class UserDaoTest
     "return users filtered by name" in {
       val searchByName = "NaM"
       val users = wait(dao.getList(optName = Some(searchByName)))
-      val expectedUsers = Users.filter(_.name.exists(_.toLowerCase.contains(searchByName.toLowerCase)))
+      val expectedUsers = Users.filter(_.firstName.exists(_.toLowerCase.contains(searchByName.toLowerCase)))
 
       users.data must contain theSameElementsAs expectedUsers
     }
