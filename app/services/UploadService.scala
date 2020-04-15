@@ -96,8 +96,8 @@ class UploadService @Inject() (
             } yield {
               val sortedReports = reports.sortWith { (left, right) =>
                 compareOptionsWith(left.assessedUser, right.assessedUser) { (leftUser, rightUser) =>
-                  compareOptionStrings(leftUser.firstName, rightUser.firstName) ||
-                  compareOptionStrings(leftUser.lastName, rightUser.lastName)
+                  compareOptionStrings(leftUser.lastName, rightUser.lastName) ||
+                  compareOptionStrings(leftUser.firstName, rightUser.firstName)
                 }
               }
 
