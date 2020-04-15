@@ -76,17 +76,17 @@ class UploadService @Inject() (
       */
     def getUploadModels(eventsWithProjects: Seq[(Event, ActiveProject)]): Future[Seq[UploadModel]] = {
 
-      def compareOptionsWith[T](x: Option[T], y: Option[T])(f: (T, T) => Boolean): Boolean = {
+      def compareOptionsWith[T](x: Option[T], y: Option[T])(lt: (T, T) => Boolean): Boolean = {
         (x, y) match {
-          case (Some(_), None)    => true
-          case (None, Some(_))    => false
+          case (Some(_), None)    => false
+          case (None, Some(_))    => true
           case (None, None)       => false
-          case (Some(x), Some(y)) => f(x, y)
+          case (Some(x), Some(y)) => lt(x, y)
         }
       }
 
       def compareOptionStrings(x: Option[String], y: Option[String]): Boolean =
-        compareOptionsWith(x, y)(_.toLowerCase > _.toLowerCase)
+        compareOptionsWith(x, y)(_.toLowerCase < _.toLowerCase)
 
       Future.sequence {
         eventsWithProjects.map {
@@ -96,8 +96,8 @@ class UploadService @Inject() (
             } yield {
               val sortedReports = reports.sortWith { (left, right) =>
                 compareOptionsWith(left.assessedUser, right.assessedUser) { (leftUser, rightUser) =>
-                  compareOptionStrings(leftUser.firstName, rightUser.firstName) ||
-                  compareOptionStrings(leftUser.lastName, rightUser.lastName)
+                  compareOptionStrings(leftUser.lastName, rightUser.lastName) ||
+                  compareOptionStrings(leftUser.firstName, rightUser.firstName)
                 }
               }
 
