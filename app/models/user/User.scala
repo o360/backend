@@ -36,7 +36,7 @@ case class User(
 ) extends Identity {
 
   def fullName: Option[String] = (firstName, lastName) match {
-    case (Some(firstName), Some(lastName)) => Some(firstName + " " + lastName)
+    case (Some(firstName), Some(lastName)) => Some(lastName + " " + firstName)
     case (Some(firstName), None)           => Some(firstName)
     case (None, Some(lastName))            => Some(lastName)
     case (None, None)                      => None
