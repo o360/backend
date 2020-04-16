@@ -85,13 +85,8 @@ class EventJobService @Inject() (
           seq.map(el => splitter(el).map((el, _)))
         }
         .map { result =>
-          val positive = result
-            .filter { case (_, condition) => condition }
-            .map { case (el, _) => el }
-
-          val negative = result
-            .filter { case (_, condition) => !condition }
-            .map { case (el, _) => el }
+          val positive = result.collect { case (el, cond) if cond  => el }
+          val negative = result.collect { case (el, cond) if !cond => el }
 
           (positive, negative)
         }
