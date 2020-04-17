@@ -60,7 +60,7 @@ class TimestampConverterTest extends BaseServiceTest with TimeGenerator {
 
       val result = TimestampConverter.toPrettyString(dateTime, zone)
 
-      result mustBe "2010-06-02 07:50 (Asia/Tomsk)"
+      result mustBe "2010-06-02 14:50 (Asia/Tomsk)"
     }
 
   }
