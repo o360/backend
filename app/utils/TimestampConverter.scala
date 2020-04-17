@@ -28,7 +28,7 @@ object TimestampConverter {
     * Returns pretty printed timestamp in zone local time.
     */
   def toPrettyString(dateTime: LocalDateTime, zone: ZoneId): String = {
-    val dateTimeString = dateTime.format(dateTimePrettyFormatter)
+    val dateTimeString = fromUtc(dateTime, zone).format(dateTimePrettyFormatter)
     val zoneOffset = zone.getId
     s"$dateTimeString ($zoneOffset)"
   }
