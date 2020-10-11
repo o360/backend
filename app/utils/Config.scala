@@ -58,6 +58,8 @@ class Config @Inject() (protected val configuration: Configuration) {
 
   lazy val externalAuthServerUrl: Option[String] = configuration.getOptional[String]("auth.externalServerURL")
 
+  lazy val usersAutoApprove: Boolean = configuration.get[Boolean]("usersAutoApprove")
+
   private def loadOAuth2Settings(provider: String): Option[OAuth2Settings] =
     for {
       providerConfig <- configuration.getOptional[Configuration](s"auth.silhouette.$provider")
