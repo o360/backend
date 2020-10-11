@@ -24,7 +24,7 @@ import models.user.{User => UserModel}
 import org.davidbild.tristate.Tristate
 import services.authorization.UserSda
 import silhouette.CustomSocialProfile
-import utils.Logger
+import utils.{Config, Logger}
 import utils.errors.{AuthorizationError, ConflictError, NotFoundError}
 import utils.implicits.FutureLifting._
 import utils.listmeta.ListMeta
@@ -42,6 +42,7 @@ class UserService @Inject() (
   protected val groupDao: GroupDao,
   protected val mailService: MailService,
   protected val templateEngineService: TemplateEngineService,
+  protected val config: Config,
   implicit val ec: ExecutionContext
 ) extends IdentityService[UserModel]
   with ServiceResults[UserModel]
@@ -60,7 +61,8 @@ class UserService @Inject() (
     val loginInfo = socialProfile.loginInfo
 
     def createNewUser(): Future[Unit] = {
-      val baseNewUser = UserModel.fromSocialProfile(socialProfile)
+      val baseNewUserStatus = if (config.usersAutoApprove) UserModel.Status.Approved else UserModel.Status.New
+      val baseNewUser = UserModel.fromSocialProfile(socialProfile, status = baseNewUserStatus)
       for {
         newUser <- userDao.count().map {
           case 0 =>

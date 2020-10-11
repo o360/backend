@@ -93,7 +93,7 @@ object User {
   /**
     * Creates user model from social profile.
     */
-  def fromSocialProfile(socialProfile: CustomSocialProfile): User = {
+  def fromSocialProfile(socialProfile: CustomSocialProfile, status: User.Status = User.Status.New): User = {
     User(
       id = 0,
       firstName = socialProfile.firstName,
@@ -101,7 +101,7 @@ object User {
       email = socialProfile.email,
       gender = socialProfile.gender,
       role = User.Role.User,
-      status = User.Status.New,
+      status = status,
       timezone = ZoneOffset.UTC,
       termsApproved = false,
       pictureName = None

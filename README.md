@@ -130,6 +130,7 @@ To run the application locally or as a docker container:
             -e MAIL_TLS \
             -e MAIL_SEND_FROM \
             -e SCHEDULER_ENABLED=true \
+            -e AUTO_APPROVE_USERS \
             -v $(pwd)/drive_service_key.json:/opt/docker/conf/drive_service_key.json \
             -v $(pwd)/user_approved.html:/opt/docker/templates/user_approved.html \
             -v $(pwd)/user_invited.html:/opt/docker/templates/user_invited.html \
@@ -158,12 +159,13 @@ If you need to manually apply migrations:
  * *MAIL_PORT* - SMTP server port. Default is 25
  * *MAIL_USER* - SMTP server username
  * *MAIL_PASSWORD* - SMTP server password
- * *MAIL_SSL* - yes|no – should or should not use ssl for connecting to SMTP server. Default is '*no*
- * *MAIL_TLS* - yes|no – should or should not use tls for connecting to SMTP server. Default is '*no*
+ * *MAIL_SSL* - yes|no - should or should not use ssl for connecting to SMTP server. Default is *no*
+ * *MAIL_TLS* - yes|no - should or should not use tls for connecting to SMTP server. Default is *no*
  * *MAIL_SEND_FROM* - Sender email address
  * *EXPORT_SECRET* - Secret key used for JSON export
- * *SCHEDULER_ENABLED* - (true, false) is background tasks execution enabled
+ * *SCHEDULER_ENABLED* - true|false - is background tasks execution enabled
  * *USER_FILES_PATH* - user files path
+ * *AUTO_APPROVE_USERS* - true|false - should new users get approved automatically without admin decision. Default is *false*
 
 > In addition to this list of variables, you should also set at least one of the [authentication sources](#setting-up-authentication-sources) via dedicated environment variables
 

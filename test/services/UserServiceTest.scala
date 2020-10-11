@@ -24,6 +24,7 @@ import org.mockito.Mockito._
 import silhouette.CustomSocialProfile
 import testutils.fixture.{GroupFixture, UserFixture}
 import testutils.generator.{SocialProfileGenerator, TristateGenerator, UserGenerator}
+import utils.Config
 import utils.errors.{AuthorizationError, ConflictError, NotFoundError}
 import utils.listmeta.ListMeta
 
@@ -57,7 +58,16 @@ class UserServiceTest
     val groupDaoMock = mock[GroupDao]
     val mailService = mock[MailService]
     val templateEngineService = mock[TemplateEngineService]
-    val service = new UserService(daoMock, userGroupDaoMock, groupDaoMock, mailService, templateEngineService, ec)
+    val config = mock[Config]
+    val service = new UserService(
+      daoMock,
+      userGroupDaoMock,
+      groupDaoMock,
+      mailService,
+      templateEngineService,
+      config,
+      ec
+    )
     TestFixture(daoMock, userGroupDaoMock, groupDaoMock, mailService, templateEngineService, service)
   }
 
@@ -127,7 +137,7 @@ class UserServiceTest
       }
     }
 
-    "create user as admin if no users exist" in {
+    "create user as an admin if no users exist" in {
       forAll { profile: CustomSocialProfile =>
         val fixture = getFixture
         val user = UserModel

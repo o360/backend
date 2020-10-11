@@ -61,6 +61,7 @@ docker run -d --name private-open360-api --restart=always -p 9000:9000 \
     -e MAIL_SEND_FROM \
     -e EXPORT_SECRET \
     -e SCHEDULER_ENABLED=true \
+    -e AUTO_APPROVE_USERS \
     -v $(pwd)/drive_service_key.json:/opt/docker/conf/drive_service_key.json \
     -v $(pwd)/user_approved.html:/opt/docker/templates/user_approved.html \
     -v $(pwd)/user_invited.html:/opt/docker/templates/user_invited.html \
